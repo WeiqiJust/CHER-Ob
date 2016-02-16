@@ -99,7 +99,7 @@ void Note::save()
     QTextStream out(mFile);
 
 	out << *mInfo << "\n";
-    out << mTextEdit->toPlainText() << "\n";
+    out << mTextEdit->toPlainText();
 	mFile->close();
 
 }

@@ -1411,6 +1411,7 @@ bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent)
 		currentWindowPath.append(QDir::separator() + fileNameElement);
 		//save path away so we can use it again
 		QString path = fileName;
+		qDebug()<<"In open image!!!!!";
 		#ifdef __APPLE__
 		path.truncate(path.lastIndexOf("/")); // Mac
 		#else
@@ -1422,7 +1423,7 @@ bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent)
 		}
 
 		newImage();
-		
+		qDebug()<<fileName;
 
 		bool open = VTKA()->ReadData(fileName);
 		
@@ -1691,6 +1692,8 @@ void MainWindow::updateMenus()
   showToolbarRenderAct->setChecked(renderToolBar->isVisible());
   showToolbarViewAct->setChecked(viewToolBar->isVisible());
   showToolbarInfoAct->setChecked(infoToolBar->isVisible());
+  this->mSearch->refreshSearchTab();
+  this->mSearchAll->refreshSearchTab();
 
   if(activeDoc && VTKA()){
 
@@ -1728,7 +1731,11 @@ void MainWindow::updateMenus()
 
     writeAnnotationAct->setIcon(VTKA()->getUserAnnotationOn() ? QIcon(":/images/annotation_on.png") : QIcon(":/images/annotation_off.png") );
     writeAnnotationAct->setChecked(VTKA()->getUserAnnotationOn() );
-
+	if (!VTKA()->getUserAnnotationOn())
+	{
+		this->mInformation->closeObjectNotes();
+	}
+	
     QString tfn = VTKA()->getmRgbTextureFilename();
 
     switch (wm) {
@@ -2047,6 +2054,16 @@ void MainWindow::setHandleMenu(QPoint point, Qt::Orientation orientation, QSplit
     handleMenu->popup(point);
 }
 
+void MainWindow::getProjectInfo(QString& projectName, QString& location, QString& keyword, QString& affiliation, QString& userName, QString& description)
+{
+	projectName = currentProjectName;
+	location = currentProjectFullName;
+	keyword = currentProjectKeyword;
+	affiliation = currentProjectAffiliation;
+	userName = mUserName;
+	description = currentProjectDescription;
+
+}
 
 void MainWindow::splitFromHandle(QAction *qa )
 {
@@ -2694,8 +2711,10 @@ QWidget * MainWindow::mountWidgetCenter(QWidget *inputWidget)
 
 void MainWindow::createDockWindows()
 {
-   QTabWidget* tabWidgetTop = NULL, *tabWidgetMid = NULL, *tabWidgetBottom = NULL;
+   //QTabWidget* tabWidgetTop = NULL, *tabWidgetMid = NULL, *tabWidgetBottom = NULL;
    tabWidgetTop = NULL; // YY
+   tabWidgetMid = NULL;
+   tabWidgetBottom = NULL;
    //this->setDockOptions(QMainWindow::ForceTabbedDocks);
 
   //MK: main window size
@@ -2783,11 +2802,13 @@ void MainWindow::createDockWindows()
   mInformation = new Information(this);
   mBookmark = new BookmarkWidget(this);
   mSearch = new SearchWidget(this);
+  mSearchAll = new SearchAllWidget(this);
   if (mwHeight < 600)
   {
       tabWidgetMid->addTab(mInformation, tr("Annotations") );
       tabWidgetMid->addTab(mBookmark, tr("Bookmarks") );
 	  tabWidgetMid->addTab(mSearch, tr("Search") );
+	  tabWidgetMid->addTab(mSearchAll, tr("SearchAll") );
 
       dockMid->setWidget(tabWidgetMid);
       addDockWidget(Qt::RightDockWidgetArea, dockMid);
@@ -2806,6 +2827,7 @@ void MainWindow::createDockWindows()
       tabWidgetBottom->addTab(mInformation, tr("Annotations") );
       tabWidgetBottom->addTab(mBookmark, tr("Bookmarks") );
 	  tabWidgetBottom->addTab(mSearch, tr("Search") );
+	  tabWidgetBottom->addTab(mSearchAll, tr("SearchAll") );
 
       dockBot->setWidget(tabWidgetBottom);
       addDockWidget(Qt::RightDockWidgetArea, dockBot);
@@ -2814,6 +2836,19 @@ void MainWindow::createDockWindows()
   if(tabWidgetTop) tabWidgetTop->show();
   if(tabWidgetMid) tabWidgetMid->show();
   if(tabWidgetBottom) tabWidgetBottom->show();
+}
+
+QTabWidget* MainWindow::getSearchTabWidget()
+{
+	int mwHeight = this->sizeHint().height();
+	if (mwHeight < 600)
+	{
+		return tabWidgetMid;
+	}
+	else
+	{
+		return tabWidgetBottom;
+	}
 }
 
 void MainWindow::writeSettings()

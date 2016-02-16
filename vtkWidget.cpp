@@ -2744,7 +2744,7 @@ bool VtkWidget::Read3DModels(QString filename)
   if (!(r3d->read3D(filename, mChannelNames, mWavelengths, mRgbTextureFilename, mMaterials, mVtkPolyData, mRgbTexture, mHyperImageData, mIsTextureOn)))
     return false;
 
-  int slashpos = filename.lastIndexOf("/");
+  int slashpos = filename.lastIndexOf(QDir::separator());
   QString directory = filename;
   directory.chop(filename.length() - slashpos - 1);
 
@@ -2764,7 +2764,6 @@ bool VtkWidget::Read3DModels(QString filename)
     #endif
 
   Rendering3D();
-
   return true;
 }
 

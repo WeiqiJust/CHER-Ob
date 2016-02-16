@@ -64,6 +64,7 @@ class LightControlRTI; //YY
 class Information;
 class Bookmark;
 class SearchWidget;
+class SearchAllWidget;
 
 #ifdef _WIN32
 #define BITS " (32-bit)"
@@ -104,6 +105,7 @@ public:
   Information *mInformation;
   BookmarkWidget *mBookmark;
   SearchWidget *mSearch;
+  SearchAllWidget *mSearchAll;
   QTextEdit *mInfoText;
   QDir lastUsedDirectory;
   QDir lastSavedDirectory; // DT: Keeps track of screenshot/project saved location
@@ -148,6 +150,21 @@ public:
 		return 0;
   }
 
+  void switchSubWindow(const QString path) const 
+  {
+		if(mdiArea->currentSubWindow()==0) return;
+		QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+		foreach(QMdiSubWindow *w, windows)
+		{
+			VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+			if(!mvc) continue;
+			if (mvc->currentView()->mProjectPath == path)
+			{
+				mdiArea->setActiveSubWindow(w);
+			}
+		}
+  }
+
   static QStatusBar *&globalStatusBar()
   {
     static QStatusBar *_qsb=0;
@@ -167,6 +184,8 @@ public:
           QDir().mkdir(path);
       }
   }
+
+  void getProjectInfo(QString& projectName, QString& location, QString& keyword, QString& affiliation, QString& userName, QString& description);
 
   friend bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item);
   friend Metadata::Metadata(QString path, VtkWidget *w, bool file);
@@ -200,6 +219,9 @@ public slots:
 	  const QString object, const QString ct, const QString keyword, const QString affiliation, const QString description);
 
   void updateMenus(); // update toolbars
+
+  void showFileInfo();
+  void showProjectInfo();
 
 private slots:
   void zoomIn();
@@ -276,9 +298,6 @@ private slots:
 
   void takeScreenshot();
   void makeBookmark();
-
-  void showFileInfo();
-  void showProjectInfo();
 
   void flattenMesh();
   void setCameraModeTrackball();
@@ -435,8 +454,12 @@ private:
   // YY
   private:
 	  QTabWidget* tabWidgetTop;
+	  QTabWidget* tabWidgetMid;
+	  QTabWidget* tabWidgetBottom;
+
   public:
 	  QTabWidget* getTabWidgetTop() {return tabWidgetTop;}
+	  QTabWidget* getSearchTabWidget();
 	  void activateTabWidgetTop(int index)
 	  {
 		  if (tabWidgetTop)

@@ -36,6 +36,7 @@
 #include <QVector>
 #include <vtkPlanes.h>
 #include <vtkPlane.h>
+#include <QTabWidget>
 #include "note.h"
 
 // Class list
@@ -102,6 +103,8 @@ public:
 
   void closeAllNotes();
 
+  void closeObjectNotes();
+
   void createPointNote(double *pos, int cellId, ColorType color);
 
   void createSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, ColorType color);
@@ -122,10 +125,14 @@ public:
 
   void openSurfaceNote2D(double* point);
 
+  void openNoteFromTreeWidget(QTreeWidgetItem* item);
+
 signals:
   void saveAll();
 
   void closeAll();
+
+  void updateMenu();
 
 public slots:
 

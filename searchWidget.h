@@ -29,6 +29,7 @@
 #define SEARCH_H
 
 #include <QtScript>
+#include <QRegExp>
 #include <QWidget>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -37,7 +38,6 @@
 #include <QComboBox>
 #include <QFontComboBox>
 #include <QToolBar>
-#include <QTextBrowser>
 #include <QFile>
 #include <QWizard>
 #include <QFileDialog>
@@ -57,6 +57,8 @@
 #include "vtkSmartPointer.h"
 #include "vtkTexture.h"
 
+class MainWindow;
+
 class SearchWidget : public QWidget
 {
 	Q_OBJECT
@@ -64,8 +66,18 @@ class SearchWidget : public QWidget
 public:
     SearchWidget(QWidget *parent);
 
+	void refreshSearchTab();
+
+	static MainWindow* mw(); // find the mainframe
+
 private:
-	bool search();
+	bool updateCurrentPath();
+
+private slots:
+	void search();
+
+	void showTreeWidgetItem(QTreeWidgetItem* item, int column);
+
 private:
 	QHBoxLayout* hlay;
 	QVBoxLayout* vlay;
@@ -73,6 +85,42 @@ private:
 	QLineEdit* mInput;
 	QPushButton* mButton;
 	QTreeWidget* mTreeWidget;
+	QList<QTreeWidgetItem *> mItems;
+	QString mPath;
+	QString mFile;
+};
+
+class SearchAllWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+    SearchAllWidget(QWidget *parent);
+
+	void refreshSearchTab();
+
+	static MainWindow* mw(); // find the mainframe
+
+private:
+	bool updateCurrentPath();
+
+	QStringList matchString(QString content, QString matchStr);
+
+private slots:
+	void search();
+
+	void showTreeWidgetItem(QTreeWidgetItem* item, int column);
+
+private:
+	QHBoxLayout* hlay;
+	QVBoxLayout* vlay;
+	QLabel* mLabel;
+	QLineEdit* mInput;
+	QPushButton* mButton;
+	QTreeWidget* mTreeWidget;
+	QList<QTreeWidgetItem *> mItems;
+	QString mPath;
+	QString mFile;
 };
 
 #endif // SEARCH_H

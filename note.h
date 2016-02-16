@@ -64,6 +64,8 @@ public:
 
 	void showNote() {mDialog->show();}
 
+	QString getFileName()	{return *mFileName;}
+
 protected:
 
 	void setLabel(QString text);

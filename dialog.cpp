@@ -210,7 +210,6 @@ void NewProjectDialog::ctBrowse()
 
 void NewProjectDialog::next()
 {
-	qDebug()<<"in next";
 	mFullPath = mProjectPath.simplified();
 	if (!QDir().exists(mProjectPath))
 	{
@@ -229,7 +228,6 @@ void NewProjectDialog::next()
 	{
 		mFullPath.append(QDir::separator() + mProjectName);
 	}
-	qDebug()<<"in next full path"<<mFullPath;
 	if (QDir().exists(mFullPath))
 	{
 		QString message("The project with specified name already exists in the specified location!\n");
