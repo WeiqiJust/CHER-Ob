@@ -25,6 +25,9 @@
 // Local headers
 #include "ptm.h"
 #include "../../rtiwebmaker/src/zorder.h"
+#include "mainWindow.h"
+
+
 
 // Qt headers
 #include <QStringList>
@@ -65,6 +68,18 @@ Rti* Ptm::getPtm(QTextStream &in)
 		return image;
 	}
 	return 0;
+}
+
+// YY
+MainWindow * Ptm::mw() // current MainWindow
+{
+  foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+    MainWindow* mainwindow = dynamic_cast<MainWindow*>(widget);
+    if (mainwindow)
+    {
+      return mainwindow;
+    }
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -160,11 +175,27 @@ int RGBPtm::load(QString name, CallBackPos * cb)
 	return 0;
 }
 
+/******************begin of modification. YY*****************************/
+void RGBPtm::updateCoeffandRender(PTMCoefficient* redCoeff, PTMCoefficient* greenCoeff, PTMCoefficient* blueCoeff, bool FIRST_RTI_RENDERING, bool LOADING_DONE)
+{
+	redCoefficients.setLevel(redCoeff, w*h, 0);
+	greenCoefficients.setLevel(greenCoeff, w*h, 0);
+	blueCoefficients.setLevel(blueCoeff, w*h, 0);
+
+	mw()->VTKA()->mRTIbrowser->setImage(this, FIRST_RTI_RENDERING, LOADING_DONE);
+}
 
 int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb,const QString& text)
 {
 	w = width;
 	h = height;
+
+	mipMapSize[0] = QSize(w, h);
+	bool FIRST_RTI_RENDERING = true;
+	bool LOADING_DONE = false;
+
+	QTime myTimer;
+	myTimer.start();
 
 	if (!urti)
 	{
@@ -227,15 +258,27 @@ int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti
 						blueCoeff[offset][i] = static_cast<int>((c - bias[i])*scale[i]);
 				}
 			}
+
+			if (FIRST_RTI_RENDERING) // render first image 
+			{ 
+				updateCoeffandRender(redCoeff, greenCoeff, blueCoeff, FIRST_RTI_RENDERING, LOADING_DONE);
+				FIRST_RTI_RENDERING = false;	
+				myTimer.restart();
+			} else if (myTimer.elapsed() >= mw()->VTKA()->getRerenderingTimeInterval() && FIRST_RTI_RENDERING) {
+				updateCoeffandRender(redCoeff, greenCoeff, blueCoeff, FIRST_RTI_RENDERING, LOADING_DONE);
+				myTimer.restart();
+			}
 		}
 	}
+	LOADING_DONE = true;
+	updateCoeffandRender(redCoeff, greenCoeff, blueCoeff, FIRST_RTI_RENDERING, LOADING_DONE);
 	fclose(file);
 
 	// Computes mip-mapping-level.
-	mipMapSize[0] = QSize(w, h);
+	/*mipMapSize[0] = QSize(w, h);
 	redCoefficients.setLevel(redCoeff, w*h, 0);
 	greenCoefficients.setLevel(greenCoeff, w*h, 0);
-	blueCoefficients.setLevel(blueCoeff, w*h, 0);
+	blueCoefficients.setLevel(blueCoeff, w*h, 0);*/
 	if (cb != NULL)	(*cb)(45, "Mip mapping generation...");
 	generateMipMap(1, w, h, cb, 45, 15);
 
@@ -265,6 +308,113 @@ int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti
 
 	return 0;
 }
+
+// original
+//int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb,const QString& text)
+//{
+//	w = width;
+//	h = height;
+//
+//	if (!urti)
+//	{
+//		//Gets scale value
+//		bool eof, error; 
+//		QString str = getLine(file, &eof);
+//		if (eof) return -1;
+//		QStringList list = str.split(' ',  QString::SkipEmptyParts);
+//		if (list.size() != 6)
+//			return -1;
+//		for (int i = 0; i < 6; i++)
+//		{
+//			scale[i] = list[i].toDouble(&error);
+//			if (!error) return -1;
+//		}
+//
+//		//Gets bias value
+//		str = getLine(file, &eof);
+//		if (eof) return -1;
+//		list = str.split(' ',  QString::SkipEmptyParts);
+//		if (list.size() != basisTerm)
+//			return -1;
+//		for (int i = 0; i < basisTerm; i++)
+//		{
+//			bias[i] = list[i].toInt(&error);
+//			if (!error) return -1;
+//		}
+//	}
+//	else
+//	{
+//
+//	}
+//
+//	//Allocates array for polynomial coefficients
+//	PTMCoefficient* redCoeff = new PTMCoefficient[w*h];
+//	PTMCoefficient* greenCoeff = new PTMCoefficient[w*h];
+//	PTMCoefficient* blueCoeff = new PTMCoefficient[w*h];
+//	
+//	//Reads polynomial coefficients
+//	int offset;
+//	unsigned char c;
+//	for (int j = 0; j < 3; j++)
+//	{
+//		for (int y = h - 1; y >= 0; y--)
+//		{
+//			if (cb != NULL && (y % 50) == 0) (*cb)(15*j + (h - y) * 15 / h, text);
+//			for (int x = 0; x < w; x++)
+//			{
+//				offset = y * w + x;
+//				for (int i = 0; i < basisTerm; i++)
+//				{
+//					if(feof(file))
+//						return -1;
+//					fread(&c, sizeof(unsigned char), 1, file);
+//					if (j == 0)
+//						redCoeff[offset][i] = static_cast<int>((c - bias[i])*scale[i]);
+//					else if (j == 1)
+//						greenCoeff[offset][i] = static_cast<int>((c - bias[i])*scale[i]);
+//					else
+//						blueCoeff[offset][i] = static_cast<int>((c - bias[i])*scale[i]);
+//				}
+//			}
+//		}
+//	}
+//	fclose(file);
+//
+//	// Computes mip-mapping-level.
+//	mipMapSize[0] = QSize(w, h);
+//	redCoefficients.setLevel(redCoeff, w*h, 0);
+//	greenCoefficients.setLevel(greenCoeff, w*h, 0);
+//	blueCoefficients.setLevel(blueCoeff, w*h, 0);
+//	if (cb != NULL)	(*cb)(45, "Mip mapping generation...");
+//	generateMipMap(1, w, h, cb, 45, 15);
+//
+//	// Computes the normals
+//	calculateNormals(normals, redCoefficients, true, cb, 60, 10);
+//	calculateNormals(normals, greenCoefficients, false, cb, 70, 10);
+//	calculateNormals(normals, blueCoefficients, false, cb, 80, 10);
+//	for(int level = 0; level < MIP_MAPPING_LEVELS; level++)
+//	{
+//		int lenght = normals.getLevelLenght(level);
+//		vcg::Point3f* tempNormals = new vcg::Point3f[lenght];
+//		memcpy(tempNormals, normals.getLevel(level), sizeof(vcg::Point3f)*lenght);
+//		int th_id = 0;
+//		#pragma omp parallel for
+//		for (int i = 0; i < lenght; i++)
+//		{
+//			th_id = omp_get_thread_num();
+//			if (th_id == 0)
+//			{
+//				if (cb != NULL && i%500 == 0)	(*cb)(90 + level*2.5 + 2.5 * i / lenght, "Normals generation...");
+//			}
+//			tempNormals[i] /= 3;
+//			tempNormals[i].Normalize();
+//		}
+//		normals.setLevel(tempNormals, lenght, level);
+//	}
+//
+//	return 0;
+//}
+/******************enf of modification. YY***************************/
 
 
 
@@ -334,6 +484,7 @@ int RGBPtm::createImage(unsigned char** buffer, int& width, int& height, const v
 		}
 	}
 
+	//qDebug() << "width" << width << "   " << height; 
 	(*buffer) = new unsigned char[width*height*4];
 	int offsetBuf = 0;
 	
@@ -371,6 +522,7 @@ int RGBPtm::createImage(unsigned char** buffer, int& width, int& height, const v
 		RenderingInfo info = {offx, offy, height, width, level, mode, light, 6};
 		list->value(currentRendering)->applyPtmRGB(redCoefficients, greenCoefficients, blueCoefficients, mipMapSize, normals, info, (*buffer));
 	}
+	//qDebug() << "width" << width << "   " << height; 
 	
 #ifdef PRINT_DEBUG
 	QTime second = QTime::currentTime();

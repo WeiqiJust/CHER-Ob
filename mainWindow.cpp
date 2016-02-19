@@ -48,7 +48,7 @@
 #include "bookmarkWidget.h"
 #include "searchWidget.h"
 #include "lightControlRTI.h" //YY
-
+#include "renderingdialog.h" // YY
 
 QProgressBar *MainWindow::qb;
 
@@ -2748,10 +2748,37 @@ void MainWindow::createDockWindows()
   tabWidgetTop = new QTabWidget;
   tabWidgetMid = new QTabWidget;
 
+  //mLightControl = new LightControl(this);
+  //mLightControlRTI = new LightControlRTI(this, 160); // YY
+  //tabWidgetTop->addTab(mLightControl, tr("Light Control 3D") ); // YY
+  //tabWidgetTop->addTab(mLightControlRTI, tr("Light Control RTI") ); // YY
+
+  
+  //YY
   mLightControl = new LightControl(this);
-  mLightControlRTI = new LightControlRTI(this, 160); // YY
-  tabWidgetTop->addTab(mLightControl, tr("Light Control 3D") ); // YY
-  tabWidgetTop->addTab(mLightControlRTI, tr("Light Control RTI") ); // YY
+  tabWidgetTop->addTab(mLightControl, tr("Light Control 3D") );
+  activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL));
+
+  
+  mLightControlRTI = new LightControlRTI(this, 160);
+
+  QGroupBox* renderingGroup = new QGroupBox("Rendering Mode", this);
+  renderingGroup->setFixedWidth(250);
+  renderingGroup->setFixedHeight(162);
+  
+  rendDlg = new RenderingDialog(NULL, -1, renderingGroup);
+  QVBoxLayout* rendLayout = new QVBoxLayout;
+  rendLayout->setContentsMargins(0, 0, 0, 0);
+  rendLayout->addWidget(rendDlg);
+  renderingGroup->setLayout(rendLayout);
+  QHBoxLayout *layout = new QHBoxLayout;
+  layout->addWidget(mLightControlRTI);
+  layout->addWidget(renderingGroup);
+  QWidget *windowTemp = new QWidget;
+  windowTemp->setLayout(layout);
+  tabWidgetTop->addTab(windowTemp, tr("Light Control RTI") );
+
+  
   connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode)), mLightControl, SLOT( updateLightControl(WidgetMode) ) );
   emit currentWidgetModeChanged(EMPTYWIDGET);
 

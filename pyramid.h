@@ -71,9 +71,10 @@ public:
 	bool setLevel(T* data, int l, int level)
 	{
 		if (level < nLevel)
-		{
-			if (value[level])
-				delete value[level];
+		{   
+			/*if (value[level]) {   // YY
+				delete value[level]; 
+			}*/
 			value[level] = data;
 			lenght[level] = l;
 			return true;
@@ -257,8 +258,8 @@ public:
 	{
 		if (level < nLevel)
 		{
-			if (value[level])
-				delete value[level];
+			/*if (value[level])   //YY
+				delete value[level];*/
 			value[level] = data;
 			lenght[level] = l;
 			return true;

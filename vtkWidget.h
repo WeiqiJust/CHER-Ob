@@ -92,7 +92,7 @@
 
 
 // VCG RTIviewer import
-#ifdef SUPPORT_RTI
+//#ifdef SUPPORT_RTI
 #include "util.h"
 #include "rti.h"
 #include "rtiBrowser.h"
@@ -100,7 +100,8 @@
 #include "hsh.h"
 #include "universalrti.h"
 #include "multiviewrti.h"
-#endif
+//#endif
+#include <vector>
 //----------------------------------------------------------
 
 #define DEFAULTVALUE1 (50.0) // for dials
@@ -109,6 +110,7 @@
 #define DEFAULTINTENSITYL1 (0.75) //for GL light
 #define DEFAULTINTENSITYL2 (0.25)
 
+#define RENDERING_TIME_INTERVAL (250) // YY. time interval for re-rendering
 class vtk2DInteractionCallback;
 class vtk3DInteractionCallback;
 class ReadHyper3D;
@@ -244,8 +246,6 @@ public slots:
   void updateCurrentBlendType(int blendType);
   void updateCurrentVolumeRenderMode(CTVolumeRenderMode volrendermode);
   void updateLightPosition(vtkTransform * transform);
-  //void updateLightPosition(double lightX, double lightY, double lightZ); // by YY
-  void updateRTILightPosition(vcg::Point3f l, bool refresh = true); // YY
   void setInterpolateOn(bool isInterpolateOn) {
     this->mIsInterpolateOn = isInterpolateOn;
       switch(mWidgetMode)
@@ -479,22 +479,18 @@ private:
 
   QDomDocument annotationsXml;
 
-  //-------------------By YY----------------------------------
   // for RTI
 private:
-   void ConvertUnsignedCharArrayToVTKImageData(int iwidth, int iheight); // assign the textureData blow to mVtkImageData for visualiztion
+   void ConvertUnsignedCharVecToVTKImageData(int iwidth, int iheight, std::vector<unsigned char> textureData); // assign the textureData blow to mVtkImageData for visualiztion
 
-private: 
-  Rti* mRTIImage;
-  unsigned char* textureData; /*!< Texture buffer.  */
-  QRectF subimg; /*!< Sub-image diplaied in the browser. */
-  int level; /*!< Mip-mapping level used. */
-  int textureHeight; /*!< Height of the texture. */
-  int textureWidth; /*!< Width of the texture. */
-  double lightVec[3]; /*!< Light vector. */
-  int currentMode; /*!< Current rendering mode applied to the image. */
-  vcg::Point3f light; /*!< Light vector. */
-  //----------------------------------------------------------
+public:
+   int getRerenderingTimeInterval() {return RENDERING_TIME_INTERVAL;};
+
+public slots:
+	void updateRTIImageVTK(std::vector<unsigned char> textureData, int textureWidth, int textureHeight, bool FIRST_RTI_RENDERING);
+
+public:
+	 RtiBrowser* mRTIbrowser; /*!< Browser for RTI image. */
 };
 
 #endif // VTKWIDGET_H

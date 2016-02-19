@@ -35,10 +35,12 @@
 #include "pyramid.h"
 #include "renderingmode.h"
 #include "defaultrendering.h"
-//#include "specularenhanc.h"
-//#include "normalsrendering.h"
+#include "specularenhanc.h"
+#include "normalsrendering.h"
 
-//#include "jpeg2000.h"
+//#include <jpeg2000.h>
+
+#include "vtkWidget.h" // YY
 
 // Qt headers
 #include <QFile>
@@ -81,8 +83,12 @@ protected:
 
 	
 	
-public:
 
+private:// YY
+	MainWindow * mw(); 
+	void updateCoeffandRender(float* redPtr, float* greenPtr, float* bluePtr, int size, bool FIRST_RTI_RENDERING, bool LOADING_DONE);
+
+public:
 	virtual int load(CallBackPos * cb = 0);
 	virtual int load(QString name, CallBackPos * cb = 0);
 	virtual int save(QString name);

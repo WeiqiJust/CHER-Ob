@@ -39,6 +39,7 @@
 #include <QColorDialog>
 #include <QDomDocument>
 #include "vtkWidget.h" //MK: The inclusion of this header should be only here, except implementations.
+#include "dialog.h"
 
 #define MAXRECENTFILES 8
 
@@ -61,6 +62,7 @@ class CTControl;
 class PlotView;
 class LightControl;
 class LightControlRTI; //YY
+class RenderingDialog; //YY
 class Information;
 class Bookmark;
 class SearchWidget;
@@ -102,6 +104,7 @@ public:
   PlotView * mPlotView;
   LightControl *mLightControl;
   LightControlRTI *mLightControlRTI;  //YY
+  RenderingDialog* rendDlg; //YY /*!< Widget to choose the rendering mode to apply to RTI image. */
   Information *mInformation;
   BookmarkWidget *mBookmark;
   SearchWidget *mSearch;

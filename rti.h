@@ -36,6 +36,7 @@
 #include <QMap>
 #include <QDomElement>
 
+
 //! RTI image abstract class.
 /*!
   Abstract class to manage the RTI image.
@@ -86,18 +87,6 @@ public:
 			delete tiles;
 	};
 
-	//~Rti()
-	//{
-	//	if (list)
-	//	{
-	//		for (int i = 0; i < list->size(); i++)
-	//			delete (*list)[i];
-	//		delete list;
-	//	}
-	//	if (tiles)
-	//		delete tiles;
-	//};
-
 
 	/*!
 	  Loads the image from the disk.
@@ -105,7 +94,6 @@ public:
 	  \return returns 0 if the image was successfully loaded, returns -1 otherwise.
 	*/
 	virtual int load(CallBackPos * cb = 0) = 0;
-	
 	
 	/*!
 	  Loads the image from the disk.

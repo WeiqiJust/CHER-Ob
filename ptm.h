@@ -35,15 +35,18 @@
 #include "pyramid.h"
 #include "renderingmode.h"
 #include "defaultrendering.h"
-//#include "diffusegain.h"
-//#include "specularenhanc.h"
-//#include "normalenhanc.h"
-//#include "unsharpmasking.h"
-//#include "coeffenhanc.h"
-//#include "detailenhanc.h"
-//#include "dyndetailenhanc.h"
-//#include "normalsrendering.h"
+#include "diffusegain.h"
+#include "specularenhanc.h"
+#include "normalenhanc.h"
+#include "unsharpmasking.h"
+#include "coeffenhanc.h"
+#include "detailenhanc.h"
+#include "dyndetailenhanc.h"
+#include "normalsrendering.h"
 //#include <jpeg2000.h>
+
+#include "vtkWidget.h" // YY
+
 
 // Qt headers
 #include <QFile>
@@ -76,7 +79,7 @@ public:
 		// Create list of supported rendering mode.
 		list = new QMap<int, RenderingMode*>();
 		list->insert(DEFAULT, new DefaultRendering());
-      /*  list->insert(NORMALS, new NormalsRendering());
+        list->insert(NORMALS, new NormalsRendering());
         list->insert(DIFFUSE_GAIN, new DiffuseGain());
 		list->insert(SPECULAR_ENHANCEMENT, new SpecularEnhancement());
 		list->insert(NORMAL_ENHANCEMENT, new NormalEnhancement());
@@ -84,7 +87,7 @@ public:
 		list->insert(UNSHARP_MASKING_LUM, new UnsharpMasking(1));
 		list->insert(COEFF_ENHANCEMENT, new CoeffEnhancement());
 		list->insert(DETAIL_ENHANCEMENT, new DetailEnhancement());
-		list->insert(DYN_DETAIL_ENHANCEMENT, new DynamicDetailEnh());*/
+		list->insert(DYN_DETAIL_ENHANCEMENT, new DynamicDetailEnh());
 	};
 
 	//! Deconstructor.
@@ -314,6 +317,20 @@ public:
 	*/
 	void setVersion(QString s){version = s;}
 
+//protected: // YY
+//	MainWindow * mw() 
+//	{
+//		foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+//			MainWindow* mainwindow = dynamic_cast<MainWindow*>(widget);
+//			if (mainwindow)
+//			{
+//				return mainwindow;
+//			}
+//		}
+//	}  // current MainWindow
+
+protected:// YY
+	MainWindow * mw(); 
 };
 
 
@@ -367,6 +384,9 @@ private:
 	virtual void calculateMipMap(int pos, int level, int i1, int i2);
 	virtual void calculateMipMap(int pos, int level, int i1, int i2, int i3, int i4);
 
+private:// YY
+	void updateCoeffandRender(PTMCoefficient* redCoeff, PTMCoefficient* greenCoeff, PTMCoefficient* blueCoeff, bool FIRST_RTI_RENDERING, bool LOADING_DONE); //YY
+
 };
 
 
@@ -416,6 +436,9 @@ private:
 	virtual void calculateMipMap(int pos, int level, int i1);
 	virtual void calculateMipMap(int pos, int level, int i1, int i2);
 	virtual void calculateMipMap(int pos, int level, int i1, int i2, int i3, int i4);
+
+private:// YY 
+	void updateCoeffandRender(float* redPtr, float* greenPtr, float* bluePtr, int size, bool FIRST_RTI_RENDERING);
 
 };
 

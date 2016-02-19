@@ -41,8 +41,10 @@ LightControlRTI::LightControlRTI(QWidget *parent, int size): QWidget(parent),
 	light(0,0,1),
 	rightPressed(false),
 	dragging(false),
-	interactive(true),
-	enabled(true)
+	interactive(false),
+	enabled(false)
+	/*interactive(true),
+	enabled(true)*/
 {
 	timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(fired()));

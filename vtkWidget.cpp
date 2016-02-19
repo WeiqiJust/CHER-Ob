@@ -129,19 +129,10 @@
 #include "mkTools.hpp"
 #include "readHyper3D.h"
 #include "inputimageset.h"
-#include "lightControlRTI.h" //YY
-//----------------------------------------------------------
-//// VCG RTIviewer import
-//#ifdef SUPPORT_RTI
-//#include "vcgRTIviewer.h"
-//#include "util.h"
-//#include "rti.h"
-//#include "rtiBrowser.h"
-//#include "ptm.h"
-//#include "hsh.h"
-//#include "universalrti.h"
-//#include "multiviewrti.h"
-//#endif
+#include "lightControlRTI.h" 
+#include "renderingdialog.h"
+
+#include "windows.h" 
 //----------------------------------------------------------
 //#define VTK_CREATE(type, name) vtkSmartPointer<type> name = vtkSmartPointer<type>::New()
 #define MAX_PICKCELLARRAY (1)
@@ -193,10 +184,7 @@ VtkWidget::~VtkWidget(){
   mQVTKWidget = NULL;
   mLayout = NULL;
   
-  // if (image)
-	  // delete image;
-  //if (textureData)
-    // delete[] textureData;
+
 
   // Data Array => Crash
 //  if (mVtkPolyData) mVtkPolyData->Delete();
@@ -262,42 +250,39 @@ void VtkWidget::updateIntensityL12(double intensity1, double intensity2)
 }
 
 
-//-------------------- Begin YY ----------------------------------
-void VtkWidget::updateRTILightPosition(vcg::Point3f l, bool refresh)
+void VtkWidget::updateRTIImageVTK(std::vector<unsigned char> textureData, int textureWidth, int textureHeight, bool FIRST_RTI_RENDERING)
 {
-    light = l;
-    if (mRTIImage)
-    {
-        if (refresh) 
-		{
-			if (mCallback2D && mIsRTI) // for RTI data
-			{
-				/********************************************/
-				mw()->activateTabWidgetTop(static_cast<int>(LightControlType::RTILIGHTCONTROL)); // YY
-				 mCTVisualization = STACK;
+	/********************************************/
+	//mw()->activateTabWidgetTop(static_cast<int>(LightControlType::RTILIGHTCONTROL));
 
-				 // copy texture data into VTK
-				 int iwidth = mRTIImage->width();
-				 int iheight = mRTIImage->height();
+	// copy texture data into VTK
+	if (FIRST_RTI_RENDERING) {
 
-				 if (textureData)
-				   delete textureData;
-				
-				 currentMode = DEFAULT_MODE;
-				 //qDebug() << "xxxx" << light.X() << "---" << light.Y() << "---" << light.Z();
+		// YY: activate the correct light control tab in MainWindow
+		mw()->activateTabWidgetTop(static_cast<int>(LightControlType::RTILIGHTCONTROL));
+		QEventLoop loop;
+		QTimer::singleShot(0.01, &loop, SLOT(quit()));
+		loop.exec();
 
-				 mRTIImage->createImage(&textureData, iwidth, iheight, light, subimg, level, currentMode);
-				 ConvertUnsignedCharArrayToVTKImageData(iwidth, iheight);
+		mCTVisualization = STACK;
+		mVtkImageData = vtkImageData::New();
+		mHyperImageData = vtkImageData::New(); // just space holder for 2D RGB
+		ConvertUnsignedCharVecToVTKImageData(textureWidth, textureHeight, textureData);
+		RenderingRTIData();
 
-				 flipITKtoVTKy(mVtkImageData);
-				/********************************************/
-				 if(mQVTKWidget)  mQVTKWidget->show();
-				 if(mQVTKWidget)  mQVTKWidget->update();
-			}
-		}
-    }
+	} else {
+		ConvertUnsignedCharVecToVTKImageData(textureWidth, textureHeight, textureData); // copy texture data into VTK
+		flipITKtoVTKy(mVtkImageData);
+	}
+	/********************************************/
+
+	if(mQVTKWidget)  mQVTKWidget->show();
+	if(mQVTKWidget)  mQVTKWidget->update();
+
+	QEventLoop loop;
+	QTimer::singleShot(0.01, &loop, SLOT(quit()));
+	loop.exec();
 }
-
 
 void VtkWidget::updateLightPosition(vtkTransform * transform)
 {
@@ -309,7 +294,7 @@ void VtkWidget::updateLightPosition(vtkTransform * transform)
 
   if (mCallback3D)
   {
-	mw()->activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL)); // YY
+	mw()->activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL)); 
     mCallback3D->SetLightTransform(transform);
     mCallback3D->updateLightingPosition();
   }
@@ -318,7 +303,6 @@ void VtkWidget::updateLightPosition(vtkTransform * transform)
   if(mQVTKWidget)  mQVTKWidget->update();
 
 }
-//-------------------- End YY ----------------------------------
 
 void VtkWidget::rotateCameraViewUpsideDown()
 {
@@ -439,7 +423,7 @@ void VtkWidget::connectSignals()
   connect(mw()->mCtControl, SIGNAL(sendBlendTypeChanged(int)), this, SLOT(updateCurrentBlendType(int)));
   connect(mw()->mCtControl, SIGNAL(sendVolumeRenderModeChanged(CTVolumeRenderMode)), this, SLOT( updateCurrentVolumeRenderMode(CTVolumeRenderMode)) );
   // connect VTK to Qt
-  connect(mw()->mLightControlRTI, SIGNAL(lightChanged(vcg::Point3f, bool)), this, SLOT(updateRTILightPosition(vcg::Point3f, bool))); //by YY
+  //connect(mw()->mLightControlRTI, SIGNAL(lightChanged(vcg::Point3f, bool)), this, SLOT(updateRTILightPosition(vcg::Point3f, bool))); //by YY
   //connect(mw()->mLightControl, SIGNAL(signalLightPositionChanged(double, double, double)), this, SLOT(updateLightPosition(double, double, double)) ); //by YY
   connect(mw()->mLightControl, SIGNAL(signalLitCamPosChanged(vtkTransform *)), this, SLOT(updateLightPosition(vtkTransform *)) );
   connect(mw()->mLightControl, SIGNAL(signalIntensityL12(double, double)), this, SLOT(updateIntensityL12(double, double)) );
@@ -761,12 +745,6 @@ void VtkWidget::initializeMainWindow()
   inputNames = NULL;
   mCreader = NULL;
   mCconnector = NULL;
-
-  //-----Begin YY--------------//
-  textureData = NULL;
-  mRTIImage = NULL;
-  //-----End YY--------------//
-
   mIsRTI = false;
   mIsDICOM = false;
   mIsTextureOn = true;
@@ -1311,7 +1289,10 @@ void VtkWidget::toggleImageProvenanceFeature()
 
 void VtkWidget::Rendering3D()
 {
-	mw()->activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL)); // YY
+	mw()->activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL)); 
+	QEventLoop loop;
+	QTimer::singleShot(0.01, &loop, SLOT(quit()));
+	loop.exec();
 
     mWidgetMode = MODEL3D;
     emit currentWidgetModeChanged(mWidgetMode);
@@ -2884,7 +2865,7 @@ bool VtkWidget::ReadDICOM(QString filename)
   return true;
 }
 
-//-------------------------Begin. By YY---------------------------------//
+
 void VtkWidget::RenderingRTIData()
 {
 	mIsRTI = true;
@@ -3091,7 +3072,7 @@ void VtkWidget::RenderingRTIData()
   mQVTKWidget->update(); //MK: this is important!
 }
 
-void VtkWidget::ConvertUnsignedCharArrayToVTKImageData(int iwidth, int iheight)
+void VtkWidget::ConvertUnsignedCharVecToVTKImageData(int iwidth, int iheight, std::vector<unsigned char> textureData)
 {
 	// prepare for RTI image rendering
 
@@ -3169,159 +3150,68 @@ void VtkWidget::ConvertUnsignedCharArrayToVTKImageData(int iwidth, int iheight)
 
 }
 
-//#ifdef SUPPORT_RTI
-//// MK: this function is adapted from VCG RTIViewer
-//bool VtkWidget::ReadRTI(QString filename)
-//{
-//  // find file data
-//  QFileInfo fi(filename);
-//  QFile data(filename);
-//  QString extension = fi.suffix().toLower();
-//  std::string fnstr = filename.toLocal8Bit().constData(); // QString -> Std. String
-//  const char *filenamesc = fnstr.c_str();
-//
-//  mIsRTI = true;
-//  Rti* image;
-//
-//  // RTI file reading selection
-//  if (extension==tr("ptm") ) {
-//      QTextStream input(&data);
-//      image = Ptm::getPtm(input);
-//      data.close();
-//      image->setFileName(filename);
-//  }
-//  else if (extension==tr("hsh") ) {
-//      image = new Hsh();
-//      image->setFileName(filename);
-//  }
-//  else if (extension==tr("rti") ) {
-//      image = new UniversalRti();
-//      image->setFileName(filename);
-//  }
-//  else if (extension==tr("mview") ) {
-//      image = new MultiviewRti();
-//      image->setFileName(filename);
-//  }
-//  // this is actual reading operation
-//  int result = image->load();
-//  if (result == 0) //Loads the image info
-//  {
-//      mVtkImageData = vtkImageData::New();
-//      mHyperImageData = vtkImageData::New(); // just space holder for 2D RGB
-//
-//      // copy texture data into VTK
-//      int iwidth = image->width();
-//      int iheight = image->height();
-//
-//      if (textureData)
-//          delete textureData;
-//      QTime first = QTime::currentTime();
-//      img->createImage(&textureData, textureWidth, textureHeight, light, subimg, level, currentMode);
-//      isNewTexture = true;
-//      if (refresh)
-//          updateGL();
-//      QTime second = QTime::currentTime();
-//      if (first.msecsTo(second) > 120)
-//      {
-//          emit setInteractiveLight(false);
-//          interactive = false;
-//      }
-//      else
-//      {
-//          emit setInteractiveLight(true);
-//          interactive = true;
-//      }
-//
-//      RenderingStack();
-//      return true;
-//  } else {
-//      return false;
-//  }
-//}
-//#endif
-
-#ifdef SUPPORT_RTI
-// MK: this function is adapted from VCG RTIViewer
 bool VtkWidget::ReadRTI(QString filename)
 {
-	QTime myTimer;
-	myTimer.start();
-	
-	// YY: activate the correct light control tab
-	mw()->activateTabWidgetTop(static_cast<int>(LightControlType::RTILIGHTCONTROL));
+	mRTIbrowser = new RtiBrowser(NULL, this);
+	mRTIbrowser->setVisible(false);
+	connect(mw()->mLightControlRTI, SIGNAL(lightChanged(vcg::Point3f, bool)), mRTIbrowser, SLOT(setLight(vcg::Point3f, bool)));
+	connect(mRTIbrowser, SIGNAL(rtiImageChanged(std::vector<unsigned char>, int, int, bool)), this, SLOT(updateRTIImageVTK(std::vector<unsigned char>, int, int, bool)));
+	connect(mw()->rendDlg, SIGNAL(renderingModeChanged(int)), mRTIbrowser, SLOT(setRenderingMode(int))); 
+	connect(mw()->rendDlg, SIGNAL(updateImage()), mRTIbrowser, SLOT(updateImage())); 
+	connect(mRTIbrowser, SIGNAL(setInteractiveLight(bool)), mw()->mLightControlRTI, SLOT(setInteractive(bool)));
+	connect(mRTIbrowser, SIGNAL(setEnabledLight(bool)), mw()->mLightControlRTI, SLOT(setEnabled(bool)));
+	connect(mRTIbrowser, SIGNAL(rtiImageLoadingDone(QMap<int, RenderingMode*>*, int)), mw()->rendDlg, SLOT(updateRTIRendDlg(QMap<int, RenderingMode*>*, int)));
 
 
-  // find file data
-  QFileInfo fi(filename);
-  QFile data(filename);
-  QString extension = fi.suffix().toLower();
-  std::string fnstr = filename.toLocal8Bit().constData(); // QString -> Std. String
-  const char *filenamesc = fnstr.c_str();
+	// read RTI image
+	QFileInfo fi(filename);
+	QFile data(filename);
+	QString extension = fi.suffix().toLower();
+	std::string fnstr = filename.toLocal8Bit().constData(); // QString -> Std. String
+	const char *filenamesc = fnstr.c_str();
 
-  mIsRTI = true;
-  // Rti* image;
+	if (data.open(QFile::ReadOnly))
+	{
+		Rti* image = NULL;
 
-  if (data.open(QFile::ReadOnly))
-  {
-	  // RTI file reading selection
-	  if (extension==tr("ptm") ) {
-		  QTextStream input(&data);
-		  mRTIImage = Ptm::getPtm(input);
-		  data.close();
-		  mRTIImage->setFileName(filename);
-	  }
-	  else if (extension==tr("hsh") ) {
-		  mRTIImage = new Hsh();
-		  mRTIImage->setFileName(filename);
-	  }
-	  else if (extension==tr("rti") ) {
-		  mRTIImage = new UniversalRti();
-		  mRTIImage->setFileName(filename);
-	  }
-	  else if (extension==tr("mview") ) {
-		  mRTIImage = new MultiviewRti();
-		  mRTIImage->setFileName(filename);
-	  }
+		// RTI file reading selection
+		if (extension==tr("ptm") ) {
+			QTextStream input(&data);
+			image = Ptm::getPtm(input);
+			data.close();
+		}
+		else if (extension==tr("hsh") )
+			image = new Hsh();
+		else if (extension==tr("rti") )
+			image = new UniversalRti();
+		else if (extension==tr("mview") )
+			image = new MultiviewRti();
 
-	  // this is actual reading operation
-	  qDebug() << "Time used: " << myTimer.elapsed();
-	  int result = mRTIImage->load();
-	  qDebug() << "Time used: " << myTimer.elapsed();
+		if (!image) {
+			delete image;
+			return false;
+		} else {
+			image->setFileName(filename);
+			int result = 0;
+			try
+			{
+				result = image->load();
+			}
+			catch (std::bad_alloc&)
+			{
+				result = -2;
+			}
 
-	  if (result == 0) //Loads the image info
-	  {
-		  mCTVisualization = STACK;
-
-		  mVtkImageData = vtkImageData::New();
-		  mHyperImageData = vtkImageData::New(); // just space holder for 2D RGB
-
-		  // copy texture data into VTK
-		  int iwidth = mRTIImage->width();
-		  int iheight = mRTIImage->height();
-
-		  //textureData = NULL;
-		  /*if (textureData)
-			  delete textureData;*/
-		  QTime first = QTime::currentTime();
-
-		  subimg = QRectF(0.0, 0.0, mRTIImage->width(), mRTIImage->height());
-		  level = 0;
-		  currentMode = DEFAULT_MODE;
-
-		  mRTIImage->createImage(&textureData, iwidth, iheight, vcg::Point3f(0.0, 0.0, 1.0), subimg, level, currentMode);
-		  ConvertUnsignedCharArrayToVTKImageData(iwidth, iheight);
-		  RenderingRTIData();
-
-			return true;
-	  } else {
-		  return false;
-	  }
-  }
-
-  return false;
+			if (result != 0) {
+				delete image;
+				return false;
+			}
+		}
+	} else { 
+		return false;
+	}
+	return true;
 }
-#endif
-//-------------------------Begin. By YY---------------------------------//
 
 
 void VtkWidget::RenderingStack()
