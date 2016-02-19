@@ -131,6 +131,7 @@
 #include "inputimageset.h"
 #include "lightControlRTI.h" 
 #include "renderingdialog.h"
+#include "myVTKInteractorStyle.h"
 
 #include "windows.h" 
 //----------------------------------------------------------
@@ -225,7 +226,7 @@ void VtkWidget::updateCurrentSlice(int index)
 void VtkWidget::updateIntensityL12(double intensity1, double intensity2)
 {
 //  mIntensityL1 = intensity1;
-//  mIntensityL2 = intensity2;
+//  mIntensityL2 = intensity2
 
   mIntensityL1 = DEFAULTINTENSITYL1 * intensity1;
   mIntensityL2 = DEFAULTINTENSITYL2 * intensity1 / intensity2;
@@ -1989,6 +1990,7 @@ void VtkWidget::Rendering2D()
   // Give the picker a prop to pick
   vtkSmartPointer<vtkImageActor> imageActor = mVtkImageViewer->GetImageActor();
   propPicker->AddPickList(imageActor);
+
   // disable interpolation, so we can see each pixel
   if (this->mIsInterpolateOn)
     imageActor->InterpolateOn();
@@ -2014,8 +2016,11 @@ void VtkWidget::Rendering2D()
     // + Middle mouse button pans the camera
     // + Right mouse button dollys the camera.
     // + SHIFT Right Mouse triggers pick events
-    vtkSmartPointer<vtkInteractorStyleImage> style =  vtkSmartPointer<vtkInteractorStyleImage>::New(); // 2D image
-  //  vtkSmartPointer<vtkInteractorStyleTrackballCamera> style = vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New(); // 3D image
+    
+	//vtkSmartPointer<vtkInteractorStyleImage> style =  vtkSmartPointer<vtkInteractorStyleImage>::New(); // 2D image
+	//vtkSmartPointer<vtkInteractorStyle> style =  vtkSmartPointer<vtkInteractorStyle>::New(); // 2D image
+	vtkSmartPointer<myVTKInteractorStyle> style =  vtkSmartPointer<myVTKInteractorStyle>::New(); // 2D image
+    //vtkSmartPointer<vtkInteractorStyleTrackballCamera> style = vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New(); // 3D image
 
     vtkSmartPointer<QVTKInteractor> interactor = vtkSmartPointer<QVTKInteractor>::New();
     interactor->SetRenderWindow(mQVTKWidget->GetRenderWindow());
@@ -2085,7 +2090,6 @@ void VtkWidget::Rendering2D()
 //    qDebug() << "mOrientationCurrent: " << mOrientationCurrent;
 //    qDebug() << "mSliceCurrent: " << mSliceCurrent;
 
-//    cout << "here";
     updateCurrentOrientation(mOrientationCurrent); // update orientation
     updateCurrentSlice(mSliceCurrent);
 
@@ -3003,7 +3007,8 @@ void VtkWidget::RenderingRTIData()
     // + Middle mouse button pans the camera
     // + Right mouse button dollys the camera.
     // + SHIFT Right Mouse triggers pick events
-    vtkSmartPointer<vtkInteractorStyleImage> style =  vtkSmartPointer<vtkInteractorStyleImage>::New(); // 2D image
+    //vtkSmartPointer<vtkInteractorStyleImage> style =  vtkSmartPointer<vtkInteractorStyleImage>::New(); // 2D image
+	vtkSmartPointer<myVTKInteractorStyle> style =  vtkSmartPointer<myVTKInteractorStyle>::New(); // YY 2D image
   //  vtkSmartPointer<vtkInteractorStyleTrackballCamera> style = vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New(); // 3D image
 
     vtkSmartPointer<QVTKInteractor> interactor = vtkSmartPointer<QVTKInteractor>::New();

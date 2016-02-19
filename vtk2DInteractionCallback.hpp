@@ -64,6 +64,7 @@
 #include <vtkSeedWidget.h>
 #include "mainWindow.h"
 #include "informationWidget.h"
+#include "myVTKInteractorStyle.h"
 
 /*** redundent here ****/
 #include <vtkImageActor.h>
@@ -264,7 +265,8 @@ public:
 
   void finishNote()
   {
-	  vtkSmartPointer<vtkInteractorStyleImage> style =  vtkSmartPointer<vtkInteractorStyleImage>::New();
+	  //vtkSmartPointer<vtkInteractorStyleImage> style =  vtkSmartPointer<vtkInteractorStyleImage>::New();
+	  vtkSmartPointer<myVTKInteractorStyle> style =  vtkSmartPointer<myVTKInteractorStyle>::New();
 	  vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
       vtkSmartPointer<vtkRenderer> renderer = interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
 	  interactor->SetInteractorStyle(style);
@@ -1094,7 +1096,8 @@ public:
         interactor->Render();
         }
 #endif
-      if (style)  { style->OnMouseMove(); }
+      if (style)  { style->OnMouseMove(); 
+	  }
       }
 	else if (event == vtkCommand::SelectionChangedEvent)
 	{
