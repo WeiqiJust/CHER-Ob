@@ -292,11 +292,16 @@ private slots:
   void writeSurfaceNote() {VTKA()->annotate(true, SURFACENOTE); writeAnnotationAct->setChecked(true);}
   void writeFrustumNote() {VTKA()->annotate(true, FRUSTUMNOTE); writeAnnotationAct->setChecked(true);}
   void setAnnotationColorRed() {VTKA()->setAnnotationColor(RED);}
+  void setAnnotationColorMarron() {VTKA()->setAnnotationColor(MAROON);}
+  void setAnnotationColorOrange() {VTKA()->setAnnotationColor(ORANGE);}
   void setAnnotationColorYellow() {VTKA()->setAnnotationColor(YELLOW);}
-  void setAnnotationColorBlue() {VTKA()->setAnnotationColor(BLUE);}
+  void setAnnotationColorLime() {VTKA()->setAnnotationColor(LIME);}
   void setAnnotationColorGreen() {VTKA()->setAnnotationColor(GREEN);}
+  void setAnnotationColorAqua() {VTKA()->setAnnotationColor(AQUA);}
+  void setAnnotationColorBlue() {VTKA()->setAnnotationColor(BLUE);}
   void setAnnotationColorPink() {VTKA()->setAnnotationColor(PINK);}
   void setAnnotationColorPurple() {VTKA()->setAnnotationColor(PURPLE);}
+  void setAnnotationColorWhite() {VTKA()->setAnnotationColor(WHITE);}
   void removeAnnotation();
 
   void takeScreenshot();
@@ -435,12 +440,17 @@ private:
   QAction *surfaceNote;
   QAction *frustumNote;
   QActionGroup *annotationColorGroupAct;
+  QAction *annotationMaroon;
   QAction *annotationRed;
+  QAction *annotationOrange;
   QAction *annotationYellow;
-  QAction *annotationBlue;
+  QAction *annotationLime;
   QAction *annotationGreen;
+  QAction *annotationAqua;
+  QAction *annotationBlue;
   QAction *annotationPink;
   QAction *annotationPurple;
+  QAction *annotationWhite;
   QAction *removeAnnotationAct;
   QAction *screenshotAct;
   QAction *bookmarkAct;

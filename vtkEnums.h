@@ -40,16 +40,21 @@ enum Interpolation{INTERPOLATION_OFF=0, INTERPOLATION_ON};
 enum Texture{TEXTURE_OFF=0, TEXTURE_ON};
 enum CameraMode3D{TRACKBALLMODE=0, SURFACEWALKERMODE, RUBBERBANDPICKMODE};
 enum NoteMode{UNDECLARE=0, POINTNOTE, SURFACENOTE, FRUSTUMNOTE};
-enum ColorType{RED=0, YELLOW, BLUE, GREEN, PINK, PURPLE};
+enum ColorType{MAROON=0, RED, ORANGE, YELLOW, LIME, GREEN, AQUA, BLUE, PINK, PURPLE, WHITE};
 enum LightControlType{Model3DLIGHTCONTROL=0, RTILIGHTCONTROL}; //YY
 
-double const ColorPixel[6][3] = {
-  {1, 0, 0},	// red
-  {1, 0.75, 0},	// yellow
-  {0, 0, 1},	// blue
-  {0, 1, 0},	// green
+double const ColorPixel[11][3] = {
+  {0.52, 0.08, 0.29},	// marron
+  {1.00, 0.00, 0.00},	// red
+  {1.00, 0.52, 0.11},	// orange
+  {1.00, 0.75, 0.00},	// yellow
+  {0.00, 1.00, 0.44},	// lime
+  {0.24, 0.60, 0.25},	// green
+  {0.50, 0.86, 1.00},	// aqua
+  {0.00, 0.00, 1.00},	// blue 
   {0.73, 0.33, 0.83},	// pink
-  {0.3, 0, 0.5}		// purple
+  {0.30, 0.00, 0.50},	// purple
+  {1.00, 1.00, 1.00}	// white
 };
 
 #endif // VTKENUMS_H

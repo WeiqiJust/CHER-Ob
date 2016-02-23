@@ -30,6 +30,53 @@
 #include "mainWindow.h"
 #include <sstream>
 
+std::string colortype2str(const ColorType type)
+{
+	switch(type)
+	{
+		case 0:  return "MAROON";
+		case 1:  return "RED";
+		case 2:  return "ORANGE";
+		case 3:  return "YELLOW";
+		case 4:  return "LIME";
+		case 5:  return "GREEN";
+		case 6:  return "AQUA";
+		case 7:  return "BLUE";
+		case 8:  return "PINK";
+		case 9:  return "PURPLE";
+		case 10: return "WHITE";
+		default: return "WHITE";
+	}
+}
+
+ColorType str2colortype(const std::string str)
+{
+	if (str == "MAROON")
+		return MAROON;
+	else if (str == "RED")
+		return RED; 
+	else if (str == "ORANGE")
+		return ORANGE;
+	else if (str == "YELLOW")
+		return YELLOW;
+	else if (str == "LIME")
+		return LIME;
+	else if (str == "GREEN")
+		return GREEN;
+	else if (str == "AQUA")
+		return AQUA;
+	else if (str == "BLUE")
+		return BLUE;
+	else if (str == "PINK")
+		return PINK;
+	else if (str == "PURPLE")
+		return PURPLE;
+	else if (str == "WHITE")
+		return WHITE;
+	else
+		return WHITE;
+}
+
 Note::Note(const int noteId, const ColorType type)
 {
 	mNoteId = noteId;
@@ -150,7 +197,7 @@ PointNote::PointNote(QString path, double* pos, const int cellId, const int note
 	this->setLabel(QString(text));
 	QString info(text);
 	info.append(QString("\nColor Type:\n"));
-	info.append(QString::number(mColor));
+	info.append(QString(colortype2str(mColor).c_str()));
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
 	qDebug() << "finish PointNote instructor";
@@ -190,8 +237,9 @@ PointNote::PointNote(QString path, QString fileName, const int noteId)
 		if (signal == QString("Color Type:"))
 			break;
 	}
-	int colorType;
+	QString colorType;
 	in >> colorType;
+	mColor = str2colortype(colorType.toStdString());
     while(1)
 	{
 		QString signal = in.readLine();
@@ -205,7 +253,6 @@ PointNote::PointNote(QString path, QString fileName, const int noteId)
 		mPosition[i] = pos[i];
 	}
 	mCellId = cellId;
-	mColor = static_cast<ColorType>(colorType);
 	char id[4]; 
 	memset(id, 0, sizeof(id));
 	sprintf(id, "%d", cellId);
@@ -220,7 +267,7 @@ PointNote::PointNote(QString path, QString fileName, const int noteId)
     this->setLabel(QString(text));
 	QString info(text);
 	info.append(QString("\nColor Type:\n"));
-	info.append(QString::number(mColor));
+	info.append(colorType);
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
 	mFile->close();
@@ -265,7 +312,7 @@ SurfaceNote::SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds
 			info.append(QString("\n"));
 	}
 	info.append(QString("Color Type:\n"));
-	info.append(QString::number(mColor));
+	info.append(QString(colortype2str(mColor).c_str()));
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
 	qDebug() << "finish Surface Note instructor";
@@ -322,14 +369,10 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId)
 		if (signal == QString("Color Type:"))
 			break;
 	}
-	int colorType;
+	QString colorType;
 	in >> colorType;
-	//qDebug()<<"!!!!!Color type"<<colorType;
-   /* if (!ok0 || colorType > 6)
-	{
-		qDebug() << "The Syntax of Color is incorrect. The Color is " << color;
-	}*/
-	mColor = static_cast<ColorType>(colorType);
+
+	mColor = str2colortype(colorType.toStdString());
 	while(1)
 	{
 		QString signal = in.readLine();
@@ -355,7 +398,7 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId)
 			info.append(QString("\n"));
 	}
 	info.append(QString("Color Type:\n"));
-	info.append(QString::number(mColor));
+	info.append(colorType);
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
 	mFile->close();
@@ -405,7 +448,7 @@ FrustumNote::FrustumNote(QString path, vtkSmartPointer<vtkPoints> points, vtkSma
 			+ QString::number(mNormals->GetVariantValue(i*3 + 1).ToDouble()) + ", " + QString::number(mNormals->GetVariantValue(i*3 + 2).ToDouble()) + ")\n");
 	}
 	info.append(QString("Color Type:\n"));
-	info.append(QString::number(mColor));
+	info.append(QString(colortype2str(mColor).c_str()));
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
 	qDebug() << "finish Frustum Note instructor";
@@ -478,15 +521,10 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId)
 		if (signal == QString("Color Type:"))
 			break;
 	}
+	QString colorType;
+	in >> colorType;
 
-
-	int colorType;
-	in >>colorType;
-   /* if (!ok0 || colorType > 6)
-	{
-		qDebug() << "The Syntax of Color is incorrect. The Color is " << color;
-	}*/
-	mColor = static_cast<ColorType>(colorType);
+	mColor = str2colortype(colorType.toStdString());
 	while(1)
 	{
 		QString signal = in.readLine();
@@ -514,7 +552,7 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId)
 			+ QString::number(mNormals->GetVariantValue(i*3 + 1).ToDouble()) + ", " + QString::number(mNormals->GetVariantValue(i*3 + 2).ToDouble()) + ")\n");
 	}
 	info.append(QString("Color Type:\n"));
-	info.append(QString::number(mColor));
+	info.append(colorType);
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
 	mFile->close();
@@ -551,7 +589,7 @@ PointNote2D::PointNote2D(QString path, const double* point, const int noteId, co
 	QString info(label);
 
 	info.append(QString("\nColor Type:\n"));
-	info.append(QString::number(mColor));
+	info.append(QString(colortype2str(mColor).c_str()));
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
 	qDebug() << "finish Point Note 2D instructor";
@@ -597,10 +635,10 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId)
 		if (signal == QString("Color Type:"))
 			break;
 	}
-	int colorType;
+	QString colorType;
 	in >> colorType;
 
-	mColor = static_cast<ColorType>(colorType);
+	mColor = str2colortype(colorType.toStdString());
 	while(1)
 	{
 		QString signal = in.readLine();
@@ -617,7 +655,7 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId)
 	QString info(label);
 
 	info.append(QString("\nColor Type:\n"));
-	info.append(QString::number(mColor));
+	info.append(colorType);
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
 	mFile->close();
@@ -655,7 +693,7 @@ SurfaceNote2D::SurfaceNote2D(QString path, const double* point, const int noteId
 	QString info(label);
 
 	info.append(QString("\nColor Type:\n"));
-	info.append(QString::number(mColor));
+	info.append(QString(colortype2str(mColor).c_str()));
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
 	qDebug() << "finish Surface Note 2D instructor";
@@ -702,10 +740,10 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId)
 		if (signal == QString("Color Type:"))
 			break;
 	}
-	int colorType;
+	QString colorType;
 	in >> colorType;
 
-	mColor = static_cast<ColorType>(colorType);
+	mColor = str2colortype(colorType.toStdString());
 	while(1)
 	{
 		QString signal = in.readLine();
@@ -723,7 +761,7 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId)
 	QString info(label);
 
 	info.append(QString("\nColor Type:\n"));
-	info.append(QString::number(mColor));
+	info.append(colorType);
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
 	mFile->close();
