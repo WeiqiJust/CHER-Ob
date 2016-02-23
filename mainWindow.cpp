@@ -118,6 +118,7 @@ MainWindow::MainWindow()
   unsavedChanges = false;
   currentProjectMetadata.createElement("hyper3d.metadata");
   mNewProjectDialog = NULL;
+  mProjectInfoDialog = NULL;
 
   setUnifiedTitleAndToolBarOnMac(true);
 
@@ -1767,6 +1768,7 @@ void MainWindow::updateMenus()
         renderMenu->setEnabled(true);
         viewFromMenu->setEnabled(true);
 		annotationModeMenu->setEnabled(true);
+		frustumNote->setEnabled(true);
         renderToolBar->setEnabled(true);
         measureToolBar->setEnabled(true);
         annotationToolBar->setEnabled(true);
@@ -2382,18 +2384,28 @@ void MainWindow::createActions()
     connect(frustumNote, SIGNAL(triggered()), this, SLOT(writeFrustumNote()));
 
 	annotationColorGroupAct =  new QActionGroup(this);	annotationColorGroupAct->setExclusive(true);
-	annotationRed = new QAction(QIcon(":/images/viewFront.png"), tr("Red"), annotationColorGroupAct);
-    annotationYellow = new QAction(QIcon(":/images/viewLeft.png"), tr("Yellow"), annotationColorGroupAct);
-    annotationBlue = new QAction(QIcon(":/images/viewTop.png"), tr("Blue"), annotationColorGroupAct);
-    annotationGreen = new QAction(QIcon(":/images/viewRight.png"), tr("Green"), annotationColorGroupAct);
-	annotationPink = new QAction(QIcon(":/images/viewBack.png"), tr("Pink"), annotationColorGroupAct);
-    annotationPurple = new QAction(QIcon(":/images/viewBottom.png"), tr("Purple"), annotationColorGroupAct);
+	annotationMaroon = new QAction(QIcon(":/images/color_maroon.png"), tr("Marron/Object"), annotationColorGroupAct);
+	annotationRed = new QAction(QIcon(":/images/color_red.png"), tr("Red/Measurements"), annotationColorGroupAct);
+	annotationOrange = new QAction(QIcon(":/images/color_orange.png"), tr("Orange/Creation"), annotationColorGroupAct);
+    annotationYellow = new QAction(QIcon(":/images/color_yellow.png"), tr("Yellow/Materials"), annotationColorGroupAct);
+	annotationLime = new QAction(QIcon(":/images/color_lime.png"), tr("Lime/Descriptions"), annotationColorGroupAct);
+	annotationGreen = new QAction(QIcon(":/images/color_green.png"), tr("Green/Conservation"), annotationColorGroupAct);
+	annotationAqua = new QAction(QIcon(":/images/color_aqua.png"), tr("Aqua/Analyses"), annotationColorGroupAct);
+	annotationBlue = new QAction(QIcon(":/images/color_blue.png"), tr("Blue/Related"), annotationColorGroupAct);
+	annotationPink = new QAction(QIcon(":/images/color_pink.png"), tr("Pink/Administration"), annotationColorGroupAct);
+    annotationPurple = new QAction(QIcon(":/images/color_purple.png"), tr("Purple/Documentation"), annotationColorGroupAct);
+	annotationWhite = new QAction(QIcon(":/images/color_white.png"), tr("White/Others"), annotationColorGroupAct);
+	connect(annotationMaroon, SIGNAL(triggered()), this, SLOT(setAnnotationColorMarron()));
     connect(annotationRed, SIGNAL(triggered()), this, SLOT(setAnnotationColorRed()));
-    connect(annotationYellow, SIGNAL(triggered()), this, SLOT(setAnnotationColorYellow()));
-    connect(annotationBlue, SIGNAL(triggered()), this, SLOT(setAnnotationColorBlue()));
+	connect(annotationOrange, SIGNAL(triggered()), this, SLOT(setAnnotationColorOrange()));
+	connect(annotationYellow, SIGNAL(triggered()), this, SLOT(setAnnotationColorYellow()));
+	connect(annotationLime, SIGNAL(triggered()), this, SLOT(setAnnotationColorLime()));
 	connect(annotationGreen, SIGNAL(triggered()), this, SLOT(setAnnotationColorGreen()));
+	connect(annotationAqua, SIGNAL(triggered()), this, SLOT(setAnnotationColorAqua()));
+	connect(annotationBlue, SIGNAL(triggered()), this, SLOT(setAnnotationColorBlue()));
     connect(annotationPink, SIGNAL(triggered()), this, SLOT(setAnnotationColorPink()));
     connect(annotationPurple, SIGNAL(triggered()), this, SLOT(setAnnotationColorPurple()));
+	connect(annotationWhite, SIGNAL(triggered()), this, SLOT(setAnnotationColorWhite()));
 
     removeAnnotationAct = new QAction (QIcon(":/images/remove_annotation_on.png"), tr("Remove Annotation"), this);
     removeAnnotationAct->setCheckable(true);
@@ -2955,8 +2967,9 @@ void MainWindow::showProjectInfo()
 {
     if (!currentProjectName.isEmpty())
 	{
-		if (mProjectInfoDialog)
+		if (mProjectInfoDialog != NULL)
 		{
+			mProjectInfoDialog->hide();
 			delete mProjectInfoDialog;
 		}
 		mProjectInfoDialog = new ProjectInfoDialog(currentProjectName, currentProjectFullName, 
