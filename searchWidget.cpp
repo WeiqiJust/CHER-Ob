@@ -28,6 +28,28 @@
 #include "mainWindow.h"
 #define MATCHSIZE 40
 
+static std::string category2str(int mode)
+{
+	switch (mode)
+	{
+		case 0:  return "All";
+		case 1: return "Annotation";
+		case 2: return "Project Info";
+		case 3:  return "Object";
+		case 4:  return "Measurements";
+		case 5:  return "Creation";
+		case 6:  return "Materials";
+		case 7:  return "Descriptions";
+		case 8:  return "Conservation";
+		case 9:  return "Analyses";
+		case 10:  return "Related";
+		case 11:  return "Administration";
+		case 12: return "Documentation";
+		case 13: return "Other";
+
+	}
+}
+
 SearchWidget::SearchWidget(QWidget *parent)
     : QWidget(parent)
 {
@@ -39,6 +61,24 @@ SearchWidget::SearchWidget(QWidget *parent)
 	mInput->setFixedWidth(200);
     mLabel->setBuddy(mInput);
 	mButton = new QPushButton("Search");
+	mFilter = new QComboBox();
+	mMode = 0;
+	mFilter->addItem("All");
+	mFilter->addItem("Annotation"); 
+	mFilter->addItem("Object"); 
+	mFilter->addItem("Measurements");
+	mFilter->addItem("Creation"); 
+	mFilter->addItem("Materials"); 
+	mFilter->addItem("Descriptions"); 
+	mFilter->addItem("Conservation"); 
+	mFilter->addItem("Analyses"); 
+	mFilter->addItem("Related"); 
+	mFilter->addItem("Administration"); 
+	mFilter->addItem("Documentation"); 
+	mFilter->addItem("Other");
+	mFilter->setCurrentIndex(0);
+	connect(mFilter, SIGNAL(currentIndexChanged(int)), this, SLOT(setFilterMode(int)) );
+
 	mTreeWidget = new QTreeWidget();
 	mTreeWidget->setColumnCount(5);
 	mTreeWidget->setColumnWidth(0, 200);
@@ -56,6 +96,7 @@ SearchWidget::SearchWidget(QWidget *parent)
 	hlay = new QHBoxLayout();
 	vlay = new QVBoxLayout();
 	hlay->addWidget(mInput, 0 , Qt::AlignLeft);
+	hlay->addWidget(mFilter, 0 , Qt::AlignLeft);
 	hlay->addWidget(mButton, 0 , Qt::AlignLeft);
 	vlay->addWidget(mLabel);
 	vlay->addLayout(hlay);
@@ -70,6 +111,45 @@ void SearchWidget::showTreeWidgetItem(QTreeWidgetItem* item, int column)
 	mw()->mInformation->openNoteFromTreeWidget(item);
 }
 
+void SearchWidget::setFilterMode(int mode)
+{
+	if (mode == mMode)
+		return;
+	if (mode > 1)
+		mMode = mode + 1; //skip project info category
+	else
+		mMode = mode;
+	setFilter(mMode);
+}
+
+void SearchWidget::setFilter(int mode)
+{
+	QList<QTreeWidgetItem *> mFilteredItems;
+	if (mode == 0)
+	{
+		for (int i = 0; i < mItems.size(); i++)
+		{
+			QTreeWidgetItem* item = new QTreeWidgetItem(*mItems[i]);
+			mFilteredItems.append(item);
+		}
+		mTreeWidget->insertTopLevelItems(0, mFilteredItems);
+		mTreeWidget->sortByColumn(4, Qt::AscendingOrder);
+		return;
+	}
+	for (int i = 0; i < mItems.size(); i++)
+	{
+		QString category = mItems[i]->text(2);
+		if (category == QString(category2str(mMode).c_str()))
+		{
+			QTreeWidgetItem* item = new QTreeWidgetItem(*mItems[i]);
+			mFilteredItems.append(item);
+		}
+	}
+	mTreeWidget->clear();
+	mTreeWidget->insertTopLevelItems(0, mFilteredItems);
+	mTreeWidget->sortByColumn(4, Qt::AscendingOrder);
+}
+
 void SearchWidget::search()
 {
 	if (!updateCurrentPath() || !mInput->isModified() || mInput->text() == QString())
@@ -77,9 +157,10 @@ void SearchWidget::search()
 	mTreeWidget->clear();
 	mItems.clear();
 	QRegExp text(mInput->text());
+	text.setCaseSensitivity(Qt::CaseInsensitive);
 	int inputSize = mInput->text().size();
 	int spareSize = (MATCHSIZE - inputSize) / 2;
-	int category = -1;
+	int category = 1;	// for annotation
 	QDir dir(mPath);
 	dir.setNameFilters(QStringList()<<"*.txt");
 	dir.setSorting(QDir::Name|QDir::LocaleAware);
@@ -105,6 +186,7 @@ void SearchWidget::search()
 					break;
 			}
 			in >> category;
+			category += 3;
 			while(1)
 			{
 				QString signal = in.readLine();
@@ -144,17 +226,14 @@ void SearchWidget::search()
 			QStringList list;
 			list.append(match);
 			list.append(mFile);
-			list.append(QString::number(category));
+			list.append(QString(category2str(category).c_str()));
 			list.append(mPath);
 			list.append(fileList[i]);
 			QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
 			mItems.append(item);
 		}
 	}
-	mTreeWidget->insertTopLevelItems(0, mItems);
-	mTreeWidget->sortByColumn(4, Qt::AscendingOrder);
-
-	
+	setFilter(mMode);
 }
 
 void SearchWidget::refreshSearchTab()
@@ -218,6 +297,24 @@ SearchAllWidget::SearchAllWidget(QWidget *parent)
 	mInput->setFixedWidth(200);
     mLabel->setBuddy(mInput);
 	mButton = new QPushButton("Search");
+	mFilter = new QComboBox();
+	mMode = 0;
+	mFilter->addItem("All");
+	mFilter->addItem("Annotation"); 
+	mFilter->addItem("Project Info"); 
+	mFilter->addItem("Object"); 
+	mFilter->addItem("Measurements");
+	mFilter->addItem("Creation"); 
+	mFilter->addItem("Materials"); 
+	mFilter->addItem("Descriptions"); 
+	mFilter->addItem("Conservation"); 
+	mFilter->addItem("Analyses"); 
+	mFilter->addItem("Related"); 
+	mFilter->addItem("Administration"); 
+	mFilter->addItem("Documentation"); 
+	mFilter->addItem("Other");
+	mFilter->setCurrentIndex(0);
+	connect(mFilter, SIGNAL(currentIndexChanged(int)), this, SLOT(setFilterMode(int)) );
 	mTreeWidget = new QTreeWidget();
 	mTreeWidget->setColumnCount(5);
 	mTreeWidget->setColumnWidth(0, 200);
@@ -235,6 +332,7 @@ SearchAllWidget::SearchAllWidget(QWidget *parent)
 	hlay = new QHBoxLayout();
 	vlay = new QVBoxLayout();
 	hlay->addWidget(mInput, 0 , Qt::AlignLeft);
+	hlay->addWidget(mFilter, 0 , Qt::AlignLeft);
 	hlay->addWidget(mButton, 0 , Qt::AlignLeft);
 	vlay->addWidget(mLabel);
 	vlay->addLayout(hlay);
@@ -249,9 +347,47 @@ void SearchAllWidget::showTreeWidgetItem(QTreeWidgetItem* item, int column)
 	mw()->mInformation->openNoteFromTreeWidget(item);
 }
 
+void SearchAllWidget::setFilterMode(int mode)
+{
+	if (mode == mMode)
+		return;
+	mMode = mode;
+	setFilter(mMode);
+}
+
+void SearchAllWidget::setFilter(int mode)
+{
+	QList<QTreeWidgetItem *> mFilteredItems;
+	if (mode == 0)
+	{
+		for (int i = 0; i < mItems.size(); i++)
+		{
+			QTreeWidgetItem* item = new QTreeWidgetItem(*mItems[i]);
+			mFilteredItems.append(item);
+		}
+		mTreeWidget->insertTopLevelItems(0, mFilteredItems);
+		mTreeWidget->sortByColumn(4, Qt::AscendingOrder);
+		return;
+	}
+	for (int i = 0; i < mItems.size(); i++)
+	{
+		QString category = mItems[i]->text(2);
+		if (category == QString(category2str(mMode).c_str()))
+		{
+			QTreeWidgetItem* item = new QTreeWidgetItem(*mItems[i]);
+			mFilteredItems.append(item);
+		}
+	}
+	mTreeWidget->clear();
+	mTreeWidget->insertTopLevelItems(0, mFilteredItems);
+	mTreeWidget->sortByColumn(4, Qt::AscendingOrder);
+}
+
+
 QStringList SearchAllWidget::matchString(QString content, QString matchStr)
 {
 	QRegExp text(matchStr);
+	text.setCaseSensitivity(Qt::CaseInsensitive);
 	int inputSize = matchStr.size();
 	int spareSize = (MATCHSIZE - inputSize) / 2;
 	int size = content.size();
@@ -294,12 +430,12 @@ void SearchAllWidget::search()
 	mTreeWidget->clear();
 	mItems.clear();
 	QString text = mInput->text();
-	int category = -1;
 	// search in annotation and notes
 	QDir dir(mPath);
 	QStringList subDirName = dir.entryList();
 	for (int k = 0; k < subDirName.size(); k++)
 	{
+		int category = 1;
 		if (subDirName[k] == QString(".") || subDirName[k] == QString(".."))
 			continue;
 		QDir subDir(subDirName[k]);
@@ -335,6 +471,7 @@ void SearchAllWidget::search()
 						break;
 				}
 				in >> category;
+				category += 3;
 				while(1)
 				{
 					QString signal = in.readLine();
@@ -349,7 +486,7 @@ void SearchAllWidget::search()
 				QStringList list;
 				list.append(match[j]);
 				list.append(mFile);
-				list.append(QString::number(category));
+				list.append(QString(category2str(category).c_str()));
 				list.append(mPath);
 				list.append(fileList[i]);
 				QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
@@ -367,7 +504,7 @@ void SearchAllWidget::search()
 		QStringList list;
 		list.append(match[i]);
 		list.append(QString("Project Name"));
-		list.append(QString::number(-2));
+		list.append(QString("Project Info"));
 		list.append(QString("Project Info"));
 		QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
 		mItems.append(item);
@@ -379,7 +516,7 @@ void SearchAllWidget::search()
 		QStringList list;
 		list.append(match[i]);
 		list.append(QString("Keyword"));
-		list.append(QString::number(-2));
+		list.append(QString("Project Info"));
 		list.append(QString("Project Info"));
 		QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
 		mItems.append(item);
@@ -391,7 +528,7 @@ void SearchAllWidget::search()
 		QStringList list;
 		list.append(match[i]);
 		list.append(QString("Affiliation"));
-		list.append(QString::number(-2));
+		list.append(QString("Project Info"));
 		list.append(QString("Project Info"));
 		QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
 		mItems.append(item);
@@ -403,7 +540,7 @@ void SearchAllWidget::search()
 		QStringList list;
 		list.append(match[i]);
 		list.append(QString("User Name"));
-		list.append(QString::number(-2));
+		list.append(QString("Project Info"));
 		list.append(QString("Project Info"));
 		QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
 		mItems.append(item);
@@ -415,17 +552,12 @@ void SearchAllWidget::search()
 		QStringList list;
 		list.append(match[i]);
 		list.append(QString("Description"));
-		list.append(QString::number(-2));
+		list.append(QString("Project Info"));
 		list.append(QString("Project Info"));
 		QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
 		mItems.append(item);
 	}
-
-	//Search in File info has not supported yet
-
-	mTreeWidget->insertTopLevelItems(0, mItems);
-	mTreeWidget->sortByColumn(4, Qt::AscendingOrder);
-
+	setFilter(mMode);
 	
 }
 

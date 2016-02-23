@@ -73,21 +73,27 @@ public:
 private:
 	bool updateCurrentPath();
 
+	void setFilter(int mode);
+
 private slots:
 	void search();
 
 	void showTreeWidgetItem(QTreeWidgetItem* item, int column);
+
+	void setFilterMode(int mode);
 
 private:
 	QHBoxLayout* hlay;
 	QVBoxLayout* vlay;
 	QLabel* mLabel;
 	QLineEdit* mInput;
+	QComboBox* mFilter;
 	QPushButton* mButton;
 	QTreeWidget* mTreeWidget;
 	QList<QTreeWidgetItem *> mItems;
 	QString mPath;
 	QString mFile;
+	int mMode;
 };
 
 class SearchAllWidget : public QWidget
@@ -106,10 +112,14 @@ private:
 
 	QStringList matchString(QString content, QString matchStr);
 
+	void setFilter(int mode);
+
 private slots:
 	void search();
 
 	void showTreeWidgetItem(QTreeWidgetItem* item, int column);
+
+	void setFilterMode(int mode);
 
 private:
 	QHBoxLayout* hlay;
@@ -117,10 +127,12 @@ private:
 	QLabel* mLabel;
 	QLineEdit* mInput;
 	QPushButton* mButton;
+	QComboBox* mFilter;
 	QTreeWidget* mTreeWidget;
 	QList<QTreeWidgetItem *> mItems;
 	QString mPath;
 	QString mFile;
+	int mMode;
 };
 
 #endif // SEARCH_H
