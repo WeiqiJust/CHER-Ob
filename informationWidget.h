@@ -176,8 +176,6 @@ private slots:
 
   void annotationChanges();
 
-  void editingAnnotation();
-
   void saveAnnotation();
 
   void removeAnnotation();
@@ -188,7 +186,6 @@ private:
   QHBoxLayout* hlay2;
   QVBoxLayout* vlay;
   QTextBrowser* dText;
-  QPushButton* editButton;
   QPushButton* saveButton;
   QPushButton* removeButton;
   QString notePath;

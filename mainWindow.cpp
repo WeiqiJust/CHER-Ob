@@ -128,9 +128,12 @@ MainWindow::MainWindow()
 // not a problem
 void MainWindow::updateAllViews()
 {
+	
   VtkView *mvc = currentVtkView();
   if(mvc)
+  {
     mvc->updateAllViewer();
+  }
 
   if(VTKA()){
       this->mBookmark->refreshBookmarkList();
@@ -1709,6 +1712,14 @@ void MainWindow::updateMenus()
   removeDistanceAct->setEnabled(activeDoc);
 
   writeAnnotationAct->setEnabled(activeDoc);
+  if (writeAnnotationAct->isChecked())
+  {
+	  this->mInformation->startAnnotation();
+  }
+  else
+  {
+	  this->mInformation->finishAnnotation();
+  }
   annotationModeMenu->setEnabled(activeDoc);
   removeAnnotationAct->setEnabled(activeDoc);
 

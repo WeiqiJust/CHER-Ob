@@ -173,21 +173,17 @@ Information::Information(QWidget *parent)
 
   hlay2 = new QHBoxLayout();
   saveButton = new QPushButton("Save");
-  editButton = new QPushButton("Edit");
   removeButton = new QPushButton("Remove");
-  editButton->setEnabled(false);
   saveButton->setEnabled(false);
   removeButton->setEnabled(false);
 
   connect(dText, SIGNAL(textChanged()), this, SLOT(annotationChanges()));
   connect(saveButton, SIGNAL(clicked()), this, SLOT(saveAnnotation()));
-  connect(editButton, SIGNAL(clicked()), this, SLOT(editingAnnotation()));
   connect(removeButton, SIGNAL(clicked()), this, SLOT(removeAnnotation()));
   connect(this, SIGNAL(saveAll()), this, SLOT(saveAnnotation()));
   connect(this, SIGNAL(updateMenu()), mw(), SLOT(updateMenus()));
 
   hlay2->addWidget(saveButton);
-  hlay2->addWidget(editButton);
   hlay2->addWidget(removeButton);
 
   vlay = new QVBoxLayout();
@@ -243,7 +239,7 @@ void Information::initAnnotation(const QString path)
 
 void Information::annotationChanges()
 {
-	updateCurrentPath();
+	updateCurrentPath();/*
 	if (!dText->toPlainText().isEmpty())
 	{
 		saveButton->setEnabled(true);
@@ -253,7 +249,7 @@ void Information::annotationChanges()
 	{
 		saveButton->setEnabled(false);
 		removeButton->setEnabled(false);
-	}
+	}*/
 	if (dText->toPlainText() != content[notePath].first)
 	{
 		content[notePath] = std::make_pair(dText->toPlainText(), false);
@@ -264,10 +260,9 @@ void Information::startAnnotation()
 {
 	updateCurrentPath();
 	qDebug()<<"StartAnnotation Annotation " <<content[notePath].first;
-	//dText->clear();
-	//dText->setPlainText(content[notePath]);
-	editButton->setEnabled(true);
-	//showNotes();
+	saveButton->setEnabled(true);
+	removeButton->setEnabled(true);
+	dText->setReadOnly(false);
 }
 
 void Information::finishAnnotation()
@@ -275,14 +270,8 @@ void Information::finishAnnotation()
 	updateCurrentPath();
 	dText->setReadOnly(true);
 	saveButton->setEnabled(false);
-	editButton->setEnabled(false);
 	removeButton->setEnabled(false);
 	hideNotes();
-}
-
-void Information::editingAnnotation()
-{
-	dText->setReadOnly(false);
 }
 
 void Information::reloadAnnotation()
