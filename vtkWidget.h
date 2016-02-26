@@ -148,6 +148,8 @@ public:
   MainWindow * mw();
 
   void displayFileInfo();
+
+  void closeFileInfo();
   /****** Modified by Weiqi Shi 1/26/2016 *******/
   //void displayProjectInfo();
   /****** Modified by Weiqi Shi 1/26/2016 *******/

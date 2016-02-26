@@ -26,9 +26,10 @@
 #include "searchWidget.h"
 #include "informationWidget.h"
 #include "mainWindow.h"
+
 #define MATCHSIZE 40
 
-static std::string category2str(int mode)
+std::string category2str(int mode)
 {
 	switch (mode)
 	{
@@ -49,6 +50,35 @@ static std::string category2str(int mode)
 
 	}
 }
+
+std::string color2category(const std::string str)
+{
+	if (str == "MAROON")
+		return "Object";
+	else if (str == "RED")
+		return "Measurements"; 
+	else if (str == "ORANGE")
+		return "Creation";
+	else if (str == "YELLOW")
+		return "Materials";
+	else if (str == "LIME")
+		return "Descriptions";
+	else if (str == "GREEN")
+		return "Conservation";
+	else if (str == "AQUA")
+		return "Analyses";
+	else if (str == "BLUE")
+		return "Related";
+	else if (str == "PINK")
+		return "Administration";
+	else if (str == "PURPLE")
+		return "Documentation";
+	else if (str == "WHITE")
+		return "Other";
+	else
+		return "Other";
+}
+
 
 SearchWidget::SearchWidget(QWidget *parent)
     : QWidget(parent)
@@ -113,8 +143,6 @@ void SearchWidget::showTreeWidgetItem(QTreeWidgetItem* item, int column)
 
 void SearchWidget::setFilterMode(int mode)
 {
-	if (mode == mMode)
-		return;
 	if (mode > 1)
 		mMode = mode + 1; //skip project info category
 	else
@@ -124,7 +152,8 @@ void SearchWidget::setFilterMode(int mode)
 
 void SearchWidget::setFilter(int mode)
 {
-	QList<QTreeWidgetItem *> mFilteredItems;
+	mFilteredItems.clear();
+	mTreeWidget->clear();
 	if (mode == 0)
 	{
 		for (int i = 0; i < mItems.size(); i++)
@@ -145,7 +174,6 @@ void SearchWidget::setFilter(int mode)
 			mFilteredItems.append(item);
 		}
 	}
-	mTreeWidget->clear();
 	mTreeWidget->insertTopLevelItems(0, mFilteredItems);
 	mTreeWidget->sortByColumn(4, Qt::AscendingOrder);
 }
@@ -160,7 +188,7 @@ void SearchWidget::search()
 	text.setCaseSensitivity(Qt::CaseInsensitive);
 	int inputSize = mInput->text().size();
 	int spareSize = (MATCHSIZE - inputSize) / 2;
-	int category = 1;	// for annotation
+	QString category = "Annocation";	// for annotation
 	QDir dir(mPath);
 	dir.setNameFilters(QStringList()<<"*.txt");
 	dir.setSorting(QDir::Name|QDir::LocaleAware);
@@ -185,8 +213,9 @@ void SearchWidget::search()
 				if (signal == QString("Color Type:"))
 					break;
 			}
-			in >> category;
-			category += 3;
+			QString color;
+			in >> color;
+			category = QString(color2category(color.toStdString()).c_str());
 			while(1)
 			{
 				QString signal = in.readLine();
@@ -226,12 +255,13 @@ void SearchWidget::search()
 			QStringList list;
 			list.append(match);
 			list.append(mFile);
-			list.append(QString(category2str(category).c_str()));
+			list.append(category);
 			list.append(mPath);
 			list.append(fileList[i]);
 			QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
 			mItems.append(item);
 		}
+		file->close();
 	}
 	setFilter(mMode);
 }
@@ -357,7 +387,8 @@ void SearchAllWidget::setFilterMode(int mode)
 
 void SearchAllWidget::setFilter(int mode)
 {
-	QList<QTreeWidgetItem *> mFilteredItems;
+	mFilteredItems.clear();
+	mTreeWidget->clear();
 	if (mode == 0)
 	{
 		for (int i = 0; i < mItems.size(); i++)
@@ -378,7 +409,6 @@ void SearchAllWidget::setFilter(int mode)
 			mFilteredItems.append(item);
 		}
 	}
-	mTreeWidget->clear();
 	mTreeWidget->insertTopLevelItems(0, mFilteredItems);
 	mTreeWidget->sortByColumn(4, Qt::AscendingOrder);
 }
@@ -435,7 +465,7 @@ void SearchAllWidget::search()
 	QStringList subDirName = dir.entryList();
 	for (int k = 0; k < subDirName.size(); k++)
 	{
-		int category = 1;
+		QString category = QString("Annotation");
 		if (subDirName[k] == QString(".") || subDirName[k] == QString(".."))
 			continue;
 		QDir subDir(subDirName[k]);
@@ -470,8 +500,9 @@ void SearchAllWidget::search()
 					if (signal == QString("Color Type:"))
 						break;
 				}
-				in >> category;
-				category += 3;
+				QString color;
+				in >> color;
+				category = QString(color2category(color.toStdString()).c_str());
 				while(1)
 				{
 					QString signal = in.readLine();
@@ -486,12 +517,13 @@ void SearchAllWidget::search()
 				QStringList list;
 				list.append(match[j]);
 				list.append(mFile);
-				list.append(QString(category2str(category).c_str()));
+				list.append(category);
 				list.append(mPath);
 				list.append(fileList[i]);
 				QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
 				mItems.append(item);
 			}
+			file->close();
 		}
 	}
 	//search in project info
