@@ -59,14 +59,29 @@ bool NormalEControl::eventFilter(QObject* watched, QEvent* event)
     return false;
 }
 
+//NormalEnhancement::NormalEnhancement() :
+//	gain(1.0f),
+//	minGain(0.01f),
+//	maxGain(4.0f),
+//	kd(1.0f),
+//	minKd(0.5f),
+//	maxKd(1.5f),
+//	envIll(0.5f),
+//	minEnvIll(0.1f),
+//	maxEnvIll(2.0f),
+//	nIter(5),
+//	smooted(false),
+//	loadParent(NULL)
+//	{
+//		
+//	}
+
 NormalEnhancement::NormalEnhancement() :
-	gain(1.0f),
 	minGain(0.01f),
 	maxGain(4.0f),
 	kd(1.0f),
 	minKd(0.5f),
 	maxKd(1.5f),
-	envIll(0.5f),
 	minEnvIll(0.1f),
 	maxEnvIll(2.0f),
 	nIter(5),
@@ -75,6 +90,9 @@ NormalEnhancement::NormalEnhancement() :
 	{
 		
 	}
+	float NormalEnhancement::gain = 1.0f;
+	float NormalEnhancement::envIll = 0.5f;
+
 
 NormalEnhancement::~NormalEnhancement() 
 {

@@ -73,7 +73,7 @@ private:
 
 	float minGain; /*!< Minimum gain value. */
 	float maxGain; /*!< Maximum gain value. */
-	float gain; /*!< Current gain value.*/
+	static float gain; /*!< Current gain value.*/ // YY
 
 	int nIter; /*!< Number of iteration for the smooting filter. */
 

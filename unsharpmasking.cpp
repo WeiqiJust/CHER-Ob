@@ -46,7 +46,7 @@ bool UnsharpMControl::eventFilter(QObject* watched, QEvent* event)
     return false;
 }
 
-UnsharpMasking::UnsharpMasking(int n) :
+/* UnsharpMasking::UnsharpMasking(int n) :
 	gain(1.0f),
 	minGain(0.01f),
 	maxGain(4.0f),
@@ -54,7 +54,17 @@ UnsharpMasking::UnsharpMasking(int n) :
 	type(n)
 	{
 
+	} */
+	
+	UnsharpMasking::UnsharpMasking(int n) :
+	minGain(0.01f),
+	maxGain(4.0f),
+	nIter(5),
+	type(n)
+	{
+
 	}
+	float UnsharpMasking::gain = 1.0f;
 
 
 UnsharpMasking::~UnsharpMasking() 

@@ -236,6 +236,9 @@ bool ReadHyper3D::readOBJ(QString objfilename, std::vector<std::string> &channel
     QString mtlfilename = path + mtlfn1.fileName();
     QFileInfo mtlfn(mtlfilename);
 
+	/*qDebug() << "mtlfilenamein = " << mtlfilenamein;
+	qDebug() << "mtlfilename = " << mtlfilename;*/
+
     QString texturefilename;
     int i=0;
     if (mtlfn.exists())
@@ -245,6 +248,7 @@ bool ReadHyper3D::readOBJ(QString objfilename, std::vector<std::string> &channel
       {
         std::string texturefn = materials[i].textureFilename;
         texturefilename = path + texturefn.c_str();
+		//qDebug() << "texturefilename A = " << texturefilename;
         readATexture(texturefilename, channelnames, wavelengths, rgbTexture, hyperImageData, isTextureOn);
 
         // DT: fixing texture bug

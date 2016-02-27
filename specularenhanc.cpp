@@ -55,10 +55,20 @@ bool SpecularEControl::eventFilter(QObject* watched, QEvent* event)
     return false;
 }
 
+//SpecularEnhancement::SpecularEnhancement() :
+//kd(0.4f),
+//ks(0.7f),
+//exp(75),
+//minKd(0.0f),
+//maxKd(1.0f),
+//minKs(0.0f),
+//maxKs(1.0f),
+//minExp(1),
+//maxExp(150)
+//{	}
+
+// YY
 SpecularEnhancement::SpecularEnhancement() :
-kd(0.4f),
-ks(0.7f),
-exp(75),
 minKd(0.0f),
 maxKd(1.0f),
 minKs(0.0f),
@@ -66,6 +76,9 @@ maxKs(1.0f),
 minExp(1),
 maxExp(150)
 {	}
+float SpecularEnhancement::kd  = 0.4f;
+float SpecularEnhancement::ks  = 0.7f;
+int SpecularEnhancement::exp = 75;
 
 SpecularEnhancement::~SpecularEnhancement() {}
 

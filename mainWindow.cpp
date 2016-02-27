@@ -439,10 +439,12 @@ void MainWindow::updateXML()
                 QDomElement texture = doc.createElement("texture_on");
                 item.appendChild(texture);
                 texture.appendChild(doc.createTextNode(QString::number(TEXTURE_ON)));
+				qDebug() << "texture on";
             } else if (!gla->getmRgbTextureFilename().isEmpty()){
                 QDomElement texture = doc.createElement("texture_on");
                 item.appendChild(texture);
                 texture.appendChild(doc.createTextNode(QString::number(TEXTURE_OFF)));
+				qDebug() << "texture off";
             }
             break;
         }
@@ -1021,6 +1023,17 @@ void MainWindow::createObjectFolder(QString path)
 	newObjectPath.append(QDir::separator() + fileName + QDir::separator() + fileName);	// the copied file and other staff are in the subfolder with its own name
 	qDebug()<<"in create object folder"<<newObjectPath;
 	QFile::copy(filePath, newObjectPath);
+
+	// we also copy texture file if existing
+	if (VTKA()->getIsTextureOn()) {
+		QString textureFileName = VTKA()->getmRgbTextureFilename();
+		if (!textureFileName.isEmpty()) {
+			QString newTexturePath = currentProjectFullName;
+			QStringList strList = textureFileName.split("/");
+			newTexturePath.append(QDir::separator() + fileName + QDir::separator() + strList[strList.size() - 1]);
+			QFile::copy(textureFileName, newTexturePath);
+		}
+	}
 }
 
 void MainWindow::createCTFolder(QString path)

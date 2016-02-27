@@ -21,9 +21,7 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.		*
 ****************************************************************************/
 
-
 #include "diffusegain.h"
-
 #include <omp.h>
 
 const float d256 = 1.0f/256.0f;
@@ -43,11 +41,19 @@ bool DiffuseGControl::eventFilter(QObject* watched, QEvent* event)
     return false;
 }
 
+//DiffuseGain::DiffuseGain() :
+//	gain(2.0f),
+//	minGain(1.0f),
+//    maxGain(10.0f)
+//	{	 }
+
+// YY
 DiffuseGain::DiffuseGain() :
-	gain(2.0f),
 	minGain(1.0f),
     maxGain(10.0f)
-	{	}
+	{	 }
+float DiffuseGain::gain = 2.0f;
+
 
 DiffuseGain::~DiffuseGain() {}
 
@@ -123,7 +129,7 @@ void DiffuseGain::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& rgb,
 			offset++;
 		}
 	}
-
+	//qDebug() << "gain = " << DiffuseGain::gain;
 }
 
 
@@ -151,6 +157,7 @@ void DiffuseGain::applyPtmRGB(const PyramidCoeff& redCoeff, const PyramidCoeff& 
 			offsetBuf += 4;
 		}
 	}
+	//qDebug() << "gain = " << DiffuseGain::gain;
 }
 
 

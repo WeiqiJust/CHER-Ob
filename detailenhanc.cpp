@@ -39,22 +39,41 @@
 
 #include <omp.h>
 
+//DetailEnhancement::DetailEnhancement():
+//	bufferReady(false),
+//	detailsBuffer(NULL),
+//	zMatrix(NULL),
+//	vectImage(NULL),
+//	loadParent(NULL),
+//	nOffset(OFFSET_10),
+//	minTileSize(TILE_SIZE_1),
+//	minLevel(2),
+//	sharpnessOperator(MAX_ENERGY_LAPLACE),
+//	sphereSampl(NON_UNIFORM),
+//	k1(0.7f),
+//	k2(0.3f),
+//	threshold(0.7f),
+//	filter(FILTER_3x3),
+//	nIterSmoothing(2)
+//{
+//	// Computes the initial light samples on entire hemishpere.
+//	std::vector<vcg::Point3f> uniformDirVec;
+//	vcg::GenNormal<float>::UniformCone(256, uniformDirVec, vcg::math::ToRad(80.0f), vcg::Point3f(0,0,1));
+//	std::random_shuffle(uniformDirVec.begin(), uniformDirVec.end());
+//	float limit = cos(vcg::math::ToRad(40.0f));
+//	for (unsigned int i = 0; i < uniformDirVec.size(); i++)
+//	{
+//		if (uniformDirVec[i].Z() < limit)
+//			defaultSamples.push_back(uniformDirVec[i]);
+//	}
+//}
+
 DetailEnhancement::DetailEnhancement():
 	bufferReady(false),
 	detailsBuffer(NULL),
 	zMatrix(NULL),
 	vectImage(NULL),
-	loadParent(NULL),
-	nOffset(OFFSET_10),
-	minTileSize(TILE_SIZE_1),
-	minLevel(2),
-	sharpnessOperator(MAX_ENERGY_LAPLACE),
-	sphereSampl(NON_UNIFORM),
-	k1(0.7f),
-	k2(0.3f),
-	threshold(0.7f),
-	filter(FILTER_3x3),
-	nIterSmoothing(2)
+	loadParent(NULL)
 {
 	// Computes the initial light samples on entire hemishpere.
 	std::vector<vcg::Point3f> uniformDirVec;
@@ -67,7 +86,16 @@ DetailEnhancement::DetailEnhancement():
 			defaultSamples.push_back(uniformDirVec[i]);
 	}
 }
-
+	OffsetNum DetailEnhancement::nOffset = OFFSET_10;
+	TileSize DetailEnhancement::minTileSize = TILE_SIZE_1;
+	SharpnessMeasures DetailEnhancement::sharpnessOperator = MAX_ENERGY_LAPLACE;
+	SphereSampling DetailEnhancement::sphereSampl = NON_UNIFORM;
+	float DetailEnhancement::k1 = 0.7f;
+	float DetailEnhancement::k2 = 0.3f;
+	float DetailEnhancement::threshold = 0.7f;
+	SmoothingFilter DetailEnhancement::filter = FILTER_3x3;
+	int DetailEnhancement::nIterSmoothing = 2;
+	int DetailEnhancement::minLevel = 2;
 
 DetailEnhancement::~DetailEnhancement() 
 {
@@ -1392,6 +1420,18 @@ int DetailEnhancement::getNIterSmoothing()
     return nIterSmoothing;
 }
 
+
+OffsetNum DetailConfDlg::nOffset = OFFSET_10;
+TileSize DetailConfDlg::minTileSize = TILE_SIZE_1;
+SharpnessMeasures DetailConfDlg::sharpnessOperator = MAX_ENERGY_LAPLACE;
+SphereSampling DetailConfDlg::sphereSampl = NON_UNIFORM;
+float DetailConfDlg::k1 = 0.7f;
+float DetailConfDlg::k2 = 0.3f;
+float DetailConfDlg::threshold = 0.7f;
+SmoothingFilter DetailConfDlg::filter = FILTER_3x3;
+int DetailConfDlg::nIterSmoothing = 2;
+int DetailConfDlg::minLevel = 2;
+	
 void DetailConfDlg::setCurrentValue(OffsetNum o, TileSize size, int level, SharpnessMeasures m, SphereSampling ss, float v1, float v2, float t, SmoothingFilter f, int nIter)
 {
 	nOffset = o;

@@ -85,7 +85,7 @@ private:
 
 	float minGain; /*!< Minimum gain value. */
 	float maxGain; /*!< Maximum gain value. */
-	float gain; /*!< Current gain value. */
+	static float gain; /*!< Current gain value. */ //YY
 
 	float minKd; /*!< Mimimun diffusive constant value. */
 	float maxKd; /*!< Maximum diffusive constant value. */
@@ -93,7 +93,7 @@ private:
 
 	float minEnvIll; /*!< Minimum ambiental term value. */
 	float maxEnvIll; /*!< Maximum ambiental term value. */
-	float envIll; /*!< Current ambiental term value.*/
+	static float envIll; /*!< Current ambiental term value.*/ // YY
 
 	int nIter; /*!< Number of iteration for the smoothing. */
 

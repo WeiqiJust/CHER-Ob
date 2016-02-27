@@ -84,15 +84,15 @@ private:
 
 	const float minKd; /*!< Minumum diffusive constant value. */
 	const float maxKd; /*!< Minumum diffusive constant value. */
-	float kd; /*!< Current diffusive constant value. */
+	static float kd; /*!< Current diffusive constant value. */ //YY static
 
 	const float minKs; /*!< Minumum specular constant value. */
 	const float maxKs; /*!< Maximum specular constant value. */
-	float ks; /*!< Current specular constant value. */
+	static float ks; /*!< Current specular constant value. */ // YY
 
 	const int minExp; /*!< Minumum specular exponent value. */
 	const int maxExp; /*!< Maximum specular exponent value. */
-	int exp; /*!< Current specular exponent value. */
+	static int exp; /*!< Current specular exponent value. */ //YY
 
 
 public:

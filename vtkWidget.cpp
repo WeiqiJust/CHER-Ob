@@ -1394,7 +1394,7 @@ void VtkWidget::Rendering3D()
     // This part cause a problem in the deploy mode.
     //texture
     if (mIsTextureOn && !mRgbTextureFilename.isEmpty())
-    {
+    { qDebug() << "rendering mRgbTextureFilename = " << mRgbTextureFilename;
         mActor->SetTexture(mRgbTexture);
     }
     else

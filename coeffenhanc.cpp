@@ -48,14 +48,23 @@ bool CoeffEnhancControl::eventFilter(QObject* watched, QEvent* event)
     return false;
 }
 
-CoeffEnhancement::CoeffEnhancement() :
+/* CoeffEnhancement::CoeffEnhancement() :
 	gain(1.0f),
 	minGain(0.01f),
 	maxGain(6.0f),
 	nIter(2)
 	{
 
+	} */
+	
+	CoeffEnhancement::CoeffEnhancement() :
+	minGain(0.01f),
+	maxGain(6.0f),
+	nIter(2)
+	{
+
 	}
+	float CoeffEnhancement::gain = 1.0f;
 
 CoeffEnhancement::~CoeffEnhancement() 
 {

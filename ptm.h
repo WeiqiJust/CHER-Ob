@@ -437,9 +437,9 @@ private:
 	virtual void calculateMipMap(int pos, int level, int i1, int i2);
 	virtual void calculateMipMap(int pos, int level, int i1, int i2, int i3, int i4);
 
-private:// YY 
-	void updateCoeffandRender(float* redPtr, float* greenPtr, float* bluePtr, int size, bool FIRST_RTI_RENDERING);
 
+private:// YY
+	void updateCoeffandRender(PTMCoefficient* coeffPtr, unsigned char* rgbPtr, bool FIRST_RTI_RENDERING, bool LOADING_DONE); 
 };
 
 

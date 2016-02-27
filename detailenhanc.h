@@ -123,17 +123,27 @@ private:
 	QPushButton* cancelBtn; /*!< Cancel button. */
 	QDialogButtonBox* buttonBox; 
 
-	OffsetNum nOffset; /*!< Current number of light samples. */
-	TileSize minTileSize; /*!< Current size of the tile. */
-	int minLevel; /*!< Current initial number of tiles. */
-	SharpnessMeasures sharpnessOperator; /*!< Current sharpness operator. */
-	SphereSampling sphereSampl; /*!< Current type of light sampling. */
-	float k1; /*!< Current weight for lightness. */
-	float k2; /*!< Current weight for sharpness. */
-	float threshold; /*!< Current threshold for enhancement measure. */
-	SmoothingFilter filter; /*!< Current smoothing filter size. */
-	int nIterSmoothing; /*!< Current number of iterations for the smoothing filter. */
+	//OffsetNum nOffset; /*!< Current number of light samples. */
+	//TileSize minTileSize; /*!< Current size of the tile. */
+	//int minLevel; /*!< Current initial number of tiles. */
+	//SharpnessMeasures sharpnessOperator; /*!< Current sharpness operator. */
+	//SphereSampling sphereSampl; /*!< Current type of light sampling. */
+	//float k1; /*!< Current weight for lightness. */
+	//float k2; /*!< Current weight for sharpness. */
+	//float threshold; /*!< Current threshold for enhancement measure. */
+	//SmoothingFilter filter; /*!< Current smoothing filter size. */
+	//int nIterSmoothing; /*!< Current number of iterations for the smoothing filter. */
 
+	static OffsetNum nOffset; /*!< Current number of light samples. */
+	static TileSize minTileSize; /*!< Current size of the tile. */
+	static int minLevel; /*!< Current initial number of tiles. */
+	static SharpnessMeasures sharpnessOperator; /*!< Current sharpness operator. */
+	static SphereSampling sphereSampl; /*!< Current type of light sampling. */
+	static float k1; /*!< Current weight for lightness. */
+	static float k2; /*!< Current weight for sharpness. */
+	static float threshold; /*!< Current threshold for enhancement measure. */
+	static SmoothingFilter filter; /*!< Current smoothing filter size. */
+	static int nIterSmoothing; /*!< Current number of iterations for the smoothing filter. */
 
 public:
 
@@ -243,7 +253,7 @@ private:
 	int* zMatrix; /*!< Z-matrix for relationship among tiles of different level. */
 
 	int maxLevel; /*!< Maximum level of subdivision in tiles. */
-	int minLevel; /*!< Minimum level of subdivision in tiles. */
+	static int minLevel; /*!< Minimum level of subdivision in tiles. */ // YY
 
 	QWidget* loadParent; /*!< Parent for loading window. */
 
@@ -254,16 +264,16 @@ private:
 	const PyramidCoeff* coefficientB; /*!< Pointer to blue component for RGB-PTM. */
 	bool lrgb; /*!< Holds whether if the image is a LRGB-PTM or RGB-PTM. */
 
-	
-	OffsetNum nOffset; /*!< Current number of light samples. */
-	TileSize minTileSize; /*!< Current size of the tile. */
-	SharpnessMeasures sharpnessOperator; /*!< Current sharpness operator. */
-	SphereSampling sphereSampl; /*!< Current type of light sampling. */
-	float k1; /*!< Current weight for lightness. */
-	float k2; /*!< Current weight for sharpness. */
-	float threshold; /*!< Current threshold for enhancement measure. */
-	SmoothingFilter filter; /*!< Current smoothing filter size. */
-	int nIterSmoothing; /*!< Current number of iterations for the smoothing filter. */
+	//YY
+	static OffsetNum nOffset; /*!< Current number of light samples. */
+	static TileSize minTileSize; /*!< Current size of the tile. */
+	static SharpnessMeasures sharpnessOperator; /*!< Current sharpness operator. */
+	static SphereSampling sphereSampl; /*!< Current type of light sampling. */
+	static float k1; /*!< Current weight for lightness. */
+	static float k2; /*!< Current weight for sharpness. */
+	static float threshold; /*!< Current threshold for enhancement measure. */
+	static SmoothingFilter filter; /*!< Current smoothing filter size. */
+	static int nIterSmoothing; /*!< Current number of iterations for the smoothing filter. */
 	
 	QImage* vectImage; /*!< Image with the drawing of light vector selected for each tile. */
 

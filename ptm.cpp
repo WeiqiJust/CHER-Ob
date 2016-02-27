@@ -264,7 +264,7 @@ int RGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti
 				updateCoeffandRender(redCoeff, greenCoeff, blueCoeff, FIRST_RTI_RENDERING, LOADING_DONE);
 				FIRST_RTI_RENDERING = false;	
 				myTimer.restart();
-			} else if (myTimer.elapsed() >= mw()->VTKA()->getRerenderingTimeInterval() && FIRST_RTI_RENDERING) {
+			} else if (myTimer.elapsed() >= mw()->VTKA()->getRerenderingTimeInterval()) {
 				updateCoeffandRender(redCoeff, greenCoeff, blueCoeff, FIRST_RTI_RENDERING, LOADING_DONE);
 				myTimer.restart();
 			}
@@ -744,11 +744,25 @@ int LRGBPtm::load(QString name, CallBackPos *cb)
 	return 0;
 }
 
+void LRGBPtm::updateCoeffandRender(PTMCoefficient* coeffPtr, unsigned char* rgbPtr, bool FIRST_RTI_RENDERING, bool LOADING_DONE)
+{
+	coefficients.setLevel(coeffPtr, w*h, 0);
+	rgb.setLevel(rgbPtr, w*h*3, 0);
+
+	mw()->VTKA()->mRTIbrowser->setImage(this, FIRST_RTI_RENDERING, LOADING_DONE);
+}
 
 int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb,const QString& text)
 {
 	w = width;
 	h = height;
+
+	mipMapSize[0] = QSize(w, h);
+	bool FIRST_RTI_RENDERING = true;
+	bool LOADING_DONE = false;
+
+	QTime myTimer;
+	myTimer.start();
 
     if (!urti)
 	{
@@ -816,6 +830,16 @@ int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urt
 				}
 			}
 		}
+
+		if (FIRST_RTI_RENDERING) // render first image 
+		{ 
+			updateCoeffandRender(coeffPtr, rgbPtr, FIRST_RTI_RENDERING, LOADING_DONE);
+			FIRST_RTI_RENDERING = false;	
+			myTimer.restart();
+		} else if (myTimer.elapsed() >= mw()->VTKA()->getRerenderingTimeInterval()) {
+			updateCoeffandRender(coeffPtr, rgbPtr, FIRST_RTI_RENDERING, LOADING_DONE);
+			myTimer.restart();
+		}
 	}
 
     if (version == "PTM_1.2")
@@ -834,14 +858,28 @@ int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urt
 					rgbPtr[offset*3 + i] = c;
 				}
 			}
+
+			if (FIRST_RTI_RENDERING) // render first image 
+			{ 
+				updateCoeffandRender(coeffPtr, rgbPtr, FIRST_RTI_RENDERING, LOADING_DONE);
+				FIRST_RTI_RENDERING = false;	
+				myTimer.restart();
+			} else if (myTimer.elapsed() >= mw()->VTKA()->getRerenderingTimeInterval()) {
+				updateCoeffandRender(coeffPtr, rgbPtr, FIRST_RTI_RENDERING, LOADING_DONE);
+				myTimer.restart();
+			}
 		}
 	}
+
+	LOADING_DONE = true;
+	updateCoeffandRender(coeffPtr, rgbPtr, FIRST_RTI_RENDERING, LOADING_DONE);
+
 	fclose(file);
 
-    mipMapSize[0] = QSize(w, h);
+ //   mipMapSize[0] = QSize(w, h);
 
-	coefficients.setLevel(coeffPtr, w*h, 0);
-	rgb.setLevel(rgbPtr, w*h*3, 0);
+	//coefficients.setLevel(coeffPtr, w*h, 0);
+	//rgb.setLevel(rgbPtr, w*h*3, 0);
 	
 	// Computes mip-mapping and normals.
 	if (cb != NULL)	(*cb)(55, "Mip mapping generation...");
@@ -849,6 +887,112 @@ int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urt
     calculateNormals(normals, coefficients, true, cb, 75, 20);
     return 0;
 }
+
+
+//int LRGBPtm::loadData(FILE* file, int width, int height, int basisTerm, bool urti, CallBackPos * cb,const QString& text)
+//{
+//	w = width;
+//	h = height;
+//
+//    if (!urti)
+//	{
+//		//Gets scale value
+//		bool eof, error;
+//		QString str = getLine(file, &eof);
+//		if (eof) return -1;
+//		QStringList list = str.split(' ', QString::SkipEmptyParts);
+//		if (list.size() != 6)
+//			return -1;
+//		for (int i = 0; i < 6; i++)
+//		{
+//			scale[i] = list[i].toDouble(&error);
+//			if (!error) return -1;
+//		}
+//		
+//		//Gets bias value
+//		str = getLine(file, &eof);
+//		if (eof) return -1;
+//		list = str.split(' ',  QString::SkipEmptyParts);
+//		if (list.size() != 6)
+//			return -1;
+//		for (int i = 0; i < 6; i++)
+//		{
+//			bias[i] = list[i].toInt(&error);
+//			if (!error) return -1;
+//		}
+//	}
+//	else
+//	{
+//
+//	}
+//
+//	//Allocates array for polynomial coefficients and rgb components
+//	PTMCoefficient* coeffPtr = new PTMCoefficient[w*h];
+//	unsigned char* rgbPtr = new unsigned char[w*h*3];
+//
+//	int offset;
+//	unsigned char c;
+//	
+//    //Reads coefficient and rgb components from file
+//	for (int y = h - 1; y >= 0; y--)
+//	{
+//		if (cb != NULL && (y % 50 == 0))(*cb)((h - y) * 40 / h, text);
+//		for (int x = 0; x < w; x++)
+//		{
+//			offset = y * w + x;
+//			
+//			for (int i = 0; i < 6; i++)
+//			{
+//				if(feof(file))
+//					return -1;
+//				fread(&c, sizeof(unsigned char), 1, file);
+//				coeffPtr[offset][i] = static_cast<int>((c - bias[i])*scale[i]);
+//			}
+//
+//			if (version == "PTM_1.1")
+//			{
+//				for (int i = 0; i < 3; i++)
+//				{
+//					if (feof(file))
+//						return -1;
+//					fread(&c, sizeof(unsigned char), 1, file);
+//					rgbPtr[offset*3 + i] = c;
+//				}
+//			}
+//		}
+//	}
+//
+//    if (version == "PTM_1.2")
+//	{
+//		for (int y = h - 1; y >= 0; y--)
+//		{
+//			if (cb != NULL && (h-y)%100==0)	(*cb)(40 + (h - y) * 10 / h , "Loading LRGB PTM...");
+//			for (int x = 0; x < w; x++)
+//			{
+//				offset = y * w + x;
+//				for (int i = 0; i < 3; i++)
+//				{
+//					if (feof(file))
+//						return -1;
+//					fread(&c, sizeof(unsigned char), 1, file);
+//					rgbPtr[offset*3 + i] = c;
+//				}
+//			}
+//		}
+//	}
+//	fclose(file);
+//
+//    mipMapSize[0] = QSize(w, h);
+//
+//	coefficients.setLevel(coeffPtr, w*h, 0);
+//	rgb.setLevel(rgbPtr, w*h*3, 0);
+//	
+//	// Computes mip-mapping and normals.
+//	if (cb != NULL)	(*cb)(55, "Mip mapping generation...");
+//    generateMipMap(1, w, h, cb, 55, 20);
+//    calculateNormals(normals, coefficients, true, cb, 75, 20);
+//    return 0;
+//}
 
 
 int LRGBPtm::save(QString name)

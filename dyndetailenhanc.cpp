@@ -73,7 +73,8 @@ DynamicDetailEControl::DynamicDetailEControl(unsigned int tileSize, unsigned int
 	connect(offsetCmb, SIGNAL(valueChanged(int)), this, SIGNAL(offsetChanged(int)));
 
 	advancedBtn = new QPushButton("Advanced Settings", this);
-	advancedBtn->setFixedSize(170, 20);
+	//advancedBtn->setFixedSize(170, 20);
+	advancedBtn->setFixedSize(130, 23);
 	connect(advancedBtn, SIGNAL(clicked()), this, SLOT(showAdvancedSettings()));
 	
 	QGridLayout* layout = new QGridLayout(this);

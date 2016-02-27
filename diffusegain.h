@@ -28,6 +28,7 @@
 #include "renderingmode.h"
 #include "rendercontrolutils.h"
 
+
 //! Widget for Diffuse Gain settings.
 /*!
   The class defines the widget that is showed in the Rendering Dialog to set the parameters of the rendering mode Diffuse Gain.
@@ -70,7 +71,7 @@ private:
 
 	const float minGain; /*!< Minimum gain value. */
 	const float maxGain; /*!< Maximum gain value. */
-	float gain; /*!< Current gain value. */
+	static float gain; /*!< Current gain value. */
 
 public:
 
