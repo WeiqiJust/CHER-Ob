@@ -89,6 +89,8 @@ public:
 
   static MainWindow* mw(); // find the mainframe
 
+  void refresh();
+
   void initAnnotation(const QString path);
 
   void startAnnotation();
@@ -98,6 +100,8 @@ public:
   void reloadAnnotation();
 
   void saveAllNotes();
+
+  void saveObjectNotes();
 
   void removeAllNotes();
 
@@ -126,6 +130,10 @@ public:
   void openSurfaceNote2D(double* point);
 
   void openNoteFromTreeWidget(QTreeWidgetItem* item);
+
+  bool checkAllSaved();
+
+  bool checkObjectSaved();
 
 signals:
   void saveAll();
@@ -166,9 +174,7 @@ private:
 
 private slots:
 
-  void enableButtons();
-
-  void editingAnnotation();
+  void annotationChanges();
 
   void saveAnnotation();
 
@@ -180,16 +186,16 @@ private:
   QHBoxLayout* hlay2;
   QVBoxLayout* vlay;
   QTextBrowser* dText;
-  QPushButton* editButton;
   QPushButton* saveButton;
   QPushButton* removeButton;
   QString notePath;
-  QMap<QString, QString> content;
+  QMap<QString, std::pair<QString, bool > > content;
   QMap<QString, QVector<PointNote*>> mPointNotes;
   QMap<QString, QVector<SurfaceNote*>> mSurfaceNotes;
   QMap<QString, QVector<FrustumNote*>> mFrustumNotes;
   QMap<QString, QVector<PointNote2D*>> mPointNotes2D;
   QMap<QString, QVector<SurfaceNote2D*>> mSurfaceNotes2D;
+  QMap<QString, bool> hasNotesRemoved;	
 };
 #endif // INFORMATION_H
 

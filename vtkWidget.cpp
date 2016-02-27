@@ -1771,6 +1771,18 @@ void VtkWidget::displayFileInfo()
 	mFileInfoDialog = new FileInfoDialog(this);
 }
 
+void VtkWidget::closeFileInfo()
+{
+    //Metadata* dialog = new Metadata(mProjectPath, this, true);
+    //dialog->exec();
+	if (mFileInfoDialog)
+	{
+		mFileInfoDialog->hide();
+		delete mFileInfoDialog;
+	}
+	mFileInfoDialog = NULL;
+}
+
 
 /*void VtkWidget::displayProjectInfo()
 {

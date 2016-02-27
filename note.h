@@ -48,6 +48,8 @@
 
 #include "mainWindow.h"
 
+
+
 class Note: public QWidget
 {
 	Q_OBJECT
@@ -65,6 +67,10 @@ public:
 	void showNote() {mDialog->show();}
 
 	QString getFileName()	{return *mFileName;}
+
+	bool checkSaved() {return isSaved;}
+
+	void setSaved(bool status) {isSaved = status;}
 
 protected:
 
@@ -86,7 +92,7 @@ private slots:
 
     void remove();
 	
-    void enableButtons();
+    void textChanged();
 
 signals:
 
@@ -110,6 +116,7 @@ private:
     QPushButton* mRemoveButton;
 	QLabel* mLabel;
 	QString* mInfo;
+	bool isSaved;
 	
 	
 

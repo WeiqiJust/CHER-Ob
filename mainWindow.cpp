@@ -128,9 +128,12 @@ MainWindow::MainWindow()
 // not a problem
 void MainWindow::updateAllViews()
 {
+	
   VtkView *mvc = currentVtkView();
   if(mvc)
+  {
     mvc->updateAllViewer();
+  }
 
   if(VTKA()){
       this->mBookmark->refreshBookmarkList();
@@ -216,19 +219,37 @@ void MainWindow::closeAll()
 
 void MainWindow::closeWindow()
 {
-    mdiArea->closeActiveSubWindow();
+    
     if(!VTKA()) {
         closeAll();
     }
+	else
+	{
+		if (!this->mInformation->checkObjectSaved())
+		{ 
+			int ret = QMessageBox::warning(this, tr("Warning"),
+                               tr("The current object has unsaved changes. Do you wish to save before closing this window?"),
+                               QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+                               QMessageBox::Save);
+			if(ret == QMessageBox::Cancel) return;
+			else if (ret == QMessageBox::Save)
+			{
+				this->mInformation->saveObjectNotes();
+			}
+		}
+		VTKA()->closeFileInfo();
+		this->mInformation->closeObjectNotes();
+	}
+	mdiArea->closeActiveSubWindow();
 }
 
 bool MainWindow::closeProject()
 {
-    if(unsavedChanges && VTKA()) {
+	if((unsavedChanges || !this->mInformation->checkAllSaved()) && VTKA()) {
         QMessageBox mb;
         QString message;
 
-        message = tr("The current configuration has unsaved changes. Do you wish to save before closing this project?"),
+        message = tr("The current project has unsaved changes. Do you wish to save before closing this project?"),
         mb.setText(message);
         mb.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         mb.setDefaultButton(QMessageBox::Save);
@@ -246,6 +267,12 @@ bool MainWindow::closeProject()
     QDomElement root = currentProjectMetadata.createElement("hyper3d.metadata");
     currentProjectMetadata.appendChild(root);
 	this->mInformation->closeAllNotes();
+	if (mProjectInfoDialog)
+	{
+		mProjectInfoDialog->hide();
+		delete mProjectInfoDialog;
+		mProjectInfoDialog = NULL;
+	}
 
     QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
     foreach(QMdiSubWindow *w, windows)
@@ -253,6 +280,8 @@ bool MainWindow::closeProject()
         VtkView* mvc = qobject_cast<VtkView *>(w->widget());
         QString file = mvc->currentView()->mFilename;
         QFileInfo fi(file);
+		VtkWidget* gla = mvc->currentView();
+		gla->closeFileInfo();
 
         w->setWindowTitle(fi.fileName());
     }
@@ -893,6 +922,7 @@ void MainWindow::saveProject()
 		return;
     }
 	this->mInformation->saveAllNotes();
+	this->mInformation->closeAllNotes();
 
     unsavedChanges = false;
 	updateXML();
@@ -922,6 +952,7 @@ bool MainWindow::saveProjectAs()
 		currentProjectFullName = newProjectPath;
         lastSavedDirectory.setPath(currentProjectFullName);
 		QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+		this->mInformation->refresh();
 		foreach(QMdiSubWindow *w, windows)
 		{
 			VtkView* mvc = qobject_cast<VtkView *>(w->widget());
@@ -951,7 +982,7 @@ void MainWindow::importProject()
 	fileName = QDir::toNativeSeparators(fileName);
 	QFileInfo fi(fileName);
 	lastUsedDirectory = fi.absoluteDir();
-	 if((fi.suffix().toLower()!="xml") )
+	if(fileName != QString("") && fi.suffix().toLower()!="xml")
 	{
 		QMessageBox::critical(this, tr("Project Error"), "Unknown project file extension.");
 		return;
@@ -964,6 +995,7 @@ void MainWindow::importProject()
 	
 	if (objectList.size() > 0)
 	{
+		this->mInformation->refresh();
 		for (int i = 0; i < objectList.size(); i++)
 		{
 			QFileInfo finfo(objectList[i]);
@@ -1085,7 +1117,7 @@ bool MainWindow::openProject(QString fileName)
     QMessageBox::critical(this, tr("Project Error"), "Unknown project file extension.");
     return false;
   }
-
+  this->mInformation->refresh();
   // this change of dir is needed for subsequent textures/materials loading
   QDir::setCurrent(fi.absoluteDir().absolutePath());
   qb->show();
@@ -1183,6 +1215,7 @@ void MainWindow::newVtkProject(const QString& projName)
 	{
 		delete mNewProjectDialog;
 	}
+	
 	mNewProjectDialog = new NewProjectDialog(this->lastUsedDirectory.path());
 	connect(mNewProjectDialog, SIGNAL(nextPressed(QString, QString, USERMODE, QString, QString, QString, QString, QString, QString)), 
 		this, SLOT(createNewVtkProject(QString, QString, USERMODE, QString, QString, QString, QString, QString, QString)));
@@ -1194,6 +1227,7 @@ void MainWindow::newVtkProject(const QString& projName)
 void MainWindow::createNewVtkProject(const QString fullName, const QString name, const USERMODE mode, const QString userName, 
 									 const QString object, const QString ct,  const QString keyword, const QString affiliation, const QString description)
 {
+	this->mInformation->refresh();
 	currentProjectFullName = fullName.simplified(); // remove leading/trailing whitespace
 	currentProjectFullName = QDir::toNativeSeparators(currentProjectFullName);
 	qDebug()<<"New project path " <<currentProjectFullName;
@@ -1668,6 +1702,7 @@ void MainWindow::updateMenus()
   closeProjectAct->setEnabled(projectOpen);
   updateRecentProjActions();
   updateRecentFileActions();
+  recentFileMenu->setEnabled(projectOpen);
 
 //  editMenu->setEnabled(activeDoc && !editMenu->actions().isEmpty());
   renderMenu->setEnabled(activeDoc);
@@ -1690,6 +1725,14 @@ void MainWindow::updateMenus()
   removeDistanceAct->setEnabled(activeDoc);
 
   writeAnnotationAct->setEnabled(activeDoc);
+  if (writeAnnotationAct->isChecked())
+  {
+	  this->mInformation->startAnnotation();
+  }
+  else
+  {
+	  this->mInformation->finishAnnotation();
+  }
   annotationModeMenu->setEnabled(activeDoc);
   removeAnnotationAct->setEnabled(activeDoc);
 
@@ -2943,9 +2986,15 @@ void MainWindow::writeAnnotation()
 
 void MainWindow::removeAnnotation()
 {
-  mInformation->removeAllNotes();
-  writeAnnotationAct->setChecked(false);
+  int ret = QMessageBox::warning(this, tr("Warning"),
+                               tr("Do you want to remove all the notes in current window?"),
+                               QMessageBox::Yes | QMessageBox::No,
+                               QMessageBox::No);
   removeAnnotationAct->setChecked(false);
+  if(ret == QMessageBox::No) return;
+  writeAnnotationAct->setChecked(false);
+  this->mInformation->removeAllNotes();
+  
   if (VTKA())
     VTKA()->annotate(false);
 

@@ -91,6 +91,7 @@ private:
 	QPushButton* mButton;
 	QTreeWidget* mTreeWidget;
 	QList<QTreeWidgetItem *> mItems;
+	QList<QTreeWidgetItem *> mFilteredItems;
 	QString mPath;
 	QString mFile;
 	int mMode;
@@ -130,6 +131,7 @@ private:
 	QComboBox* mFilter;
 	QTreeWidget* mTreeWidget;
 	QList<QTreeWidgetItem *> mItems;
+	QList<QTreeWidgetItem *> mFilteredItems;
 	QString mPath;
 	QString mFile;
 	int mMode;

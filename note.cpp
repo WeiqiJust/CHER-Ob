@@ -94,7 +94,7 @@ Note::Note(const int noteId, const ColorType type)
 	mClearButton->setEnabled(false);
     mRemoveButton->setEnabled(true);
 
-	connect(mTextEdit, SIGNAL(textChanged()), this, SLOT(enableButtons()));
+	connect(mTextEdit, SIGNAL(textChanged()), this, SLOT(textChanged()));
 	connect(mSaveButton, SIGNAL(clicked()), this, SLOT(save()));
 	connect(mClearButton, SIGNAL(clicked()), this, SLOT(clear()));
     connect(mRemoveButton, SIGNAL(clicked()), this, SLOT(remove()));
@@ -109,6 +109,7 @@ Note::Note(const int noteId, const ColorType type)
 	mVbox->addLayout(mButtons);
 	
     mDialog->setLayout(mVbox);
+	isSaved = false;
 	mDialog->hide();
 }
 
@@ -122,8 +123,9 @@ void Note::setInfo(QString text)
 	mInfo = new QString(text);
 }
 
-void Note::enableButtons()
+void Note::textChanged()
 {
+	isSaved = false;
 	if (!mTextEdit->toPlainText().isEmpty())
 	{
 		mSaveButton->setEnabled(true);
@@ -148,6 +150,7 @@ void Note::save()
 	out << *mInfo << "\n";
     out << mTextEdit->toPlainText();
 	mFile->close();
+	isSaved = true;
 
 }
 
@@ -161,7 +164,7 @@ void Note::remove()
 void Note::clear()
 {
 	mTextEdit->clear();
-	this->enableButtons();
+	this->textChanged();
 }
 
 
@@ -664,6 +667,7 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId)
 
 void PointNote2D::removePointNote2D()
 {
+	qDebug()<<"remove Point note 2d"<<mFile->fileName();
 	mFile->remove();
 	this->hideNote(); 
 }

@@ -173,21 +173,17 @@ Information::Information(QWidget *parent)
 
   hlay2 = new QHBoxLayout();
   saveButton = new QPushButton("Save");
-  editButton = new QPushButton("Edit");
   removeButton = new QPushButton("Remove");
-  editButton->setEnabled(false);
   saveButton->setEnabled(false);
   removeButton->setEnabled(false);
 
-  connect(dText, SIGNAL(textChanged()), this, SLOT(enableButtons()));
+  connect(dText, SIGNAL(textChanged()), this, SLOT(annotationChanges()));
   connect(saveButton, SIGNAL(clicked()), this, SLOT(saveAnnotation()));
-  connect(editButton, SIGNAL(clicked()), this, SLOT(editingAnnotation()));
   connect(removeButton, SIGNAL(clicked()), this, SLOT(removeAnnotation()));
   connect(this, SIGNAL(saveAll()), this, SLOT(saveAnnotation()));
   connect(this, SIGNAL(updateMenu()), mw(), SLOT(updateMenus()));
 
   hlay2->addWidget(saveButton);
-  hlay2->addWidget(editButton);
   hlay2->addWidget(removeButton);
 
   vlay = new QVBoxLayout();
@@ -202,6 +198,17 @@ Information::Information(QWidget *parent)
 Information::~Information()
 {
     delete dText;
+}
+
+void Information::refresh()
+{
+	content.clear();
+	mPointNotes.clear();
+	mSurfaceNotes.clear();
+	mFrustumNotes.clear();
+	mPointNotes2D.clear();
+	mSurfaceNotes2D.clear();
+	hasNotesRemoved.clear();
 }
 
 void Information::initAnnotation(const QString path)
@@ -219,17 +226,20 @@ void Information::initAnnotation(const QString path)
 	fileName.append(QDir::separator() + QString("Annotation.txt"));
 	QFile file(fileName);
 	//qDebug()<<"Load Note"<<notePath;
+	hasNotesRemoved[notePath] = false;
+	content[notePath].second = true;
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
 	QTextStream in(&file);
-	content[notePath] = in.readAll();
-	dText->setPlainText(content[notePath]);
+	QString text = in.readAll();
+	dText->setPlainText(text);
+	content[notePath] = std::make_pair(text, true);
 	
 	file.close();
 }
 
-void Information::enableButtons()
+void Information::annotationChanges()
 {
-	updateCurrentPath();
+	updateCurrentPath();/*
 	if (!dText->toPlainText().isEmpty())
 	{
 		saveButton->setEnabled(true);
@@ -239,18 +249,20 @@ void Information::enableButtons()
 	{
 		saveButton->setEnabled(false);
 		removeButton->setEnabled(false);
+	}*/
+	if (dText->toPlainText() != content[notePath].first)
+	{
+		content[notePath] = std::make_pair(dText->toPlainText(), false);
 	}
-	content[notePath] = dText->toPlainText();
 }
 
 void Information::startAnnotation()
 {
 	updateCurrentPath();
-	qDebug()<<"StartAnnotation Annotation " <<content[notePath];
-	//dText->clear();
-	//dText->setPlainText(content[notePath]);
-	editButton->setEnabled(true);
-	//showNotes();
+	qDebug()<<"StartAnnotation Annotation " <<content[notePath].first;
+	saveButton->setEnabled(true);
+	removeButton->setEnabled(true);
+	dText->setReadOnly(false);
 }
 
 void Information::finishAnnotation()
@@ -258,20 +270,16 @@ void Information::finishAnnotation()
 	updateCurrentPath();
 	dText->setReadOnly(true);
 	saveButton->setEnabled(false);
-	editButton->setEnabled(false);
 	removeButton->setEnabled(false);
 	hideNotes();
-}
-
-void Information::editingAnnotation()
-{
-	dText->setReadOnly(false);
 }
 
 void Information::reloadAnnotation()
 {
 	updateCurrentPath();
-	dText->setPlainText(content[notePath]);
+	bool saved = content[notePath].second;
+	dText->setPlainText(content[notePath].first);
+	content[notePath].second = saved;
 }
 
 void Information::saveAnnotation()
@@ -289,17 +297,18 @@ void Information::saveAnnotation()
 	}
     QTextStream out(&file);
     out << dText->toPlainText() << "\n";
+	content[notePath].second = true;
 	file.close();
 }
 
 void Information::removeAnnotation()
 {
-	mw()->unsavedChanges = true;
 	updateCurrentPath();
 	QString fileName = notePath;
 	qDebug() << "removeAnnotation " << notePath;
 	fileName.append(QDir::separator() + QString("Annotation.txt"));
 	content.remove(notePath);
+	hasNotesRemoved[notePath] = true;
 	dText->clear();
 	QFile file(fileName);
 	file.remove();
@@ -308,7 +317,6 @@ void Information::removeAnnotation()
 void Information::createPointNote(double *pos, int cellId, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
-	mw()->unsavedChanges = true;
 	updateCurrentPath();
 	int size = mPointNotes[notePath].size();
 	qDebug() << "Create Point Note, current size = " << size;
@@ -323,7 +331,6 @@ void Information::createPointNote(double *pos, int cellId, ColorType color)
 void Information::createSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
-	mw()->unsavedChanges = true;
 	updateCurrentPath();
 	int size = mSurfaceNotes[notePath].size();
 	qDebug() << "Create Surface Note, current size = " << size;
@@ -338,7 +345,6 @@ void Information::createSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, C
 void Information::createFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
-	mw()->unsavedChanges = true;
 	updateCurrentPath();
 	int size = mFrustumNotes[notePath].size();
 	qDebug() << "Create Frustum Note, current size = " << size;
@@ -354,7 +360,6 @@ void Information::createFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartP
 void Information::createPointNote2D(double* point, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
-	mw()->unsavedChanges = true;
 	updateCurrentPath();
 	int size = mPointNotes2D[notePath].size();
 	qDebug() << "Create Point Note 2D, current size = " << size;
@@ -369,7 +374,6 @@ void Information::createPointNote2D(double* point, ColorType color)
 void Information::createSurfaceNote2D(double* point, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
-	mw()->unsavedChanges = true;
 	updateCurrentPath();
 	int size = mSurfaceNotes2D[notePath].size();
 	qDebug() << "Create Surface Note 2D, current size = " << size;
@@ -395,6 +399,7 @@ void Information::loadPointNote(const QString path)
 		connect(mPointNotes[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removePointNote(int, QString*)));
 		connect(this, SIGNAL(saveAll()), mPointNotes[notePath][i], SLOT(save()));
 		connect(this, SIGNAL(closeAll()), mPointNotes[notePath][i], SLOT(close()));
+		mPointNotes[notePath][i]->setSaved(true);
 		if (mw()->VTKA(path))
 			mw()->VTKA(path)->loadPointNoteMark(newNote->getCellId(), newNote->getColorType());
 		//else
@@ -419,6 +424,7 @@ void Information::loadSurfaceNote(const QString path)
 		connect(mSurfaceNotes[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removeSurfaceNote(int, QString*)));
 		connect(this, SIGNAL(saveAll()), mSurfaceNotes[notePath][i], SLOT(save()));
 		connect(this, SIGNAL(closeAll()), mSurfaceNotes[notePath][i], SLOT(close()));
+		mSurfaceNotes[notePath][i]->setSaved(true);
 		if (mw()->VTKA(path))
 			mw()->VTKA(path)->loadSurfaceNoteMark(newNote->getCellIds(), newNote->getColorType());
 		//else
@@ -440,6 +446,7 @@ void Information::loadFrustumNote(const QString path)
 		mFrustumNotes[notePath].push_back(newNote);
 		connect(mFrustumNotes[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removeFrustumNote(int, QString*)));
 		connect(this, SIGNAL(saveAll()), mFrustumNotes[notePath][i], SLOT(save()));
+		mFrustumNotes[notePath][i]->setSaved(true);
 		connect(this, SIGNAL(closeAll()), mFrustumNotes[notePath][i], SLOT(close()));
 		if (mw()->VTKA(path))
 			mw()->VTKA(path)->loadFrustumNoteMark(newNote->getPoints(), newNote->getNormals(), newNote->getColorType());
@@ -464,6 +471,7 @@ void Information::loadPointNote2D(const QString path)
 		connect(mPointNotes2D[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removePointNote2D(int, QString*)));
 		connect(this, SIGNAL(saveAll()), mPointNotes2D[notePath][i], SLOT(save()));
 		connect(this, SIGNAL(closeAll()), mPointNotes2D[notePath][i], SLOT(close()));
+		mPointNotes2D[notePath][i]->setSaved(true);
 		if (mw()->VTKA(path))
 			mw()->VTKA(path)->loadPointNote2DMark(newNote->getPoint(), newNote->getColorType());
 		//else
@@ -487,6 +495,7 @@ void Information::loadSurfaceNote2D(const QString path)
 		connect(mSurfaceNotes2D[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removeSurfaceNote2D(int, QString*)));
 		connect(this, SIGNAL(saveAll()), mSurfaceNotes2D[notePath][i], SLOT(save()));
 		connect(this, SIGNAL(closeAll()), mSurfaceNotes2D[notePath][i], SLOT(close()));
+		mSurfaceNotes2D[notePath][i]->setSaved(true);
 		if (mw()->VTKA(path))
 			mw()->VTKA(path)->loadSurfaceNote2DMark(newNote->getPoint(), newNote->getColorType());
 		//else
@@ -650,7 +659,7 @@ void Information::removePointNote(int noteId, QString* path)
 		{
 			mw()->VTKA()->removePointNoteMark(mPointNotes[*path][i]->getCellId());
 			mPointNotes[*path].remove(i);
-			mw()->unsavedChanges = true;
+			hasNotesRemoved[notePath] = true;
 			break;
 		}
 	}
@@ -666,7 +675,7 @@ void Information::removeSurfaceNote(int noteId, QString* path)
 		{
 			mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[*path][i]->getCellIds());
 			mSurfaceNotes[*path].remove(i);
-			mw()->unsavedChanges = true;
+			hasNotesRemoved[notePath] = true;
 			break;
 		}
 	}
@@ -682,7 +691,7 @@ void Information::removeFrustumNote(int noteId, QString* path)
 		{
 			mw()->VTKA()->removeFrustumNoteMark(mFrustumNotes[*path][i]->getPoints(), mFrustumNotes[*path][i]->getNormals());
 			mFrustumNotes[*path].remove(i);
-			mw()->unsavedChanges = true;
+			hasNotesRemoved[notePath] = true;
 			break;
 		}
 	}
@@ -698,7 +707,7 @@ void Information::removePointNote2D(int noteId, QString* path)
 		{
 			mw()->VTKA()->removePointNote2DMark(mPointNotes2D[*path][i]->getPoint());
 			mPointNotes2D[*path].remove(i);
-			mw()->unsavedChanges = true;
+			hasNotesRemoved[notePath] = true;
 			break;
 		}
 	}
@@ -714,7 +723,7 @@ void Information::removeSurfaceNote2D(int noteId, QString* path)
 		{
 			mw()->VTKA()->removeSurfaceNote2DMark(mSurfaceNotes2D[*path][i]->getPoint());
 			mSurfaceNotes2D[*path].remove(i);
-			mw()->unsavedChanges = true;
+			hasNotesRemoved[notePath] = true;
 			break;
 		}
 	}
@@ -825,7 +834,37 @@ void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
 void Information::saveAllNotes()
 {
 	emit saveAll();
-	closeAllNotes();
+	for (QMap<QString, bool>::iterator it = hasNotesRemoved.begin(); it != hasNotesRemoved.end(); it++)
+	{
+		it.value() = false;
+	}
+}
+
+void Information::saveObjectNotes()
+{
+	updateCurrentPath();
+	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
+	{
+		mPointNotes[notePath][i]->save();
+	}
+	for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
+	{
+		mSurfaceNotes[notePath][i]->save();
+	}
+	for (int i = 0; i < mFrustumNotes[notePath].size(); ++i) 
+	{
+		mFrustumNotes[notePath][i]->save();
+	}
+	for (int i = 0; i < mPointNotes2D[notePath].size(); ++i) 
+	{
+		mPointNotes2D[notePath][i]->save();
+	}
+	for (int i = 0; i < mSurfaceNotes2D[notePath].size(); ++i) 
+	{
+		mSurfaceNotes2D[notePath][i]->save();
+	}
+	saveAnnotation();
+	hasNotesRemoved[notePath] = false;
 }
 
 void Information::closeAllNotes()
@@ -862,8 +901,8 @@ void Information::closeObjectNotes()
 void Information::removeAllNotes()
 {
 	qDebug() << "remove ALL Note ";
-	mw()->unsavedChanges = true;
 	updateCurrentPath();
+	hasNotesRemoved[notePath] = true;
 	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
 	{
 		mw()->VTKA()->removePointNoteMark(mPointNotes[notePath][i]->getCellId());
@@ -896,6 +935,56 @@ void Information::removeAllNotes()
 	mSurfaceNotes2D.remove(notePath);
 }
 
+void Information::hideNotes()
+{
+	updateCurrentPath();
+	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
+	{
+		mPointNotes[notePath][i]->hideNote();
+	}
+	for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
+	{
+		mSurfaceNotes[notePath][i]->hideNote();
+	}
+	for (int i = 0; i < mFrustumNotes[notePath].size(); ++i) 
+	{
+		mFrustumNotes[notePath][i]->hideNote();
+	}
+	for (int i = 0; i < mPointNotes2D[notePath].size(); ++i) 
+	{
+		mPointNotes2D[notePath][i]->hideNote();
+	}
+	for (int i = 0; i < mSurfaceNotes2D[notePath].size(); ++i) 
+	{
+		mSurfaceNotes2D[notePath][i]->hideNote();
+	}
+}
+
+void Information::showNotes()
+{
+	updateCurrentPath();
+	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
+	{
+		mPointNotes[notePath][i]->showNote();
+	}
+	for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
+	{
+		mSurfaceNotes[notePath][i]->showNote();
+	}
+	for (int i = 0; i < mFrustumNotes[notePath].size(); ++i) 
+	{
+		mFrustumNotes[notePath][i]->showNote();
+	}
+	for (int i = 0; i < mPointNotes2D[notePath].size(); ++i) 
+	{
+		mPointNotes2D[notePath][i]->showNote();
+	}
+	for (int i = 0; i < mSurfaceNotes2D[notePath].size(); ++i) 
+	{
+		mSurfaceNotes2D[notePath][i]->showNote();
+	}
+}
+
 bool Information::updateCurrentPath()
 {
 	QString fn;
@@ -919,39 +1008,109 @@ bool Information::updateCurrentPath()
 	return true;
 }
 
-void Information::hideNotes()
+bool Information::checkAllSaved()
 {
-	updateCurrentPath();
-	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
+	for (QMap<QString, bool>::iterator it = hasNotesRemoved.begin(); it != hasNotesRemoved.end(); it++)
 	{
-		mPointNotes[notePath][i]->hideNote();
+		QString path = it.key();
+		// Test whether there are removed notes and annotation
+		if (hasNotesRemoved[path])
+			return false;
+		// Test whether there are modifications in annotation and notes.
+		for (int i = 0; i < mPointNotes[path].size(); ++i) 
+		{
+			if (!mPointNotes[path][i]->checkSaved())
+			{	
+				return false;
+			}
+		}
+		for (int i = 0; i < mSurfaceNotes[path].size(); ++i) 
+		{
+			if (!mSurfaceNotes[path][i]->checkSaved())
+			{	
+				return false;
+			}
+		}
+		for (int i = 0; i < mFrustumNotes[path].size(); ++i) 
+		{
+			if (!mFrustumNotes[path][i]->checkSaved())
+			{	
+				return false;
+			}
+		}
+		for (int i = 0; i < mPointNotes2D[path].size(); ++i) 
+		{
+			if (!mPointNotes2D[path][i]->checkSaved())
+			{	
+				return false;
+			}
+		}
+		for (int i = 0; i < mSurfaceNotes2D[path].size(); ++i) 
+		{
+			if (!mSurfaceNotes2D[path][i]->checkSaved())
+			{	
+				return false;
+			}
+		}
+		if (!content[path].second)
+		{
+			return false;
+		}
 	}
-	for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
-	{
-		mSurfaceNotes[notePath][i]->hideNote();
-	}
-	for (int i = 0; i < mFrustumNotes[notePath].size(); ++i) 
-	{
-		mFrustumNotes[notePath][i]->hideNote();
-	}
+	return true;
+
 }
 
-void Information::showNotes()
+bool Information::checkObjectSaved()
 {
 	updateCurrentPath();
+	// Test whether there are removed notes and annotation
+	if (hasNotesRemoved[notePath])
+		return false;
+	// Test whether there are modifications in annotation and notes.
 	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
 	{
-		mPointNotes[notePath][i]->showNote();
+		if (!mPointNotes[notePath][i]->checkSaved())
+		{	
+			return false;
+		}
 	}
 	for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
 	{
-		mSurfaceNotes[notePath][i]->showNote();
+		if (!mSurfaceNotes[notePath][i]->checkSaved())
+		{	
+			return false;
+		}
 	}
 	for (int i = 0; i < mFrustumNotes[notePath].size(); ++i) 
 	{
-		mFrustumNotes[notePath][i]->showNote();
+		if (!mFrustumNotes[notePath][i]->checkSaved())
+		{	
+			return false;
+		}
 	}
+	for (int i = 0; i < mPointNotes2D[notePath].size(); ++i) 
+	{
+		if (!mPointNotes2D[notePath][i]->checkSaved())
+		{	
+			return false;
+		}
+	}
+	for (int i = 0; i < mSurfaceNotes2D[notePath].size(); ++i) 
+	{
+		if (!mSurfaceNotes2D[notePath][i]->checkSaved())
+		{	
+			return false;
+		}
+	}
+	if (!content[notePath].second)
+	{
+		qDebug()<<"content";
+		return false;
+	}
+	return true;
 }
+
 
 MainWindow* Information::mw()
 {

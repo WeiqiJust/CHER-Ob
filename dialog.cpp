@@ -103,6 +103,7 @@ NewProjectDialog::NewProjectDialog(const QString path)
     mLocationLabel->setBuddy(mLocationLineEdit);
 	connect(mLocationLineEdit, SIGNAL(textChanged(QString)), this, SLOT(projectPathChanged(QString)));
 	mLocationLineEdit->setText(QCoreApplication::applicationDirPath());
+	mProjectPath = QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
 	mLocationLineEdit->setFixedWidth(270);
 	mLocationBrowseButton = new QPushButton("Browse");
 	connect(mLocationBrowseButton, SIGNAL(clicked()), this, SLOT(locationBrowse()));
