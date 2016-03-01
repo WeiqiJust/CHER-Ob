@@ -282,6 +282,14 @@ void Information::reloadAnnotation()
 	content[notePath].second = saved;
 }
 
+void Information::clearAnnotation()
+{
+	updateCurrentPath();
+	bool saved = content[notePath].second;
+	dText->clear();
+	content[notePath].second = saved;
+}
+
 void Information::saveAnnotation()
 {
 	updateCurrentPath();
@@ -935,6 +943,56 @@ void Information::removeAllNotes()
 	mSurfaceNotes2D.remove(notePath);
 }
 
+void Information::removeUnSavedNotes()
+{
+	updateCurrentPath();
+	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
+	{
+		if (!mPointNotes[notePath][i]->checkSaved())
+		{
+			mw()->VTKA()->removePointNoteMark(mPointNotes[notePath][i]->getCellId());
+			mPointNotes[notePath][i]->removePointNote();
+			mPointNotes[notePath].remove(i);
+		}
+	}
+	for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
+	{
+		if (!mSurfaceNotes[notePath][i]->checkSaved())
+		{
+			mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds());
+			mSurfaceNotes[notePath][i]->removeSurfaceNote();
+			mSurfaceNotes[notePath].remove(i);
+		}
+	}
+	for (int i = 0; i < mFrustumNotes[notePath].size(); ++i) 
+	{
+		if (!mFrustumNotes[notePath][i]->checkSaved())
+		{
+			mw()->VTKA()->removeFrustumNoteMark(mFrustumNotes[notePath][i]->getPoints(), mFrustumNotes[notePath][i]->getNormals());
+			mFrustumNotes[notePath][i]->removeFrustumNote();
+			mFrustumNotes[notePath].remove(i);
+		}
+	}
+	for (int i = 0; i < mPointNotes2D[notePath].size(); ++i) 
+	{
+		if (!mPointNotes2D[notePath][i]->checkSaved())
+		{
+			mw()->VTKA()->removePointNote2DMark(mPointNotes2D[notePath][i]->getPoint());
+			mPointNotes2D[notePath][i]->removePointNote2D();
+			mPointNotes2D[notePath].remove(i);
+		}
+	}
+	for (int i = 0; i < mSurfaceNotes2D[notePath].size(); ++i) 
+	{
+		if (!mSurfaceNotes2D[notePath][i]->checkSaved())
+		{
+			mw()->VTKA()->removeSurfaceNote2DMark(mSurfaceNotes2D[notePath][i]->getPoint());
+			mSurfaceNotes2D[notePath][i]->removeSurfaceNote2D();
+			mSurfaceNotes2D[notePath].remove(i);
+		}
+	}
+}
+
 void Information::hideNotes()
 {
 	updateCurrentPath();
@@ -1014,6 +1072,7 @@ bool Information::checkAllSaved()
 	{
 		QString path = it.key();
 		// Test whether there are removed notes and annotation
+		qDebug()<<"has removed"<<path<<hasNotesRemoved[path];
 		if (hasNotesRemoved[path])
 			return false;
 		// Test whether there are modifications in annotation and notes.
@@ -1042,6 +1101,7 @@ bool Information::checkAllSaved()
 		{
 			if (!mPointNotes2D[path][i]->checkSaved())
 			{	
+				qDebug()<<"Exist unsaved point note2d"<<mPointNotes2D[path][i]->getFileName();
 				return false;
 			}
 		}
@@ -1052,6 +1112,7 @@ bool Information::checkAllSaved()
 				return false;
 			}
 		}
+		qDebug()<<"Content!!!!!";
 		if (!content[path].second)
 		{
 			return false;
@@ -1063,7 +1124,8 @@ bool Information::checkAllSaved()
 
 bool Information::checkObjectSaved()
 {
-	updateCurrentPath();
+	if (!updateCurrentPath())
+		return true;
 	// Test whether there are removed notes and annotation
 	if (hasNotesRemoved[notePath])
 		return false;

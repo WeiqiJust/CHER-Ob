@@ -131,7 +131,7 @@ SearchWidget::SearchWidget(QWidget *parent)
 	vlay->addWidget(mLabel);
 	vlay->addLayout(hlay);
 	vlay->addWidget(mTreeWidget);
-	refreshSearchTab();
+	refreshSearchTab(false);
 	this->setLayout(vlay);
 	this->show();
 }
@@ -266,9 +266,9 @@ void SearchWidget::search()
 	setFilter(mMode);
 }
 
-void SearchWidget::refreshSearchTab()
+void SearchWidget::refreshSearchTab(bool activeWindow)
 {
-	if(!mw()->VTKA() )
+	if(!activeWindow)
 	{
 		mTreeWidget->clear();
 		mItems.clear();
@@ -309,7 +309,7 @@ MainWindow* SearchWidget::mw()
 {
   foreach (QWidget *widget, QApplication::topLevelWidgets()) {
     MainWindow* mainwindow = dynamic_cast<MainWindow*>(widget);
-    if (mainwindow)
+	if (mainwindow)
     {
       return mainwindow;
     }
@@ -367,7 +367,7 @@ SearchAllWidget::SearchAllWidget(QWidget *parent)
 	vlay->addWidget(mLabel);
 	vlay->addLayout(hlay);
 	vlay->addWidget(mTreeWidget);
-	refreshSearchTab();
+	refreshSearchTab(false);
 	this->setLayout(vlay);
 	this->show();
 }
@@ -593,9 +593,9 @@ void SearchAllWidget::search()
 	
 }
 
-void SearchAllWidget::refreshSearchTab()
+void SearchAllWidget::refreshSearchTab(bool activeWindow)
 {
-	if(!mw()->VTKA() )
+	if(!activeWindow)
 	{
 		mTreeWidget->clear();
 		mItems.clear();

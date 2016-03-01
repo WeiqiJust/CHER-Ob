@@ -99,11 +99,15 @@ public:
 
   void reloadAnnotation();
 
+  void clearAnnotation();
+
   void saveAllNotes();
 
   void saveObjectNotes();
 
   void removeAllNotes();
+
+  void removeUnSavedNotes();
 
   void closeAllNotes();
 

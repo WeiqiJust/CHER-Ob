@@ -66,7 +66,7 @@ class SearchWidget : public QWidget
 public:
     SearchWidget(QWidget *parent);
 
-	void refreshSearchTab();
+	void refreshSearchTab(bool activeWindow);
 
 	static MainWindow* mw(); // find the mainframe
 
@@ -104,7 +104,7 @@ class SearchAllWidget : public QWidget
 public:
     SearchAllWidget(QWidget *parent);
 
-	void refreshSearchTab();
+	void refreshSearchTab(bool activeWindow);
 
 	static MainWindow* mw(); // find the mainframe
 

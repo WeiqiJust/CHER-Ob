@@ -87,6 +87,19 @@ class SearchAllWidget;
 #endif
 #endif
 
+class EventFilter : public QObject
+{
+	Q_OBJECT
+
+public:
+	bool eventFilter(QObject * obj, QEvent * e);
+
+signals:
+	void close();
+
+};
+
+
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
@@ -97,25 +110,11 @@ public:
   const QString appVer() const {return tr(" 1.5.0"); }
   const QString appBits() const {return tr(BITS); }
 
+  void getProjectInfo(QString& projectName, QString& location, QString& keyword, QString& affiliation, QString& userName, QString& description);
+  void setHandleMenu(QPoint p, Qt::Orientation o, QSplitter *origin);
+
   static bool QCallBack(const int pos, const char * str);
   static QProgressBar *qb;
-
-  CTControl * mCtControl;
-  PlotView * mPlotView;
-  LightControl *mLightControl;
-  LightControlRTI *mLightControlRTI;  //YY
-  RenderingDialog* rendDlg; //YY /*!< Widget to choose the rendering mode to apply to RTI image. */
-  Information *mInformation;
-  BookmarkWidget *mBookmark;
-  SearchWidget *mSearch;
-  SearchAllWidget *mSearchAll;
-  QTextEdit *mInfoText;
-  QDir lastUsedDirectory;
-  QDir lastSavedDirectory; // DT: Keeps track of screenshot/project saved location
-  QString mUserName;
-  bool unsavedChanges;
-
-  void setHandleMenu(QPoint p, Qt::Orientation o, QSplitter *origin);
 
   inline VtkView* currentVtkView() const {
     if(mdiArea->currentSubWindow()==0) return 0;
@@ -188,31 +187,31 @@ public:
       }
   }
 
-  void getProjectInfo(QString& projectName, QString& location, QString& keyword, QString& affiliation, QString& userName, QString& description);
+  QTabWidget* getTabWidgetTop() {return tabWidgetTop;}
+  QTabWidget* getSearchTabWidget();
+  void activateTabWidgetTop(int index)
+  {
+	  if (tabWidgetTop)
+		  tabWidgetTop->setCurrentIndex(index);
+  }
 
   friend bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item);
   friend Metadata::Metadata(QString path, VtkWidget *w, bool file);
 
-protected:
-  void closeEvent(QCloseEvent *event);
-
-private:
-  QWidget * mountWidgetCenter(QWidget *inputWidget);
-  QMdiArea *mdiArea;
-  QBuffer myLocalBuf;
-  QByteArray toolbarState;
-  QString currentProjectKeyword;
-  QString currentProjectAffiliation;
-  QString currentProjectDescription;
-  QString currentProjectName;
-  QString currentProjectFullName;
-  QString currentProjectSave;
-  QDomDocument currentProjectMetadata;
-  NewProjectDialog *mNewProjectDialog;
-  ProjectInfoDialog *mProjectInfoDialog;
-
-signals:
-  void currentWidgetModeChanged(WidgetMode widgetmode);
+  CTControl * mCtControl;
+  PlotView * mPlotView;
+  LightControl *mLightControl;
+  LightControlRTI *mLightControlRTI;  //YY
+  RenderingDialog* rendDlg; //YY /*!< Widget to choose the rendering mode to apply to RTI image. */
+  Information *mInformation;
+  BookmarkWidget *mBookmark;
+  SearchWidget *mSearch;
+  SearchAllWidget *mSearchAll;
+  QTextEdit *mInfoText;
+  QDir lastUsedDirectory;
+  QDir lastSavedDirectory; // DT: Keeps track of screenshot/project saved location
+  QString mUserName;
+  bool unsavedChanges;
 
 public slots:
   void updateAllViews();
@@ -220,11 +219,36 @@ public slots:
   bool openDICOM(const QString& fileNameStart = QString(), bool saveRecent = true); // open DICOM folder
   void createNewVtkProject(const QString fullName, const QString name, const USERMODE mode, const QString userName, 
 	  const QString object, const QString ct, const QString keyword, const QString affiliation, const QString description);
-
   void updateMenus(); // update toolbars
-
   void showFileInfo();
   void showProjectInfo();
+
+ signals:
+  void currentWidgetModeChanged(WidgetMode widgetmode);
+
+protected:
+  void closeEvent(QCloseEvent *event);
+
+private:
+  bool eventFilter(QObject* obj, QEvent* e);
+  void createActions();
+  void createMenus();
+  void createToolBars();
+  void createStatusBar();
+  void createDockWindows();
+
+  void readSettings();
+  void writeSettings();
+  void saveRecentFileList(const QString &fileName);
+  void updateRecentFileActions();
+  void saveRecentProjectList(const QString &projName);
+  void updateRecentProjActions();
+  bool cpDir(const QString &srcPath, const QString &dstPath);
+  bool rmDir(const QString &dirPath);
+  void createCTFolder(QString path);
+  void createObjectFolder(QString path);
+  void updateXML();
+  bool readXML(QString fileName, QVector<QString> &objectList, bool import);
 
 private slots:
   void zoomIn();
@@ -238,7 +262,9 @@ private slots:
   void switchLayoutDirection();
   void setActiveSubWindow(QWidget *window); // old
   void wrapSetActiveSubWindow(QWidget* window); //Solt Wrapper for QMdiArea
+  void closeAllWindows();
   void closeWindow();
+
   void closeAll();
   VtkWidget* newImage();
   void newVtkProject(const QString& projName = QString());// project
@@ -260,7 +286,6 @@ private slots:
   void setSplit(QAction *qa);
   void setUnsplit();
   void setCustomize() { return; }
-//  void showInfoPane() { return; }
   void showPolyIndicator() { return; }
 
   void splitFromHandle(QAction * qa);
@@ -313,26 +338,24 @@ private slots:
   void toggleImageProvenanceFeature();
 
 private:
-  void createActions();
-  void createMenus();
-  void createToolBars();
-  void createStatusBar();
-  void createDockWindows();
-
-  void readSettings();
-  void writeSettings();
-  void saveRecentFileList(const QString &fileName);
-  void updateRecentFileActions();
-  void saveRecentProjectList(const QString &projName);
-  void updateRecentProjActions();
-  bool cpDir(const QString &srcPath, const QString &dstPath);
-  bool rmDir(const QString &dirPath);
-  void createCTFolder(QString path);
-  void createObjectFolder(QString path);
-  void updateXML();
-  bool readXML(QString fileName, QVector<QString> &objectList, bool import);
+  QWidget * mountWidgetCenter(QWidget *inputWidget);
+  QMdiArea *mdiArea;
+  QBuffer myLocalBuf;
+  QByteArray toolbarState;
+  QString currentProjectKeyword;
+  QString currentProjectAffiliation;
+  QString currentProjectDescription;
+  QString currentProjectName;
+  QString currentProjectFullName;
+  QString currentProjectSave;
+  QDomDocument currentProjectMetadata;
+  NewProjectDialog *mNewProjectDialog;
+  ProjectInfoDialog *mProjectInfoDialog;
+  bool isCloseProject;
 
   QSignalMapper *windowMapper;
+  EventFilter *mEventFilter;
+   
 
   //---------------------------------------------
   // QMenus:
@@ -359,7 +382,12 @@ private:
   QMenu *unSplitMenu;
   QMenu *cameraModeMenu;
 
-private:
+  //---------------------------------------------
+  // QTabs:
+  QTabWidget* tabWidgetTop;
+  QTabWidget* tabWidgetMid;
+  QTabWidget* tabWidgetBottom;
+
   //---------------------------------------------
   // QToolbars
   QToolBar *mainToolBar;
@@ -373,7 +401,6 @@ private:
   //---------------------------------------------
   // QActions:
   QAction *exitAct;
-  QAction *closeAct;
   QAction *helpAct;
   QAction *aboutAct;
   QAction *viewAct;
@@ -462,23 +489,6 @@ private:
   QAction *setSurfaceWalkerCameraAct;
   QAction *showImageProvenanceAct;
   QShortcut *flattenShortcut;
-
-
-  // YY
-  private:
-	  QTabWidget* tabWidgetTop;
-	  QTabWidget* tabWidgetMid;
-	  QTabWidget* tabWidgetBottom;
-
-  public:
-	  QTabWidget* getTabWidgetTop() {return tabWidgetTop;}
-	  QTabWidget* getSearchTabWidget();
-	  void activateTabWidgetTop(int index)
-	  {
-		  if (tabWidgetTop)
-			  tabWidgetTop->setCurrentIndex(index);
-	  }
-
 };
 
 #endif

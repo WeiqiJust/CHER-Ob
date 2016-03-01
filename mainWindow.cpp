@@ -52,6 +52,23 @@
 
 QProgressBar *MainWindow::qb;
 
+bool EventFilter::eventFilter(QObject * obj, QEvent * e)
+{
+    switch (e->type())
+    {
+        case QEvent::Close:
+        {
+			emit close();
+			e->ignore();
+            return true;
+        }
+        default:
+            qt_noop();
+    }
+    return QObject::eventFilter(obj, e);
+}
+
+
 MainWindow::MainWindow()
 {
 //  setAttribute(Qt::WA_DeleteOnClose);// crash
@@ -62,6 +79,8 @@ MainWindow::MainWindow()
   mdiArea = new QMdiArea;
   mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  mEventFilter = new EventFilter();
+  connect(mEventFilter, SIGNAL(close()), this, SLOT(closeWindow()));
   setCentralWidget(mdiArea);
 
   connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)),this, SLOT(updateMenus()));
@@ -119,6 +138,7 @@ MainWindow::MainWindow()
   currentProjectMetadata.createElement("hyper3d.metadata");
   mNewProjectDialog = NULL;
   mProjectInfoDialog = NULL;
+  isCloseProject = false;
 
   setUnifiedTitleAndToolBarOnMac(true);
 
@@ -141,7 +161,15 @@ void MainWindow::updateAllViews()
   } else {
       currentProjectMetadata.clear();
   }
-  mInformation->reloadAnnotation();
+  if (mdiArea->subWindowList().size() > 0)
+  {
+	  if (!mdiArea->currentSubWindow()->isHidden())
+		mInformation->reloadAnnotation();
+	  else
+	  {
+		mInformation->clearAnnotation();
+	  }
+  }
   // having this here is important!
   updateMenus();
   updateWindowMenu();
@@ -213,34 +241,89 @@ void MainWindow::closeAll()
 {
     if(closeProject()) 
 	{
+		isCloseProject = true;	// skip the eventfilter
         mdiArea->closeAllSubWindows();
+		isCloseProject = false;
     }
 }
 
+void MainWindow::closeAllWindows()
+{   
+    if(!VTKA()) 
+	{
+        closeAll();
+		return;
+    }
+	else
+	{
+		
+		foreach(QMdiSubWindow* subWindow, mdiArea->subWindowList())
+		{
+			mdiArea->setActiveSubWindow(subWindow);
+			if (!this->mInformation->checkObjectSaved())
+			{ 
+				int ret = QMessageBox::warning(this, tr("Warning"),
+								   tr("The current object has unsaved changes. Do you wish to save before closing this window?"),
+								   QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+								   QMessageBox::Save);
+				if(ret == QMessageBox::Cancel) 
+				{
+					return;
+				}
+				else if (ret == QMessageBox::Save)
+				{
+					this->mInformation->saveObjectNotes();
+				}
+				else
+				{
+					this->mInformation->removeUnSavedNotes();
+				}
+			}
+			VTKA()->closeFileInfo();
+			this->mInformation->closeObjectNotes();
+			subWindow->hide();
+		}
+		updateMenus();
+		updateAllViews();
+	}	
+}
+
 void MainWindow::closeWindow()
-{
-    
+{   
     if(!VTKA()) {
         closeAll();
+		return;
     }
 	else
 	{
 		if (!this->mInformation->checkObjectSaved())
 		{ 
 			int ret = QMessageBox::warning(this, tr("Warning"),
-                               tr("The current object has unsaved changes. Do you wish to save before closing this window?"),
-                               QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-                               QMessageBox::Save);
-			if(ret == QMessageBox::Cancel) return;
+							   tr("The current object has unsaved changes. Do you wish to save before closing this window?"),
+							   QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+							   QMessageBox::Save);
+			if(ret == QMessageBox::Cancel) 
+			{
+				return;
+			}
 			else if (ret == QMessageBox::Save)
 			{
 				this->mInformation->saveObjectNotes();
+			}
+			else
+			{
+				this->mInformation->removeUnSavedNotes();
 			}
 		}
 		VTKA()->closeFileInfo();
 		this->mInformation->closeObjectNotes();
 	}
-	mdiArea->closeActiveSubWindow();
+	QMdiSubWindow* subWindow = mdiArea->currentSubWindow();
+	subWindow->hide();
+	mdiArea->activateNextSubWindow();
+	//qDebug()<<"window size"<<mdiArea->subWindowList().size();
+	updateMenus();
+    updateAllViews();
 }
 
 bool MainWindow::closeProject()
@@ -316,10 +399,10 @@ void MainWindow::updateXML()
 	projectInfo.appendChild(affiliation);
 	projectInfo.appendChild(description);
 	
-
     QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+	qDebug()<<"Update XML"<<windows.size();
     foreach(QMdiSubWindow *w, windows)
-    {
+	{
         VtkView* mvc = qobject_cast<VtkView *>(w->widget());
         VtkWidget* gla = mvc->currentView();
         QString file = gla->mFilename;
@@ -1142,7 +1225,9 @@ VtkWidget* MainWindow::newImage()
     //----------------------------------------------------------------------------------------------
     // Ver.1 (VTKwidget with VTKView)
     VtkView *mvcont = new VtkView(mdiArea);
-    mdiArea->addSubWindow(mvcont);
+    QMdiSubWindow* subWindow = mdiArea->addSubWindow(mvcont);
+	//subWindow->installEventFilter(mEventFilter);
+	subWindow->installEventFilter(this);
     VtkWidget *gla = new VtkWidget(mvcont);
     mvcont->addView(gla, Qt::Horizontal);// this fuction may destroy the renderer on mdiArea
     connect(mvcont,SIGNAL(updateMainWindowMenus()),this,SLOT(updateAllViews()));
@@ -1581,7 +1666,7 @@ void MainWindow::viewOptions()
 
 void MainWindow::updateRecentFileActions()
 {
-  bool activeDoc = (bool) !mdiArea->subWindowList().empty() && mdiArea->currentSubWindow();
+  //bool activeDoc = (bool) !mdiArea->subWindowList().empty() && mdiArea->currentSubWindow();
 
   QSettings settings("Yale Graphics Lab", "Hyper3D");
   QStringList files = settings.value("recentFileList").toStringList();
@@ -1616,8 +1701,6 @@ void MainWindow::updateRecentFileActions()
 
 void MainWindow::updateRecentProjActions()
 {
-  bool activeDoc = (bool) !mdiArea->subWindowList().empty() && mdiArea->currentSubWindow();
-
   QSettings settings("Yale Graphics Lab", "Hyper3D");
   QStringList projs = settings.value("recentProjList").toStringList();
 
@@ -1685,10 +1768,19 @@ void MainWindow::saveRecentProjectList(const QString &projName)
 
 void MainWindow::updateMenus()
 {
-  bool activeDoc;
+  bool activeDoc = false;;
   bool projectOpen = !currentProjectName.isEmpty();
   if (mdiArea)
-    activeDoc = (bool) !mdiArea->subWindowList().empty() && mdiArea->currentSubWindow();
+  {
+	foreach(QMdiSubWindow *w, mdiArea->subWindowList())
+	{
+	  if (!w->isHidden())
+	  {
+		  activeDoc = true;
+		  break;
+	  }
+	}
+  }
   else
     return;
   openProjectAct->setEnabled(true);
@@ -1749,8 +1841,8 @@ void MainWindow::updateMenus()
   showToolbarRenderAct->setChecked(renderToolBar->isVisible());
   showToolbarViewAct->setChecked(viewToolBar->isVisible());
   showToolbarInfoAct->setChecked(infoToolBar->isVisible());
-  this->mSearch->refreshSearchTab();
-  this->mSearchAll->refreshSearchTab();
+  this->mSearch->refreshSearchTab(activeDoc);
+  this->mSearchAll->refreshSearchTab(activeDoc);
 
   if(activeDoc && VTKA()){
 
@@ -1896,6 +1988,7 @@ void MainWindow::updateWindowMenu()
 {
   windowsMenu->clear();
   windowsMenu->addAction(closeAllAct);
+  windowsMenu->addAction(closeImageAct);
   windowsMenu->addSeparator();
   windowsMenu->addAction(windowsTileAct);
   windowsMenu->addAction(windowsMaximizeAct);
@@ -2197,6 +2290,27 @@ void MainWindow::toggleImageProvenanceFeature()
     VTKA()->toggleImageProvenanceFeature();
 }
 
+bool MainWindow::eventFilter(QObject * obj, QEvent * e)
+{
+    switch (e->type())
+    {
+        case QEvent::Close:
+        {
+			qDebug()<<"event filter!!!";
+			if (!isCloseProject)
+			{
+				closeWindow();
+				e->ignore();
+				return true;
+			}
+            break;
+        }
+        default:
+            qt_noop();
+    }
+    return QObject::eventFilter(obj, e);
+}
+
 void MainWindow::createActions()
 {
 	//===================================================================================================
@@ -2252,12 +2366,6 @@ void MainWindow::createActions()
     openDICOMAct->setStatusTip(tr("Open an existing CT directory"));
     connect(openDICOMAct, SIGNAL(triggered()), this, SLOT(openDICOM()));
 
-	closeImageAct = new QAction(tr("Close Window"), this);
-    closeImageAct->setShortcutContext(Qt::WidgetShortcut);
-    closeImageAct->setShortcut(Qt::CTRL+Qt::Key_W);
-    closeImageAct->setStatusTip(tr("Close the opened 2D iamge or 3D object"));
-    connect(closeImageAct, SIGNAL(triggered()), this, SLOT(closeWindow()));
-
 	for (int i = 0; i < MAXRECENTFILES; ++i)
 	{
 		recentProjActs[i] = new QAction(this);
@@ -2277,14 +2385,6 @@ void MainWindow::createActions()
     exitAct->setShortcuts(QKeySequence::Quit);
     exitAct->setStatusTip(tr("Exit the application"));
     connect(exitAct, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
-
-    closeAct = new QAction(tr("Cl&ose"), this);
-    closeAct->setStatusTip(tr("Close the active window"));
-    connect(closeAct, SIGNAL(triggered()), this, SLOT(closeWindow()));
-
-    closeAllAct = new QAction(tr("Close &All"), this);
-    closeAllAct->setStatusTip(tr("Close all the windows"));
-    connect(closeAllAct, SIGNAL(triggered()), this, SLOT(closeAll()));
 
     onlineHelpAct = new QAction(tr("Developers' &Website"), this);
     connect(onlineHelpAct, SIGNAL(triggered()), this, SLOT(helpOnline()));
@@ -2400,7 +2500,14 @@ void MainWindow::createActions()
     connect(windowsNextAct, SIGNAL(triggered()), mdiArea, SLOT(activateNextSubWindow()));
 
     closeAllAct = new QAction(tr("Close &All Windows"), this);
-    connect(closeAllAct, SIGNAL(triggered()), this, SLOT(closeAll()));
+	closeAllAct->setStatusTip(tr("Close all the windows"));
+    connect(closeAllAct, SIGNAL(triggered()), this, SLOT(closeAllWindows()));
+
+	closeImageAct = new QAction(tr("Close Current Window"), this);
+    closeImageAct->setShortcutContext(Qt::WidgetShortcut);
+    closeImageAct->setShortcut(Qt::CTRL+Qt::Key_W);
+    closeImageAct->setStatusTip(tr("Close the opened 2D iamge or 3D object window"));
+    connect(closeImageAct, SIGNAL(triggered()), this, SLOT(closeWindow()));
 
     setSplitGroupAct = new QActionGroup(this);	setSplitGroupAct->setExclusive(true);
     setSplitHAct	  = new QAction(QIcon(":/images/splitH.png"),tr("&Horizontally"),setSplitGroupAct);//
@@ -2517,7 +2624,6 @@ void MainWindow::createMenus()
   fileMenu->addAction(openImagesAct);
   fileMenu->addAction(openDICOMAct);
   fileMenu->addAction(importProjectAct);
-  fileMenu->addAction(closeImageAct);
 
   fileMenu->addSeparator();
 
