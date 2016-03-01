@@ -48,6 +48,8 @@
 #include <QRadioButton>
 #include <QObject>
 #include <QMessageBox>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 #include "vtkEnums.h"
 #include "vtkImageData.h"
 #include "vtkImageViewer2.h"
@@ -215,5 +217,34 @@ private:
 	QPushButton* okButton;
 };
 
+class OpenWindowDialog : public QWidget
+{
+	Q_OBJECT
+
+public:
+	OpenWindowDialog();
+
+	void addItem(QString name);
+
+	void exec()	{mDialog->exec();}
+
+	QStringList selectedItems()	{return mSelection;}
+
+private slots:
+	void ok();
+
+	void cancel();
+
+private:
+	QDialog* mDialog;
+	QVBoxLayout* mVBox;
+	QGridLayout* mGrid;
+	QLabel *mInstruction;
+	QTreeWidget* mTreeWidget;
+	QList<QTreeWidgetItem *> mItems;
+	QStringList mSelection;
+	QPushButton* mOkButton;
+	QPushButton* mCancelButton;
+};
 
 #endif // DIALOG_H

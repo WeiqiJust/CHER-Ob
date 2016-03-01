@@ -191,6 +191,7 @@ Information::Information(QWidget *parent)
   vlay->addLayout(hlay2);
 
   this->setLayout(vlay);
+  skipTextChange = false;
   this->show();
   
 }
@@ -239,17 +240,9 @@ void Information::initAnnotation(const QString path)
 
 void Information::annotationChanges()
 {
-	updateCurrentPath();/*
-	if (!dText->toPlainText().isEmpty())
-	{
-		saveButton->setEnabled(true);
-		removeButton->setEnabled(true);
-	}
-	else
-	{
-		saveButton->setEnabled(false);
-		removeButton->setEnabled(false);
-	}*/
+	if (skipTextChange)
+		return;
+	updateCurrentPath();
 	if (dText->toPlainText() != content[notePath].first)
 	{
 		content[notePath] = std::make_pair(dText->toPlainText(), false);
@@ -277,17 +270,21 @@ void Information::finishAnnotation()
 void Information::reloadAnnotation()
 {
 	updateCurrentPath();
-	bool saved = content[notePath].second;
+	//bool saved = content[notePath].second;
+	skipTextChange = true;
 	dText->setPlainText(content[notePath].first);
-	content[notePath].second = saved;
+	skipTextChange = false;
+	//content[notePath].second = saved;
 }
 
 void Information::clearAnnotation()
 {
 	updateCurrentPath();
-	bool saved = content[notePath].second;
+	//bool saved = content[notePath].second;
+	skipTextChange = true;
 	dText->clear();
-	content[notePath].second = saved;
+	skipTextChange = false;
+	//content[notePath].second = saved;
 }
 
 void Information::saveAnnotation()

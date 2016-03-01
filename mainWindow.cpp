@@ -52,23 +52,6 @@
 
 QProgressBar *MainWindow::qb;
 
-bool EventFilter::eventFilter(QObject * obj, QEvent * e)
-{
-    switch (e->type())
-    {
-        case QEvent::Close:
-        {
-			emit close();
-			e->ignore();
-            return true;
-        }
-        default:
-            qt_noop();
-    }
-    return QObject::eventFilter(obj, e);
-}
-
-
 MainWindow::MainWindow()
 {
 //  setAttribute(Qt::WA_DeleteOnClose);// crash
@@ -79,8 +62,6 @@ MainWindow::MainWindow()
   mdiArea = new QMdiArea;
   mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-  mEventFilter = new EventFilter();
-  connect(mEventFilter, SIGNAL(close()), this, SLOT(closeWindow()));
   setCentralWidget(mdiArea);
 
   connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)),this, SLOT(updateMenus()));
@@ -326,6 +307,42 @@ void MainWindow::closeWindow()
     updateAllViews();
 }
 
+void MainWindow::openWindow()
+{
+	OpenWindowDialog* dialog = new OpenWindowDialog();
+	QList<QMdiSubWindow*> subWindows = mdiArea->subWindowList();
+	foreach(QMdiSubWindow* w, subWindows)
+	{
+		if (!w->isHidden())
+			continue;
+		VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+        QStringList list = mvc->currentView()->mFilename.split(QDir::separator());
+		QString name = list[list.size()-1];
+		dialog->addItem(name);
+	}
+	dialog->exec();
+	QStringList selection = dialog->selectedItems();
+	if (selection.size() == 0)
+		return;
+	for (int i = 0; i < selection.size(); i++)
+	{
+		foreach(QMdiSubWindow* w, subWindows)
+		{
+			VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+			QStringList list = mvc->currentView()->mFilename.split(QDir::separator());
+			QString name = list[list.size()-1];
+			if (name == selection[i] && w->isHidden())
+			{
+				w->show();
+				mdiArea->setActiveSubWindow(w);
+				break;
+			}
+		}
+	}
+	delete dialog;
+	updateAllViews();
+}
+
 bool MainWindow::closeProject()
 {
 	if((unsavedChanges || !this->mInformation->checkAllSaved()) && VTKA()) {
@@ -400,7 +417,6 @@ void MainWindow::updateXML()
 	projectInfo.appendChild(description);
 	
     QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
-	qDebug()<<"Update XML"<<windows.size();
     foreach(QMdiSubWindow *w, windows)
 	{
         VtkView* mvc = qobject_cast<VtkView *>(w->widget());
@@ -1226,7 +1242,6 @@ VtkWidget* MainWindow::newImage()
     // Ver.1 (VTKwidget with VTKView)
     VtkView *mvcont = new VtkView(mdiArea);
     QMdiSubWindow* subWindow = mdiArea->addSubWindow(mvcont);
-	//subWindow->installEventFilter(mEventFilter);
 	subWindow->installEventFilter(this);
     VtkWidget *gla = new VtkWidget(mvcont);
     mvcont->addView(gla, Qt::Horizontal);// this fuction may destroy the renderer on mdiArea
@@ -1768,7 +1783,8 @@ void MainWindow::saveRecentProjectList(const QString &projName)
 
 void MainWindow::updateMenus()
 {
-  bool activeDoc = false;;
+  bool activeDoc = false;
+  bool isHidden = false;
   bool projectOpen = !currentProjectName.isEmpty();
   if (mdiArea)
   {
@@ -1780,6 +1796,14 @@ void MainWindow::updateMenus()
 		  break;
 	  }
 	}
+	foreach(QMdiSubWindow *w, mdiArea->subWindowList())
+	{
+	  if (w->isHidden())
+	  {
+		  isHidden = true;
+		  break;
+	  }
+	}
   }
   else
     return;
@@ -1787,8 +1811,7 @@ void MainWindow::updateMenus()
   openImagesAct->setEnabled(projectOpen);
   openDICOMAct->setEnabled(projectOpen);
   importProjectAct->setEnabled(projectOpen);
-  closeImageAct->setEnabled(activeDoc);
-
+  
   saveProjectAsAct->setEnabled(projectOpen && activeDoc);
   saveProjectAct->setEnabled(projectOpen && activeDoc);
   closeProjectAct->setEnabled(projectOpen);
@@ -1800,7 +1823,14 @@ void MainWindow::updateMenus()
   renderMenu->setEnabled(activeDoc);
   viewMenu->setEnabled(activeDoc);
   toolsMenu->setEnabled(activeDoc);
-  windowsMenu->setEnabled(activeDoc);
+  windowsMenu->setEnabled(projectOpen);
+  closeWindowAct->setEnabled(activeDoc);
+  closeAllAct->setEnabled(activeDoc);
+  windowsTileAct->setEnabled(activeDoc);
+  windowsCascadeAct->setEnabled(activeDoc);
+  windowsNextAct->setEnabled(activeDoc);
+  windowsMaximizeAct->setEnabled(activeDoc);
+  openWindowAct->setEnabled(isHidden);
   viewFromMenu->setEnabled(activeDoc);
   renderModeInterpolationAct->setEnabled(activeDoc);
 
@@ -1988,23 +2018,24 @@ void MainWindow::updateWindowMenu()
 {
   windowsMenu->clear();
   windowsMenu->addAction(closeAllAct);
-  windowsMenu->addAction(closeImageAct);
+  windowsMenu->addAction(closeWindowAct);
+  windowsMenu->addAction(openWindowAct);
   windowsMenu->addSeparator();
   windowsMenu->addAction(windowsTileAct);
   windowsMenu->addAction(windowsMaximizeAct);
   windowsMenu->addAction(windowsNextAct);
 
-  closeAllAct->setEnabled(mdiArea-> subWindowList().size()>0);
-  windowsTileAct->setEnabled(mdiArea-> subWindowList().size()>1);
+  //closeAllAct->setEnabled(mdiArea-> subWindowList().size()>0);
+ // windowsTileAct->setEnabled(mdiArea-> subWindowList().size()>1);
 
 #ifdef SUPPORT_WINDOWS_CASCADE
   windowsMenu->addAction(windowsCascadeAct);
   windowsCascadeAct->setEnabled(mdiArea-> subWindowList().size()>1);
 #endif
 
-  windowsMaximizeAct->setEnabled(mdiArea-> subWindowList().size()>0);
+  //windowsMaximizeAct->setEnabled(mdiArea-> subWindowList().size()>0);
 
-  windowsNextAct->setEnabled(mdiArea-> subWindowList().size()>1);
+  //windowsNextAct->setEnabled(mdiArea-> subWindowList().size()>1);
 
 #ifdef SUPPORT_SPINANIMATION
   windowsMenu->addSeparator();
@@ -2049,6 +2080,8 @@ void MainWindow::updateWindowMenu()
   int i=0;
   foreach(QWidget *w,windows)
   {
+	if (w->isHidden())
+		continue;
     QString text = tr("&%1. %2").arg(i+1).arg(QFileInfo(w->windowTitle()).fileName());
     QAction *action  = windowsMenu->addAction(text);
     action->setCheckable(true);
@@ -2296,7 +2329,6 @@ bool MainWindow::eventFilter(QObject * obj, QEvent * e)
     {
         case QEvent::Close:
         {
-			qDebug()<<"event filter!!!";
 			if (!isCloseProject)
 			{
 				closeWindow();
@@ -2503,11 +2535,15 @@ void MainWindow::createActions()
 	closeAllAct->setStatusTip(tr("Close all the windows"));
     connect(closeAllAct, SIGNAL(triggered()), this, SLOT(closeAllWindows()));
 
-	closeImageAct = new QAction(tr("Close Current Window"), this);
-    closeImageAct->setShortcutContext(Qt::WidgetShortcut);
-    closeImageAct->setShortcut(Qt::CTRL+Qt::Key_W);
-    closeImageAct->setStatusTip(tr("Close the opened 2D iamge or 3D object window"));
-    connect(closeImageAct, SIGNAL(triggered()), this, SLOT(closeWindow()));
+	closeWindowAct = new QAction(tr("Close Current Window"), this);
+    closeWindowAct->setShortcutContext(Qt::WidgetShortcut);
+    closeWindowAct->setShortcut(Qt::CTRL+Qt::Key_W);
+    closeWindowAct->setStatusTip(tr("Close the opened 2D image or 3D object window"));
+    connect(closeWindowAct, SIGNAL(triggered()), this, SLOT(closeWindow()));
+
+	openWindowAct = new QAction(tr("Open Closed Window"), this);
+    openWindowAct->setStatusTip(tr("Open the closed window for 2D image or 3D object"));
+    connect(openWindowAct, SIGNAL(triggered()), this, SLOT(openWindow()));
 
     setSplitGroupAct = new QActionGroup(this);	setSplitGroupAct->setExclusive(true);
     setSplitHAct	  = new QAction(QIcon(":/images/splitH.png"),tr("&Horizontally"),setSplitGroupAct);//

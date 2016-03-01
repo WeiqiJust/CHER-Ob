@@ -148,8 +148,8 @@ NewProjectDialog::NewProjectDialog(const QString path)
 	connect(mNextButton, SIGNAL(clicked()), this, SLOT(next()));
 	mCancelButton = new QPushButton("Cancel");
 	connect(mCancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
-	mButtonGridBox->addWidget(mNextButton, 0, 4, 1, 3,  Qt::AlignVCenter | Qt::AlignRight);
-	mButtonGridBox->addWidget(mCancelButton, 0, 4, 1, 4, Qt::AlignVCenter | Qt::AlignRight);
+	mButtonGridBox->addWidget(mNextButton, 0, 5, 1, 4,  Qt::AlignVCenter | Qt::AlignRight);
+	mButtonGridBox->addWidget(mCancelButton, 0, 5, 1, 5, Qt::AlignVCenter | Qt::AlignRight);
 	
 	mVbox->addWidget(mGroupBox);
 	mVbox->addWidget(mLoadDataGroupBox);
@@ -654,7 +654,62 @@ ProjectInfoDialog::ProjectInfoDialog(const QString name, const QString path, con
     mDialog->setMinimumWidth(350);
     mDialog->adjustSize();
     mDialog->show();
-
-
 }
 
+OpenWindowDialog::OpenWindowDialog()
+{
+	mDialog = new QDialog();
+	mVBox = new QVBoxLayout();
+	mGrid = new QGridLayout();
+	mDialog->setWindowTitle(tr("Open Window"));
+	mInstruction = new QLabel(tr("Please select the closed window to open"));
+
+	mOkButton = new QPushButton("OK");
+	mCancelButton = new QPushButton("Cancel");
+	mOkButton->adjustSize();
+	mCancelButton->adjustSize();
+	
+	connect(mOkButton, SIGNAL(clicked()), this, SLOT(ok()));
+	connect(mCancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
+
+	mTreeWidget = new QTreeWidget();
+	mTreeWidget->setColumnCount(1);
+	mTreeWidget->setColumnWidth(0, 250);
+
+	QStringList ColumnNames;
+	ColumnNames << "Object" ;
+	mTreeWidget->setHeaderLabels(ColumnNames);
+	mTreeWidget->setSortingEnabled(true);
+
+	mGrid->addWidget(mOkButton, 0, 3, 1, 2,  Qt::AlignVCenter | Qt::AlignRight);
+	mGrid->addWidget(mCancelButton, 0, 3, 1, 3, Qt::AlignVCenter | Qt::AlignRight);
+	
+	mVBox->addWidget(mInstruction);
+	mVBox->addWidget(mTreeWidget);
+	mVBox->addLayout(mGrid);
+	mDialog->setLayout(mVBox);
+}
+
+void OpenWindowDialog::addItem(QString name)
+{
+	QStringList list;
+	list.append(name);
+	QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
+	mItems.append(item);
+	mTreeWidget->addTopLevelItem(item);
+}
+
+void OpenWindowDialog::ok()
+{
+	QList<QTreeWidgetItem*> selected = mTreeWidget->selectedItems();
+	foreach(QTreeWidgetItem* item, selected)
+	{
+		mSelection.append(item->text(0));
+	}
+	mDialog->close();
+}
+
+void OpenWindowDialog::cancel()
+{
+	mDialog->close();
+}

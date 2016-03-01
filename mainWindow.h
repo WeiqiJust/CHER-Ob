@@ -87,19 +87,6 @@ class SearchAllWidget;
 #endif
 #endif
 
-class EventFilter : public QObject
-{
-	Q_OBJECT
-
-public:
-	bool eventFilter(QObject * obj, QEvent * e);
-
-signals:
-	void close();
-
-};
-
-
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
@@ -264,6 +251,7 @@ private slots:
   void wrapSetActiveSubWindow(QWidget* window); //Solt Wrapper for QMdiArea
   void closeAllWindows();
   void closeWindow();
+  void openWindow();
 
   void closeAll();
   VtkWidget* newImage();
@@ -354,8 +342,6 @@ private:
   bool isCloseProject;
 
   QSignalMapper *windowMapper;
-  EventFilter *mEventFilter;
-   
 
   //---------------------------------------------
   // QMenus:
@@ -408,7 +394,6 @@ private:
   QAction *newVtkProjectAct;
   QAction *openImagesAct;
   QAction *openDICOMAct;
-  QAction *closeImageAct;
   QAction *openProjectAct,*saveProjectAct,*saveProjectAsAct, *importProjectAct;
   QAction *closeProjectAct;
   QAction *recentProjActs[MAXRECENTFILES];
@@ -432,6 +417,8 @@ private:
   QAction *windowsNextAct;
   QAction *windowsMaximizeAct;
   QAction *closeAllAct;
+  QAction *closeWindowAct;
+  QAction *openWindowAct;
 
   QAction *zoomResetAct;
   QAction *zoomInAct;

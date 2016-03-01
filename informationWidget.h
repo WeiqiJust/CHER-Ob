@@ -199,7 +199,8 @@ private:
   QMap<QString, QVector<FrustumNote*>> mFrustumNotes;
   QMap<QString, QVector<PointNote2D*>> mPointNotes2D;
   QMap<QString, QVector<SurfaceNote2D*>> mSurfaceNotes2D;
-  QMap<QString, bool> hasNotesRemoved;	
+  QMap<QString, bool> hasNotesRemoved;
+  bool skipTextChange;
 };
 #endif // INFORMATION_H
 
