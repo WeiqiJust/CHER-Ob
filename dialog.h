@@ -247,4 +247,39 @@ private:
 	QPushButton* mCancelButton;
 };
 
+class RemoveObjectDialog : public QWidget
+{
+	Q_OBJECT
+
+public:
+	RemoveObjectDialog();
+
+	void addItem(QString name);
+
+	void exec()	{mDialog->exec();}
+
+	QStringList selectedItems()	{return mSelection;}
+
+	bool  checkExport()	{return isExport;}
+
+	QString getPath()	{return mPath;}
+
+private slots:
+	void ok();
+
+	void cancel();
+
+private:
+	QDialog* mDialog;
+	QVBoxLayout* mVBox;
+	QGridLayout* mGrid;
+	QLabel *mInstruction;
+	QTreeWidget* mTreeWidget;
+	QList<QTreeWidgetItem *> mItems;
+	QStringList mSelection;
+	QPushButton* mOkButton;
+	QPushButton* mCancelButton;
+	bool isExport;
+	QString mPath;
+};
 #endif // DIALOG_H

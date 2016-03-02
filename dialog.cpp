@@ -713,3 +713,75 @@ void OpenWindowDialog::cancel()
 {
 	mDialog->close();
 }
+
+RemoveObjectDialog::RemoveObjectDialog()
+{
+	mDialog = new QDialog();
+	mVBox = new QVBoxLayout();
+	mGrid = new QGridLayout();
+	mDialog->setWindowTitle(tr("Remove Object"));
+	mInstruction = new QLabel(tr("Please select the obejct to be removed"));
+
+	mOkButton = new QPushButton("OK");
+	mCancelButton = new QPushButton("Cancel");
+	mOkButton->adjustSize();
+	mCancelButton->adjustSize();
+	
+	connect(mOkButton, SIGNAL(clicked()), this, SLOT(ok()));
+	connect(mCancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
+
+	mTreeWidget = new QTreeWidget();
+	mTreeWidget->setColumnCount(1);
+	mTreeWidget->setColumnWidth(0, 250);
+
+	QStringList ColumnNames;
+	ColumnNames << "Object" ;
+	mTreeWidget->setHeaderLabels(ColumnNames);
+	mTreeWidget->setSortingEnabled(true);
+
+	mGrid->addWidget(mOkButton, 0, 3, 1, 2,  Qt::AlignVCenter | Qt::AlignRight);
+	mGrid->addWidget(mCancelButton, 0, 3, 1, 3, Qt::AlignVCenter | Qt::AlignRight);
+	
+	mVBox->addWidget(mInstruction);
+	mVBox->addWidget(mTreeWidget);
+	mVBox->addLayout(mGrid);
+	mDialog->setLayout(mVBox);
+	isExport = false;
+	mPath = QString("");
+}
+
+void RemoveObjectDialog::addItem(QString name)
+{
+	QStringList list;
+	list.append(name);
+	QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
+	mItems.append(item);
+	mTreeWidget->addTopLevelItem(item);
+}
+
+void RemoveObjectDialog::ok()
+{
+	int ret = QMessageBox::warning(this, tr("Warning"),
+                               tr("Do you want to save the selected object into other place before removing it? "),
+                               QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel,
+                               QMessageBox::Yes);
+	if(ret == QMessageBox::Cancel) return;
+	else if (ret == QMessageBox::Yes)
+	{
+		QList<QTreeWidgetItem*> selected = mTreeWidget->selectedItems();
+		foreach(QTreeWidgetItem* item, selected)
+		{
+			mSelection.append(item->text(0));
+		}
+		mPath = QFileDialog::getExistingDirectory(this, tr("Export Location"), QString(),
+                                                   QFileDialog::ShowDirsOnly
+                                                   | QFileDialog::DontResolveSymlinks);
+		isExport = true;
+	}
+	mDialog->close();
+}
+
+void RemoveObjectDialog::cancel()
+{
+	mDialog->close();
+}

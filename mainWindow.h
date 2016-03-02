@@ -261,6 +261,7 @@ private slots:
   bool saveProjectAs();
   bool closeProject();
   void importProject();
+  void removeObject();
   void openRecentFile();
   void openRecentProj();
   void helpOnline();
@@ -339,7 +340,7 @@ private:
   QDomDocument currentProjectMetadata;
   NewProjectDialog *mNewProjectDialog;
   ProjectInfoDialog *mProjectInfoDialog;
-  bool isCloseProject;
+  bool isClose;
 
   QSignalMapper *windowMapper;
 
@@ -392,8 +393,9 @@ private:
   QAction *viewAct;
   QAction *setCustomizeAct;
   QAction *newVtkProjectAct;
-  QAction *openImagesAct;
+  QAction *openObjectAct;
   QAction *openDICOMAct;
+  QAction *removeObjectAct;
   QAction *openProjectAct,*saveProjectAct,*saveProjectAsAct, *importProjectAct;
   QAction *closeProjectAct;
   QAction *recentProjActs[MAXRECENTFILES];

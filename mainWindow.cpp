@@ -119,7 +119,7 @@ MainWindow::MainWindow()
   currentProjectMetadata.createElement("hyper3d.metadata");
   mNewProjectDialog = NULL;
   mProjectInfoDialog = NULL;
-  isCloseProject = false;
+  isClose = false;
 
   setUnifiedTitleAndToolBarOnMac(true);
 
@@ -209,7 +209,9 @@ void MainWindow::renderPolyIndicate()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+	isClose = true;
     mdiArea->closeAllSubWindows();
+	isClose = false;
     if (mdiArea->currentSubWindow()) {
         event->ignore();
     } else {
@@ -222,9 +224,9 @@ void MainWindow::closeAll()
 {
     if(closeProject()) 
 	{
-		isCloseProject = true;	// skip the eventfilter
+		isClose = true;	// skip the eventfilter
         mdiArea->closeAllSubWindows();
-		isCloseProject = false;
+		isClose = false;
     }
 }
 
@@ -345,7 +347,7 @@ void MainWindow::openWindow()
 
 bool MainWindow::closeProject()
 {
-	if((unsavedChanges || !this->mInformation->checkAllSaved()) && VTKA()) {
+	if((unsavedChanges || (!this->mInformation->checkAllSaved()) && VTKA())) {
         QMessageBox mb;
         QString message;
 
@@ -1496,6 +1498,58 @@ bool MainWindow::openDICOM(const QString& fileNameStart, bool saveRecent)
 	else return false;
 }
 
+void MainWindow::removeObject()
+{
+	RemoveObjectDialog* dialog = new RemoveObjectDialog();
+	QList<QMdiSubWindow*> subWindows = mdiArea->subWindowList();
+	foreach(QMdiSubWindow* w, subWindows)
+	{
+		VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+        QStringList list = mvc->currentView()->mFilename.split(QDir::separator());
+		QString name = list[list.size()-1];
+		dialog->addItem(name);
+	}
+	dialog->exec();
+	QStringList selection = dialog->selectedItems();
+	if (selection.size() == 0)
+		return;
+	bool isExport = dialog->checkExport();
+	for (int i = 0; i < selection.size(); i++)
+	{
+		foreach(QMdiSubWindow* w, subWindows)
+		{
+			VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+			QString filePath = mvc->currentView()->mProjectPath;
+			QStringList list = mvc->currentView()->mFilename.split(QDir::separator());
+			QString name = list[list.size()-1];
+			if (name == selection[i])
+			{
+				QString mPath;
+				if (isExport)
+				{
+					mPath = dialog->getPath();
+					if (!mPath.isEmpty())
+					{
+						mPath = QDir::toNativeSeparators(mPath);
+						mPath.append(QDir::separator() + name);
+						QDir().mkdir(mPath);
+						cpDir(filePath, mPath);
+					}
+					else return;
+				}
+				rmDir(filePath);
+				isClose = true;
+				mdiArea->removeSubWindow(w);
+				isClose = false;
+				break;
+			}
+		}
+	}
+	delete dialog;
+	updateXML();
+	updateAllViews();
+}
+
 bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent)
 {
 	//MK: file filters
@@ -1808,9 +1862,10 @@ void MainWindow::updateMenus()
   else
     return;
   openProjectAct->setEnabled(true);
-  openImagesAct->setEnabled(projectOpen);
+  openObjectAct->setEnabled(projectOpen);
   openDICOMAct->setEnabled(projectOpen);
   importProjectAct->setEnabled(projectOpen);
+  removeObjectAct->setEnabled(projectOpen);
   
   saveProjectAsAct->setEnabled(projectOpen && activeDoc);
   saveProjectAct->setEnabled(projectOpen && activeDoc);
@@ -1826,10 +1881,6 @@ void MainWindow::updateMenus()
   windowsMenu->setEnabled(projectOpen);
   closeWindowAct->setEnabled(activeDoc);
   closeAllAct->setEnabled(activeDoc);
-  windowsTileAct->setEnabled(activeDoc);
-  windowsCascadeAct->setEnabled(activeDoc);
-  windowsNextAct->setEnabled(activeDoc);
-  windowsMaximizeAct->setEnabled(activeDoc);
   openWindowAct->setEnabled(isHidden);
   viewFromMenu->setEnabled(activeDoc);
   renderModeInterpolationAct->setEnabled(activeDoc);
@@ -2025,17 +2076,28 @@ void MainWindow::updateWindowMenu()
   windowsMenu->addAction(windowsMaximizeAct);
   windowsMenu->addAction(windowsNextAct);
 
-  //closeAllAct->setEnabled(mdiArea-> subWindowList().size()>0);
- // windowsTileAct->setEnabled(mdiArea-> subWindowList().size()>1);
+  int activeWindows = 0;
+  if (mdiArea)
+  {
+	foreach(QMdiSubWindow *w, mdiArea->subWindowList())
+	{
+	  if (!w->isHidden())
+	  {
+		activeWindows++;
+	  }
+	}
+  }
+
+  windowsTileAct->setEnabled(activeWindows > 1);
 
 #ifdef SUPPORT_WINDOWS_CASCADE
   windowsMenu->addAction(windowsCascadeAct);
   windowsCascadeAct->setEnabled(mdiArea-> subWindowList().size()>1);
 #endif
 
-  //windowsMaximizeAct->setEnabled(mdiArea-> subWindowList().size()>0);
+  windowsMaximizeAct->setEnabled(activeWindows > 0);
 
-  //windowsNextAct->setEnabled(mdiArea-> subWindowList().size()>1);
+  windowsNextAct->setEnabled( activeWindows > 1);
 
 #ifdef SUPPORT_SPINANIMATION
   windowsMenu->addSeparator();
@@ -2329,7 +2391,7 @@ bool MainWindow::eventFilter(QObject * obj, QEvent * e)
     {
         case QEvent::Close:
         {
-			if (!isCloseProject)
+			if (!isClose)
 			{
 				closeWindow();
 				e->ignore();
@@ -2386,17 +2448,21 @@ void MainWindow::createActions()
     setCustomizeAct->setStatusTip(tr("Customize user preferences"));
     connect(setCustomizeAct, SIGNAL(triggered()), this, SLOT(setCustomize()));
 
-    openImagesAct = new QAction(QIcon(":/images/open2-3d.png"),tr("&Import Object..."), this);
-    openImagesAct->setShortcutContext(Qt::ApplicationShortcut);
-    openImagesAct->setShortcut(Qt::CTRL+Qt::Key_I);
-    openImagesAct->setStatusTip(tr("Open an existing 2D or 3D image"));
-    connect(openImagesAct, SIGNAL(triggered()), this, SLOT(openImages()));
+    openObjectAct = new QAction(QIcon(":/images/open2-3d.png"),tr("&Import Object..."), this);
+    openObjectAct->setShortcutContext(Qt::ApplicationShortcut);
+    openObjectAct->setShortcut(Qt::CTRL+Qt::Key_I);
+    openObjectAct->setStatusTip(tr("Open an existing 2D or 3D object"));
+    connect(openObjectAct, SIGNAL(triggered()), this, SLOT(openImages()));
 
     openDICOMAct = new QAction(QIcon(":/images/openct.png"),tr("Import C&T Directory..."), this);
     openDICOMAct->setShortcutContext(Qt::ApplicationShortcut);
     openDICOMAct->setShortcut(Qt::CTRL+Qt::Key_T);
     openDICOMAct->setStatusTip(tr("Open an existing CT directory"));
     connect(openDICOMAct, SIGNAL(triggered()), this, SLOT(openDICOM()));
+
+	removeObjectAct = new QAction(tr("&Remove Object"), this);
+    removeObjectAct->setStatusTip(tr("Remove existing 2D or 3D object from Project"));
+    connect(removeObjectAct, SIGNAL(triggered()), this, SLOT(removeObject()));
 
 	for (int i = 0; i < MAXRECENTFILES; ++i)
 	{
@@ -2657,9 +2723,10 @@ void MainWindow::createMenus()
   fileMenu->addAction(closeProjectAct);
   
   fileMenu->addSeparator();
-  fileMenu->addAction(openImagesAct);
+  fileMenu->addAction(openObjectAct);
   fileMenu->addAction(openDICOMAct);
   fileMenu->addAction(importProjectAct);
+  fileMenu->addAction(removeObjectAct);
 
   fileMenu->addSeparator();
 
@@ -2781,7 +2848,7 @@ void MainWindow::createToolBars()
   mainToolBar->addAction(this->newVtkProjectAct);
   mainToolBar->addSeparator();
   mainToolBar->addAction(this->openProjectAct);
-  mainToolBar->addAction(this->openImagesAct);
+  mainToolBar->addAction(this->openObjectAct);
   mainToolBar->addAction(this->openDICOMAct);
   mainToolBar->addSeparator();
   mainToolBar->addAction(this->saveProjectAsAct);
