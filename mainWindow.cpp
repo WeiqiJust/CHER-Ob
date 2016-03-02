@@ -3274,8 +3274,20 @@ void MainWindow::showProjectInfo()
 		}
 		mProjectInfoDialog = new ProjectInfoDialog(currentProjectName, currentProjectFullName, 
 			currentProjectKeyword, currentProjectAffiliation, mUserName, currentProjectDescription);
+		connect(mProjectInfoDialog, SIGNAL(projectInfoChanged(const QString, const QString, const QString, const QString)), 
+			this, SLOT(projectInfoChanged(const QString, const QString, const QString, const QString)));
+		mProjectInfoDialog->exec();
 	}
     updateMenus();
+}
+
+void MainWindow::projectInfoChanged(const QString userName, const QString keyword, const QString affiliation, const QString description)
+{
+	mUserName = userName;
+	currentProjectKeyword = keyword;
+	currentProjectAffiliation = affiliation;
+	currentProjectDescription = description;
+	updateXML();
 }
 
 void MainWindow::switchLayoutDirection()

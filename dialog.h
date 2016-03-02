@@ -201,20 +201,42 @@ class ProjectInfoDialog : public QWidget
 
 public:
 	ProjectInfoDialog(const QString name, const QString path, const QString keyword, const QString affiliation,
-		const QString userName, const QString descrption);
+		const QString userName, const QString description);
+
+	void exec()	{mDialog->exec();}
 
 public slots:
-	void hide()	{mDialog->hide();}
+	void hide();
+
+	void edit();
+
+	void save();
+
+private:
+	bool eventFilter(QObject* obj, QEvent* e);
+
+	bool saveNotification();
+
+signals:
+	void projectInfoChanged(const QString userName, const QString keyword, const QString affiliation, const QString descrption);
 
 private:
 	QDialog* mDialog;
 	QGridLayout* mGrid;
 	QVBoxLayout* mVBox;
 	QHBoxLayout* mHBox;
+	QHBoxLayout* mHBoxDescription;
 	QLabel *mName, *mNameContent, *mPath, *mPathContent, *mKeyword, *mKeywordContent, *mAffiliation, *mAffiliationContent;
-	QLabel *mUserName, *mUserNameContent, *mDescription;
-	QTextEdit* mDescriptionContent;
-	QPushButton* okButton;
+	QLabel *mUserName, *mUserNameContent, *mDescription, *mDescriptionContent;
+	QLineEdit *mUserNameLineEdit, *mKeywordLineEdit, *mAffiliationLineEdit;
+	QTextEdit* mDescriptionText;
+	QPushButton* cancelButton;
+	QPushButton* editButton;
+	QPushButton* saveButton;
+	QString mCurrentKeyword;
+	QString mCurrentAffiliation;
+	QString mCurrentUserName;
+	QString mCurrentDescription;
 };
 
 class OpenWindowDialog : public QWidget

@@ -207,6 +207,7 @@ public slots:
   void updateMenus(); // update toolbars
   void showFileInfo();
   void showProjectInfo();
+  void projectInfoChanged(const QString userName, const QString keyword, const QString affiliation, const QString description);
 
  signals:
   void currentWidgetModeChanged(WidgetMode widgetmode);
