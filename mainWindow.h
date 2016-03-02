@@ -204,8 +204,6 @@ public slots:
   void updateAllViews();
   bool openImages(const QString& fileNameStart = QString(), bool saveRecent = true); // open 2/3D image
   bool openDICOM(const QString& fileNameStart = QString(), bool saveRecent = true); // open DICOM folder
-  void createNewVtkProject(const QString fullName, const QString name, const USERMODE mode, const QString userName, 
-	  const QString object, const QString ct, const QString keyword, const QString affiliation, const QString description);
   void updateMenus(); // update toolbars
   void showFileInfo();
   void showProjectInfo();
@@ -256,9 +254,12 @@ private slots:
   void closeAll();
   VtkWidget* newImage();
   void newVtkProject(const QString& projName = QString());// project
+  void createNewVtkProject(const QString fullName, const QString name, const USERMODE mode, const QString userName, 
+	  const QString object, const QString ct, const QString keyword, const QString affiliation, const QString description);
   bool openProject(QString fileName=QString());
   void saveProject();
-  bool saveProjectAs();
+  void saveProjectAs();
+
   bool closeProject();
   void importProject();
   void removeObject();

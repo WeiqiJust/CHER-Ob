@@ -282,4 +282,89 @@ private:
 	bool isExport;
 	QString mPath;
 };
+
+class SaveProjectAsDialog : public QWidget
+{
+	Q_OBJECT
+
+public:
+    SaveProjectAsDialog(const QString user, const QString keyword, const QString affiliation, const QString description, const QString path = NULL);
+
+	QString getProjectName()	{return mProjectNameEdit->text();}
+
+	QString getProjectPath()	{return mLocationLineEdit->text();}
+
+	QString getUserName()	{return mUserNameLineEdit->text();}
+
+	QString getKeyword()	{return mKeywordLineEdit->text();}
+
+	QString getAffiliation()	{return mAffiliationLineEdit->text();}
+
+	QString getDescription()	{return mDescriptionEdit->toPlainText();}
+
+	void exec()	{mDialog->exec();}
+
+	bool checkOk()	{return isOk;}
+
+
+
+signals:
+	void infoUpdate();
+
+private slots:	
+	void locationBrowse();
+
+	void next();
+
+	void cancel();
+
+	void projectNameChanged(QString name);
+
+	void projectPathChanged(QString path);
+
+	void enableNextButton();
+
+	void nextReady();
+
+	void nextCancel();
+
+private:
+	QDialog* mDialog;
+	QVBoxLayout* mVbox;
+	QHBoxLayout* mUserNameHBox;
+	QHBoxLayout* mProjectHBox;
+	QHBoxLayout* mLocationHBox;
+	QHBoxLayout* mKeywordHBox;
+	QHBoxLayout* mAffiliationHBox;
+	
+	QGridLayout* mButtonGridBox;
+
+	QGroupBox *mGroupBox;
+
+	QPushButton* mLocationBrowseButton;
+    QPushButton* mNextButton;
+    QPushButton* mCancelButton;
+
+	QLabel *mUserNameLabel;
+    QLabel *mProjectNameLabel;
+    QLabel *mLocationLabel;
+	QLabel *mKeywordLabel;
+	QLabel *mAffiliationLabel;
+	QLabel *mDescriptionLabel;
+	
+	QLineEdit *mUserNameLineEdit;
+    QLineEdit *mProjectNameEdit;
+    QLineEdit *mLocationLineEdit;
+	QLineEdit *mKeywordLineEdit;
+	QLineEdit *mAffiliationLineEdit;
+	QTextEdit* mDescriptionEdit;
+
+	QString mLastPath;
+	QString mProjectPath;
+	QString mProjectName;
+	QString mFullPath;
+	bool isOk;
+
+};
+
 #endif // DIALOG_H

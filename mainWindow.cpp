@@ -1033,21 +1033,44 @@ void MainWindow::saveProject()
     saveRecentProjectList(QDir::fromNativeSeparators(finfo.absoluteFilePath()));
 }
 
-bool MainWindow::saveProjectAs()
+void MainWindow::saveProjectAs()
 {
-	QString fn = QFileDialog::getExistingDirectory(this, tr("Save Project As.."), lastSavedDirectory.path().append(""),
-														QFileDialog::ShowDirsOnly
-                                                       | QFileDialog::DontResolveSymlinks);
+	SaveProjectAsDialog* dialog = new SaveProjectAsDialog(mUserName, currentProjectKeyword, currentProjectAffiliation, currentProjectDescription, this->lastUsedDirectory.path());
+	dialog->exec();
+	if (!dialog->checkOk())
+		return;
+
+	//QString fn = QFileDialog::getExistingDirectory(this, tr("Save Project As.."), lastSavedDirectory.path().append(""),
+	//													QFileDialog::ShowDirsOnly
+    //                                                   | QFileDialog::DontResolveSymlinks);
+	QString fn = dialog->getProjectPath();
 	fn = QDir::toNativeSeparators(fn);
 
 	if(!fn.isEmpty() && QDir(fn).isReadable())
 	{
+		QString previousName = currentProjectName;
+		currentProjectName = dialog->getProjectName();
+		mUserName = dialog->getUserName();
+		currentProjectKeyword = dialog->getKeyword();
+		currentProjectAffiliation = dialog->getAffiliation();
+		currentProjectDescription = dialog->getDescription();
 		QString newProjectPath = fn;
-		newProjectPath.append(QDir::separator() + currentProjectName);
+		if (newProjectPath[newProjectPath.size()-1] == QDir::separator())
+		{
+			newProjectPath.append(currentProjectName);
+		}
+		else
+		{
+			newProjectPath.append(QDir::separator() + currentProjectName);
+		}
 		if (!QDir().exists(newProjectPath))	QDir().mkdir(newProjectPath);
 
 		cpDir(currentProjectFullName, newProjectPath);
 
+		QString previousXML = newProjectPath;
+		previousXML.append(QDir::separator() + previousName + QString(".xml"));
+		QFile file(previousXML);
+		file.remove();
         currentProjectSave = newProjectPath;
 		currentProjectSave.append(QDir::separator() + currentProjectName + QString(".xml"));
 		currentProjectFullName = newProjectPath;
@@ -1064,15 +1087,16 @@ bool MainWindow::saveProjectAs()
 			w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
 			this->mInformation->initAnnotation(mvc->currentView()->mProjectPath);
 		}
+		setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
 		updateXML();
 		
-        return true;
+        return;
     } 
 	else if (!fn.isEmpty())
 	{
 		QMessageBox mb;
         mb.critical(this, tr("Save Project Error"), tr("Failed to Save Project! The Path Does not Exist."));
-        return false;
+        return;
     }
 }
 
@@ -1322,8 +1346,6 @@ void MainWindow::newVtkProject(const QString& projName)
 	connect(mNewProjectDialog, SIGNAL(nextPressed(QString, QString, USERMODE, QString, QString, QString, QString, QString, QString)), 
 		this, SLOT(createNewVtkProject(QString, QString, USERMODE, QString, QString, QString, QString, QString, QString)));
 	mNewProjectDialog->exec();
-	
-	
 }
 
 void MainWindow::createNewVtkProject(const QString fullName, const QString name, const USERMODE mode, const QString userName, 
