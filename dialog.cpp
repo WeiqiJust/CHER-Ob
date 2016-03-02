@@ -257,7 +257,6 @@ void NewProjectDialog::nextReady()
 	if (mCreatorRadioButton->isChecked()) userMode = CREATOR;
 	else if (mModifierRadioButton->isChecked()) userMode = MODIFIER;
 	else userMode = VIEWER;
-	qDebug()<<"before emit";
 	emit nextPressed(mFullPath, mProjectName, userMode, mUserNameLineEdit->text(), mObjectLineEdit->text(), 
 		mCTLineEdit->text(), mKeywordLineEdit->text(), mAffiliationLineEdit->text(), mDescriptionEdit->toPlainText());
 	mDialog->hide();
@@ -766,17 +765,20 @@ void RemoveObjectDialog::ok()
                                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel,
                                QMessageBox::Yes);
 	if(ret == QMessageBox::Cancel) return;
-	else if (ret == QMessageBox::Yes)
+	else
 	{
 		QList<QTreeWidgetItem*> selected = mTreeWidget->selectedItems();
 		foreach(QTreeWidgetItem* item, selected)
 		{
 			mSelection.append(item->text(0));
 		}
-		mPath = QFileDialog::getExistingDirectory(this, tr("Export Location"), QString(),
-                                                   QFileDialog::ShowDirsOnly
-                                                   | QFileDialog::DontResolveSymlinks);
-		isExport = true;
+		if (ret == QMessageBox::Yes)
+		{
+			mPath = QFileDialog::getExistingDirectory(this, tr("Export Location"), QString(),
+													   QFileDialog::ShowDirsOnly
+													   | QFileDialog::DontResolveSymlinks);
+			isExport = true;
+		}
 	}
 	mDialog->close();
 }

@@ -1512,7 +1512,10 @@ void MainWindow::removeObject()
 	dialog->exec();
 	QStringList selection = dialog->selectedItems();
 	if (selection.size() == 0)
+	{
+		delete dialog;
 		return;
+	}
 	bool isExport = dialog->checkExport();
 	for (int i = 0; i < selection.size(); i++)
 	{
@@ -1535,7 +1538,11 @@ void MainWindow::removeObject()
 						QDir().mkdir(mPath);
 						cpDir(filePath, mPath);
 					}
-					else return;
+					else 
+					{
+						delete dialog;
+						return;
+					}
 				}
 				rmDir(filePath);
 				isClose = true;
