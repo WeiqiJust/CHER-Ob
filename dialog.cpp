@@ -842,6 +842,7 @@ OpenWindowDialog::OpenWindowDialog()
 	ColumnNames << "Object" ;
 	mTreeWidget->setHeaderLabels(ColumnNames);
 	mTreeWidget->setSortingEnabled(true);
+	mTreeWidget->setSelectionMode(QAbstractItemView::MultiSelection);
 
 	mGrid->addWidget(mOkButton, 0, 3, 1, 2,  Qt::AlignVCenter | Qt::AlignRight);
 	mGrid->addWidget(mCancelButton, 0, 3, 1, 3, Qt::AlignVCenter | Qt::AlignRight);
@@ -900,6 +901,7 @@ RemoveObjectDialog::RemoveObjectDialog()
 	ColumnNames << "Object" ;
 	mTreeWidget->setHeaderLabels(ColumnNames);
 	mTreeWidget->setSortingEnabled(true);
+	mTreeWidget->setSelectionMode(QAbstractItemView::MultiSelection);
 
 	mGrid->addWidget(mOkButton, 0, 3, 1, 2,  Qt::AlignVCenter | Qt::AlignRight);
 	mGrid->addWidget(mCancelButton, 0, 3, 1, 3, Qt::AlignVCenter | Qt::AlignRight);

@@ -1069,7 +1069,6 @@ bool Information::checkAllSaved()
 	{
 		QString path = it.key();
 		// Test whether there are removed notes and annotation
-		qDebug()<<"has removed"<<path<<hasNotesRemoved[path];
 		if (hasNotesRemoved[path])
 			return false;
 		// Test whether there are modifications in annotation and notes.
@@ -1098,7 +1097,6 @@ bool Information::checkAllSaved()
 		{
 			if (!mPointNotes2D[path][i]->checkSaved())
 			{	
-				qDebug()<<"Exist unsaved point note2d"<<mPointNotes2D[path][i]->getFileName();
 				return false;
 			}
 		}
@@ -1109,7 +1107,6 @@ bool Information::checkAllSaved()
 				return false;
 			}
 		}
-		qDebug()<<"Content!!!!!";
 		if (!content[path].second)
 		{
 			return false;
