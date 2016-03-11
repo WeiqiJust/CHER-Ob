@@ -220,14 +220,16 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
-void MainWindow::closeAll()
+bool MainWindow::closeAll()
 {
     if(closeProject()) 
 	{
 		isClose = true;	// skip the eventfilter
         mdiArea->closeAllSubWindows();
 		isClose = false;
+		return true;
     }
+	return false;
 }
 
 void MainWindow::closeAllWindows()
@@ -239,7 +241,6 @@ void MainWindow::closeAllWindows()
     }
 	else
 	{
-		
 		foreach(QMdiSubWindow* subWindow, mdiArea->subWindowList())
 		{
 			mdiArea->setActiveSubWindow(subWindow);
@@ -347,7 +348,7 @@ void MainWindow::openWindow()
 
 bool MainWindow::closeProject()
 {
-	if((unsavedChanges || (!this->mInformation->checkAllSaved()) && VTKA())) {
+	if(((!this->mInformation->checkAllSaved()) && VTKA())) {
         QMessageBox mb;
         QString message;
 
@@ -1225,7 +1226,8 @@ void MainWindow::createCTFolder(QString path)
 
 bool MainWindow::openProject(QString fileName)
 {
-  this->closeAll();
+  if (!this->closeAll())
+	  return false;
 
   if (fileName.isEmpty())
     fileName = QFileDialog::getOpenFileName(this,tr("Open Project File"), lastUsedDirectory.path(),
@@ -1276,8 +1278,8 @@ VtkWidget* MainWindow::newImage()
     gla->mvc()->showMaximized(); // make the mdi window a full screen view
     updateAllViews();
 
-    if(!currentProjectName.isEmpty())
-        unsavedChanges = true;
+    //if(!currentProjectName.isEmpty())
+    //    unsavedChanges = true;
 
     return gla;
 }
@@ -1334,7 +1336,8 @@ bool MainWindow::rmDir(const QString &dirPath)
 
 void MainWindow::newVtkProject(const QString& projName)
 {
-    this->closeAll();
+    if (!this->closeAll())
+		return;
     QString projectName, projectPath;
     bool ok = false;
 	if (mNewProjectDialog)
@@ -1419,7 +1422,8 @@ void MainWindow::createNewVtkProject(const QString fullName, const QString name,
 
         w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
     }
-	unsavedChanges = true;
+
+	unsavedChanges = false;
 	updateXML();
     updateMenus();
 }
@@ -1481,7 +1485,11 @@ bool MainWindow::openDICOM(const QString& fileNameStart, bool saveRecent)
 		else if(!open)
 		{
 		  if(mdiArea->currentSubWindow())
-			this->closeWindow();
+		  {
+				isClose = true;
+				mdiArea->closeActiveSubWindow();
+				isClose = false;
+		  }
 		  if(fi.exists()) 
 		  {
 			  QMessageBox::critical(this, tr("DICOM Opening Error"), "Unable to open " + fi.fileName() + ".");
@@ -1666,7 +1674,11 @@ bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent)
 		else if(!open)
 		{
 			if(mdiArea->currentSubWindow())
-				this->closeWindow();
+			{
+				isClose = true;
+				mdiArea->closeActiveSubWindow();
+				isClose = false;
+			}
 
 			if(fi.exists()) 
 			{

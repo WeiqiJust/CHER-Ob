@@ -252,7 +252,7 @@ private slots:
   void closeWindow();
   void openWindow();
 
-  void closeAll();
+  bool closeAll();
   VtkWidget* newImage();
   void newVtkProject(const QString& projName = QString());// project
   void createNewVtkProject(const QString fullName, const QString name, const USERMODE mode, const QString userName, 
