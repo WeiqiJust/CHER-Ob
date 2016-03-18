@@ -40,6 +40,7 @@
 #include <QDomDocument>
 #include "vtkWidget.h" //MK: The inclusion of this header should be only here, except implementations.
 #include "dialog.h"
+#include "cultureHeritageEntity.h"
 
 #define MAXRECENTFILES 8
 
@@ -260,12 +261,15 @@ private slots:
   bool openProject(QString fileName=QString());
   void saveProject();
   void saveProjectAs();
-
   bool closeProject();
   void importProject();
   void removeObject();
   void openRecentFile();
   void openRecentProj();
+
+  void newCHE();
+  void createNewCHE(const QString fullName, const QString name, const USERMODE mode, const CHEInfoBasic* info, const QString userName);
+
   void helpOnline();
   void showToolbarFile();
   void showToolbarRender();
@@ -350,6 +354,7 @@ private:
   // QMenus:
   QMenuBar *menuBar;
   QMenu *fileMenu;
+  QMenu *CHEMenu;
   QMenu *editMenu;
   QMenu *windowMenu;
   QMenu* recentProjMenu;
@@ -402,6 +407,7 @@ private:
   QAction *closeProjectAct;
   QAction *recentProjActs[MAXRECENTFILES];
   QAction *recentFileActs[MAXRECENTFILES];
+  QAction *newCHEAct;
   QActionGroup *renderModeGroupAct;
   QAction *renderModePointsAct;
   QAction *renderModeWireAct;

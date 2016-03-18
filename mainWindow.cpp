@@ -2220,6 +2220,19 @@ void MainWindow::openRecentProj()
   if (action)	openProject(action->data().toString());
 }
 
+void MainWindow::newCHE()
+{
+	NewCHEDialog* dialog = new NewCHEDialog();
+	connect(dialog, SIGNAL(createCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString)), 
+		this, SLOT(createNewCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString)));
+	dialog->exec();
+}
+
+void MainWindow::createNewCHE(const QString fullName, const QString name, const USERMODE mode, const CHEInfoBasic* info, const QString userName)
+{
+	qDebug()<<"in create New CHE ";
+}
+
 void MainWindow::setSplit(QAction *qa)
 {
   VtkView *mvc = currentVtkView();
@@ -2543,6 +2556,10 @@ void MainWindow::createActions()
     zoomResetAct->setShortcut(Qt::CTRL+Qt::Key_0);
     connect(zoomResetAct, SIGNAL(triggered()), this, SLOT(zoomReset()));
 
+	//===================================================================================================
+	// Culture Heritage Entity Action
+	newCHEAct = new QAction(tr("new Culture Heritage Entity"), this);
+	connect(newCHEAct, SIGNAL(triggered()), this, SLOT(newCHE()));
 
     //===================================================================================================
     //MK: Window Actions
@@ -2786,10 +2803,13 @@ void MainWindow::createMenus()
 //  editMenu = menuBar->addMenu(tr("&Edit"));
 //  editMenu->addAction(setCustomizeAct);
 
-  // Render menu
-  renderMenu		= menuBar->addMenu(tr("&Render"));
+  CHEMenu = menuBar->addMenu(tr("&Cultrue Heritage Entity"));
+  CHEMenu->addAction(newCHEAct);
 
-  renderModeMenu=renderMenu->addMenu(tr("Render &Mode"));
+  // Render menu
+  renderMenu = menuBar->addMenu(tr("&Render"));
+
+  renderModeMenu = renderMenu->addMenu(tr("Render &Mode"));
   renderModeMenu->addActions(renderModeGroupAct->actions());
   renderModeMenu->addSeparator();
   renderModeMenu->addAction(renderModeTextureAct);
