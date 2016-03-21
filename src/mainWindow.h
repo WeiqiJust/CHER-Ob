@@ -46,6 +46,7 @@
 #include "information/openWindowDialog.h"
 #include "CHE/newCHEDialog.h"
 #include "CHE/CHETab.h"
+#include "CHE/saveCHEAsDialog.h"
 
 #define MAXRECENTFILES 8
 
@@ -235,12 +236,12 @@ private:
   void saveRecentFileList(const QString &fileName);
   void updateRecentFileActions();
   void saveRecentProjectList(const QString &projName);
+  void saveRecentCHEList(const QString &projName);
   void updateRecentProjActions();
   bool cpDir(const QString &srcPath, const QString &dstPath);
   bool rmDir(const QString &dirPath);
   void createCTFolder(QString path);
   void createObjectFolder(QString path);
-  void updateXML();
   bool readXML(QString fileName, QVector<QString> &objectList, bool import);
 
 private slots:
@@ -264,7 +265,7 @@ private slots:
   void newVtkProject(const QString& projName = QString());// project
   void createNewVtkProject(const QString fullName, const QString name, const USERMODE mode, const QString userName, 
 	  const QString object, const QString ct, const QString keyword, const QString affiliation, const QString description);
-  bool openProject(QString fileName=QString());
+  bool openProject(QString fileName = QString());
   void saveProject();
   void saveProjectAs();
   bool closeProject();
@@ -274,7 +275,11 @@ private slots:
   void openRecentProj();
 
   void newCHE();
-  void createNewCHE(const QString fullName, const QString name, const USERMODE mode, const CHEInfoBasic* info, const QString userName, const QString object, const QString ct);
+  void createNewCHE(const QString fullName, const QString name, const USERMODE mode, const CHEInfoBasic* info,
+	  const QString userName, const QString object, const QString ct);
+  bool openCHE(QString fileName = QString());
+  void saveCHE();
+  void saveCHEAs();
 
   void helpOnline();
   void showToolbarFile();
@@ -283,6 +288,7 @@ private slots:
   void showToolbarView();
 
   void updateWindowMenu();
+  void updateXML();
 
   void setSplit(QAction *qa);
   void setUnsplit();
@@ -416,6 +422,9 @@ private:
   QAction *recentProjActs[MAXRECENTFILES];
   QAction *recentFileActs[MAXRECENTFILES];
   QAction *newCHEAct;
+  QAction *openCHEAct;
+  QAction *saveCHEAct;
+  QAction *saveCHEAsAct;
   QActionGroup *renderModeGroupAct;
   QAction *renderModePointsAct;
   QAction *renderModeWireAct;

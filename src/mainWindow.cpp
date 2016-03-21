@@ -402,23 +402,68 @@ void MainWindow::updateXML()
     QDomProcessingInstruction instruct = doc.createProcessingInstruction("xml", "version=\"1.0\"");
     doc.appendChild(instruct);
 
-    root = doc.createElement("hyper3d.project");
+	if (!isCHE)
+		root = doc.createElement("hyper3d.project");
+	else
+		root = doc.createElement("hyper3d.cultural_heritage_entity");
     root.setAttribute("name", currentProjectName);
     root.setAttribute("date", QDateTime::currentDateTimeUtc().toString());
 	root.setAttribute("user", mUserName);
     doc.appendChild(root);
 
-	QDomElement projectInfo = doc.createElement("project");
-	root.appendChild(projectInfo);
-	QDomElement keyword = doc.createElement("keyword");
-	keyword.appendChild(doc.createTextNode(currentProjectKeyword));
-	QDomElement affiliation = doc.createElement("affiliation");
-	affiliation.appendChild(doc.createTextNode(currentProjectAffiliation));
-	QDomElement description = doc.createElement("description");
-	description.appendChild(doc.createTextNode(currentProjectDescription));
-	projectInfo.appendChild(keyword);
-	projectInfo.appendChild(affiliation);
-	projectInfo.appendChild(description);
+	if (!isCHE)
+	{
+		QDomElement projectInfo = doc.createElement("project");
+		root.appendChild(projectInfo);
+		QDomElement keyword = doc.createElement("keyword");
+		keyword.appendChild(doc.createTextNode(currentProjectKeyword));
+		QDomElement affiliation = doc.createElement("affiliation");
+		affiliation.appendChild(doc.createTextNode(currentProjectAffiliation));
+		QDomElement description = doc.createElement("description");
+		description.appendChild(doc.createTextNode(currentProjectDescription));
+		projectInfo.appendChild(keyword);
+		projectInfo.appendChild(affiliation);
+		projectInfo.appendChild(description);
+	}
+	else
+	{
+		QDomElement CHEInfo = doc.createElement("cultural_heritage_entity");
+		root.appendChild(CHEInfo);
+		QDomElement object = doc.createElement("object");
+		object.appendChild(doc.createTextNode(mCHETab->object));
+		QDomElement measurement = doc.createElement("measurement");
+		measurement.appendChild(doc.createTextNode(mCHETab->measurement));
+		QDomElement creation = doc.createElement("creation");
+		creation.appendChild(doc.createTextNode(mCHETab->creation));
+		QDomElement material = doc.createElement("material");
+		material.appendChild(doc.createTextNode(mCHETab->material));
+		QDomElement description = doc.createElement("description");
+		description.appendChild(doc.createTextNode(mCHETab->description));
+		QDomElement conservation = doc.createElement("conservation");
+		conservation.appendChild(doc.createTextNode(mCHETab->conservation));
+		QDomElement analyses = doc.createElement("analyses");
+		analyses.appendChild(doc.createTextNode(mCHETab->analyses));
+		QDomElement related = doc.createElement("related");
+		related.appendChild(doc.createTextNode(mCHETab->related));
+		QDomElement administration = doc.createElement("administration");
+		administration.appendChild(doc.createTextNode(mCHETab->administration));
+		QDomElement documents = doc.createElement("documents");
+		documents.appendChild(doc.createTextNode(mCHETab->documents));
+		QDomElement other = doc.createElement("other");
+		other.appendChild(doc.createTextNode(mCHETab->other));
+
+		CHEInfo.appendChild(object);
+		CHEInfo.appendChild(measurement);
+		CHEInfo.appendChild(creation);
+		CHEInfo.appendChild(material);
+		CHEInfo.appendChild(description);
+		CHEInfo.appendChild(conservation);
+		CHEInfo.appendChild(analyses);
+		CHEInfo.appendChild(related);
+		CHEInfo.appendChild(administration);
+		CHEInfo.appendChild(documents);
+		CHEInfo.appendChild(other);
+	}
 	
     QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
     foreach(QMdiSubWindow *w, windows)
@@ -663,7 +708,10 @@ void MainWindow::updateXML()
     QFile f(currentProjectSave);
     if(!f.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox mb;
-        mb.critical(this, tr("Project Error"), tr("Failed to save the project! Cannot open XML file."));
+		if (!isCHE)
+			mb.critical(this, tr("Project Error"), tr("Failed to save the project! Cannot open XML file."));
+		else
+			mb.critical(this, tr("Cultural Heritage Entity Error"), tr("Failed to save the cultural Heritage Entity! Cannot open XML file."));
         f.close();
         return;
     }
@@ -709,9 +757,15 @@ bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, bool im
   QDomDocument doc;
   doc.setContent(&file);
   qDebug() << fi.absoluteFilePath();
-  QDomNodeList list = doc.elementsByTagName("hyper3d.project");
-  if(list.isEmpty()) {
-      QString message = fi.fileName() + tr(" is not a valid Hyper3D project file.");
+  QDomNodeList list;
+  if (!isCHE)
+	list = doc.elementsByTagName("hyper3d.project");
+  else
+	list = doc.elementsByTagName("hyper3d.cultural_heritage_entity");
+
+  if (list.isEmpty())
+  {
+	  QString message = fi.fileName() + tr(" is not a valid Hyper3D project file.");
       QMessageBox::critical(this, tr("Project Error"), message);
       return false;
   }
@@ -728,18 +782,31 @@ bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, bool im
   if (!import)	currentProjectName = name;	
   qDebug()<<"Project Name"<<currentProjectName;
 
-  QDomNodeList projectInfo = root.elementsByTagName("project");
-  if (projectInfo.isEmpty())
-  qDebug()<<projectInfo.length();
-  currentProjectKeyword = projectInfo.at(0).toElement().elementsByTagName("keyword").at(0).toElement().text();
-  currentProjectAffiliation = projectInfo.at(0).toElement().elementsByTagName("affiliation").at(0).toElement().text();
-  currentProjectDescription = projectInfo.at(0).toElement().elementsByTagName("description").at(0).toElement().text();
-
-  qDebug()<<"in read xml"<<mUserName;
-  qDebug()<<"in read xml"<<currentProjectKeyword;
-  qDebug()<<"in read xml"<<currentProjectAffiliation;
-  qDebug()<<"in read xml"<<currentProjectDescription;
-
+  if (!isCHE)
+  {
+	  QDomNodeList projectInfo = root.elementsByTagName("project");
+	  currentProjectKeyword = projectInfo.at(0).toElement().elementsByTagName("keyword").at(0).toElement().text();
+	  currentProjectAffiliation = projectInfo.at(0).toElement().elementsByTagName("affiliation").at(0).toElement().text();
+	  currentProjectDescription = projectInfo.at(0).toElement().elementsByTagName("description").at(0).toElement().text();
+  }
+  else
+  {
+	  QDomNodeList CHEInfo = root.elementsByTagName("cultural_heritage_entity");
+	  CHEInfoBasic* info = new CHEInfoBasic();
+	  info->object = CHEInfo.at(0).toElement().elementsByTagName("object").at(0).toElement().text();
+	  info->measurement = CHEInfo.at(0).toElement().elementsByTagName("measurement").at(0).toElement().text();
+	  info->creation = CHEInfo.at(0).toElement().elementsByTagName("creation").at(0).toElement().text();
+	  info->material = CHEInfo.at(0).toElement().elementsByTagName("material").at(0).toElement().text();
+	  info->description = CHEInfo.at(0).toElement().elementsByTagName("description").at(0).toElement().text();
+	  info->conservation = CHEInfo.at(0).toElement().elementsByTagName("conservation").at(0).toElement().text();
+	  info->analyses = CHEInfo.at(0).toElement().elementsByTagName("analyses").at(0).toElement().text();
+	  info->related = CHEInfo.at(0).toElement().elementsByTagName("related").at(0).toElement().text();
+	  info->administration = CHEInfo.at(0).toElement().elementsByTagName("administration").at(0).toElement().text();
+	  info->documents = CHEInfo.at(0).toElement().elementsByTagName("documents").at(0).toElement().text();
+	  info->other = CHEInfo.at(0).toElement().elementsByTagName("other").at(0).toElement().text();
+	  qDebug()<<"in read XML"<<info->object;
+	  createCHEDockWindows(info);
+  }
 
   QDomNodeList items = root.elementsByTagName("item");
   QList<QDomElement> eltList;
@@ -1877,6 +1944,31 @@ void MainWindow::saveRecentProjectList(const QString &projName)
   }
 }
 
+void MainWindow::saveRecentCHEList(const QString &projName)
+{
+  QString pn = QDir::fromNativeSeparators(projName);
+
+  QSettings settings("Yale Graphics Lab", "Hyper3D");
+  QStringList files = settings.value("recentCHEList").toStringList();
+  files.removeAll(pn);
+  files.prepend(pn);
+  while (files.size() > MAXRECENTFILES)
+    files.removeLast();
+
+  for(int ii = 0;ii < files.size();++ii)
+    files[ii] = QDir::fromNativeSeparators(files[ii]);
+
+  settings.setValue("recentCHEList", files);
+
+  foreach (QWidget *widget, QApplication::topLevelWidgets())
+  {
+    MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
+    if (mainWin)
+      mainWin->updateRecentProjActions();
+  }
+}
+
+
 void MainWindow::updateMenus()
 {
   bool activeDoc = false;
@@ -2305,6 +2397,80 @@ void MainWindow::createNewCHE(const QString fullName, const QString name, const 
     updateMenus();
 }
 
+bool MainWindow::openCHE(QString fileName)
+{
+	if (!this->closeAll())
+	  return false;
+
+	if (fileName.isEmpty())
+		fileName = QFileDialog::getOpenFileName(this,tr("Open Cultural Heritage Entity File"), lastUsedDirectory.path(),
+											"Hyper3D Project (*.xml)");
+
+	if (fileName.isEmpty()) return false;
+	fileName = QDir::toNativeSeparators(fileName);
+
+	QFileInfo fi(fileName);
+	lastUsedDirectory = fi.absoluteDir();
+
+	if((fi.suffix().toLower()!="xml") )
+	{
+		QMessageBox::critical(this, tr("Cultural Heritage Entity Error"), "Unknown Cultural Heritage Entity file extension.");
+		return false;
+	}
+	this->mInformation->refresh();
+	// this change of dir is needed for subsequent textures/materials loading
+	QDir::setCurrent(fi.absoluteDir().absolutePath());
+	qb->show();
+	qDebug()<<"Open CHE path"<<QDir::currentPath();
+	currentProjectSave = QDir::toNativeSeparators(fileName);
+	QVector<QString> objectList;
+	isCHE = true;
+	if (!readXML(fileName, objectList, false))
+	{
+		isCHE = false;
+		return false;
+	}
+
+	unsavedChanges = false;
+	setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
+	updateMenus();
+	if(this->VTKA() == 0)  return false;
+	qb->reset();
+	saveRecentCHEList(fileName);
+	updateAllViews();
+	return true;
+}
+
+void MainWindow::saveCHE()
+{
+	if (currentProjectFullName.isEmpty())
+	{
+		QMessageBox mb;
+        mb.critical(this, tr("Save Cultural Heritage Entity Error"), tr("Failed to Save Cultural Heritage Entity! Cannot Find the Cultural Heritage Entity."));
+		return;
+	}
+    if(currentProjectSave.isEmpty()) 
+	{
+		QMessageBox mb;
+        mb.critical(this, tr("Save Cultural Heritage Entity Error"), tr("Failed to Save Cultural Heritage Entity! Cannot Find the Cultural Heritage Entity."));
+		return;
+    }
+	this->mInformation->saveAllNotes();
+	this->mInformation->closeAllNotes();
+
+    unsavedChanges = false;
+	updateXML();
+    updateMenus();
+    updateAllViews();
+    QFileInfo finfo(currentProjectSave);
+    saveRecentCHEList(QDir::fromNativeSeparators(finfo.absoluteFilePath()));
+}
+
+void MainWindow::saveCHEAs()
+{
+}
+
+
 void MainWindow::setSplit(QAction *qa)
 {
   VtkView *mvc = currentVtkView();
@@ -2630,8 +2796,18 @@ void MainWindow::createActions()
 
 	//===================================================================================================
 	// Culture Heritage Entity Action
-	newCHEAct = new QAction(tr("new Culture Heritage Entity"), this);
+	newCHEAct = new QAction(tr("New Cultural Heritage Entity..."), this);
 	connect(newCHEAct, SIGNAL(triggered()), this, SLOT(newCHE()));
+
+	openCHEAct = new QAction(tr("Open Cultural Heritage Entity..."), this);
+	connect(openCHEAct, SIGNAL(triggered()), this, SLOT(openCHE()));
+
+	saveCHEAct = new QAction(tr("Save Cultural Heritage Entity"), this);
+	connect(saveCHEAct, SIGNAL(triggered()), this, SLOT(saveCHE()));
+
+	saveCHEAsAct = new QAction(tr("Save Cultural Heritage Entity As..."), this);
+	connect(saveCHEAsAct, SIGNAL(triggered()), this, SLOT(saveCHEAs()));
+
 
     //===================================================================================================
     //MK: Window Actions
@@ -2845,7 +3021,7 @@ void MainWindow::createActions()
 void MainWindow::createMenus()
 {
   // Menu
-  fileMenu = menuBar->addMenu(tr("&File"));
+  fileMenu = menuBar->addMenu(tr("&Project"));
   fileMenu->addAction(newVtkProjectAct);
   fileMenu->addAction(openProjectAct);
   fileMenu->addAction(saveProjectAct);
@@ -2877,6 +3053,9 @@ void MainWindow::createMenus()
 
   CHEMenu = menuBar->addMenu(tr("&Cultrue Heritage Entity"));
   CHEMenu->addAction(newCHEAct);
+  CHEMenu->addAction(openCHEAct);
+  CHEMenu->addAction(saveCHEAct);
+  CHEMenu->addAction(saveCHEAsAct);
 
   // Render menu
   renderMenu = menuBar->addMenu(tr("&Render"));
@@ -3301,6 +3480,7 @@ void MainWindow::createCHEDockWindows(const CHEInfoBasic* info)
   CHEdock->setMaximumWidth(dockwidth);
   tabCHE = new QTabWidget();
   mCHETab = new CHETab(info, this);
+  connect(mCHETab, SIGNAL(save()), this, SLOT(updateXML()));
   tabCHE->addTab(mCHETab, tr("Cultural Heritage Entity"));
   CHEdock->setWidget(tabCHE);
   tabCHE->show();

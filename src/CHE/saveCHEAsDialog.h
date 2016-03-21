@@ -25,8 +25,8 @@
 
 *****************************************************************************/
 
-#ifndef CULTURE_HERITAGE_ENTITY_H
-#define CULTURE_HERITAGE_ENTITY_H
+#ifndef SAVE_CHE_AS_DIALOG_H
+#define SAVE_CHE_AS_DIALOG_H
 
 #include <QtScript>
 #include <QWidget>
@@ -36,56 +36,33 @@
 #include <QPushButton>
 #include <QComboBox>
 #include <QFontComboBox>
-#include <QToolBar>
-#include <QTextBrowser>
-#include <QFile>
-#include <QWizard>
-#include <QFileDialog>
-#include <QCheckBox>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
-#include <QRadioButton>
 #include <QObject>
-#include <QMessageBox>
-#include <QTreeWidget>
-#include <QTreeWidgetItem>
-#include <QCoreApplication>
-#include "CHEBasicInfo.h"
-#include "../vtkEnums.h"
+#include "CHEInfoDialog.h"
 
-class NewCHEDialog : public QWidget
+class SaveCHEAsDialog : public CHEInfoDialog
 {
 	Q_OBJECT
 
 public:
-    NewCHEDialog(const QString path = NULL);
-
-	QString getCHEName();
-
-	QString getCHEPath();
+	SaveCHEAsDialog(const QString user, const CHEInfoBasic* info, const QString path = NULL);
 
 	void exec()	{mDialog->exec();}
 
-signals:
-	void infoUpdate();
+	bool checkOk()	{return isOk;}
 
-	void createCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString, const QString, const QString);
-
-private slots:	
+private slots:
 	void locationBrowse();
-
-	void objectBrowse();
-
-	void ctBrowse();
 
 	void next();
 
 	void cancel();
 
-	void CHENameChanged(QString name);
+	void projectNameChanged(QString name);
 
-	void CHEPathChanged(QString path);
+	void projectPathChanged(QString path);
 
 	void enableNextButton();
 
@@ -93,61 +70,34 @@ private slots:
 
 	void nextCancel();
 
-	void CHEInfoOK(const CHEInfoBasic* info);
-
-	void CHEInfoBack();
-
-	void CHEInfoCancel();
+signals:
+	void infoUpdate();
 
 private:
-	QDialog* mDialog;
-	QVBoxLayout* mVbox;
-	QVBoxLayout* mRoleVBox;
-	QVBoxLayout* mLoadDataVBox;
 	QHBoxLayout* mUserNameHBox;
-	QHBoxLayout* mObjectHBox;
-	QHBoxLayout* mCTHBox;
-	QVBoxLayout* mCHEInfoVBox;
-	QHBoxLayout* mCHEHBox;
+	QHBoxLayout* mProjectHBox;
 	QHBoxLayout* mLocationHBox;
-	
+
 	QGridLayout* mButtonGridBox;
 
-	QGroupBox *mGroupBox;
-	QGroupBox *mLoadDataGroupBox;
-	QGroupBox *mCHEInfoGroupBox;
+	QLabel *mUserNameLabel;
+    QLabel *mProjectNameLabel;
+    QLabel *mLocationLabel;
 
-    QRadioButton *mCreatorRadioButton;
-    QRadioButton *mModifierRadioButton;
-    QRadioButton *mViewerRadioButton;
+	QLineEdit *mUserNameLineEdit;
+    QLineEdit *mProjectNameEdit;
+    QLineEdit *mLocationLineEdit;
 
 	QPushButton* mLocationBrowseButton;
-	QPushButton* mObjectBrowseButton;
-	QPushButton* mCTBrowseButton;
     QPushButton* mNextButton;
     QPushButton* mCancelButton;
 
-	QLabel *mUserNameLabel;
-	QLabel *mLoadDataLabel;
-	QLabel *mObjectLabel;
-    QLabel *mCTLabel;
-    QLabel *mCHENameLabel;
-    QLabel *mLocationLabel;
-	
-	QLineEdit *mUserNameLineEdit;
-	QLineEdit *mObjectLineEdit;
-    QLineEdit *mCTLineEdit;
-    QLineEdit *mCHENameEdit;
-    QLineEdit *mLocationLineEdit;
-
 	QString mLastPath;
-	QString mCHEPath;
-	QString mCHEName;
+	QString mProjectPath;
+	QString mProjectName;
 	QString mFullPath;
-
-	CHENewInfoDialog *mCHEInfo;
-
+	bool isOk;
 };
 
 
-#endif // CULTURE_HERITAGE_ENTITY_H
+#endif // SAVE_CHE_AS_DIALOG_H

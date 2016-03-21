@@ -76,9 +76,6 @@ public:
 
 	bool checkOk()	{return isOk;}
 
-signals:
-	void infoUpdate();
-
 private slots:	
 	void locationBrowse();
 
@@ -95,6 +92,9 @@ private slots:
 	void nextReady();
 
 	void nextCancel();
+
+signals:
+	void infoUpdate();
 
 private:
 	QDialog* mDialog;

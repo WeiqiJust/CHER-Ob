@@ -35,7 +35,6 @@ CHETab::CHETab(const CHEInfoBasic* info, QWidget *parent)
 	connect(saveButton, SIGNAL(clicked()), this, SLOT(savePressed()));
 	editButton = new QPushButton("Edit");
 	connect(editButton, SIGNAL(clicked()), this, SLOT(editPressed()));
-	saveButton->setEnabled(false);
 	exportButton->setEnabled(false);
 
 	mObjectInfo = new QTextEdit(info->object);
@@ -77,17 +76,7 @@ CHETab::CHETab(const CHEInfoBasic* info, QWidget *parent)
 	mHBox->addWidget(editButton, 0, Qt::AlignRight);
 	mVBox->addLayout(mHBox);
 
-	mObjectInfo->setEnabled(false);
-	mMeasurementInfo->setEnabled(false);
-	mCreationInfo->setEnabled(false);
-	mMaterialInfo->setEnabled(false);
-	mDescriptionInfo->setEnabled(false);
-	mConservationInfo->setEnabled(false);
-	mAnalysesInfo->setEnabled(false);
-	mRelatedInfo->setEnabled(false);
-	mAdministrationInfo->setEnabled(false);
-	mDocumentsInfo->setEnabled(false);
-	mOtherInfo->setEnabled(false);
+	savePressed();
 
     mDialog->setMinimumWidth(350);
     //mDialog->adjustSize();
@@ -141,6 +130,8 @@ void CHETab::savePressed()
 	administration = mAdministrationInfo->toPlainText();
 	documents = mDocumentsInfo->toPlainText();
 	other = mOtherInfo->toPlainText();
+
+	emit save();
 }
 
 void CHETab::exportPressed()

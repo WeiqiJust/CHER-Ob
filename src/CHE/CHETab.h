@@ -55,6 +55,10 @@ private slots:
 	void savePressed();
 
 	void editPressed();
+
+signals:
+	void save();
+
 private:
 	QPushButton* exportButton;
 	QPushButton* saveButton;
