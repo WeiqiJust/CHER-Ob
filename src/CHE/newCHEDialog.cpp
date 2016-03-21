@@ -25,7 +25,7 @@
 
 *****************************************************************************/
 
-#include "cultureHeritageEntity.h"
+#include "newCHEDialog.h"
 
 NewCHEDialog::NewCHEDialog(const QString path)
 {
@@ -135,7 +135,7 @@ NewCHEDialog::NewCHEDialog(const QString path)
 	mDialog->setMinimumWidth(300);
 	mDialog->setLayout(mVbox);
 
-	mCHEInfo = new CHENewInfoDialog();
+	mCHEInfo = new NewCHEInfoDialog();
 	connect(mCHEInfo, SIGNAL(ok(const CHEInfoBasic*)), this, SLOT(CHEInfoOK(const CHEInfoBasic*)));
 	connect(mCHEInfo, SIGNAL(back()), this, SLOT(CHEInfoBack()));
 	connect(mCHEInfo, SIGNAL(cancel()), this, SLOT(CHEInfoCancel()));

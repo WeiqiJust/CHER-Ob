@@ -24,17 +24,19 @@
    with (corresponding to the different file types that may be displayed).
 
 *****************************************************************************/
+#include "newProjectDialog.h"
+#include "../visualization/vtkWidget.h"
 
-#include "cultureHeritageEntity.h"
+#define SIZE (1024)
 
-NewCHEDialog::NewCHEDialog(const QString path)
+NewProjectDialog::NewProjectDialog(const QString path)
 {
 	mDialog = new QDialog();
 	mVbox = new QVBoxLayout();
 
 	mLastPath = path;
 
-	mDialog->setWindowTitle(tr("New Culture Heritage Entity"));
+	mDialog->setWindowTitle(tr("New Project"));
 
 	mRoleVBox = new QVBoxLayout();
 	mGroupBox = new QGroupBox(tr("User Mode"));
@@ -87,21 +89,21 @@ NewCHEDialog::NewCHEDialog(const QString path)
 	mLoadDataVBox->addStretch(1);
 	mLoadDataGroupBox->setLayout(mLoadDataVBox);
 
-    mCHENameLabel = new QLabel(tr("Name:  "));
-	mCHENameEdit = new QLineEdit();
-	mCHENameEdit->setFixedWidth(350);
-    mCHENameLabel->setBuddy(mCHENameEdit);
-	connect(mCHENameEdit, SIGNAL(textChanged(QString)), this, SLOT(CHENameChanged(QString)));
-	mCHEHBox = new QHBoxLayout();
-	mCHEHBox->addWidget(mCHENameLabel, 0 , Qt::AlignLeft);
-    mCHEHBox->addWidget(mCHENameEdit, 0 , Qt::AlignRight);
+    mProjectNameLabel = new QLabel(tr("Name:  "));
+	mProjectNameEdit = new QLineEdit();
+	mProjectNameEdit->setFixedWidth(350);
+    mProjectNameLabel->setBuddy(mProjectNameEdit);
+	connect(mProjectNameEdit, SIGNAL(textChanged(QString)), this, SLOT(projectNameChanged(QString)));
+	mProjectHBox = new QHBoxLayout();
+	mProjectHBox->addWidget(mProjectNameLabel, 0 , Qt::AlignLeft);
+    mProjectHBox->addWidget(mProjectNameEdit, 0 , Qt::AlignRight);
 	
     mLocationLabel = new QLabel(tr("Location:"));
 	mLocationLineEdit = new QLineEdit();
     mLocationLabel->setBuddy(mLocationLineEdit);
-	connect(mLocationLineEdit, SIGNAL(textChanged(QString)), this, SLOT(CHEPathChanged(QString)));
+	connect(mLocationLineEdit, SIGNAL(textChanged(QString)), this, SLOT(projectPathChanged(QString)));
 	mLocationLineEdit->setText(QCoreApplication::applicationDirPath());
-	mCHEPath = QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
+	mProjectPath = QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
 	mLocationLineEdit->setFixedWidth(270);
 	mLocationBrowseButton = new QPushButton("Browse");
 	connect(mLocationBrowseButton, SIGNAL(clicked()), this, SLOT(locationBrowse()));
@@ -110,12 +112,35 @@ NewCHEDialog::NewCHEDialog(const QString path)
 	mLocationHBox->addWidget(mLocationLineEdit, 0 , Qt::AlignRight);
     mLocationHBox->addWidget(mLocationBrowseButton);
 
-	mCHEInfoVBox = new QVBoxLayout();
-	mCHEInfoGroupBox = new QGroupBox(tr("CHE Info"));
-	mCHEInfoVBox->addLayout(mCHEHBox);
-	mCHEInfoVBox->addLayout(mLocationHBox);
-	mCHEInfoVBox->addStretch(1);
-	mCHEInfoGroupBox->setLayout(mCHEInfoVBox);
+	mKeywordLabel = new QLabel(tr("Keywords:"));
+	mKeywordLineEdit = new QLineEdit();
+	mKeywordLineEdit->setFixedWidth(350);
+    mKeywordLabel->setBuddy(mKeywordLineEdit);
+	mKeywordHBox = new QHBoxLayout();
+	mKeywordHBox->addWidget(mKeywordLabel);
+    mKeywordHBox->addWidget(mKeywordLineEdit, 0 , Qt::AlignRight);
+
+	mAffiliationLabel = new QLabel(tr("Affiliation:"));
+	mAffiliationLineEdit = new QLineEdit();
+	mAffiliationLineEdit->setFixedWidth(350);
+    mAffiliationLabel->setBuddy(mAffiliationLineEdit);
+	mAffiliationHBox = new QHBoxLayout();
+	mAffiliationHBox->addWidget(mAffiliationLabel);
+    mAffiliationHBox->addWidget(mAffiliationLineEdit, 0 , Qt::AlignRight);
+
+	mDescriptionLabel = new QLabel(tr("Description:"));
+	mDescriptionEdit = new QTextEdit(mDialog);
+
+	mProjectInfoVBox = new QVBoxLayout();
+	mProjectInfoGroupBox = new QGroupBox(tr("Project Info"));
+	mProjectInfoVBox->addLayout(mProjectHBox);
+	mProjectInfoVBox->addLayout(mLocationHBox);
+	mProjectInfoVBox->addLayout(mKeywordHBox);
+	mProjectInfoVBox->addLayout(mAffiliationHBox);
+	mProjectInfoVBox->addWidget(mDescriptionLabel);
+	mProjectInfoVBox->addWidget(mDescriptionEdit);
+	mProjectInfoVBox->addStretch(1);
+	mProjectInfoGroupBox->setLayout(mProjectInfoVBox);
 
 	mButtonGridBox = new QGridLayout();
 	mNextButton = new QPushButton("Next");
@@ -128,30 +153,25 @@ NewCHEDialog::NewCHEDialog(const QString path)
 	
 	mVbox->addWidget(mGroupBox);
 	mVbox->addWidget(mLoadDataGroupBox);
-	mVbox->addWidget(mCHEInfoGroupBox);
+	mVbox->addWidget(mProjectInfoGroupBox);
 	mVbox->addLayout(mButtonGridBox);
 	
 	connect(this, SIGNAL(infoUpdate()), this, SLOT(enableNextButton()));
-	mDialog->setMinimumWidth(300);
+	mDialog->setMinimumWidth(450);
 	mDialog->setLayout(mVbox);
-
-	mCHEInfo = new CHENewInfoDialog();
-	connect(mCHEInfo, SIGNAL(ok(const CHEInfoBasic*)), this, SLOT(CHEInfoOK(const CHEInfoBasic*)));
-	connect(mCHEInfo, SIGNAL(back()), this, SLOT(CHEInfoBack()));
-	connect(mCHEInfo, SIGNAL(cancel()), this, SLOT(CHEInfoCancel()));
 }
 
-void NewCHEDialog::locationBrowse()
+void NewProjectDialog::locationBrowse()
 {
 	
-	mCHEPath = QFileDialog::getExistingDirectory(this, tr("Location"), mLastPath,
+	mProjectPath = QFileDialog::getExistingDirectory(this, tr("Location"), mLastPath,
                                                        QFileDialog::ShowDirsOnly
                                                        | QFileDialog::DontResolveSymlinks);
-	mLocationLineEdit->setText(mCHEPath);
+	mLocationLineEdit->setText(mProjectPath);
 	mLocationLineEdit->displayText();
 }
 
-void NewCHEDialog::objectBrowse()
+void NewProjectDialog::objectBrowse()
 {
 	QStringList filters;
 	filters.push_back("Images (*.ply *.obj *.wrl *.png *.jpg *.tif *.bmp *.exr *.dcm *rti *ptm *hsh)");
@@ -179,7 +199,7 @@ void NewCHEDialog::objectBrowse()
 	mObjectLineEdit->displayText();
 }
 
-void NewCHEDialog::ctBrowse()
+void NewProjectDialog::ctBrowse()
 {
 	QString ctDir;
 	ctDir = QFileDialog::getExistingDirectory(this, tr("Load a CT Directory"), mLastPath,
@@ -189,30 +209,30 @@ void NewCHEDialog::ctBrowse()
 	mCTLineEdit->displayText();
 }
 
-void NewCHEDialog::next()
+void NewProjectDialog::next()
 {
-	mFullPath = mCHEPath.simplified();
-	if (!QDir().exists(mCHEPath))
+	mFullPath = mProjectPath.simplified();
+	if (!QDir().exists(mProjectPath))
 	{
 		qDebug()<<"the path do not exist";
 		QString notice;
-		notice.append(QString("Error!\nThe directory ") + mCHEPath + QString(" does not exist!"));
+		notice.append(QString("Error!\nThe directory ") + mProjectPath + QString(" does not exist!"));
 		//mError = new ErrorDialog(notice);
-		QMessageBox::critical(this, tr("Object Opening Error"), "Unable to open " + mCHEPath + ".");
+		QMessageBox::critical(this, tr("Object Opening Error"), "Unable to open " + mProjectPath + ".");
 		return;
 	}
 	if (mFullPath.split(QDir::separator())[1] == QString())
 	{
-		mFullPath.append(mCHEName);
+		mFullPath.append(mProjectName);
 	}
 	else
 	{
-		mFullPath.append(QDir::separator() + mCHEName);
+		mFullPath.append(QDir::separator() + mProjectName);
 	}
 	if (QDir().exists(mFullPath))
 	{
-		QString message("The CHE with specified name already exists in the specified location!\n");
-		message.append(QString("Do you want to overwrite the existing CHE with this new CHE?"));
+		QString message("The project with specified name already exists in the specified location!\n");
+		message.append(QString("Do you want to overwrite the existing project with this new project?"));
 
 		QMessageBox::StandardButton reply;
 		reply = QMessageBox::warning(this, tr("WARNING"), message, QMessageBox::Ok|QMessageBox::No);
@@ -231,61 +251,44 @@ void NewCHEDialog::next()
 	}
 }
 
-void NewCHEDialog::nextReady()
+void NewProjectDialog::nextReady()
 {
-	mDialog->hide();
-	mCHEInfo->exec();
-}
-
-void NewCHEDialog::CHEInfoOK(const CHEInfoBasic* info)
-{
-	mCHEInfo->hide();
 	USERMODE userMode;
 	if (mCreatorRadioButton->isChecked()) userMode = CREATOR;
 	else if (mModifierRadioButton->isChecked()) userMode = MODIFIER;
 	else userMode = VIEWER;
-	emit createCHE(mFullPath, mCHEName, userMode, info, mUserNameLineEdit->text(), mObjectLineEdit->text(), 
-		mCTLineEdit->text());
+	emit nextPressed(mFullPath, mProjectName, userMode, mUserNameLineEdit->text(), mObjectLineEdit->text(), 
+		mCTLineEdit->text(), mKeywordLineEdit->text(), mAffiliationLineEdit->text(), mDescriptionEdit->toPlainText());
+	mDialog->hide();
 	
 }
 
-void NewCHEDialog::CHEInfoBack()
+void NewProjectDialog::nextCancel()
 {
-	mCHEInfo->hide();
-	mDialog->show();
-}
-
-void NewCHEDialog::CHEInfoCancel()
-{
-	mCHEInfo->hide();
-}
-
-void NewCHEDialog::nextCancel()
-{
-	mCHENameEdit->clear();
+	mProjectNameEdit->clear();
 }
 
 
-void NewCHEDialog::cancel()
+void NewProjectDialog::cancel()
 {
 	mDialog->hide();
 }
 
-void NewCHEDialog::CHENameChanged(QString name)
+void NewProjectDialog::projectNameChanged(QString name)
 {
-	mCHEName = name;
+	mProjectName = name;
 	emit infoUpdate();
 }
 
-void NewCHEDialog::CHEPathChanged(QString path)
+void NewProjectDialog::projectPathChanged(QString path)
 {
-	mCHEPath = path;
+	mProjectPath = path;
 	emit infoUpdate();
 }
 
-void NewCHEDialog::enableNextButton()
+void NewProjectDialog::enableNextButton()
 {
-	if (!mCHEPath.isEmpty() && !mCHEName.isEmpty())
+	if (!mProjectPath.isEmpty() && !mProjectName.isEmpty())
 	{
 		mNextButton->setEnabled(true);
 	}
@@ -295,12 +298,12 @@ void NewCHEDialog::enableNextButton()
 	}
 }
 
-QString NewCHEDialog::getCHEName()
+QString NewProjectDialog::getProjectName()
 {
-	return mCHENameEdit->text();
+	return mProjectNameEdit->text();
 }
 
-QString NewCHEDialog::getCHEPath()
+QString NewProjectDialog::getProjectPath()
 {
 	return mLocationLineEdit->text();
 }

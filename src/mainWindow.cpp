@@ -120,6 +120,7 @@ MainWindow::MainWindow()
   mNewProjectDialog = NULL;
   mProjectInfoDialog = NULL;
   isClose = false;
+  isCHE = false;
 
   setUnifiedTitleAndToolBarOnMac(true);
 
@@ -2223,14 +2224,85 @@ void MainWindow::openRecentProj()
 void MainWindow::newCHE()
 {
 	NewCHEDialog* dialog = new NewCHEDialog();
-	connect(dialog, SIGNAL(createCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString)), 
-		this, SLOT(createNewCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString)));
+	connect(dialog, SIGNAL(createCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString, const QString, const QString)), 
+		this, SLOT(createNewCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString, const QString, const QString)));
 	dialog->exec();
 }
 
-void MainWindow::createNewCHE(const QString fullName, const QString name, const USERMODE mode, const CHEInfoBasic* info, const QString userName)
+void MainWindow::createNewCHE(const QString fullName, const QString name, const USERMODE mode, const CHEInfoBasic* info, 
+							  const QString userName, const QString object, const QString ct)
 {
-	qDebug()<<"in create New CHE ";
+	isCHE = true;
+	this->mInformation->refresh();
+	currentProjectFullName = fullName.simplified(); // remove leading/trailing whitespace
+	currentProjectFullName = QDir::toNativeSeparators(currentProjectFullName);
+	qDebug()<<"New CHE path " <<currentProjectFullName;
+	lastUsedDirectory.setPath(currentProjectFullName);
+	
+	currentProjectName = name.simplified(); // remove leading/trailing whitespace
+	setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
+	currentProjectSave = currentProjectFullName;
+	currentProjectSave.append(QDir::separator() + currentProjectName + QString(".xml"));
+
+	mUserName = userName;
+	if (QDir().exists(currentProjectFullName))	// if the folder exists, remove all the content since user already choosed to overwrite
+	{
+		rmDir(currentProjectFullName);
+	}
+	if (!QDir().exists(currentProjectFullName))
+		QDir().mkdir(currentProjectFullName);
+	QDir::setCurrent(currentProjectFullName);
+	if (!object.isEmpty())
+	{
+		QString objectName = object.simplified();
+		QStringList objectNameList = objectName.split(";");
+		for (int i = 0; i < objectNameList.size(); i++)
+		{
+			if (objectNameList[i] == QString())
+				continue;
+			QFileInfo checkFile(objectNameList[i]);
+			if (!checkFile.exists() || !checkFile.isFile()) 
+			{
+				qDebug()<<"load object Error";
+				QMessageBox::critical(this, tr("Object Opening Error"), "Unable to open " + objectNameList[i] + ".");
+			}
+			else
+			{
+				openImages(objectNameList[i]);
+			}
+		}
+		
+	}
+	if (!ct.isEmpty())
+	{
+		QString CTFullName = ct.simplified();
+		if (!QDir().exists(ct)) 
+		{
+			qDebug()<<"load ct Error";
+			QMessageBox::critical(this, tr("DICOM Opening Error"), "Unable to open " + CTFullName + ".");
+			
+		}
+		else
+		{
+			openDICOM(ct);
+		}
+	}
+
+    // DT: change the window titles to reflect new project name.
+    QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+    foreach(QMdiSubWindow *w, windows)
+    {
+        VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+        QString file = mvc->currentView()->mFilename;
+        QFileInfo fi(file);
+
+        w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
+    }
+
+	createCHEDockWindows(info);
+	unsavedChanges = false;
+	updateXML();
+    updateMenus();
 }
 
 void MainWindow::setSplit(QAction *qa)
@@ -3201,6 +3273,39 @@ void MainWindow::createDockWindows()
   if(tabWidgetTop) tabWidgetTop->show();
   if(tabWidgetMid) tabWidgetMid->show();
   if(tabWidgetBottom) tabWidgetBottom->show();
+}
+
+void MainWindow::createCHEDockWindows(const CHEInfoBasic* info)
+{
+  // [ver.1]-----------------------------------------------
+  int mwWidth = this->sizeHint().width();
+  int mwHeight = this->sizeHint().height();
+  // [ver.2]-----------------------------------------------
+//  int mwWidth = this->frameGeometry().width();
+//  int mwHeight = this->frameGeometry().height();
+
+  int dockwidth = 300;
+  //-----------------------------------------------------
+  // MK: light control dock
+  QDockWidget *CHEdock = new QDockWidget(this);
+  CHEdock->setObjectName("Cultural Heritage Entity");
+  CHEdock->setAllowedAreas(Qt::LeftDockWidgetArea); //Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea
+//  dockTop->setFeatures(QDockWidget::NoDockWidgetFeatures); // remove the floating features.
+//  dockTop->setFloating(false);
+  CHEdock->setFeatures(QDockWidget::DockWidgetFloatable);
+
+  CHEdock->setMinimumHeight(mwHeight-100);
+  CHEdock->setMaximumHeight(mwHeight-1000);
+
+  CHEdock->setMinimumWidth(dockwidth);
+  CHEdock->setMaximumWidth(dockwidth);
+  tabCHE = new QTabWidget();
+  mCHETab = new CHETab(info, this);
+  tabCHE->addTab(mCHETab, tr("Cultural Heritage Entity"));
+  CHEdock->setWidget(tabCHE);
+  tabCHE->show();
+
+  addDockWidget(Qt::LeftDockWidgetArea, CHEdock);
 }
 
 QTabWidget* MainWindow::getSearchTabWidget()

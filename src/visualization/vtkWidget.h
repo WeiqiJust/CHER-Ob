@@ -83,7 +83,7 @@
 #include "../information/bookmarkTreeWidget.h"
 #include "../information/metadata.h"
 #include "../vtkEnums.h"
-#include "../information/dialog.h"
+#include "../information/fileInfoDialog.h"
 
 
 //-------------------By YY----------------------------------

@@ -51,7 +51,8 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QCoreApplication>
-#include "CHEBasicInfo.h"
+#include "CHEInfoDialog.h"
+#include "newCHEInfoDialog.h"
 #include "../vtkEnums.h"
 
 class NewCHEDialog : public QWidget
@@ -145,7 +146,7 @@ private:
 	QString mCHEName;
 	QString mFullPath;
 
-	CHENewInfoDialog *mCHEInfo;
+	NewCHEInfoDialog *mCHEInfo;
 
 };
 

@@ -25,32 +25,31 @@
 
 *****************************************************************************/
 
-#include "CHEBasicInfo.h"
+#include "CHEInfoDialog.h"
 
 CHEInfoBasic::CHEInfoBasic(QWidget *parent)
 	: QWidget(parent)
 {
-	object = new QString();
-	measurement = new QString();
-	creation = new QString();
-	material = new QString();
-	description = new QString();
-	conservation = new QString();
-	analyses = new QString();
-	related = new QString();
-	administration = new QString();
-	documents = new QString();
-	other = new QString();
+	object = QString();
+	measurement = QString();
+	creation = QString();
+	material = QString();
+	description = QString();
+	conservation = QString();
+	analyses = QString();
+	related = QString();
+	administration = QString();
+	documents = QString();
+	other = QString();
 }
 
 CHEInfoDialog::CHEInfoDialog(QWidget *parent)
-	: QWidget(parent)
+	: CHEInfoBasic(parent)
 {
 	mDialog = new QDialog();
 	mGrid = new QGridLayout();
 	mVBox = new QVBoxLayout();
 	mHBox = new QHBoxLayout();
-
 	mObjectContent = new QLineEdit();
 	mObjectContent->setFixedWidth(200);
 	mMeasurementContent = new QLineEdit();
@@ -157,151 +156,7 @@ CHEInfoDialog::CHEInfoDialog(QWidget *parent)
 	mGrid->addWidget(mOther, row, 0, 1, 1, Qt::AlignLeft);
     mGrid->addWidget(mOtherContent, row, 1, 1, 1, Qt::AlignLeft);
 	mGrid->setRowMinimumHeight(row, 20);
-
-
-
-	mVBox->addLayout(mGrid);
-	mVBox->addLayout(mHBox);
-
-	mDialog->setLayout(mVBox);
-
-    mDialog->setMinimumWidth(350);
-    mDialog->adjustSize();
 }
 
-CHENewInfoDialog::CHENewInfoDialog()
-{
-	okButton = new QPushButton("OK");
-	connect(okButton, SIGNAL(clicked()), this, SLOT(okPressed()));
-	backButton = new QPushButton("Back");
-	connect(backButton, SIGNAL(clicked()), this, SLOT(backPressed()));
-	cancelButton = new QPushButton("Cancel");
-	connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancelPressed()));
-	mHBox->addWidget(okButton, 0, Qt::AlignRight);
-	mHBox->addWidget(backButton, 0, Qt::AlignRight);
-	mHBox->addWidget(cancelButton, 0, Qt::AlignRight);
-}
 
-void CHENewInfoDialog::okPressed()
-{
-	CHEInfoBasic* info = new CHEInfoBasic();
-	info->object = new QString(mObjectContent->text());
-	info->measurement = new QString(mMeasurementContent->text());
-	info->creation = new QString(mCreationContent->text());
-	info->material = new QString(mMaterialContent->text());
-	info->description = new QString(mDescriptionContent->text());
-	info->conservation = new QString(mConservationContent->text());
-	info->analyses = new QString(mAnalysesContent->text());
-	info->related = new QString(mRelatedContent->text());
-	info->administration = new QString(mAdministrationContent->text());
-	info->documents = new QString(mDocumentsContent->text());
-	info->other = new QString(mOtherContent->text());
-	emit ok(info);
-}
-
-void CHENewInfoDialog::backPressed()
-{
-	mObjectContent->clear();
-	mMeasurementContent->clear();
-	mCreationContent->clear();
-	mMaterialContent->clear();
-	mDescriptionContent->clear();
-	mConservationContent->clear();
-	mAnalysesContent->clear();
-	mRelatedContent->clear();
-	mAdministrationContent->clear();
-	mDocumentsContent->clear();
-	mOtherContent->clear();
-
-	emit back();
-}
-
-CHETab::CHETab(QWidget *parent, const CHEInfoBasic* info)
-	: QWidget(parent)
-{
-	exportButton = new QPushButton("Export to Project");
-	connect(exportButton, SIGNAL(clicked()), this, SLOT(exportPressed()));
-	saveButton = new QPushButton("Save");
-	connect(saveButton, SIGNAL(clicked()), this, SLOT(savePressed()));
-	editButton = new QPushButton("Edit");
-	connect(editButton, SIGNAL(clicked()), this, SLOT(editPressed()));
-	mHBox->addWidget(exportButton, 0, Qt::AlignRight);
-	mHBox->addWidget(saveButton, 0, Qt::AlignRight);
-	mHBox->addWidget(editButton, 0, Qt::AlignRight);
-}
-
-void CHETab::editPressed()
-{
-	editButton->setEnabled(false);
-	saveButton->setEnabled(true);
-
-	QString text = mObjectContent->text();
-	mGrid->removeWidget(mObjectContent);
-	delete mObjectContent;
-	mObjectInfo = new QLineEdit();
-	mObjectInfo->setFixedWidth(200);
-	mObjectInfo->setText(text);
-	mObject->setBuddy(mObjectInfo);
-	mGrid->addWidget(mObjectInfo, 0, 1, 1, 1, Qt::AlignLeft);
-
-	text = mMeasurementContent->text();
-	mGrid->removeWidget(mMeasurementContent);
-	delete mMeasurementContent;
-	mMeasurementInfo = new QLineEdit();
-	mMeasurementInfo->setFixedWidth(200);
-	mMeasurementInfo->setText(text);
-	mMeasurement->setBuddy(mMeasurementInfo);
-	mGrid->addWidget(mMeasurementInfo, 2, 1, 1, 1, Qt::AlignLeft);
-
-	text = mCreationContent->text();
-	mGrid->removeWidget(mCreationContent);
-	delete mCreationContent;
-	mCreationInfo = new QLineEdit();
-	mCreationInfo->setFixedWidth(200);
-	mCreationInfo->setText(text);
-	mCreation->setBuddy(mCreationInfo);
-	mGrid->addWidget(mCreationInfo, 5, 1, 1, 1, Qt::AlignLeft);
-
-// need to be edit here!!!!!!
-}
-
-void CHETab::savePressed()
-{
-	editButton->setEnabled(true);
-	saveButton->setEnabled(false);
-
-	mCurrentUserName = mUserNameLineEdit->text();
-	mGrid->removeWidget(mUserNameLineEdit);
-	delete mUserNameLineEdit;
-	mUserNameContent = new QLabel(mCurrentUserName);
-	mUserName->setBuddy(mUserNameContent);
-	mGrid->addWidget(mUserNameContent, 3, 1, 1, 1, Qt::AlignLeft);
-
-	mCurrentKeyword = mKeywordLineEdit->text();
-	mGrid->removeWidget(mKeywordLineEdit);
-	delete mKeywordLineEdit;
-	mKeywordContent = new QLabel(mCurrentKeyword);
-	mKeyword->setBuddy(mKeywordContent);
-	mGrid->addWidget(mKeywordContent, 4, 1, 1, 1, Qt::AlignLeft);
-
-	mCurrentAffiliation = mAffiliationLineEdit->text();
-	mGrid->removeWidget(mAffiliationLineEdit);
-	delete mAffiliationLineEdit;
-	mAffiliationContent = new QLabel(mCurrentAffiliation);
-	mAffiliation->setBuddy(mAffiliationContent);
-	mGrid->addWidget(mAffiliationContent, 5, 1, 1, 1, Qt::AlignLeft);
-
-	mCurrentDescription = mDescriptionText->toPlainText();
-	mHBoxDescription->removeWidget(mDescriptionText);
-	delete mDescriptionText;
-	mDescriptionContent = new QLabel();
-	mDescriptionContent->setText(mCurrentDescription);
-	mDescriptionContent->setFixedHeight(150);
-	mDescriptionContent->setAlignment(Qt::AlignTop);
-	mHBoxDescription->addWidget(mDescriptionContent);
-}
-
-void CHETab::exportPressed()
-{
-}
 

@@ -25,9 +25,10 @@
 
 *****************************************************************************/
 
-#ifndef CHE_BASIC_INFO_H
-#define CHE_BASIC_INFO_H
+#ifndef CHE_TAB_H
+#define CHE_TAB_H
 
+#include <QtScript>
 #include <QWidget>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -35,91 +36,18 @@
 #include <QPushButton>
 #include <QComboBox>
 #include <QFontComboBox>
-#include <QToolBar>
-#include <QTextBrowser>
-#include <QFile>
-#include <QWizard>
-#include <QFileDialog>
-#include <QCheckBox>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
-#include <QRadioButton>
 #include <QObject>
-#include <QMessageBox>
-#include <QTreeWidget>
-#include <QTreeWidgetItem>
-
-class CHEInfoBasic : public QWidget
-{
-	Q_OBJECT
-
-public:
-	CHEInfoBasic(QWidget *parent = 0);
-
-public:
-	QString *object, *measurement, *creation, *material, *description, *conservation,
-		*analyses, *related, *administration, *documents, *other;
-
-};
-
-class CHEInfoDialog : public CHEInfoBasic
-{
-	Q_OBJECT
-
-public:
-	CHEInfoDialog(QWidget *parent = 0);
-
-protected:
-	QDialog* mDialog;
-	QGridLayout* mGrid;
-	QVBoxLayout* mVBox;
-	QHBoxLayout* mHBox;
-	QHBoxLayout* mHBoxDescription;
-	QLabel *mObject, *mMeasurement, *mCreation, *mMaterial, *mDescription, *mConservation,
-		*mAnalyses, *mRelated, *mAdministration, *mDocuments, *mOther;
-	QLineEdit *mObjectContent, *mMeasurementContent, *mCreationContent, *mMaterialContent, 
-		*mDescriptionContent, *mConservationContent, *mAnalysesContent, *mRelatedContent,
-		*mAdministrationContent, *mDocumentsContent, *mOtherContent;
-};
-
-class CHENewInfoDialog : public CHEInfoDialog
-{
-	Q_OBJECT
-
-public:
-	CHENewInfoDialog();
-
-	void exec()	{mDialog->exec();}
-
-	void hide() {mDialog->hide();}
-
-private slots:
-	void okPressed();
-
-	void backPressed();
-
-	void cancelPressed(){emit cancel();}
-
-signals:
-	void ok(const CHEInfoBasic* info);
-
-	void back();
-
-	void cancel();
-
-private:
-	QPushButton* okButton;
-	QPushButton* backButton;
-	QPushButton* cancelButton;
-};
+#include "CHEInfoDialog.h"
 
 class CHETab : public CHEInfoDialog
 {
 	Q_OBJECT
 
 public:
-	CHETab(QWidget *parent = 0, const CHEInfoBasic* info);
+	CHETab(const CHEInfoBasic* info, QWidget *parent = 0);
 
 private slots:
 	void exportPressed();
@@ -132,10 +60,9 @@ private:
 	QPushButton* saveButton;
 	QPushButton* editButton;
 
-	QLabel *mObjectInfo, *mMeasurementInfo, *mCreationInfo, *mMaterialInfo, *mDescriptionInfo, *mConservationInfo,
+	QTextEdit *mObjectInfo, *mMeasurementInfo, *mCreationInfo, *mMaterialInfo, *mDescriptionInfo, *mConservationInfo,
 		*mAnalysesInfo, *mRelatedInfo, *mAdministrationInfo, *mDocumentsInfo, *mOtherInfo;
 };
 
 
-
-#endif // CHE_BASIC_INFO_H
+#endif // CHE_TAB_H

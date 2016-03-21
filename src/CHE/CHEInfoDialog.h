@@ -28,6 +28,7 @@
 #ifndef CHE_BASIC_INFO_H
 #define CHE_BASIC_INFO_H
 
+#include <QtScript>
 #include <QWidget>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -58,8 +59,8 @@ public:
 	CHEInfoBasic(QWidget *parent = 0);
 
 public:
-	QString *object, *measurement, *creation, *material, *description, *conservation,
-		*analyses, *related, *administration, *documents, *other;
+	QString object, measurement, creation, material, description, conservation,
+		analyses, related, administration, documents, other;
 
 };
 
@@ -82,60 +83,5 @@ protected:
 		*mDescriptionContent, *mConservationContent, *mAnalysesContent, *mRelatedContent,
 		*mAdministrationContent, *mDocumentsContent, *mOtherContent;
 };
-
-class CHENewInfoDialog : public CHEInfoDialog
-{
-	Q_OBJECT
-
-public:
-	CHENewInfoDialog();
-
-	void exec()	{mDialog->exec();}
-
-	void hide() {mDialog->hide();}
-
-private slots:
-	void okPressed();
-
-	void backPressed();
-
-	void cancelPressed(){emit cancel();}
-
-signals:
-	void ok(const CHEInfoBasic* info);
-
-	void back();
-
-	void cancel();
-
-private:
-	QPushButton* okButton;
-	QPushButton* backButton;
-	QPushButton* cancelButton;
-};
-
-class CHETab : public CHEInfoDialog
-{
-	Q_OBJECT
-
-public:
-	CHETab(QWidget *parent = 0, const CHEInfoBasic* info);
-
-private slots:
-	void exportPressed();
-
-	void savePressed();
-
-	void editPressed();
-private:
-	QPushButton* exportButton;
-	QPushButton* saveButton;
-	QPushButton* editButton;
-
-	QLabel *mObjectInfo, *mMeasurementInfo, *mCreationInfo, *mMaterialInfo, *mDescriptionInfo, *mConservationInfo,
-		*mAnalysesInfo, *mRelatedInfo, *mAdministrationInfo, *mDocumentsInfo, *mOtherInfo;
-};
-
-
 
 #endif // CHE_BASIC_INFO_H

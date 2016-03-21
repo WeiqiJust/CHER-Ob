@@ -39,8 +39,13 @@
 #include <QColorDialog>
 #include <QDomDocument>
 #include "visualization/vtkWidget.h" //MK: The inclusion of this header should be only here, except implementations.
-#include "information/dialog.h"
-#include "CHE/cultureHeritageEntity.h"
+#include "information/newProjectDialog.h"
+#include "information/projectInfoDialog.h"
+#include "information/saveProjectAsDialog.h"
+#include "information/removeObjectDialog.h"
+#include "information/openWindowDialog.h"
+#include "CHE/newCHEDialog.h"
+#include "CHE/CHETab.h"
 
 #define MAXRECENTFILES 8
 
@@ -223,6 +228,7 @@ private:
   void createToolBars();
   void createStatusBar();
   void createDockWindows();
+  void createCHEDockWindows(const CHEInfoBasic* info);
 
   void readSettings();
   void writeSettings();
@@ -268,7 +274,7 @@ private slots:
   void openRecentProj();
 
   void newCHE();
-  void createNewCHE(const QString fullName, const QString name, const USERMODE mode, const CHEInfoBasic* info, const QString userName);
+  void createNewCHE(const QString fullName, const QString name, const USERMODE mode, const CHEInfoBasic* info, const QString userName, const QString object, const QString ct);
 
   void helpOnline();
   void showToolbarFile();
@@ -347,7 +353,8 @@ private:
   NewProjectDialog *mNewProjectDialog;
   ProjectInfoDialog *mProjectInfoDialog;
   bool isClose;
-
+  bool isCHE;
+  CHETab* mCHETab;
   QSignalMapper *windowMapper;
 
   //---------------------------------------------
@@ -381,6 +388,7 @@ private:
   QTabWidget* tabWidgetTop;
   QTabWidget* tabWidgetMid;
   QTabWidget* tabWidgetBottom;
+  QTabWidget* tabCHE;
 
   //---------------------------------------------
   // QToolbars
