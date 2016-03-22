@@ -233,23 +233,51 @@ private:
 
   void readSettings();
   void writeSettings();
-  void saveRecentFileList(const QString &fileName);
-  void updateRecentFileActions();
+
   void saveRecentProjectList(const QString &projName);
   void saveRecentCHEList(const QString &projName);
+  void saveRecentFileList(const QString &fileName);
+
   void updateRecentProjActions();
+  void updateRecentCHEActions();
+  void updateRecentFileActions();
+
   bool cpDir(const QString &srcPath, const QString &dstPath);
   bool rmDir(const QString &dirPath);
   void createCTFolder(QString path);
   void createObjectFolder(QString path);
+
   bool readXML(QString fileName, QVector<QString> &objectList, bool import);
 
 private slots:
   void zoomIn();
   void zoomOut();
   void zoomReset();
+
   void save();
   void saveAs();
+  void removeObject();
+  void openRecentProj();
+  void openRecentCHE();
+  void openRecentFile();
+
+  void newVtkProject(const QString& projName = QString());
+  void createNewVtkProject(const QString fullName, const QString name, const USERMODE mode, const QString userName, 
+	  const QString object, const QString ct, const QString keyword, const QString affiliation, const QString description);
+  bool openProject(QString fileName = QString());
+  void saveProject();
+  void saveProjectAs();
+  bool closeProject();
+  void importProject();
+
+  void newCHE();
+  void createNewCHE(const QString fullName, const QString name, const USERMODE mode, const CHEInfoBasic* info,
+	  const QString userName, const QString object, const QString ct);
+  bool openCHE(QString fileName = QString());
+  void saveCHE();
+  void saveCHEAs();
+  bool closeCHE();
+
   void help();
   void about();
   void viewOptions();
@@ -259,27 +287,8 @@ private slots:
   void closeAllWindows();
   void closeWindow();
   void openWindow();
-
   bool closeAll();
   VtkWidget* newImage();
-  void newVtkProject(const QString& projName = QString());// project
-  void createNewVtkProject(const QString fullName, const QString name, const USERMODE mode, const QString userName, 
-	  const QString object, const QString ct, const QString keyword, const QString affiliation, const QString description);
-  bool openProject(QString fileName = QString());
-  void saveProject();
-  void saveProjectAs();
-  bool closeProject();
-  void importProject();
-  void removeObject();
-  void openRecentFile();
-  void openRecentProj();
-
-  void newCHE();
-  void createNewCHE(const QString fullName, const QString name, const USERMODE mode, const CHEInfoBasic* info,
-	  const QString userName, const QString object, const QString ct);
-  bool openCHE(QString fileName = QString());
-  void saveCHE();
-  void saveCHEAs();
 
   void helpOnline();
   void showToolbarFile();
@@ -370,8 +379,11 @@ private:
   QMenu *CHEMenu;
   QMenu *editMenu;
   QMenu *windowMenu;
-  QMenu* recentProjMenu;
-  QMenu* recentFileMenu;
+  QMenu *newMenu;
+  QMenu *openMenu;
+  QMenu *recentProjMenu;
+  QMenu *recentCHEMenu;
+  QMenu *recentFileMenu;
   QMenu *renderMenu;
   QMenu *renderModeMenu;
   QMenu *lightingModeMenu;
@@ -391,10 +403,11 @@ private:
 
   //---------------------------------------------
   // QTabs:
-  QTabWidget* tabWidgetTop;
-  QTabWidget* tabWidgetMid;
-  QTabWidget* tabWidgetBottom;
-  QTabWidget* tabCHE;
+  QTabWidget *tabWidgetTop;
+  QTabWidget *tabWidgetMid;
+  QTabWidget *tabWidgetBottom;
+  QTabWidget *tabCHE;
+  QDockWidget *leftDock;
 
   //---------------------------------------------
   // QToolbars
@@ -413,18 +426,20 @@ private:
   QAction *aboutAct;
   QAction *viewAct;
   QAction *setCustomizeAct;
-  QAction *newVtkProjectAct;
   QAction *openObjectAct;
   QAction *openDICOMAct;
   QAction *removeObjectAct;
-  QAction *openProjectAct,*saveProjectAct,*saveProjectAsAct, *importProjectAct;
-  QAction *closeProjectAct;
+  QAction *saveAct;
+  QAction *saveAsAct;
+  QAction *closeAct;
+  QAction *newVtkProjectAct;
+  QAction *openProjectAct;
+  QAction *importProjectAct;
   QAction *recentProjActs[MAXRECENTFILES];
+  QAction *recentCHEActs[MAXRECENTFILES];
   QAction *recentFileActs[MAXRECENTFILES];
   QAction *newCHEAct;
   QAction *openCHEAct;
-  QAction *saveCHEAct;
-  QAction *saveCHEAsAct;
   QActionGroup *renderModeGroupAct;
   QAction *renderModePointsAct;
   QAction *renderModeWireAct;

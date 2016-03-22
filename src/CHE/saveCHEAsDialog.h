@@ -49,6 +49,14 @@ class SaveCHEAsDialog : public CHEInfoDialog
 public:
 	SaveCHEAsDialog(const QString user, const CHEInfoBasic* info, const QString path = NULL);
 
+	QString getProjectName()	{return mProjectNameEdit->text();}
+
+	QString getProjectPath()	{return mLocationLineEdit->text();}
+
+	QString getUserName()	{return mUserNameLineEdit->text();}
+
+	CHEInfoBasic* getCHEInfo();
+
 	void exec()	{mDialog->exec();}
 
 	bool checkOk()	{return isOk;}

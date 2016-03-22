@@ -95,8 +95,7 @@ SaveCHEAsDialog::SaveCHEAsDialog(const QString user, const CHEInfoBasic* info, c
 
     mDialog->setMinimumWidth(350);
     //mDialog->adjustSize();
-	this->setLayout(mVBox);
-	this->show();
+	mDialog->setLayout(mVBox);
 }
 
 void SaveCHEAsDialog::locationBrowse()
@@ -191,4 +190,21 @@ void SaveCHEAsDialog::enableNextButton()
 	{
 		mNextButton->setEnabled(false);
 	}
+}
+
+CHEInfoBasic* SaveCHEAsDialog::getCHEInfo()
+{
+	CHEInfoBasic* info = new CHEInfoBasic();
+	info->object = mObjectContent->text();
+	info->measurement = mMeasurementContent->text();
+	info->creation = mCreationContent->text();
+	info->material = mMaterialContent->text();
+	info->description = mDescriptionContent->text();
+	info->conservation = mConservationContent->text();
+	info->analyses = mAnalysesContent->text();
+	info->related = mRelatedContent->text();
+	info->administration = mAdministrationContent->text();
+	info->documents = mDocumentsContent->text();
+	info->other = mOtherContent->text();
+	return info;
 }

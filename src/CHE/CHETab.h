@@ -49,10 +49,17 @@ class CHETab : public CHEInfoDialog
 public:
 	CHETab(const CHEInfoBasic* info, QWidget *parent = 0);
 
+	CHEInfoBasic* getCHEInfo();
+
+	void updateCHEInfo(const CHEInfoBasic* info);
+
+	bool isSaved()	{return !saveButton->isEnabled();}
+
+public slots:
+	void savePressed();
+
 private slots:
 	void exportPressed();
-
-	void savePressed();
 
 	void editPressed();
 

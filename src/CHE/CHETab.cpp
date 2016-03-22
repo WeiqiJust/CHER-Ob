@@ -84,6 +84,39 @@ CHETab::CHETab(const CHEInfoBasic* info, QWidget *parent)
 	this->show();
 }
 
+CHEInfoBasic* CHETab::getCHEInfo()
+{
+	CHEInfoBasic* info = new CHEInfoBasic();
+	info->object = mObjectInfo->toPlainText();
+	info->measurement = mMeasurementInfo->toPlainText();
+	info->creation = mCreationInfo->toPlainText();
+	info->material = mMaterialInfo->toPlainText();
+	info->description = mDescriptionInfo->toPlainText();
+	info->conservation = mConservationInfo->toPlainText();
+	info->analyses = mAnalysesInfo->toPlainText();
+	info->related = mRelatedInfo->toPlainText();
+	info->administration = mAdministrationInfo->toPlainText();
+	info->documents = mDocumentsInfo->toPlainText();
+	info->other = mOtherInfo->toPlainText();
+	return info;
+}
+
+void CHETab::updateCHEInfo(const CHEInfoBasic* info)
+{
+	mObjectInfo->setText(info->object);
+	mMeasurementInfo->setText(info->measurement);
+	mCreationInfo->setText(info->creation);
+	mMaterialInfo->setText(info->material);
+	mDescriptionInfo->setText(info->description);
+	mConservationInfo->setText(info->conservation);
+	mAnalysesInfo->setText(info->analyses);
+	mRelatedInfo->setText(info->related);
+	mAdministrationInfo->setText(info->administration);
+	mDocumentsInfo->setText(info->documents);
+	mOtherInfo->setText(info->other);
+	savePressed();
+}
+
 void CHETab::editPressed()
 {
 	editButton->setEnabled(false);
@@ -138,3 +171,4 @@ void CHETab::exportPressed()
 {
 	//to be done
 }
+

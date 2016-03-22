@@ -99,6 +99,7 @@ MainWindow::MainWindow()
 
   updateRecentFileActions();
   updateRecentProjActions();
+  updateRecentCHEActions();
 
   setAcceptDrops(true);
   mdiArea->setAcceptDrops(true);
@@ -223,13 +224,26 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 bool MainWindow::closeAll()
 {
-    if(closeProject()) 
+	if (!isCHE)
 	{
-		isClose = true;	// skip the eventfilter
-        mdiArea->closeAllSubWindows();
-		isClose = false;
-		return true;
-    }
+		if(closeProject()) 
+		{
+			isClose = true;	// skip the eventfilter
+			mdiArea->closeAllSubWindows();
+			isClose = false;
+			return true;
+		}
+	}
+	else
+	{
+		if(closeCHE()) 
+		{
+			isClose = true;	// skip the eventfilter
+			mdiArea->closeAllSubWindows();
+			isClose = false;
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -1313,6 +1327,7 @@ bool MainWindow::openProject(QString fileName)
     return false;
   }
   this->mInformation->refresh();
+  isCHE = false;
   // this change of dir is needed for subsequent textures/materials loading
   QDir::setCurrent(fi.absoluteDir().absolutePath());
   qb->show();
@@ -1407,7 +1422,6 @@ void MainWindow::newVtkProject(const QString& projName)
     if (!this->closeAll())
 		return;
     QString projectName, projectPath;
-    bool ok = false;
 	if (mNewProjectDialog)
 	{
 		delete mNewProjectDialog;
@@ -1423,6 +1437,7 @@ void MainWindow::createNewVtkProject(const QString fullName, const QString name,
 									 const QString object, const QString ct,  const QString keyword, const QString affiliation, const QString description)
 {
 	this->mInformation->refresh();
+	isCHE = false;
 	currentProjectFullName = fullName.simplified(); // remove leading/trailing whitespace
 	currentProjectFullName = QDir::toNativeSeparators(currentProjectFullName);
 	qDebug()<<"New project path " <<currentProjectFullName;
@@ -1731,9 +1746,7 @@ bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent)
 
 		newImage();
 		qDebug()<<fileName;
-
 		bool open = VTKA()->ReadData(fileName);
-		
 		//this->mInformation->startAnnotation();
 		if(open && saveRecent)
 		{
@@ -1783,7 +1796,6 @@ bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent)
 		}
 		currentVtkView()->setWindowTitle(currentVtkView()->prjName);
 		updateXML();
-
 		updateAllViews();
 		return true;
 	}
@@ -1794,18 +1806,48 @@ bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent)
 
 void MainWindow::save()
 {
-#ifdef SUPPORT_SAVE
-    if (activeGLArea() && activeGLArea()->save())
-        statusBar()->showMessage(tr("File saved"), 2000);
-#endif
+	if (isCHE)
+		saveCHE();
+	else
+		saveProject();
 }
 
 void MainWindow::saveAs()
 {
-#ifdef SUPPORT_SAVE
-    if (activeGLArea() && activeGLArea()->saveAs())
-        statusBar()->showMessage(tr("File saved"), 2000);
-#endif
+	if (isCHE)
+		saveCHEAs();
+	else
+		saveProjectAs();
+}
+
+void MainWindow::openRecentProj()
+{
+  QAction *action = qobject_cast<QAction *>(sender());
+  if (action)	openProject(action->data().toString());
+}
+
+void MainWindow::openRecentCHE()
+{
+  QAction *action = qobject_cast<QAction *>(sender());
+  if (action)	openCHE(action->data().toString());
+}
+
+void MainWindow::openRecentFile()
+{
+  QAction *action = qobject_cast<QAction *>(sender());
+  if (action)
+  {
+    QString filePath = action->data().toString();
+    QFileInfo fi(filePath);
+    if( QFileInfo(filePath).exists() == false)
+      return;
+//    qDebug() << "recent file: " << fileName;
+    if (fi.isDir()){
+      openDICOM(filePath);
+    }else{
+      openImages(filePath);
+    }
+  }
 }
 
 void MainWindow::help()
@@ -1840,84 +1882,6 @@ void MainWindow::viewOptions()
 {
    QMessageBox::about(this, tr("view test"),
             tr("<b>Hyper3D</b> is three-dimensional refletance transformation imaging"));
-}
-
-void MainWindow::updateRecentFileActions()
-{
-  //bool activeDoc = (bool) !mdiArea->subWindowList().empty() && mdiArea->currentSubWindow();
-
-  QSettings settings("Yale Graphics Lab", "Hyper3D");
-  QStringList files = settings.value("recentFileList").toStringList();
-
-  int numRecentFiles = qMin(files.size(), (int)MAXRECENTFILES);
-
-  for (int i = 0; i < numRecentFiles; ++i)
-  {
-    if( QFileInfo(files[i]).exists() == true)
-    {
-        QString text = tr("&%1 %2").arg(i + 1).arg(QFileInfo(files[i]).fileName());
-    //    qDebug() << "active doc:" << activeDoc << " " << "recent file list:" << text;
-        recentFileActs[i]->setText(text);
-        recentFileActs[i]->setData(files[i]);
-
-        //MK: conditional opening (allowed after project)
-    //    recentFileActs[i]->setEnabled(activeDoc);
-        //MK: force to allow it for convinience
-        recentFileActs[i]->setEnabled(true);
-    } else {
-        recentFileActs[i]->setText("Not available");
-        recentFileActs[i]->setEnabled(false);
-    }
-  }
-
-  for (int j = numRecentFiles; j < MAXRECENTFILES; ++j)
-  {
-//    qDebug() << "recent file list:" << j << " " << recentFileActs[j]->text();
-    recentFileActs[j]->setVisible(false);
-  }
-}
-
-void MainWindow::updateRecentProjActions()
-{
-  QSettings settings("Yale Graphics Lab", "Hyper3D");
-  QStringList projs = settings.value("recentProjList").toStringList();
-
-  int numRecentProjs = qMin(projs.size(), (int)MAXRECENTFILES);
-  for (int i = 0; i < numRecentProjs; ++i)
-  {
-    QString text = tr("&%1 %2").arg(i + 1).arg(QFileInfo(projs[i]).fileName());
-    recentProjActs[i]->setText(text);
-    recentProjActs[i]->setData(projs[i]);
-    recentProjActs[i]->setEnabled(true);
-  }
-  for (int j = numRecentProjs; j < MAXRECENTFILES; ++j)
-    recentProjActs[j]->setVisible(false);
-}
-
-// this function update the app settings with the current recent file list
-// and update the loaded mesh counter
-void MainWindow::saveRecentFileList(const QString &fileName)
-{
-  QFileInfo fi(fileName);
-  // DT: This should fix bug where filenames were duplicated because of slash/backslash differences.
-  QString fn = QDir::fromNativeSeparators(fi.absoluteFilePath());
-
-  QSettings settings("Yale Graphics Lab", "Hyper3D");
-  QStringList files = settings.value("recentFileList").toStringList();
-  files.removeAll(fn);
-  files.prepend(fn);
-  while (files.size() > MAXRECENTFILES)
-    files.removeLast();
-
-  //avoid the slash/back-slash path ambiguity
-  for(int ii = 0;ii < files.size();++ii)
-    files[ii] = QDir::fromNativeSeparators(files[ii]);
-  settings.setValue("recentFileList", files);
-
-  foreach (QWidget *widget, QApplication::topLevelWidgets()) {
-    MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
-    if (mainWin) mainWin->updateRecentFileActions();
-  }
 }
 
 void MainWindow::saveRecentProjectList(const QString &projName)
@@ -1964,10 +1928,104 @@ void MainWindow::saveRecentCHEList(const QString &projName)
   {
     MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
     if (mainWin)
-      mainWin->updateRecentProjActions();
+      mainWin->updateRecentCHEActions();
   }
 }
 
+// this function update the app settings with the current recent file list
+// and update the loaded mesh counter
+void MainWindow::saveRecentFileList(const QString &fileName)
+{
+  QFileInfo fi(fileName);
+  // DT: This should fix bug where filenames were duplicated because of slash/backslash differences.
+  QString fn = QDir::fromNativeSeparators(fi.absoluteFilePath());
+
+  QSettings settings("Yale Graphics Lab", "Hyper3D");
+  QStringList files = settings.value("recentFileList").toStringList();
+  files.removeAll(fn);
+  files.prepend(fn);
+  while (files.size() > MAXRECENTFILES)
+    files.removeLast();
+
+  //avoid the slash/back-slash path ambiguity
+  for(int ii = 0;ii < files.size();++ii)
+    files[ii] = QDir::fromNativeSeparators(files[ii]);
+  settings.setValue("recentFileList", files);
+
+  foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+    MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
+    if (mainWin) mainWin->updateRecentFileActions();
+  }
+}
+
+void MainWindow::updateRecentProjActions()
+{
+  QSettings settings("Yale Graphics Lab", "Hyper3D");
+  QStringList projs = settings.value("recentProjList").toStringList();
+
+  int numRecentProjs = qMin(projs.size(), (int)MAXRECENTFILES);
+  for (int i = 0; i < numRecentProjs; ++i)
+  {
+    QString text = tr("&%1 %2").arg(i + 1).arg(QFileInfo(projs[i]).fileName());
+    recentProjActs[i]->setText(text);
+    recentProjActs[i]->setData(projs[i]);
+    recentProjActs[i]->setEnabled(true);
+  }
+  for (int j = numRecentProjs; j < MAXRECENTFILES; ++j)
+    recentProjActs[j]->setVisible(false);
+}
+
+void MainWindow::updateRecentCHEActions()
+{
+  QSettings settings("Yale Graphics Lab", "Hyper3D");
+  QStringList ches = settings.value("recentCHEList").toStringList();
+
+  int numRecentProjs = qMin(ches.size(), (int)MAXRECENTFILES);
+  for (int i = 0; i < numRecentProjs; ++i)
+  {
+    QString text = tr("&%1 %2").arg(i + 1).arg(QFileInfo(ches[i]).fileName());
+    recentCHEActs[i]->setText(text);
+    recentCHEActs[i]->setData(ches[i]);
+    recentCHEActs[i]->setEnabled(true);
+  }
+  for (int j = numRecentProjs; j < MAXRECENTFILES; ++j)
+    recentCHEActs[j]->setVisible(false);
+}
+
+void MainWindow::updateRecentFileActions()
+{
+  //bool activeDoc = (bool) !mdiArea->subWindowList().empty() && mdiArea->currentSubWindow();
+
+  QSettings settings("Yale Graphics Lab", "Hyper3D");
+  QStringList files = settings.value("recentFileList").toStringList();
+
+  int numRecentFiles = qMin(files.size(), (int)MAXRECENTFILES);
+
+  for (int i = 0; i < numRecentFiles; ++i)
+  {
+    if( QFileInfo(files[i]).exists() == true)
+    {
+        QString text = tr("&%1 %2").arg(i + 1).arg(QFileInfo(files[i]).fileName());
+    //    qDebug() << "active doc:" << activeDoc << " " << "recent file list:" << text;
+        recentFileActs[i]->setText(text);
+        recentFileActs[i]->setData(files[i]);
+
+        //MK: conditional opening (allowed after project)
+    //    recentFileActs[i]->setEnabled(activeDoc);
+        //MK: force to allow it for convinience
+        recentFileActs[i]->setEnabled(true);
+    } else {
+        recentFileActs[i]->setText("Not available");
+        recentFileActs[i]->setEnabled(false);
+    }
+  }
+
+  for (int j = numRecentFiles; j < MAXRECENTFILES; ++j)
+  {
+//    qDebug() << "recent file list:" << j << " " << recentFileActs[j]->text();
+    recentFileActs[j]->setVisible(false);
+  }
+}
 
 void MainWindow::updateMenus()
 {
@@ -1998,13 +2056,14 @@ void MainWindow::updateMenus()
   openProjectAct->setEnabled(true);
   openObjectAct->setEnabled(projectOpen);
   openDICOMAct->setEnabled(projectOpen);
-  importProjectAct->setEnabled(projectOpen);
+  importProjectAct->setEnabled(projectOpen && !isCHE);
   removeObjectAct->setEnabled(projectOpen);
   
-  saveProjectAsAct->setEnabled(projectOpen && activeDoc);
-  saveProjectAct->setEnabled(projectOpen && activeDoc);
-  closeProjectAct->setEnabled(projectOpen);
+  saveAsAct->setEnabled(projectOpen);
+  saveAct->setEnabled(projectOpen);
+  closeAct->setEnabled(projectOpen);
   updateRecentProjActions();
+  updateRecentCHEActions();
   updateRecentFileActions();
   recentFileMenu->setEnabled(projectOpen);
 
@@ -2289,32 +2348,10 @@ void MainWindow::updateWindowMenu()
   }
 }
 
-void MainWindow::openRecentFile()
-{
-  QAction *action = qobject_cast<QAction *>(sender());
-  if (action)
-  {
-    QString filePath = action->data().toString();
-    QFileInfo fi(filePath);
-    if( QFileInfo(filePath).exists() == false)
-      return;
-//    qDebug() << "recent file: " << fileName;
-    if (fi.isDir()){
-      openDICOM(filePath);
-    }else{
-      openImages(filePath);
-    }
-  }
-}
-
-void MainWindow::openRecentProj()
-{
-  QAction *action = qobject_cast<QAction *>(sender());
-  if (action)	openProject(action->data().toString());
-}
-
 void MainWindow::newCHE()
 {
+    if (!this->closeAll())
+		return;
 	NewCHEDialog* dialog = new NewCHEDialog();
 	connect(dialog, SIGNAL(createCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString, const QString, const QString)), 
 		this, SLOT(createNewCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString, const QString, const QString)));
@@ -2344,6 +2381,7 @@ void MainWindow::createNewCHE(const QString fullName, const QString name, const 
 	if (!QDir().exists(currentProjectFullName))
 		QDir().mkdir(currentProjectFullName);
 	QDir::setCurrent(currentProjectFullName);
+	createCHEDockWindows(info);
 	if (!object.isEmpty())
 	{
 		QString objectName = object.simplified();
@@ -2391,7 +2429,6 @@ void MainWindow::createNewCHE(const QString fullName, const QString name, const 
         w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
     }
 
-	createCHEDockWindows(info);
 	unsavedChanges = false;
 	updateXML();
     updateMenus();
@@ -2402,6 +2439,7 @@ bool MainWindow::openCHE(QString fileName)
 	if (!this->closeAll())
 	  return false;
 
+	qDebug()<<"!!!!in open che";
 	if (fileName.isEmpty())
 		fileName = QFileDialog::getOpenFileName(this,tr("Open Cultural Heritage Entity File"), lastUsedDirectory.path(),
 											"Hyper3D Project (*.xml)");
@@ -2458,6 +2496,7 @@ void MainWindow::saveCHE()
 	this->mInformation->saveAllNotes();
 	this->mInformation->closeAllNotes();
 
+	mCHETab->savePressed();
     unsavedChanges = false;
 	updateXML();
     updateMenus();
@@ -2468,6 +2507,115 @@ void MainWindow::saveCHE()
 
 void MainWindow::saveCHEAs()
 {
+	CHEInfoBasic* info = new CHEInfoBasic();
+	info = mCHETab->getCHEInfo();
+	SaveCHEAsDialog* dialog = new SaveCHEAsDialog(mUserName,  info, this->lastUsedDirectory.path());
+	dialog->exec();
+	if (!dialog->checkOk())
+		return;
+
+	//QString fn = QFileDialog::getExistingDirectory(this, tr("Save Project As.."), lastSavedDirectory.path().append(""),
+	//													QFileDialog::ShowDirsOnly
+    //                                                   | QFileDialog::DontResolveSymlinks);
+	QString fn = dialog->getProjectPath();
+	fn = QDir::toNativeSeparators(fn);
+
+	if(!fn.isEmpty() && QDir(fn).isReadable())
+	{
+		QString previousName = currentProjectName;
+		currentProjectName = dialog->getProjectName();
+		mUserName = dialog->getUserName();
+		QString newProjectPath = fn;
+		if (newProjectPath[newProjectPath.size()-1] == QDir::separator())
+		{
+			newProjectPath.append(currentProjectName);
+		}
+		else
+		{
+			newProjectPath.append(QDir::separator() + currentProjectName);
+		}
+		if (!QDir().exists(newProjectPath))	QDir().mkdir(newProjectPath);
+
+		cpDir(currentProjectFullName, newProjectPath);
+
+		QString previousXML = newProjectPath;
+		previousXML.append(QDir::separator() + previousName + QString(".xml"));
+		QFile file(previousXML);
+		file.remove();
+        currentProjectSave = newProjectPath;
+		currentProjectSave.append(QDir::separator() + currentProjectName + QString(".xml"));
+		currentProjectFullName = newProjectPath;
+        lastSavedDirectory.setPath(currentProjectFullName);
+		QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+		this->mInformation->refresh();
+		foreach(QMdiSubWindow *w, windows)
+		{
+			VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+			QString file = mvc->currentView()->mFilename;
+			QFileInfo fi(file);
+			mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + fi.fileName() + QDir::separator() + fi.fileName();
+			mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + fi.fileName();
+			w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
+			this->mInformation->initAnnotation(mvc->currentView()->mProjectPath);
+		}
+		setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
+		CHEInfoBasic* info = new CHEInfoBasic();
+		info = dialog->getCHEInfo();
+		mCHETab->updateCHEInfo(info);
+		updateXML();
+		
+        return;
+    } 
+	else if (!fn.isEmpty())
+	{
+		QMessageBox mb;
+        mb.critical(this, tr("Save Cultural Heritage Entity Error"), tr("Failed to Save Cultural Heritage Entity! The Path Does not Exist."));
+        return;
+    }
+}
+
+bool MainWindow::closeCHE()
+{
+	if(((!this->mInformation->checkAllSaved()) && VTKA())|| !mCHETab->isSaved()) {
+        QMessageBox mb;
+        QString message;
+
+        message = tr("The current cultural heritage entity has unsaved changes. Do you wish to save before closing it?"),
+        mb.setText(message);
+        mb.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        mb.setDefaultButton(QMessageBox::Save);
+        int ret = mb.exec();
+
+        if(ret == QMessageBox::Save)	this->saveCHE();
+        else if(ret == QMessageBox::Cancel) return false;
+    }
+
+    unsavedChanges = false;
+    currentProjectName = QString();
+    currentProjectSave = QString();
+	currentProjectFullName = QString();
+    currentProjectMetadata.clear();
+	isCHE = false;
+    QDomElement root = currentProjectMetadata.createElement("hyper3d.cultural_heritage_entity");
+    currentProjectMetadata.appendChild(root);
+	this->mInformation->closeAllNotes();
+
+    QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+    foreach(QMdiSubWindow *w, windows)
+    {
+        VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+        QString file = mvc->currentView()->mFilename;
+        QFileInfo fi(file);
+		VtkWidget* gla = mvc->currentView();
+		gla->closeFileInfo();
+
+        w->setWindowTitle(fi.fileName());
+    }
+
+    updateMenus();
+	removeDockWidget(leftDock);
+
+    return true;
 }
 
 
@@ -2701,32 +2849,46 @@ void MainWindow::createActions()
 {
 	//===================================================================================================
 	//MK: File Actions
-	newVtkProjectAct = new QAction(QIcon(":/images/new_project.png"),tr("New Project..."), this);
+	newVtkProjectAct = new QAction(QIcon(":/images/new_project.png"),tr("&Project..."), this);
 	newVtkProjectAct->setShortcutContext(Qt::ApplicationShortcut);
-	newVtkProjectAct->setShortcut(Qt::CTRL+Qt::Key_N);
-	newVtkProjectAct->setStatusTip(tr("Create a new project"));
+	newVtkProjectAct->setShortcut(Qt::CTRL + Qt::Key_N);
+	newVtkProjectAct->setStatusTip(tr("Create a new Project"));
 	connect(newVtkProjectAct, SIGNAL(triggered()), this, SLOT(newVtkProject()));
 
-	openProjectAct = new QAction(QIcon(":/images/open_project.png"),tr("&Open Project..."), this);
+    newCHEAct = new QAction(QIcon(":/images/new_project.png"), tr("&Cultural Heritage Entity..."), this);
+	newCHEAct->setShortcutContext(Qt::ApplicationShortcut);
+	newCHEAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_N);
+	newCHEAct->setStatusTip(tr("Create a new Cultural Heritage Entity"));
+	connect(newCHEAct, SIGNAL(triggered()), this, SLOT(newCHE()));
+
+	openProjectAct = new QAction(QIcon(":/images/open_project.png"), tr("&Project..."), this);
 	openProjectAct->setShortcutContext(Qt::ApplicationShortcut);
-	openProjectAct->setShortcut(Qt::CTRL+Qt::Key_O);
-	openProjectAct->setStatusTip(tr("Open a project file"));
+	openProjectAct->setShortcut(Qt::CTRL + Qt::Key_O);
+	openProjectAct->setStatusTip(tr("Open a Project/Cultural Heritage Entity"));
 	connect(openProjectAct, SIGNAL(triggered()), this, SLOT(openProject()));
 
-	saveProjectAct = new QAction(QIcon(":/images/save_project.png"),tr("&Save Project"), this);
-	saveProjectAct->setShortcutContext(Qt::ApplicationShortcut);
-	saveProjectAct->setShortcut(Qt::CTRL+Qt::Key_S);
-	saveProjectAct->setStatusTip(tr("Save the project"));
-	connect(saveProjectAct, SIGNAL(triggered()), this, SLOT(saveProject()));
+	openCHEAct = new QAction(QIcon(":/images/open_project.png"), tr("&Cultural Heritage Entity..."), this);
+	openCHEAct->setShortcutContext(Qt::ApplicationShortcut);
+	openCHEAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_O);
+	openCHEAct->setStatusTip(tr("Open a Cultural Heritage Entity"));
+	connect(openCHEAct, SIGNAL(triggered()), this, SLOT(openCHE()));
 
-	saveProjectAsAct = new QAction(QIcon(":/images/save_project.png"),tr("Save Project As..."), this);
-	saveProjectAsAct->setStatusTip(tr("Save the project as a new file"));
-	connect(saveProjectAsAct, SIGNAL(triggered()), this, SLOT(saveProjectAs()));
+	saveAct = new QAction(QIcon(":/images/save_project.png"),tr("&Save"), this);
+	saveAct->setShortcutContext(Qt::ApplicationShortcut);
+	saveAct->setShortcut(Qt::CTRL + Qt::Key_S);
+	saveAct->setStatusTip(tr("Save the Project/Cultural Heritage Entity"));
+	connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
-	closeProjectAct = new QAction(tr("Close Project"), this);
-	closeProjectAct->setShortcutContext(Qt::ApplicationShortcut);
-	closeProjectAct->setStatusTip(tr("Close the opened project"));
-	connect(closeProjectAct, SIGNAL(triggered()),this, SLOT(closeAll()));
+	saveAsAct = new QAction(QIcon(":/images/save_project.png"),tr("Save As..."), this);
+	saveAsAct->setStatusTip(tr("Save the Project/Cultural Heritage Entity as a new one"));
+	saveAsAct->setShortcutContext(Qt::ApplicationShortcut);
+	saveAsAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_S);
+	connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
+
+	closeAct = new QAction(tr("Close"), this);
+	closeAct->setShortcutContext(Qt::ApplicationShortcut);
+	closeAct->setStatusTip(tr("Close the opened Project/Cultural Heritage Entity"));
+	connect(closeAct, SIGNAL(triggered()),this, SLOT(closeAll()));
 
 	importProjectAct = new QAction(tr("Import Project..."), this);
 	importProjectAct->setShortcutContext(Qt::ApplicationShortcut);
@@ -2764,6 +2926,12 @@ void MainWindow::createActions()
 		recentProjActs[i]->setShortcut(QKeySequence(Qt::ALT + Qt::Key_F1+i));
 		connect(recentProjActs[i],SIGNAL(triggered()),this,SLOT(openRecentProj()));
 
+		recentCHEActs[i] = new QAction(this);
+		recentCHEActs[i]->setVisible(true);
+		recentCHEActs[i]->setEnabled(true);
+		recentCHEActs[i]->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F1+i));
+		connect(recentCHEActs[i],SIGNAL(triggered()),this,SLOT(openRecentCHE()));
+
 		recentFileActs[i] = new QAction(this);
 		recentFileActs[i]->setVisible(true);
 		recentFileActs[i]->setEnabled(false);
@@ -2793,21 +2961,6 @@ void MainWindow::createActions()
     zoomResetAct->setShortcutContext(Qt::ApplicationShortcut);
     zoomResetAct->setShortcut(Qt::CTRL+Qt::Key_0);
     connect(zoomResetAct, SIGNAL(triggered()), this, SLOT(zoomReset()));
-
-	//===================================================================================================
-	// Culture Heritage Entity Action
-	newCHEAct = new QAction(tr("New Cultural Heritage Entity..."), this);
-	connect(newCHEAct, SIGNAL(triggered()), this, SLOT(newCHE()));
-
-	openCHEAct = new QAction(tr("Open Cultural Heritage Entity..."), this);
-	connect(openCHEAct, SIGNAL(triggered()), this, SLOT(openCHE()));
-
-	saveCHEAct = new QAction(tr("Save Cultural Heritage Entity"), this);
-	connect(saveCHEAct, SIGNAL(triggered()), this, SLOT(saveCHE()));
-
-	saveCHEAsAct = new QAction(tr("Save Cultural Heritage Entity As..."), this);
-	connect(saveCHEAsAct, SIGNAL(triggered()), this, SLOT(saveCHEAs()));
-
 
     //===================================================================================================
     //MK: Window Actions
@@ -3021,12 +3174,18 @@ void MainWindow::createActions()
 void MainWindow::createMenus()
 {
   // Menu
-  fileMenu = menuBar->addMenu(tr("&Project"));
-  fileMenu->addAction(newVtkProjectAct);
-  fileMenu->addAction(openProjectAct);
-  fileMenu->addAction(saveProjectAct);
-  fileMenu->addAction(saveProjectAsAct);
-  fileMenu->addAction(closeProjectAct);
+  fileMenu = menuBar->addMenu(tr("&File"));
+  newMenu = fileMenu->addMenu(tr("New"));
+  newMenu->addAction(newVtkProjectAct);
+  newMenu->addAction(newCHEAct);
+
+  openMenu = fileMenu->addMenu(tr("Open"));
+  openMenu->addAction(openProjectAct);
+  openMenu->addAction(openCHEAct);
+
+  fileMenu->addAction(saveAct);
+  fileMenu->addAction(saveAsAct);
+  fileMenu->addAction(closeAct);
   
   fileMenu->addSeparator();
   fileMenu->addAction(openObjectAct);
@@ -3037,11 +3196,13 @@ void MainWindow::createMenus()
   fileMenu->addSeparator();
 
   recentProjMenu = fileMenu->addMenu(tr("Recent Projects"));
+  recentCHEMenu = fileMenu->addMenu(tr("Recent Cultural Heritage Entity"));
   recentFileMenu = fileMenu->addMenu(tr("Recent Files"));
 
   for (int i = 0; i < MAXRECENTFILES; ++i)
   {
     recentProjMenu->addAction(recentProjActs[i]);
+	recentCHEMenu->addAction(recentCHEActs[i]);
     recentFileMenu->addAction(recentFileActs[i]);
   }
   
@@ -3050,12 +3211,6 @@ void MainWindow::createMenus()
   // Menu Edit
 //  editMenu = menuBar->addMenu(tr("&Edit"));
 //  editMenu->addAction(setCustomizeAct);
-
-  CHEMenu = menuBar->addMenu(tr("&Cultrue Heritage Entity"));
-  CHEMenu->addAction(newCHEAct);
-  CHEMenu->addAction(openCHEAct);
-  CHEMenu->addAction(saveCHEAct);
-  CHEMenu->addAction(saveCHEAsAct);
 
   // Render menu
   renderMenu = menuBar->addMenu(tr("&Render"));
@@ -3163,7 +3318,7 @@ void MainWindow::createToolBars()
   mainToolBar->addAction(this->openObjectAct);
   mainToolBar->addAction(this->openDICOMAct);
   mainToolBar->addSeparator();
-  mainToolBar->addAction(this->saveProjectAsAct);
+  mainToolBar->addAction(this->saveAsAct);
 
   mainToolBar->setVisible(true);
   mainToolBar->setEnabled(true);
@@ -3464,28 +3619,27 @@ void MainWindow::createCHEDockWindows(const CHEInfoBasic* info)
 //  int mwHeight = this->frameGeometry().height();
 
   int dockwidth = 300;
-  //-----------------------------------------------------
-  // MK: light control dock
-  QDockWidget *CHEdock = new QDockWidget(this);
-  CHEdock->setObjectName("Cultural Heritage Entity");
-  CHEdock->setAllowedAreas(Qt::LeftDockWidgetArea); //Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea
+
+  leftDock = new QDockWidget(this);
+  leftDock->setObjectName("Cultural Heritage Entity");
+  leftDock->setAllowedAreas(Qt::LeftDockWidgetArea); //Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea
 //  dockTop->setFeatures(QDockWidget::NoDockWidgetFeatures); // remove the floating features.
 //  dockTop->setFloating(false);
-  CHEdock->setFeatures(QDockWidget::DockWidgetFloatable);
+  leftDock->setFeatures(QDockWidget::DockWidgetFloatable);
 
-  CHEdock->setMinimumHeight(mwHeight-100);
-  CHEdock->setMaximumHeight(mwHeight-1000);
+  leftDock->setMinimumHeight(mwHeight-100);
+  leftDock->setMaximumHeight(mwHeight-1000);
 
-  CHEdock->setMinimumWidth(dockwidth);
-  CHEdock->setMaximumWidth(dockwidth);
+  leftDock->setMinimumWidth(dockwidth);
+  leftDock->setMaximumWidth(dockwidth);
   tabCHE = new QTabWidget();
   mCHETab = new CHETab(info, this);
   connect(mCHETab, SIGNAL(save()), this, SLOT(updateXML()));
   tabCHE->addTab(mCHETab, tr("Cultural Heritage Entity"));
-  CHEdock->setWidget(tabCHE);
+  leftDock->setWidget(tabCHE);
   tabCHE->show();
 
-  addDockWidget(Qt::LeftDockWidgetArea, CHEdock);
+  addDockWidget(Qt::LeftDockWidgetArea, leftDock);
 }
 
 QTabWidget* MainWindow::getSearchTabWidget()
