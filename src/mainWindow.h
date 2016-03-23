@@ -47,6 +47,7 @@
 #include "CHE/newCHEDialog.h"
 #include "CHE/CHETab.h"
 #include "CHE/saveCHEAsDialog.h"
+#include "CHE/exportToProjectDialog.h"
 
 #define MAXRECENTFILES 8
 
@@ -248,6 +249,8 @@ private:
   void createObjectFolder(QString path);
 
   bool readXML(QString fileName, QVector<QString> &objectList, bool import);
+  void exportProjectXML(const QString path, const QString name, const QString userName, const QString keyword, 
+	  const QString affiliation, const QString description);
 
 private slots:
   void zoomIn();
@@ -277,6 +280,7 @@ private slots:
   void saveCHE();
   void saveCHEAs();
   bool closeCHE();
+  void exportCHEToProject();
 
   void help();
   void about();

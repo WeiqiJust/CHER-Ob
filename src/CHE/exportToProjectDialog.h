@@ -25,8 +25,8 @@
 
 *****************************************************************************/
 
-#ifndef SAVE_PROJECT_AS_DIALOG_H
-#define SAVE_PROJECT_AS_DIALOG_H
+#ifndef EXPORT_TO_PROJECT_DIALOG_H
+#define EXPORT_TO_PROJECT_DIALOG_H
 
 #include <QtScript>
 #include <QWidget>
@@ -48,17 +48,16 @@
 #include <QRadioButton>
 #include <QObject>
 #include <QMessageBox>
-#include "../vtkEnums.h"
+#include <QTreeView>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 
-class MainWindow;
-class VtkWidget;
-
-class SaveProjectAsDialog : public QWidget
+class ExportToProjectDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
-    SaveProjectAsDialog(const QString user, const QString keyword, const QString affiliation, const QString description, const QString path = NULL);
+    ExportToProjectDialog(const QString user, const QString path = NULL);
 
 	QString getProjectName()	{return mProjectNameEdit->text();}
 
@@ -72,6 +71,8 @@ public:
 
 	QString getDescription()	{return mDescriptionEdit->toPlainText();}
 
+	QList<int> getCategories();
+
 	void exec()	{mDialog->exec();}
 
 	bool checkOk()	{return isOk;}
@@ -81,17 +82,19 @@ private slots:
 
 	void next();
 
+	void nextReady();
+
+	void nextCancel();
+
 	void cancel();
+
+	void selectAll();
+
+	void enableNextButton();
 
 	void projectNameChanged(QString name);
 
 	void projectPathChanged(QString path);
-
-	void enableNextButton();
-
-	void nextReady();
-
-	void nextCancel();
 
 signals:
 	void infoUpdate();
@@ -110,6 +113,7 @@ private:
 	QPushButton* mLocationBrowseButton;
     QPushButton* mNextButton;
     QPushButton* mCancelButton;
+	QPushButton* mSelectAllButton;
 
 	QLabel *mUserNameLabel;
     QLabel *mProjectNameLabel;
@@ -117,6 +121,7 @@ private:
 	QLabel *mKeywordLabel;
 	QLabel *mAffiliationLabel;
 	QLabel *mDescriptionLabel;
+	QLabel *mCategoryLabel;
 	
 	QLineEdit *mUserNameLineEdit;
     QLineEdit *mProjectNameEdit;
@@ -124,6 +129,9 @@ private:
 	QLineEdit *mKeywordLineEdit;
 	QLineEdit *mAffiliationLineEdit;
 	QTextEdit* mDescriptionEdit;
+
+	QTreeWidget* mTreeWidget;
+	QList<QTreeWidgetItem *> mItems;
 
 	QString mLastPath;
 	QString mProjectPath;
@@ -133,4 +141,4 @@ private:
 
 };
 
-#endif // SAVE_PROJECT_AS_DIALOG_H
+#endif // EXPORT_TO_PROJECT_DIALOG_H

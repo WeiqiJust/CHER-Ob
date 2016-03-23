@@ -59,12 +59,14 @@ public slots:
 	void savePressed();
 
 private slots:
-	void exportPressed();
+	void exportPressed()	{emit exportProject();}
 
 	void editPressed();
 
 signals:
 	void save();
+
+	void exportProject();
 
 private:
 	QPushButton* exportButton;

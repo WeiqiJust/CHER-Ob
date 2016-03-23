@@ -52,6 +52,34 @@
 
 QProgressBar *MainWindow::qb;
 
+int color2type(const std::string str)
+{
+	if (str == "MAROON")
+		return 0;
+	else if (str == "RED")
+		return 1; 
+	else if (str == "ORANGE")
+		return 2;
+	else if (str == "YELLOW")
+		return 3;
+	else if (str == "LIME")
+		return 4;
+	else if (str == "GREEN")
+		return 5;
+	else if (str == "AQUA")
+		return 6;
+	else if (str == "BLUE")
+		return 7;
+	else if (str == "PINK")
+		return 8;
+	else if (str == "PURPLE")
+		return 9;
+	else if (str == "WHITE")
+		return 10;
+	else
+		return 10;
+}
+
 MainWindow::MainWindow()
 {
 //  setAttribute(Qt::WA_DeleteOnClose);// crash
@@ -1090,6 +1118,277 @@ bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, bool im
   return true;
 }
 
+void MainWindow::exportProjectXML(const QString path, const QString name, const QString userName, const QString keyword, 
+	  const QString affiliation, const QString description)
+{
+	QDomDocument doc;
+    QDomElement root, info, layouts;
+    QDomProcessingInstruction instruct = doc.createProcessingInstruction("xml", "version=\"1.0\"");
+    doc.appendChild(instruct);
+
+	root = doc.createElement("hyper3d.project");
+    root.setAttribute("name", name);
+    root.setAttribute("date", QDateTime::currentDateTimeUtc().toString());
+	root.setAttribute("user", userName);
+    doc.appendChild(root);
+
+	QDomElement projectInfo = doc.createElement("project");
+	root.appendChild(projectInfo);
+	QDomElement keywordElement = doc.createElement("keyword");
+	keywordElement.appendChild(doc.createTextNode(keyword));
+	QDomElement affiliationElement = doc.createElement("affiliation");
+	affiliationElement.appendChild(doc.createTextNode(affiliation));
+	QDomElement descriptionElement = doc.createElement("description");
+	descriptionElement.appendChild(doc.createTextNode(description));
+	projectInfo.appendChild(keywordElement);
+	projectInfo.appendChild(affiliationElement);
+	projectInfo.appendChild(descriptionElement);
+	
+    QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+    foreach(QMdiSubWindow *w, windows)
+	{
+        VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+        VtkWidget* gla = mvc->currentView();
+        QString file = gla->mFilename;
+        QFileInfo finfo(file);
+        QDomElement item = doc.createElement("item");
+        item.setAttribute("filename", file);
+
+        vtkSmartPointer<vtkCamera> camera = gla->mRenderer->GetActiveCamera();
+        double pos[3]; // camera position
+        double foc[3]; // focal point
+        double angle; // view angle
+        double view[3]; // view up direction
+        double clip[2]; // clipping range
+        double scale; // parallel scale
+
+        camera->GetPosition(pos);
+        camera->GetFocalPoint(foc);
+        angle = camera->GetViewAngle();
+        camera->GetViewUp(view);
+        camera->GetClippingRange(clip);
+        scale = camera->GetParallelScale();
+
+        QDomElement position = doc.createElement("camera_position");
+        item.appendChild(position);
+        QDomElement pos_x = doc.createElement("x");
+        QDomElement pos_y = doc.createElement("y");
+        QDomElement pos_z = doc.createElement("z");
+        position.appendChild(pos_x);
+        position.appendChild(pos_y);
+        position.appendChild(pos_z);
+        pos_x.appendChild(doc.createTextNode(QString::number(pos[0])));
+        pos_y.appendChild(doc.createTextNode(QString::number(pos[1])));
+        pos_z.appendChild(doc.createTextNode(QString::number(pos[2])));
+
+        QDomElement focal = doc.createElement("focal_point");
+        item.appendChild(focal);
+        QDomElement foc_x = doc.createElement("x");
+        QDomElement foc_y = doc.createElement("y");
+        QDomElement foc_z = doc.createElement("z");
+        focal.appendChild(foc_x);
+        focal.appendChild(foc_y);
+        focal.appendChild(foc_z);
+        foc_x.appendChild(doc.createTextNode(QString::number(foc[0])));
+        foc_y.appendChild(doc.createTextNode(QString::number(foc[1])));
+        foc_z.appendChild(doc.createTextNode(QString::number(foc[2])));
+
+        QDomElement ang = doc.createElement("camera_angle");
+        item.appendChild(ang);
+        ang.appendChild(doc.createTextNode(QString::number(angle)));
+
+        QDomElement viewup = doc.createElement("view_up");
+        item.appendChild(viewup);
+        QDomElement viewup_x = doc.createElement("x");
+        QDomElement viewup_y = doc.createElement("y");
+        QDomElement viewup_z = doc.createElement("z");
+        viewup.appendChild(viewup_x);
+        viewup.appendChild(viewup_y);
+        viewup.appendChild(viewup_z);
+        viewup_x.appendChild(doc.createTextNode(QString::number(view[0])));
+        viewup_y.appendChild(doc.createTextNode(QString::number(view[1])));
+        viewup_z.appendChild(doc.createTextNode(QString::number(view[2])));
+
+        QDomElement clipping = doc.createElement("clipping_range");
+        item.appendChild(clipping);
+        QDomElement clip_near = doc.createElement("near_plane");
+        QDomElement clip_far = doc.createElement("far_plane");
+        clipping.appendChild(clip_near);
+        clipping.appendChild(clip_far);
+        clip_near.appendChild(doc.createTextNode(QString::number(clip[0])));
+        clip_far.appendChild(doc.createTextNode(QString::number(clip[1])));
+
+        QDomElement parallel = doc.createElement("parallel_scale");
+        item.appendChild(parallel);
+        parallel.appendChild(doc.createTextNode(QString::number(scale)));
+
+        QDomElement filetype = doc.createElement("filetype");
+        item.appendChild(filetype);
+        filetype.appendChild(doc.createTextNode(QString::number(gla->getWidgetMode())));
+
+        // Filetype-specific information
+        switch(gla->getWidgetMode())
+        {
+        case IMAGE2D:
+        {
+            QDomElement interp = doc.createElement("interpolation_on");
+            item.appendChild(interp);
+            if (gla->getIsInterpolationOn()) {
+                interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_ON)));
+            } else {
+                interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_OFF)));
+            }
+            break;
+        }
+        case MODEL3D:
+        {
+            QDomElement dir = doc.createElement("directional_light");
+            item.appendChild(dir);
+            dir.appendChild(doc.createTextNode(QString::number(gla->getIsDirectionalLight())));
+
+            vtkSmartPointer<vtkAssembly> assembly = this->mLightControl->GetAssembly();
+            double orientation[3];
+            assembly->GetOrientation(orientation);
+
+            QDomElement ort = doc.createElement("light_vector");
+            item.appendChild(ort);
+            QDomElement ort_x = doc.createElement("x");
+            QDomElement ort_y = doc.createElement("y");
+            QDomElement ort_z = doc.createElement("z");
+            ort.appendChild(ort_x);
+            ort.appendChild(ort_y);
+            ort.appendChild(ort_z);
+            ort_x.appendChild(doc.createTextNode(QString::number(orientation[0])));
+            ort_y.appendChild(doc.createTextNode(QString::number(orientation[1])));
+            ort_z.appendChild(doc.createTextNode(QString::number(orientation[2])));
+
+            QDomElement brtns = doc.createElement("brightness");
+            item.appendChild(brtns);
+            brtns.appendChild(doc.createTextNode(QString::number(this->mLightControl->GetIntensityL1())));
+
+            QDomElement ctrst = doc.createElement("contrast");
+            item.appendChild(ctrst);
+            ctrst.appendChild(doc.createTextNode(QString::number(this->mLightControl->GetIntensityL2())));
+
+            if (gla->getIsInterpolationOn()) {
+                QDomElement interp = doc.createElement("interpolation_on");
+                item.appendChild(interp);
+                interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_ON)));
+            } else if(!gla->getmRgbTextureFilename().isEmpty()){
+                QDomElement interp = doc.createElement("interpolation_on");
+                item.appendChild(interp);
+                interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_OFF)));
+            }
+
+            QDomElement display = doc.createElement("display_mode");
+            item.appendChild(display);
+            if(gla->getRenderMode3D() == POINTS3D) {
+                display.appendChild(doc.createTextNode(QString::number(POINTS3D)));
+            } else if(gla->getRenderMode3D() == WIREFRAME3D) {
+                display.appendChild(doc.createTextNode(QString::number(WIREFRAME3D)));
+            } else {
+                display.appendChild(doc.createTextNode(QString::number(SURFACE3D)));
+            }
+
+            if(gla->getIsTextureOn()) {
+                QDomElement texture = doc.createElement("texture_on");
+                item.appendChild(texture);
+                texture.appendChild(doc.createTextNode(QString::number(TEXTURE_ON)));
+				qDebug() << "texture on";
+            } else if (!gla->getmRgbTextureFilename().isEmpty()){
+                QDomElement texture = doc.createElement("texture_on");
+                item.appendChild(texture);
+                texture.appendChild(doc.createTextNode(QString::number(TEXTURE_OFF)));
+				qDebug() << "texture off";
+            }
+            break;
+        }
+        case CTSTACK:
+        {
+            QDomElement brtns = doc.createElement("brightness");
+            item.appendChild(brtns);
+            brtns.appendChild(doc.createTextNode(QString::number(this->mLightControl->GetIntensityL1())));
+
+            QDomElement ctrst = doc.createElement("contrast");
+            item.appendChild(ctrst);
+            ctrst.appendChild(doc.createTextNode(QString::number(this->mLightControl->GetIntensityL2())));
+
+            QDomElement interp = doc.createElement("interpolation_on");
+            item.appendChild(interp);
+            if (gla->getIsInterpolationOn()) {
+                interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_ON)));
+            } else {
+                interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_OFF)));
+            }
+
+            QDomElement slice = doc.createElement("current_slice");
+            item.appendChild(slice);
+            slice.appendChild(doc.createTextNode(QString::number(this->mCtControl->GetSliceCurrent())));
+
+            QDomElement ort = doc.createElement("current_orientation");
+            item.appendChild(ort);
+            ort.appendChild(doc.createTextNode(QString::number(this->mCtControl->GetOrientationCurrent())));
+            break;
+        }
+        case CTVOLUME:
+        {
+            vtkSmartPointer<vtkAssembly> assembly = this->mLightControl->GetAssembly();
+            double orientation[3];
+            assembly->GetOrientation(orientation);
+
+            QDomElement ort = doc.createElement("light_vector");
+            item.appendChild(ort);
+            QDomElement ort_x = doc.createElement("x");
+            QDomElement ort_y = doc.createElement("y");
+            QDomElement ort_z = doc.createElement("z");
+            ort.appendChild(ort_x);
+            ort.appendChild(ort_y);
+            ort.appendChild(ort_z);
+            ort_x.appendChild(doc.createTextNode(QString::number(orientation[0])));
+            ort_y.appendChild(doc.createTextNode(QString::number(orientation[1])));
+            ort_z.appendChild(doc.createTextNode(QString::number(orientation[2])));
+
+            QDomElement mode = doc.createElement("render_mode");
+            item.appendChild(mode);
+            mode.appendChild(doc.createTextNode(QString::number(gla->getVolumeRenderMode())));
+
+            QDomElement blend = doc.createElement("blend_type");
+            item.appendChild(blend);
+            blend.appendChild(doc.createTextNode(QString::number(gla->getBlendType())));
+
+            QDomElement resolution = doc.createElement("resolution");
+            item.appendChild(resolution);
+            resolution.appendChild(doc.createTextNode(QString::number(gla->getReductionFactor())));
+            break;
+        }
+        case RTI2D:
+        {
+            break;
+        }
+        default:
+            break;
+        }
+        root.appendChild(item);
+    }
+
+    info = doc.createElement("info");
+    info.setAttribute("date", QDateTime::currentDateTimeUtc().toString());
+    root.appendChild(info);
+    layouts = doc.createElement("layouts");
+    root.appendChild(layouts);
+    QFile f(path);
+    if(!f.open(QFile::WriteOnly | QFile::Text)) {
+        QMessageBox mb;
+		mb.critical(this, tr("Error"), tr("Failed to generate the project XML File."));
+        f.close();
+        return;
+    }
+    f.resize(0);
+    QTextStream out(&f);
+    out << doc.toString();
+    f.close();
+}
+
 // Save project. It saves the info of all the layers and the layer themselves.
 void MainWindow::saveProject()
 {
@@ -2105,7 +2404,7 @@ void MainWindow::updateMenus()
   screenshotAct->setEnabled(activeDoc);
   bookmarkAct->setEnabled(activeDoc);
   fileInfoAct->setEnabled(activeDoc);
-  projectInfoAct->setEnabled(projectOpen);
+  projectInfoAct->setEnabled(projectOpen && !isCHE);
 
   zoomInAct->setEnabled(activeDoc);
   zoomOutAct->setEnabled(activeDoc);
@@ -2618,6 +2917,90 @@ bool MainWindow::closeCHE()
     return true;
 }
 
+void MainWindow::exportCHEToProject()
+{
+	ExportToProjectDialog* dialog = new ExportToProjectDialog(mUserName, lastUsedDirectory.path());
+	dialog->exec();
+	if (!dialog->checkOk())
+		return;
+
+	QString fn = dialog->getProjectPath();
+	fn = QDir::toNativeSeparators(fn);
+
+	if(!fn.isEmpty() && QDir(fn).isReadable())
+	{
+		QString projectName = dialog->getProjectName();
+		QString newProjectPath = fn;
+		QList<int> categories = dialog->getCategories();
+		if (newProjectPath[newProjectPath.size()-1] == QDir::separator())
+		{
+			newProjectPath.append(projectName);
+		}
+		else
+		{
+			newProjectPath.append(QDir::separator() + projectName);
+		}
+		if (!QDir().exists(newProjectPath))	QDir().mkdir(newProjectPath);
+
+		cpDir(currentProjectFullName, newProjectPath);
+		QString previousXML = newProjectPath;
+		previousXML.append(QDir::separator() + currentProjectName + QString(".xml"));
+		QFile file(previousXML);
+		file.remove();	// remove copied xml
+        lastSavedDirectory.setPath(newProjectPath);
+		QDir projectDir(newProjectPath);
+		QFileInfoList entries = projectDir.entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
+		for (int i = 0; i < entries.size(); i++)
+		{
+			if (!entries[i].isDir())
+				continue;
+			QDir subfolder = projectDir;
+			subfolder.cd(entries[i].fileName());
+			if (!subfolder.cd("Note"))
+				continue;
+			QFileInfoList items = subfolder.entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
+			for (int j = 0; j < items.size(); j++)
+			{
+				if (items[j].fileName() == QString("Annotation.txt"))
+					continue;
+				QFile *file = new QFile(items[j].absoluteFilePath());
+				if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
+				{
+					qDebug() << "Open Note file " << items[j].absoluteFilePath() << " Failed"; 
+					continue;
+				}
+				QTextStream in(file);
+				while(1)
+				{
+					QString signal = in.readLine();
+					if (signal == QString("Color Type:"))
+						break;
+				}
+				QString colorType;
+				in >> colorType;
+				file->close();
+				int type = color2type(colorType.toStdString());
+				if (categories.indexOf(type) == -1)
+				{
+					file->remove();
+				}
+			}
+		}
+
+		QString xmlPath = newProjectPath;
+		xmlPath.append(QDir::separator() + projectName + QString(".xml"));
+		exportProjectXML(xmlPath, projectName, dialog->getUserName(), dialog->getKeyword(), dialog->getAffiliation(), dialog->getDescription());
+		saveRecentProjectList(xmlPath);
+		
+        return;
+    } 
+	else if (!fn.isEmpty())
+	{
+		QMessageBox mb;
+        mb.critical(this, tr("Save Cultural Heritage Entity Error"), tr("Failed to Save Cultural Heritage Entity! The Path Does not Exist."));
+        return;
+    }
+}
 
 void MainWindow::setSplit(QAction *qa)
 {
@@ -3635,6 +4018,7 @@ void MainWindow::createCHEDockWindows(const CHEInfoBasic* info)
   tabCHE = new QTabWidget();
   mCHETab = new CHETab(info, this);
   connect(mCHETab, SIGNAL(save()), this, SLOT(updateXML()));
+  connect(mCHETab, SIGNAL(exportProject()), this, SLOT(exportCHEToProject()));
   tabCHE->addTab(mCHETab, tr("Cultural Heritage Entity"));
   leftDock->setWidget(tabCHE);
   tabCHE->show();

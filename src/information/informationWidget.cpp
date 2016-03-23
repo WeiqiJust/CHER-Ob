@@ -252,7 +252,6 @@ void Information::annotationChanges()
 void Information::startAnnotation()
 {
 	updateCurrentPath();
-	qDebug()<<"StartAnnotation Annotation " <<content[notePath].first;
 	saveButton->setEnabled(true);
 	removeButton->setEnabled(true);
 	dText->setReadOnly(false);

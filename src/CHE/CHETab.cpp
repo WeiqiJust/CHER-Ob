@@ -35,7 +35,7 @@ CHETab::CHETab(const CHEInfoBasic* info, QWidget *parent)
 	connect(saveButton, SIGNAL(clicked()), this, SLOT(savePressed()));
 	editButton = new QPushButton("Edit");
 	connect(editButton, SIGNAL(clicked()), this, SLOT(editPressed()));
-	exportButton->setEnabled(false);
+	//exportButton->setEnabled(false);
 
 	mObjectInfo = new QTextEdit(info->object);
 	mMeasurementInfo = new QTextEdit(info->measurement);
@@ -167,8 +167,4 @@ void CHETab::savePressed()
 	emit save();
 }
 
-void CHETab::exportPressed()
-{
-	//to be done
-}
 

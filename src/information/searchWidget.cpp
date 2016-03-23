@@ -33,21 +33,20 @@ std::string category2str(int mode)
 {
 	switch (mode)
 	{
-		case 0:  return "All";
+		case 0: return "All";
 		case 1: return "Annotation";
 		case 2: return "Project Info";
-		case 3:  return "Object";
-		case 4:  return "Measurements";
-		case 5:  return "Creation";
-		case 6:  return "Materials";
-		case 7:  return "Descriptions";
-		case 8:  return "Conservation";
-		case 9:  return "Analyses";
-		case 10:  return "Related";
-		case 11:  return "Administration";
+		case 3: return "Object";
+		case 4: return "Measurements";
+		case 5: return "Creation";
+		case 6: return "Materials";
+		case 7: return "Descriptions";
+		case 8: return "Conservation";
+		case 9: return "Analyses";
+		case 10: return "Related";
+		case 11: return "Administration";
 		case 12: return "Documentation";
 		case 13: return "Other";
-
 	}
 }
 
