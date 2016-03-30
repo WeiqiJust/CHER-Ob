@@ -25,8 +25,8 @@
 
 *****************************************************************************/
 
-#ifndef EXPORT_TO_PROJECT_DIALOG_H
-#define EXPORT_TO_PROJECT_DIALOG_H
+#ifndef IMPORT_FROM_CHE_DIALOG_H
+#define IMPORT_FROM_CHE_DIALOG_H
 
 #include <QtScript>
 #include <QWidget>
@@ -52,95 +52,45 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 
-std::string num2category(int mode);
-
-class ExportToProjectDialog : public QWidget
+class ImportFromCHEDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
-	ExportToProjectDialog(const QString user, const QString path = NULL);
+	ImportFromCHEDialog(QVector<QString> objects);
 
-	QString getProjectName()	{return mProjectNameEdit->text();}
+	QVector<QString> getFilterList();
 
-	QString getProjectPath()	{return mLocationLineEdit->text();}
-
-	QString getUserName()	{return mUserNameLineEdit->text();}
-
-	QString getKeyword()	{return mKeywordLineEdit->text();}
-
-	QString getAffiliation()	{return mAffiliationLineEdit->text();}
-
-	QString getDescription()	{return mDescriptionEdit->toPlainText();}
-
-	QList<int> getCategories();
+	QVector<int> getCategories(const QString object);
 
 	void exec()	{mDialog->exec();}
 
-	bool checkOk()	{return isOk;}
-
-private slots:	
-	void locationBrowse();
-
-	void next();
-
-	void nextReady();
-
-	void nextCancel();
+private slots:
+	void import();
 
 	void cancel();
 
 	void selectAll();
 
-	void enableNextButton();
-
-	void projectNameChanged(QString name);
-
-	void projectPathChanged(QString path);
-
-signals:
-	void infoUpdate();
+	void itemChanged(QTreeWidgetItem * item, int column);
 
 private:
 	QDialog* mDialog;
 	QVBoxLayout* mVbox;
-	QHBoxLayout* mUserNameHBox;
-	QHBoxLayout* mProjectHBox;
-	QHBoxLayout* mLocationHBox;
-	QHBoxLayout* mKeywordHBox;
-	QHBoxLayout* mAffiliationHBox;
 
 	QGridLayout* mButtonGridBox;
 
-	QPushButton* mLocationBrowseButton;
-	QPushButton* mNextButton;
+	QPushButton* mImportButton;
 	QPushButton* mCancelButton;
 	QPushButton* mSelectAllButton;
 
-	QLabel *mUserNameLabel;
-	QLabel *mProjectNameLabel;
-	QLabel *mLocationLabel;
-	QLabel *mKeywordLabel;
-	QLabel *mAffiliationLabel;
-	QLabel *mDescriptionLabel;
-	QLabel *mCategoryLabel;
-
-	QLineEdit *mUserNameLineEdit;
-	QLineEdit *mProjectNameEdit;
-	QLineEdit *mLocationLineEdit;
-	QLineEdit *mKeywordLineEdit;
-	QLineEdit *mAffiliationLineEdit;
-	QTextEdit* mDescriptionEdit;
+	QLabel *mLabel;
 
 	QTreeWidget* mTreeWidget;
 	QList<QTreeWidgetItem *> mItems;
-
-	QString mLastPath;
-	QString mProjectPath;
-	QString mProjectName;
-	QString mFullPath;
-	bool isOk;
+	QVector<QString> mObject;
+	QMap<QString, QVector<int> > mSelected; 
 
 };
 
-#endif // EXPORT_TO_PROJECT_DIALOG_H
+#endif // IMPORT_FROM_CHE_DIALOG

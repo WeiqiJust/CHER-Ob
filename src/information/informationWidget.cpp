@@ -1041,11 +1041,10 @@ void Information::showNotes()
 
 bool Information::updateCurrentPath()
 {
-	QString fn;
+	//QString fn;
 	if(mw()->VTKA()) {
         notePath = mw()->VTKA()->mProjectPath;
-		//
-		fn = mw()->VTKA()->mFilename;
+		//fn = mw()->VTKA()->mFilename;
 		//qDebug() << "current window: " << fn;
 	}
 	else

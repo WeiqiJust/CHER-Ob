@@ -48,6 +48,7 @@
 #include "CHE/CHETab.h"
 #include "CHE/saveCHEAsDialog.h"
 #include "CHE/exportToProjectDialog.h"
+#include "CHE/importFromCHEDialog.h"
 
 #define MAXRECENTFILES 8
 
@@ -210,8 +211,8 @@ public:
 
 public slots:
   void updateAllViews();
-  bool openImages(const QString& fileNameStart = QString(), bool saveRecent = true); // open 2/3D image
-  bool openDICOM(const QString& fileNameStart = QString(), bool saveRecent = true); // open DICOM folder
+  bool openImages(const QString& fileNameStart = QString(), bool saveRecent = true, bool createFolder = true); // open 2/3D image
+  bool openDICOM(const QString& fileNameStart = QString(), bool saveRecent = true, bool createFolder = true); // open DICOM folder
   void updateMenus(); // update toolbars
   void showFileInfo();
   void showProjectInfo();
@@ -248,7 +249,7 @@ private:
   void createCTFolder(QString path);
   void createObjectFolder(QString path);
 
-  bool readXML(QString fileName, QVector<QString> &objectList, bool import);
+  bool readXML(QString fileName, QVector<QString> &objectList, QVector<QString> filterList, bool import, bool readCHE);
   void exportProjectXML(const QString path, const QString name, const QString userName, const QString keyword, 
 	  const QString affiliation, const QString description);
 
@@ -272,6 +273,7 @@ private slots:
   void saveProjectAs();
   bool closeProject();
   void importProject();
+  void importCHE();
 
   void newCHE();
   void createNewCHE(const QString fullName, const QString name, const USERMODE mode, const CHEInfoBasic* info,
@@ -439,6 +441,7 @@ private:
   QAction *newVtkProjectAct;
   QAction *openProjectAct;
   QAction *importProjectAct;
+  QAction *importCHEAct;
   QAction *recentProjActs[MAXRECENTFILES];
   QAction *recentCHEActs[MAXRECENTFILES];
   QAction *recentFileActs[MAXRECENTFILES];

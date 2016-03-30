@@ -764,7 +764,7 @@ void MainWindow::updateXML()
 }
 
 
-bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, bool import)
+bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, QVector<QString> filterList, bool import, bool readCHE)
 {
   QFileInfo fi(fileName);
   double pos[3]; // camera position
@@ -800,7 +800,7 @@ bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, bool im
   doc.setContent(&file);
   qDebug() << fi.absoluteFilePath();
   QDomNodeList list;
-  if (!isCHE)
+  if (!readCHE)
 	list = doc.elementsByTagName("hyper3d.project");
   else
 	list = doc.elementsByTagName("hyper3d.cultural_heritage_entity");
@@ -824,7 +824,7 @@ bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, bool im
   if (!import)	currentProjectName = name;	
   qDebug()<<"Project Name"<<currentProjectName;
 
-  if (!isCHE)
+  if (!readCHE)
   {
 	  QDomNodeList projectInfo = root.elementsByTagName("project");
 	  currentProjectKeyword = projectInfo.at(0).toElement().elementsByTagName("keyword").at(0).toElement().text();
@@ -846,8 +846,8 @@ bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, bool im
 	  info->administration = CHEInfo.at(0).toElement().elementsByTagName("administration").at(0).toElement().text();
 	  info->documents = CHEInfo.at(0).toElement().elementsByTagName("documents").at(0).toElement().text();
 	  info->other = CHEInfo.at(0).toElement().elementsByTagName("other").at(0).toElement().text();
-	  qDebug()<<"in read XML"<<info->object;
-	  createCHEDockWindows(info);
+	  if (!import)
+		createCHEDockWindows(info);
   }
 
   QDomNodeList items = root.elementsByTagName("item");
@@ -858,6 +858,10 @@ bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, bool im
     QDomElement elt = items.at(i).toElement();
     QString fn = elt.attribute("filename");
 	fn = QDir::toNativeSeparators(fn);
+	// if the object name is in the filter list, this object should not be imported
+	// when readXML is called by "open" functions, filterList will be empty to let all pass 
+	if (filterList.indexOf(fn) != -1)
+		continue;
 	objectList.push_back(fn);
 	QFileInfo finfo(fn);
     QDomNodeList ftlist = elt.elementsByTagName("filetype");
@@ -867,16 +871,29 @@ bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, bool im
 	{
 		if(filetype == CTSTACK || filetype == CTVOLUME) 
 		{
-			qDebug()<<"in read XML open DICOM"<<fn;
-			success = openDICOM(fn, false);
+			if (import)
+				success = openDICOM(fn, false, false);
+			else
+				success = openDICOM(fn, false, true);
 		} 
 		else 
 		{
-			success = openImages(fn, false);
+			if (import)
+				success = openImages(fn, false, false);
+			else
+				success = openImages(fn, false, true);
 		}
 	}
     if(!success) continue;
-
+	if (import && readCHE)
+	{
+		QStringList nameElement = fn.split(QDir::separator());
+		QString fileNameElement = nameElement[nameElement.size() - 1];
+		VTKA()->mProjectPath = currentProjectFullName;
+		VTKA()->mProjectPath.append(QDir::separator() + name + QDir::separator() + fileNameElement);
+		VTKA()->mFilename = VTKA()->mProjectPath;
+		VTKA()->mFilename.append(QDir::separator() + fileNameElement);
+	}
     // DT: Assumes that windows are sorted from first created to last created (default behavior).
     QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
     QMdiSubWindow* w = windows.at(windows.length()-1);
@@ -1496,23 +1513,24 @@ void MainWindow::importProject()
 	}
 	qb->show();
 	QVector<QString> objectList;
-	if (!readXML(fileName, objectList, true))
+	QVector<QString> filterList;
+	if (!readXML(fileName, objectList, filterList, true, false))
 	  return;
 
-	
 	if (objectList.size() > 0)
 	{
 		this->mInformation->refresh();
 		for (int i = 0; i < objectList.size(); i++)
 		{
 			QFileInfo finfo(objectList[i]);
-			qDebug()<<"import project"<<objectList[i];
+			qDebug()<<"import project"<<currentProjectFullName;
 			QDir currentDir(currentProjectFullName);
 			QDir objectDir = finfo.absoluteDir();
 			bool ok = objectDir.cdUp();
 			if (!ok || objectDir != currentDir)
 			{
 				objectDir = finfo.absoluteDir();
+				currentDir.mkdir(objectDir.dirName());
 				if (currentDir.cd(objectDir.dirName()))
 				{
 					cpDir(objectDir.absolutePath(), currentDir.absolutePath());
@@ -1530,6 +1548,94 @@ void MainWindow::importProject()
 	if(this->VTKA() == 0)  return;
 	qb->reset();
 	saveRecentProjectList(fileName);
+	updateXML();
+	updateMenus();
+	updateAllViews();
+}
+
+void MainWindow::importCHE()
+{
+	QString fileName = QFileDialog::getOpenFileName(this,tr("Import Cultural Heritage Entity File"), lastUsedDirectory.path(),
+                                            "Hyper3D Project (*.xml)");
+	fileName = QDir::toNativeSeparators(fileName);
+	QFileInfo fi(fileName);
+	lastUsedDirectory = fi.absoluteDir();
+	if(fileName != QString("") && fi.suffix().toLower()!="xml")
+	{
+		QMessageBox::critical(this, tr("Cultural Heritage Entity Error"), "Unknown Cultural Heritage Entity file extension.");
+		return;
+	}
+	qb->show();
+
+	QFile file(fi.absoluteFilePath());
+	file.close();
+	if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		QMessageBox::critical(this, tr("Cultural Heritage Entity Error"), tr("Cannot open Cultural Heritage Entity."));
+		return;
+	}
+	QDomDocument doc;
+	doc.setContent(&file);
+	QDomNodeList list;
+	file.close();
+	list = doc.elementsByTagName("hyper3d.cultural_heritage_entity");
+	if (list.isEmpty())
+	{
+	  QString message = fi.fileName() + tr(" is not a valid Hyper3D project file.");
+	  QMessageBox::critical(this, tr("Project Error"), message);
+	  return;
+	}
+	QDomElement root = list.at(0).toElement();
+	QString CHEName = root.attribute("name");
+	QDomNodeList items = root.elementsByTagName("item");
+	QVector<QString> CHEObjectList;
+	for(int i = 0; i < items.length(); i++) {
+		QDomElement elt = items.at(i).toElement();
+		QString fn = elt.attribute("filename");
+		fn = QDir::toNativeSeparators(fn);
+		CHEObjectList.push_back(fn);
+	}
+	ImportFromCHEDialog *dialog = new ImportFromCHEDialog(CHEObjectList);
+	dialog->exec();
+
+	QVector<QString> filterList = dialog->getFilterList();
+	QVector<QString> importObjectList;
+	if (!readXML(fileName, importObjectList, filterList, true, true))
+	{
+		return;
+	}
+	if (importObjectList.size() > 0)
+	{
+		QDir CHEDir(currentProjectFullName);
+		CHEDir.mkdir(CHEName);
+		CHEDir.cd(CHEName);
+		this->mInformation->refresh();
+		for (int i = 0; i < importObjectList.size(); i++)
+		{
+			QFileInfo finfo(importObjectList[i]);
+			qDebug()<<"import project"<<importObjectList[i];
+			QDir currentDir = CHEDir;
+			QDir objectDir = finfo.absoluteDir();
+			bool ok = objectDir.cdUp();
+			if (!ok || objectDir != currentDir)
+			{
+				objectDir = finfo.absoluteDir();
+				currentDir.mkdir(objectDir.dirName());
+				if (currentDir.cd(objectDir.dirName()))
+				{
+					cpDir(objectDir.absolutePath(), currentDir.absolutePath());
+					this->mInformation->initAnnotation(currentDir.absolutePath());
+				}
+				else
+				{
+					qDebug()<<"The Object Directory does not exist!"<<currentDir<<objectDir.absolutePath();
+				}
+			}
+		}
+	}
+	unsavedChanges = false;
+	if(this->VTKA() == 0)  return;
+	qb->reset();
+	saveRecentCHEList(fileName);
 	updateXML();
 	updateMenus();
 	updateAllViews();
@@ -1633,7 +1739,8 @@ bool MainWindow::openProject(QString fileName)
   qDebug()<<"Open project path"<<QDir::currentPath();
   currentProjectSave = QDir::toNativeSeparators(fileName);
   QVector<QString> objectList;
-  if (!readXML(fileName, objectList, false))
+  QVector<QString> filterList;
+  if (!readXML(fileName, objectList, filterList, false, false))
 	  return false;
 
   unsavedChanges = false;
@@ -1812,7 +1919,7 @@ void MainWindow::createNewVtkProject(const QString fullName, const QString name,
 
 
 //MK: DICOM input should be directory.
-bool MainWindow::openDICOM(const QString& fileNameStart, bool saveRecent)
+bool MainWindow::openDICOM(const QString& fileNameStart, bool saveRecent, bool createFolder)
 {
 	QString dirName;
 	if (fileNameStart.isEmpty())
@@ -1886,7 +1993,7 @@ bool MainWindow::openDICOM(const QString& fileNameStart, bool saveRecent)
 		QDir dir = fi.absoluteDir();
 		bool ok = dir.cdUp();
 		QDir currentFolder(currentProjectFullName);
-		if (!ok || dir != currentFolder)
+		if ((!ok || dir != currentFolder) && createFolder)
 		{
 			createCTFolder(dirName);
 		}
@@ -1969,7 +2076,7 @@ void MainWindow::removeObject()
 	updateAllViews();
 }
 
-bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent)
+bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent, bool createFolder)
 {
 	//MK: file filters
 	//[3d] *.ply *.obj *.stl *.3ds, *.wrl
@@ -2076,7 +2183,7 @@ bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent)
 		QDir dir = fi.absoluteDir();
 		bool ok = dir.cdUp();
 		QDir currentFolder(currentProjectFullName);
-		if (!ok || dir != currentFolder)
+		if ((!ok || dir != currentFolder) && createFolder)
 		{
 			qDebug()<<"create Object folder"<<fileName<<currentProjectFullName;
 			createObjectFolder(fileName);
@@ -2100,8 +2207,6 @@ bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent)
 	}
 	else return false;
 }
-
-
 
 void MainWindow::save()
 {
@@ -2356,6 +2461,7 @@ void MainWindow::updateMenus()
   openObjectAct->setEnabled(projectOpen);
   openDICOMAct->setEnabled(projectOpen);
   importProjectAct->setEnabled(projectOpen && !isCHE);
+  importCHEAct->setEnabled(projectOpen && !isCHE);
   removeObjectAct->setEnabled(projectOpen);
   
   saveAsAct->setEnabled(projectOpen);
@@ -2738,7 +2844,6 @@ bool MainWindow::openCHE(QString fileName)
 	if (!this->closeAll())
 	  return false;
 
-	qDebug()<<"!!!!in open che";
 	if (fileName.isEmpty())
 		fileName = QFileDialog::getOpenFileName(this,tr("Open Cultural Heritage Entity File"), lastUsedDirectory.path(),
 											"Hyper3D Project (*.xml)");
@@ -2762,7 +2867,8 @@ bool MainWindow::openCHE(QString fileName)
 	currentProjectSave = QDir::toNativeSeparators(fileName);
 	QVector<QString> objectList;
 	isCHE = true;
-	if (!readXML(fileName, objectList, false))
+	QVector<QString> filterList;
+	if (!readXML(fileName, objectList, filterList, false, true))
 	{
 		isCHE = false;
 		return false;
@@ -3279,6 +3385,12 @@ void MainWindow::createActions()
 	importProjectAct->setStatusTip(tr("Import an exisitng project into the current one and merge together"));
 	connect(importProjectAct, SIGNAL(triggered()), this, SLOT(importProject()));
 
+	importCHEAct = new QAction(tr("Import Cultural Heritage Entity..."), this);
+	importCHEAct->setShortcutContext(Qt::ApplicationShortcut);
+	importCHEAct->setShortcut(Qt::CTRL+Qt::Key_C);
+	importCHEAct->setStatusTip(tr("Import an exisitng cultural heritage entity into the current project"));
+	connect(importCHEAct, SIGNAL(triggered()), this, SLOT(importCHE()));
+
     setCustomizeAct	  = new QAction(tr("P&references..."),this);
     setCustomizeAct->setShortcutContext(Qt::ApplicationShortcut);
     setCustomizeAct->setShortcut(Qt::CTRL+Qt::Key_R);
@@ -3574,6 +3686,7 @@ void MainWindow::createMenus()
   fileMenu->addAction(openObjectAct);
   fileMenu->addAction(openDICOMAct);
   fileMenu->addAction(importProjectAct);
+  fileMenu->addAction(importCHEAct);
   fileMenu->addAction(removeObjectAct);
 
   fileMenu->addSeparator();

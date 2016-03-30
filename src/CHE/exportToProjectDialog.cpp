@@ -58,23 +58,23 @@ ExportToProjectDialog::ExportToProjectDialog(const QString user, const QString p
 	mUserNameLineEdit = new QLineEdit();
 	mUserNameLineEdit->setFixedWidth(350);
 	mUserNameLineEdit->setText(user);
-    mUserNameLabel->setBuddy(mUserNameLineEdit);
+	mUserNameLabel->setBuddy(mUserNameLineEdit);
 	mUserNameHBox = new QHBoxLayout();
 	mUserNameHBox->addWidget(mUserNameLabel);
 	mUserNameHBox->addWidget(mUserNameLineEdit, 0 , Qt::AlignRight);
 
-    mProjectNameLabel = new QLabel(tr("Name:  "));
+	mProjectNameLabel = new QLabel(tr("Name:  "));
 	mProjectNameEdit = new QLineEdit();
 	mProjectNameEdit->setFixedWidth(350);
-    mProjectNameLabel->setBuddy(mProjectNameEdit);
+	mProjectNameLabel->setBuddy(mProjectNameEdit);
 	connect(mProjectNameEdit, SIGNAL(textChanged(QString)), this, SLOT(projectNameChanged(QString)));
 	mProjectHBox = new QHBoxLayout();
 	mProjectHBox->addWidget(mProjectNameLabel, 0 , Qt::AlignLeft);
-    mProjectHBox->addWidget(mProjectNameEdit, 0 , Qt::AlignRight);
+	mProjectHBox->addWidget(mProjectNameEdit, 0 , Qt::AlignRight);
 	
-    mLocationLabel = new QLabel(tr("Location:"));
+	mLocationLabel = new QLabel(tr("Location:"));
 	mLocationLineEdit = new QLineEdit();
-    mLocationLabel->setBuddy(mLocationLineEdit);
+	mLocationLabel->setBuddy(mLocationLineEdit);
 	connect(mLocationLineEdit, SIGNAL(textChanged(QString)), this, SLOT(projectPathChanged(QString)));
 	mLocationLineEdit->setText(QCoreApplication::applicationDirPath());
 	mProjectPath = QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
@@ -84,23 +84,23 @@ ExportToProjectDialog::ExportToProjectDialog(const QString user, const QString p
 	mLocationHBox = new QHBoxLayout();
 	mLocationHBox->addWidget(mLocationLabel);
 	mLocationHBox->addWidget(mLocationLineEdit, 0 , Qt::AlignRight);
-    mLocationHBox->addWidget(mLocationBrowseButton);
+	mLocationHBox->addWidget(mLocationBrowseButton);
 
 	mKeywordLabel = new QLabel(tr("Keywords:"));
 	mKeywordLineEdit = new QLineEdit();
-	mKeywordLineEdit->setFixedWidth(350);
-    mKeywordLabel->setBuddy(mKeywordLineEdit);
+	mKeywordLineEdit->setFixedWidth(350);\
+	mKeywordLabel->setBuddy(mKeywordLineEdit);
 	mKeywordHBox = new QHBoxLayout();
 	mKeywordHBox->addWidget(mKeywordLabel);
-    mKeywordHBox->addWidget(mKeywordLineEdit, 0 , Qt::AlignRight);
+	mKeywordHBox->addWidget(mKeywordLineEdit, 0 , Qt::AlignRight);
 
 	mAffiliationLabel = new QLabel(tr("Affiliation:"));
 	mAffiliationLineEdit = new QLineEdit();
 	mAffiliationLineEdit->setFixedWidth(350);
-    mAffiliationLabel->setBuddy(mAffiliationLineEdit);
+	mAffiliationLabel->setBuddy(mAffiliationLineEdit);
 	mAffiliationHBox = new QHBoxLayout();
 	mAffiliationHBox->addWidget(mAffiliationLabel);
-    mAffiliationHBox->addWidget(mAffiliationLineEdit, 0 , Qt::AlignRight);
+	mAffiliationHBox->addWidget(mAffiliationLineEdit, 0 , Qt::AlignRight);
 
 	mDescriptionLabel = new QLabel(tr("Description:"));
 	mDescriptionEdit = new QTextEdit(mDialog);
