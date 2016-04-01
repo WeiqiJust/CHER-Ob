@@ -207,12 +207,14 @@ public:
   QDir lastUsedDirectory;
   QDir lastSavedDirectory; // DT: Keeps track of screenshot/project saved location
   QString mUserName;
-  bool unsavedChanges;
+  bool isSaved;
 
 public slots:
   void updateAllViews();
-  bool openImages(const QString& fileNameStart = QString(), bool saveRecent = true, bool createFolder = true); // open 2/3D image
-  bool openDICOM(const QString& fileNameStart = QString(), bool saveRecent = true, bool createFolder = true); // open DICOM folder
+  bool openImages(const QString& fileNameStart = QString(), const QString& CHEName = QString(),
+	  bool saveRecent = true, bool createFolder = true, bool import = false, bool readCHE = false); // open 2/3D image
+  bool openDICOM(const QString& fileNameStart = QString(), const QString& CHEName = QString(),
+	  bool saveRecent = true, bool createFolder = true, bool import = false, bool readCHE = false); // open DICOM folder
   void updateMenus(); // update toolbars
   void showFileInfo();
   void showProjectInfo();
@@ -249,7 +251,8 @@ private:
   void createCTFolder(QString path);
   void createObjectFolder(QString path);
 
-  bool readXML(QString fileName, QVector<QString> &objectList, QVector<QString> filterList, bool import, bool readCHE);
+  //objectList is the path of object and path of original CHE
+  bool readXML(QString fileName, QVector<QPair<QString, QString> > &objectList, QVector<QString> filterList, bool import, bool readCHE);	
   void exportProjectXML(const QString path, const QString name, const QString userName, const QString keyword, 
 	  const QString affiliation, const QString description);
 

@@ -74,7 +74,7 @@ ImportFromCHEDialog::ImportFromCHEDialog(QVector<QString> objects)
 	mVbox->addWidget(mLabel);
 	mVbox->addWidget(mTreeWidget);
 	mVbox->addLayout(mButtonGridBox);
-	mDialog->setMinimumWidth(350);
+	mDialog->setMinimumWidth(250);
 	mDialog->setLayout(mVbox);
 }
 
@@ -116,7 +116,6 @@ void ImportFromCHEDialog::import()
 		}
 	}
 	mDialog->hide();
-	qDebug()<<"after import";
 }
 
 
@@ -146,6 +145,13 @@ void ImportFromCHEDialog::itemChanged(QTreeWidgetItem * item, int column)
 			for (int i = 0; i < item->childCount(); i++)
 			{
 				item->child(i)->setCheckState(column, Qt::Unchecked);
+			}
+		}
+		if (item->checkState(column) == Qt::Checked)
+		{
+			for (int i = 0; i < item->childCount(); i++)
+			{
+				item->child(i)->setCheckState(column, Qt::Checked);
 			}
 		}
 	}

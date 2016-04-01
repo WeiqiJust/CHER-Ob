@@ -412,7 +412,7 @@ void Metadata::pickCategory()
     item->setText(UUID_COLUMN, id.toString());
     item->setFlags(item->flags() ^ (Qt::ItemIsDropEnabled));
 
-    mw()->unsavedChanges = true;
+    mw()->isSaved = false;
 
     QDomElement cat = xmlFile.createElement("category");
     cat.setAttribute("title", choice);
@@ -449,7 +449,7 @@ void Metadata::addElement(QTreeWidgetItem* item, const QString text)
     it->setText(UUID_COLUMN, id.toString());
     it->setFlags(it->flags() ^ (Qt::ItemIsDropEnabled));
 
-    mw()->unsavedChanges = true;
+    mw()->isSaved = false;
 
     QDomElement elt = xmlFile.createElement("element");
     elt.setAttribute("title", choice);
@@ -677,7 +677,7 @@ void Metadata::deleteItem()
 
     delete item;
     textEdit->clear();
-    mw()->unsavedChanges = true;
+    mw()->isSaved = false;
 
     items = dataTree->selectedItems();
     if(items.isEmpty()) deleteButton->setEnabled(false);

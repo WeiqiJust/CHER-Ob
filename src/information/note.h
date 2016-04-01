@@ -72,6 +72,10 @@ public:
 
 	void setSaved(bool status) {isSaved = status;}
 
+	bool checkRemoved()	{return isRemoved;}
+
+	void setRemoved(bool status)	{isRemoved = status;}
+
 protected:
 
 	void setLabel(QString text);
@@ -117,9 +121,7 @@ private:
 	QLabel* mLabel;
 	QString* mInfo;
 	bool isSaved;
-	
-	
-
+	bool isRemoved;	// prepare for undo for the future
 };
 
 class PointNote: public Note

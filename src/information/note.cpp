@@ -110,6 +110,7 @@ Note::Note(const int noteId, const ColorType type)
 	
     mDialog->setLayout(mVbox);
 	isSaved = false;
+	isRemoved = false;
 	mDialog->hide();
 }
 
@@ -140,6 +141,8 @@ void Note::textChanged()
 
 void Note::save()
 {
+	if (isRemoved)
+		return;
     if (!mFile->open(QIODevice::WriteOnly | QIODevice::Text))
 	{
 		qDebug() << "Open Note file " << this->mNoteId << " " << mFileName << " Failed"; 
@@ -158,6 +161,7 @@ void Note::remove()
 {
 	mFile->remove();
 	mDialog->hide();
+	isRemoved = true;
 	emit removeNote(mNoteId, mPath);
 }
 

@@ -144,7 +144,7 @@ MainWindow::MainWindow()
   setMaximumSize(qdw.size());
   setWindowFlags(Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowMinMaxButtonsHint | Qt::CustomizeWindowHint);
 
-  unsavedChanges = false;
+  isSaved = true;
   currentProjectMetadata.createElement("hyper3d.metadata");
   mNewProjectDialog = NULL;
   mProjectInfoDialog = NULL;
@@ -391,7 +391,7 @@ void MainWindow::openWindow()
 
 bool MainWindow::closeProject()
 {
-	if(((!this->mInformation->checkAllSaved()) && VTKA())) {
+	if(((!this->mInformation->checkAllSaved()) && VTKA()) || !isSaved) {
         QMessageBox mb;
         QString message;
 
@@ -405,7 +405,7 @@ bool MainWindow::closeProject()
         else if(ret == QMessageBox::Cancel) return false;
     }
 
-    unsavedChanges = false;
+    isSaved = true;
     currentProjectName = QString();
     currentProjectSave = QString();
 	currentProjectFullName = QString();
@@ -531,6 +531,15 @@ void MainWindow::updateXML()
         camera->GetViewUp(view);
         camera->GetClippingRange(clip);
         scale = camera->GetParallelScale();
+
+		QDomElement che = doc.createElement("cultural_heritage_entity");
+        item.appendChild(che);
+        QDomElement che_name = doc.createElement("cultural_heritage_entity_path");
+        QDomElement che_path = doc.createElement("cultural_heritage_entity_object");
+        che.appendChild(che_name);
+        che.appendChild(che_path);
+		che_name.appendChild(doc.createTextNode(gla->mCHE));
+		che_path.appendChild(doc.createTextNode(gla->mCHEObject));
 
         QDomElement position = doc.createElement("camera_position");
         item.appendChild(position);
@@ -764,7 +773,7 @@ void MainWindow::updateXML()
 }
 
 
-bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, QVector<QString> filterList, bool import, bool readCHE)
+bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &objectList, QVector<QString> filterList, bool import, bool readCHE)
 {
   QFileInfo fi(fileName);
   double pos[3]; // camera position
@@ -858,11 +867,17 @@ bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, QVector
     QDomElement elt = items.at(i).toElement();
     QString fn = elt.attribute("filename");
 	fn = QDir::toNativeSeparators(fn);
+	QStringList nameElement = fn.split(QDir::separator());
+	QString fileNameElement = nameElement[nameElement.size() - 1];
 	// if the object name is in the filter list, this object should not be imported
 	// when readXML is called by "open" functions, filterList will be empty to let all pass 
-	if (filterList.indexOf(fn) != -1)
+	if (filterList.indexOf(fileNameElement) != -1)
 		continue;
-	objectList.push_back(fn);
+	QDomNodeList che = elt.elementsByTagName("cultural_heritage_entity");
+	QString chePath = che.at(0).toElement().elementsByTagName("cultural_heritage_entity_path").at(0).toElement().text();
+	QString cheObject = che.at(0).toElement().elementsByTagName("cultural_heritage_entity_object").at(0).toElement().text();
+	QStringList cheNameElements = chePath.split(QDir::separator());
+	QString cheName = cheNameElements[cheNameElements.size() - 1];
 	QFileInfo finfo(fn);
     QDomNodeList ftlist = elt.elementsByTagName("filetype");
     filetype = ftlist.at(0).toElement().text().toInt();
@@ -871,29 +886,22 @@ bool MainWindow::readXML(QString fileName, QVector<QString> &objectList, QVector
 	{
 		if(filetype == CTSTACK || filetype == CTVOLUME) 
 		{
-			if (import)
-				success = openDICOM(fn, false, false);
-			else
-				success = openDICOM(fn, false, true);
+			success = openDICOM(fn, cheName, false, false, import, readCHE);
 		} 
 		else 
 		{
-			if (import)
-				success = openImages(fn, false, false);
-			else
-				success = openImages(fn, false, true);
+			success = openImages(fn, cheName, false, false, import, readCHE);
 		}
 	}
     if(!success) continue;
-	if (import && readCHE)
+	
+	if(!che.isEmpty()) 
 	{
-		QStringList nameElement = fn.split(QDir::separator());
-		QString fileNameElement = nameElement[nameElement.size() - 1];
-		VTKA()->mProjectPath = currentProjectFullName;
-		VTKA()->mProjectPath.append(QDir::separator() + name + QDir::separator() + fileNameElement);
-		VTKA()->mFilename = VTKA()->mProjectPath;
-		VTKA()->mFilename.append(QDir::separator() + fileNameElement);
-	}
+		VTKA()->mCHE = chePath;
+        VTKA()->mCHEObject = cheObject;
+    }
+	objectList.push_back(qMakePair(fn, chePath));
+
     // DT: Assumes that windows are sorted from first created to last created (default behavior).
     QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
     QMdiSubWindow* w = windows.at(windows.length()-1);
@@ -1424,7 +1432,7 @@ void MainWindow::saveProject()
 	this->mInformation->saveAllNotes();
 	this->mInformation->closeAllNotes();
 
-    unsavedChanges = false;
+    isSaved = true;
 	updateXML();
     updateMenus();
     updateAllViews();
@@ -1512,7 +1520,7 @@ void MainWindow::importProject()
 		return;
 	}
 	qb->show();
-	QVector<QString> objectList;
+	QVector<QPair<QString, QString> > objectList;
 	QVector<QString> filterList;
 	if (!readXML(fileName, objectList, filterList, true, false))
 	  return;
@@ -1522,9 +1530,17 @@ void MainWindow::importProject()
 		this->mInformation->refresh();
 		for (int i = 0; i < objectList.size(); i++)
 		{
-			QFileInfo finfo(objectList[i]);
+			QFileInfo finfo(objectList[i].first);
 			qDebug()<<"import project"<<currentProjectFullName;
 			QDir currentDir(currentProjectFullName);
+			if (!objectList[i].second.isEmpty())
+			{
+				QStringList cheNameElement = objectList[i].second.split(QDir::separator());
+				QString cheName = cheNameElement[cheNameElement.size() - 1];
+				currentDir.mkdir(cheName);
+				if (!currentDir.cd(cheName))
+					qDebug()<<"Fail to create CHE when import project!"<<currentDir;
+			}
 			QDir objectDir = finfo.absoluteDir();
 			bool ok = objectDir.cdUp();
 			if (!ok || objectDir != currentDir)
@@ -1544,7 +1560,7 @@ void MainWindow::importProject()
 			}
 		}
 	}
-	unsavedChanges = false;
+	isSaved = false;
 	if(this->VTKA() == 0)  return;
 	qb->reset();
 	saveRecentProjectList(fileName);
@@ -1588,17 +1604,20 @@ void MainWindow::importCHE()
 	QString CHEName = root.attribute("name");
 	QDomNodeList items = root.elementsByTagName("item");
 	QVector<QString> CHEObjectList;
-	for(int i = 0; i < items.length(); i++) {
+	for(int i = 0; i < items.length(); i++) 
+	{
 		QDomElement elt = items.at(i).toElement();
 		QString fn = elt.attribute("filename");
 		fn = QDir::toNativeSeparators(fn);
-		CHEObjectList.push_back(fn);
+		QStringList nameElement = fn.split(QDir::separator());
+		QString fileNameElement = nameElement[nameElement.size() - 1];
+		CHEObjectList.push_back(fileNameElement);
 	}
 	ImportFromCHEDialog *dialog = new ImportFromCHEDialog(CHEObjectList);
 	dialog->exec();
 
 	QVector<QString> filterList = dialog->getFilterList();
-	QVector<QString> importObjectList;
+	QVector<QPair<QString, QString> > importObjectList;
 	if (!readXML(fileName, importObjectList, filterList, true, true))
 	{
 		return;
@@ -1611,7 +1630,7 @@ void MainWindow::importCHE()
 		this->mInformation->refresh();
 		for (int i = 0; i < importObjectList.size(); i++)
 		{
-			QFileInfo finfo(importObjectList[i]);
+			QFileInfo finfo(importObjectList[i].first);
 			qDebug()<<"import project"<<importObjectList[i];
 			QDir currentDir = CHEDir;
 			QDir objectDir = finfo.absoluteDir();
@@ -1623,6 +1642,37 @@ void MainWindow::importCHE()
 				if (currentDir.cd(objectDir.dirName()))
 				{
 					cpDir(objectDir.absolutePath(), currentDir.absolutePath());
+					QVector<int> categories = dialog->getCategories(objectDir.dirName());
+					QDir projectDir = currentDir;
+					if (!projectDir.cd("Note"))
+						continue;
+					QFileInfoList items = projectDir.entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
+					for (int j = 0; j < items.size(); j++)
+					{
+						if (items[j].fileName() == QString("Annotation.txt"))
+							continue;
+						QFile *file = new QFile(items[j].absoluteFilePath());
+						if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
+						{
+							qDebug() << "Open Note file " << items[j].absoluteFilePath() << " Failed"; 
+							continue;
+						}
+						QTextStream in(file);
+						while(1)
+						{
+							QString signal = in.readLine();
+							if (signal == QString("Color Type:"))
+								break;
+						}
+						QString colorType;
+						in >> colorType;
+						file->close();
+						int type = color2type(colorType.toStdString());
+						if (categories.indexOf(type) == -1)
+						{
+							file->remove();
+						}
+					}
 					this->mInformation->initAnnotation(currentDir.absolutePath());
 				}
 				else
@@ -1632,7 +1682,8 @@ void MainWindow::importCHE()
 			}
 		}
 	}
-	unsavedChanges = false;
+
+	isSaved = false;
 	if(this->VTKA() == 0)  return;
 	qb->reset();
 	saveRecentCHEList(fileName);
@@ -1738,12 +1789,12 @@ bool MainWindow::openProject(QString fileName)
   qb->show();
   qDebug()<<"Open project path"<<QDir::currentPath();
   currentProjectSave = QDir::toNativeSeparators(fileName);
-  QVector<QString> objectList;
+  QVector<QPair<QString, QString> > objectList;
   QVector<QString> filterList;
   if (!readXML(fileName, objectList, filterList, false, false))
 	  return false;
 
-  unsavedChanges = false;
+  isSaved = true;
   setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
   updateMenus();
   if(this->VTKA() == 0)  return false;
@@ -1768,7 +1819,7 @@ VtkWidget* MainWindow::newImage()
     updateAllViews();
 
     //if(!currentProjectName.isEmpty())
-    //    unsavedChanges = true;
+    //    isSaved = true;
 
     return gla;
 }
@@ -1912,14 +1963,14 @@ void MainWindow::createNewVtkProject(const QString fullName, const QString name,
         w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
     }
 
-	unsavedChanges = false;
+	isSaved = false;
 	updateXML();
     updateMenus();
 }
 
 
 //MK: DICOM input should be directory.
-bool MainWindow::openDICOM(const QString& fileNameStart, bool saveRecent, bool createFolder)
+bool MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import, bool readCHE)
 {
 	QString dirName;
 	if (fileNameStart.isEmpty())
@@ -1999,9 +2050,54 @@ bool MainWindow::openDICOM(const QString& fileNameStart, bool saveRecent, bool c
 		}
 		QString newFileName = currentWindowPath;
 		newFileName.append(QDir::separator() + fileName);
-		VTKA()->mFilename = newFileName;
-		qDebug()<<"in open CT"<<newFileName;
-		VTKA()->mProjectPath = currentWindowPath;
+
+		if (!import)	// open	
+		{
+			if (createFolder)	// open object directly: use the current project path
+			{
+				VTKA()->mFilename = newFileName;
+				VTKA()->mProjectPath = currentWindowPath;
+			}
+			else	// open project/CHE from XML: use the path in XML directly in case of the CHE path 
+			{
+				VTKA()->mFilename = fileNameStart;
+				QString projectPath = fileNameStart;
+				projectPath.truncate(fileNameStart.lastIndexOf(QDir::separator()));
+				VTKA()->mProjectPath = projectPath;
+			}
+		}
+		else	// import
+		{
+			if (readCHE)	// import CHE: add CHE name in the path
+			{
+				QStringList nameElement = fileNameStart.split(QDir::separator());
+				if (nameElement.size() >= 3) 
+				{
+					QString fileNameElement = nameElement[nameElement.size() - 1];
+					QString CHEName = nameElement[nameElement.size() - 3];
+					VTKA()->mProjectPath = currentProjectFullName;
+					VTKA()->mProjectPath.append(QDir::separator() + CHEName + QDir::separator() + fileNameElement);
+					VTKA()->mFilename = VTKA()->mProjectPath;
+					VTKA()->mFilename.append(QDir::separator() + fileNameElement);
+				}
+				else
+				{
+					qDebug() << "The CHE path in XML is incorrect!!";
+					QMessageBox::critical(this, tr("Import Error"), "The path of Cultural Herritage Entity " + fileNameStart + " specified in XML file is incorrect! ");
+				}
+			}
+			else	// import Project: use the current project path
+			{
+				VTKA()->mFilename = newFileName;
+				VTKA()->mProjectPath = currentWindowPath;
+			}	
+		}
+		if (isCHE)
+		{
+			VTKA()->mCHE = currentProjectFullName;
+			VTKA()->mCHEObject = fileName;
+		}
+		this->mInformation->initAnnotation(VTKA()->mProjectPath);
 
 		// update window name
 		if(!currentProjectName.isEmpty()) {
@@ -2010,8 +2106,9 @@ bool MainWindow::openDICOM(const QString& fileNameStart, bool saveRecent, bool c
 		  currentVtkView()->prjName = fi.fileName();
 		}
 		currentVtkView()->setWindowTitle(currentVtkView()->prjName);
-		updateXML();
+		//updateXML();
 		updateAllViews();
+		isSaved = false;
 		return true;
 	}
 	else return false;
@@ -2076,7 +2173,7 @@ void MainWindow::removeObject()
 	updateAllViews();
 }
 
-bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent, bool createFolder)
+bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import, bool readCHE)
 {
 	//MK: file filters
 	//[3d] *.ply *.obj *.stl *.3ds, *.wrl
@@ -2190,9 +2287,62 @@ bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent, bool 
 		}
 		QString newFileName = currentWindowPath;
 		newFileName.append(QDir::separator() + fileNameElement);
-		VTKA()->mFilename = newFileName;
-		VTKA()->mProjectPath = currentWindowPath;
-		this->mInformation->initAnnotation(currentWindowPath);
+		if (!import)	// open	
+		{
+			if (createFolder)	// open object directly: use the current project path
+			{
+				VTKA()->mFilename = newFileName;
+				VTKA()->mProjectPath = currentWindowPath;
+			}
+			else	// open project/CHE from XML: use the path in XML directly in case of the CHE path 
+			{
+				VTKA()->mFilename = fileNameStart;
+				QString projectPath = fileNameStart;
+				projectPath.truncate(fileNameStart.lastIndexOf(QDir::separator()));
+				VTKA()->mProjectPath = projectPath;
+			}
+		}
+		else	// import
+		{
+			if (readCHE)	// import CHE: add CHE name in the path
+			{
+				QStringList nameElement = fileNameStart.split(QDir::separator());
+				if (!CHEName.isEmpty()) 
+				{
+					VTKA()->mProjectPath = currentProjectFullName;
+					VTKA()->mProjectPath.append(QDir::separator() + CHEName + QDir::separator() + fileNameElement);
+					VTKA()->mFilename = VTKA()->mProjectPath;
+					VTKA()->mFilename.append(QDir::separator() + fileNameElement);
+				}
+				else
+				{
+					qDebug() << "The CHE path in XML is incorrect!!";
+					QMessageBox::critical(this, tr("Import Error"), "The path of Cultural Herritage Entity " + fileNameStart + " specified in XML file is incorrect! ");
+				}
+			}
+			else	// import Project: use the current project path
+			{
+				if (CHEName.isEmpty())	// import single object from the project
+				{
+					VTKA()->mFilename = newFileName;
+					VTKA()->mProjectPath = currentWindowPath;
+				}
+				else	// import CHE from from the project
+				{
+					VTKA()->mProjectPath = currentProjectFullName;
+					VTKA()->mProjectPath.append(QDir::separator() + CHEName + QDir::separator() + fileNameElement);
+					VTKA()->mFilename = VTKA()->mProjectPath;
+					VTKA()->mFilename.append(QDir::separator() + fileNameElement);
+				}
+			}	
+		}
+
+		if (isCHE)
+		{
+			VTKA()->mCHE = currentProjectFullName;
+			VTKA()->mCHEObject = fileNameElement;
+		}
+		this->mInformation->initAnnotation(VTKA()->mProjectPath);
 
 		// update window name
 		if(!currentProjectName.isEmpty()) {
@@ -2201,7 +2351,8 @@ bool MainWindow::openImages(const QString& fileNameStart, bool saveRecent, bool 
 		  currentVtkView()->prjName = fi.fileName();
 		}
 		currentVtkView()->setWindowTitle(currentVtkView()->prjName);
-		updateXML();
+		isSaved = false;
+		//updateXML();
 		updateAllViews();
 		return true;
 	}
@@ -2834,7 +2985,7 @@ void MainWindow::createNewCHE(const QString fullName, const QString name, const 
         w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
     }
 
-	unsavedChanges = false;
+	isSaved = false;
 	updateXML();
     updateMenus();
 }
@@ -2865,7 +3016,7 @@ bool MainWindow::openCHE(QString fileName)
 	qb->show();
 	qDebug()<<"Open CHE path"<<QDir::currentPath();
 	currentProjectSave = QDir::toNativeSeparators(fileName);
-	QVector<QString> objectList;
+	QVector<QPair<QString, QString> > objectList;
 	isCHE = true;
 	QVector<QString> filterList;
 	if (!readXML(fileName, objectList, filterList, false, true))
@@ -2874,7 +3025,7 @@ bool MainWindow::openCHE(QString fileName)
 		return false;
 	}
 
-	unsavedChanges = false;
+	isSaved = true;
 	setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
 	updateMenus();
 	if(this->VTKA() == 0)  return false;
@@ -2902,7 +3053,7 @@ void MainWindow::saveCHE()
 	this->mInformation->closeAllNotes();
 
 	mCHETab->savePressed();
-    unsavedChanges = false;
+    isSaved = true;
 	updateXML();
     updateMenus();
     updateAllViews();
@@ -2981,7 +3132,7 @@ void MainWindow::saveCHEAs()
 
 bool MainWindow::closeCHE()
 {
-	if(((!this->mInformation->checkAllSaved()) && VTKA())|| !mCHETab->isSaved()) {
+	if(((!this->mInformation->checkAllSaved()) && VTKA())|| !mCHETab->isSaved() || !isSaved) {
         QMessageBox mb;
         QString message;
 
@@ -2991,11 +3142,13 @@ bool MainWindow::closeCHE()
         mb.setDefaultButton(QMessageBox::Save);
         int ret = mb.exec();
 
-        if(ret == QMessageBox::Save)	this->saveCHE();
+        if(ret == QMessageBox::Save)
+			this->saveCHE();
+
         else if(ret == QMessageBox::Cancel) return false;
     }
 
-    unsavedChanges = false;
+    isSaved = true;
     currentProjectName = QString();
     currentProjectSave = QString();
 	currentProjectFullName = QString();

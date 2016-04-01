@@ -230,11 +230,10 @@ void Information::initAnnotation(const QString path)
 	hasNotesRemoved[notePath] = false;
 	content[notePath].second = true;
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
+	
 	QTextStream in(&file);
 	QString text = in.readAll();
-	dText->setPlainText(text);
 	content[notePath] = std::make_pair(text, true);
-	
 	file.close();
 }
 
@@ -911,30 +910,35 @@ void Information::removeAllNotes()
 	{
 		mw()->VTKA()->removePointNoteMark(mPointNotes[notePath][i]->getCellId());
 		mPointNotes[notePath][i]->removePointNote();
+		mPointNotes[notePath][i]->setRemoved(true);
 	}
 	mPointNotes.remove(notePath);
 	for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
 	{
 		mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds());
 		mSurfaceNotes[notePath][i]->removeSurfaceNote();
+		mSurfaceNotes[notePath][i]->setRemoved(true);
 	}
 	mSurfaceNotes.remove(notePath);
 	for (int i = 0; i < mFrustumNotes[notePath].size(); ++i) 
 	{
 		mw()->VTKA()->removeFrustumNoteMark(mFrustumNotes[notePath][i]->getPoints(), mFrustumNotes[notePath][i]->getNormals());
 		mFrustumNotes[notePath][i]->removeFrustumNote();
+		mFrustumNotes[notePath][i]->setRemoved(true);
 	}
 	mFrustumNotes.remove(notePath);
 	for (int i = 0; i < mPointNotes2D[notePath].size(); ++i) 
 	{
 		mw()->VTKA()->removePointNote2DMark(mPointNotes2D[notePath][i]->getPoint());
 		mPointNotes2D[notePath][i]->removePointNote2D();
+		mPointNotes2D[notePath][i]->setRemoved(true);
 	}
 	mPointNotes2D.remove(notePath);
 	for (int i = 0; i < mSurfaceNotes2D[notePath].size(); ++i) 
 	{
 		mw()->VTKA()->removeSurfaceNote2DMark(mSurfaceNotes2D[notePath][i]->getPoint());
 		mSurfaceNotes2D[notePath][i]->removeSurfaceNote2D();
+		mSurfaceNotes2D[notePath][i]->setRemoved(true);
 	}
 	mSurfaceNotes2D.remove(notePath);
 }
@@ -948,6 +952,7 @@ void Information::removeUnSavedNotes()
 		{
 			mw()->VTKA()->removePointNoteMark(mPointNotes[notePath][i]->getCellId());
 			mPointNotes[notePath][i]->removePointNote();
+			mPointNotes[notePath][i]->setRemoved(true);
 			mPointNotes[notePath].remove(i);
 		}
 	}
@@ -957,6 +962,7 @@ void Information::removeUnSavedNotes()
 		{
 			mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds());
 			mSurfaceNotes[notePath][i]->removeSurfaceNote();
+			mSurfaceNotes[notePath][i]->setRemoved(true);
 			mSurfaceNotes[notePath].remove(i);
 		}
 	}
@@ -966,7 +972,8 @@ void Information::removeUnSavedNotes()
 		{
 			mw()->VTKA()->removeFrustumNoteMark(mFrustumNotes[notePath][i]->getPoints(), mFrustumNotes[notePath][i]->getNormals());
 			mFrustumNotes[notePath][i]->removeFrustumNote();
-			mFrustumNotes[notePath].remove(i);
+			mFrustumNotes[notePath][i]->setRemoved(true);
+			mFrustumNotes[notePath].remove(i);		
 		}
 	}
 	for (int i = 0; i < mPointNotes2D[notePath].size(); ++i) 
@@ -975,6 +982,7 @@ void Information::removeUnSavedNotes()
 		{
 			mw()->VTKA()->removePointNote2DMark(mPointNotes2D[notePath][i]->getPoint());
 			mPointNotes2D[notePath][i]->removePointNote2D();
+			mPointNotes2D[notePath][i]->setRemoved(true);
 			mPointNotes2D[notePath].remove(i);
 		}
 	}
@@ -984,6 +992,7 @@ void Information::removeUnSavedNotes()
 		{
 			mw()->VTKA()->removeSurfaceNote2DMark(mSurfaceNotes2D[notePath][i]->getPoint());
 			mSurfaceNotes2D[notePath][i]->removeSurfaceNote2D();
+			mSurfaceNotes2D[notePath][i]->setRemoved(true);
 			mSurfaceNotes2D[notePath].remove(i);
 		}
 	}
