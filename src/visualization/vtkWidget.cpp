@@ -1,6 +1,6 @@
 /****************************************************************************
 
- - Codename: Hyper3D (Yale Computer Graphics Group)
+ - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:   Min H. Kim (minhkim@cs.yale.edu)
 
@@ -127,7 +127,7 @@
 #include "../function/plotView.h"
 #include "../information/bookmarkWidget.h"
 #include "../function/mkTools.hpp"
-#include "../io/readHyper3D.h"
+#include "../io/readCHEROb.h"
 #include "../io/inputimageset.h"
 #include "../function/lightControlRTI.h" 
 #include "../function/renderingdialog.h"
@@ -1730,14 +1730,14 @@ void VtkWidget::saveFileInfo(QWidget* editBox)
     QString path = mProjectPath;
 	/*********** Modified by Weiqi Shi 1/19/2016*************/
     QStringList tokens = path.split(QDir::separator());
-    QString hyper3D = tokens.takeLast();
+    QString CHEROb = tokens.takeLast();
     path = tokens.join(QDir::separator());
     path = QDir::toNativeSeparators(path);
     if(!QDir(path).exists()) {
         QDir().mkdir(path);
     }
 
-    path.append(QDir::separator() + hyper3D);
+    path.append(QDir::separator() + CHEROb);
     if(!QDir(path).exists()) {
         QDir().mkdir(path);
     }
@@ -2583,7 +2583,7 @@ void VtkWidget::testObject()
 
       vtkPNGReader* reader = vtkPNGReader::New();
     //  char* fname = vtkTestUtilities::ExpandDataFileName(argc, argv, "Data/vtk.png");
-      char* fname = "./icons/Hyper3D_Logo128.png";
+      char* fname = "./icons/CHEROb_Logo128.png";
       reader->SetFileName(fname);
       //delete [] fname;
 
@@ -2604,11 +2604,11 @@ void VtkWidget::testObject()
 //  testObject();
 
 #if defined(_WIN32) || defined(_WIN64)
-  //QString fn("C:\\Users\\mhk5\\Documents\\Visual Studio 2008\\Projects\\Hyper3D\\exampledata\\totem\\totem5_T5k1.ply");
-  QString fn("C:\\Users\\mhk5\\Documents\\Visual Studio 2008\\Projects\\Hyper3D\\exampledata\\bunny\\reconstruction\\bun_zipper_res4.ply");
+  //QString fn("C:\\Users\\mhk5\\Documents\\Visual Studio 2008\\Projects\\CHEROb\\exampledata\\totem\\totem5_T5k1.ply");
+  QString fn("C:\\Users\\mhk5\\Documents\\Visual Studio 2008\\Projects\\CHEROb\\exampledata\\bunny\\reconstruction\\bun_zipper_res4.ply");
 #else
-//  QString fn("/Users/minhkim/Research/codes/C++/3D_Graphics/Hyper3D/exampledata/totem/totem5_T5k1.ply");
-  QString fn("/Users/minhkim/Research/codes/C++/3D_Graphics/Hyper3D/exampledata/totem/totem5_T5k1.jpg");
+//  QString fn("/Users/minhkim/Research/codes/C++/3D_Graphics/CHEROb/exampledata/totem/totem5_T5k1.ply");
+  QString fn("/Users/minhkim/Research/codes/C++/3D_Graphics/CHEROb/exampledata/totem/totem5_T5k1.jpg");
 #endif
 //  qDebug() << fn;
   ReadData(fn);
@@ -2736,7 +2736,7 @@ bool VtkWidget::Read3DModels(QString filename)
 {
   mIsDICOM = false;
 
-  ReadHyper3D * r3d = new ReadHyper3D;
+  ReadCHEROb * r3d = new ReadCHEROb;
 
   if (!(r3d->read3D(filename, mChannelNames, mWavelengths, mRgbTextureFilename, mMaterials, mVtkPolyData, mRgbTexture, mHyperImageData, mIsTextureOn)))
     return false;
@@ -3253,7 +3253,7 @@ void VtkWidget::RenderingStack()
 
 bool VtkWidget::ReadHDRImage(QString filename)
 {
-  ReadHyper3D *rh;
+  ReadCHEROb *rh;
   vtkTexture* texture;
 
   // new file should be open with mCTVisualization == STACK always

@@ -1,6 +1,6 @@
 /****************************************************************************
 
- - Codename: Hyper3D (Yale Computer Graphics Group)
+ - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  David Tidmarsh (tidmarsh@aya.yale.edu)
 
@@ -20,7 +20,7 @@
    of ITK/VTK library from Kitware, QT API from Nokia. I would like to thank
    anonymous help from various software engineering communities.
 
-   This file defines the XML reader for Hyper3D bookmark files.
+   This file defines the XML reader for CHEROb bookmark files.
 
 *****************************************************************************/
 
@@ -154,7 +154,7 @@ void BookmarkXMLReader::readXML()
         if(xml.name() != BOOKMARK_XML_ROOT) {
             QMessageBox mb;
             mb.critical(btw, QObject::tr("Bookmark Error"),
-                        QObject::tr("Invalid Hyper3D bookmark file."));
+                        QObject::tr("Invalid CHEROb bookmark file."));
             return;
         }
     } else return;

@@ -1,6 +1,6 @@
 /****************************************************************************
 
- - Codename: Hyper3D (Yale Computer Graphics Group)
+ - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:   Min H. Kim (minhkim@cs.yale.edu)
 
@@ -43,9 +43,9 @@ Q_IMPORT_PLUGIN(qtiff)
 
 int main(int argc, char *argv[])
 {
-  Q_INIT_RESOURCE(Hyper3D);
+  Q_INIT_RESOURCE(CHEROb);
   QCoreApplication::setOrganizationName("Yale Graphics Lab");
-  QCoreApplication::setApplicationName("Hyper3D");
+  QCoreApplication::setApplicationName("CHEROb");
 
   QApplication app(argc, argv);
 

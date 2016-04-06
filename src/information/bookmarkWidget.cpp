@@ -1,6 +1,6 @@
 /****************************************************************************
 
- - Codename: Hyper3D (Yale Computer Graphics Group)
+ - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  David Tidmarsh (tidmarsh@aya.yale.edu)
 
@@ -1054,13 +1054,13 @@ int BookmarkWidget::verifyDelete(QTreeWidgetItem* item, int type)
 void BookmarkWidget::showFileOpenError()
 {
     QMessageBox mb;
-    mb.critical(this, tr("Bookmark Error"), tr("Cannot open Hyper3D bookmark file."));
+    mb.critical(this, tr("Bookmark Error"), tr("Cannot open CHEROb bookmark file."));
 }
 
 void BookmarkWidget::showInvalidFileError()
 {
     QMessageBox mb;
-    mb.critical(this, tr("Bookmark Error"), tr("Invalid Hyper3D bookmark file."));
+    mb.critical(this, tr("Bookmark Error"), tr("Invalid CHEROb bookmark file."));
 
 }
 

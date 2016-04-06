@@ -1,6 +1,6 @@
 /****************************************************************************
 
- - Codename: Hyper3D (Yale Computer Graphics Group)
+ - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  David Tidmarsh (tidmarsh@aya.yale.edu)
 
@@ -55,10 +55,10 @@ static const int DATE_MODIFIED_COLUMN = 3;
 
 static const int STRING_MAX = 30;
 
-// Character string representing filename of all valid Hyper3D bookmark files.
+// Character string representing filename of all valid CHEROb bookmark files.
 static const QString BOOKMARK_FN = "bookmarks.xml";
-// Character string representing root of all valid Hyper3D bookmark files.
-static const QString BOOKMARK_XML_ROOT = "hyper3d.bookmarks";
+// Character string representing root of all valid CHEROb bookmark files.
+static const QString BOOKMARK_XML_ROOT = "CHEROb.bookmarks";
 
 static const QString TITLE = "title";
 static const QString UUID_NAME = "uuid";

@@ -1,6 +1,6 @@
 /****************************************************************************
 
- - Codename: Hyper3D (Yale Computer Graphics Group)
+ - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:   Min H. Kim (minhkim@cs.yale.edu)
 
@@ -78,7 +78,7 @@
 #include <itkVTKImageIO.h>
 //----------------------------------------------------------
 #include "vtkView.h" //MK: The inclusion of this header should be only here, except implementations.
-#include "../io/readHyper3D.h"
+#include "../io/readCHEROb.h"
 #include "../information/bookmarkWidget.h"
 #include "../information/bookmarkTreeWidget.h"
 #include "../information/metadata.h"
@@ -113,7 +113,7 @@
 #define RENDERING_TIME_INTERVAL (250) // YY. time interval for re-rendering
 class vtk2DInteractionCallback;
 class vtk3DInteractionCallback;
-class ReadHyper3D;
+class ReadCHEROb;
 class InputImageSet;
 class Bookmark;
 

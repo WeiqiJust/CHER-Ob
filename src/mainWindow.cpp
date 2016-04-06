@@ -1,6 +1,6 @@
 /****************************************************************************
 
- - Codename: Hyper3D (Yale Computer Graphics Group)
+ - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:   Min H. Kim (minhkim@cs.yale.edu)
 
@@ -110,7 +110,7 @@ MainWindow::MainWindow()
   // this is for document icon instead of QT icon
 #if defined(_WIN32) || defined(_WIN64)
   QIcon icon;
-  icon.addPixmap(QPixmap(":/icons/Hyper3D_Logo128.png"));
+  icon.addPixmap(QPixmap(":/icons/CHEROb_Logo128.png"));
   setWindowIcon(icon);
 #endif
 
@@ -145,7 +145,7 @@ MainWindow::MainWindow()
   setWindowFlags(Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowMinMaxButtonsHint | Qt::CustomizeWindowHint);
 
   isSaved = true;
-  currentProjectMetadata.createElement("hyper3d.metadata");
+  currentProjectMetadata.createElement("CHEROb.metadata");
   mNewProjectDialog = NULL;
   mProjectInfoDialog = NULL;
   isClose = false;
@@ -410,7 +410,7 @@ bool MainWindow::closeProject()
     currentProjectSave = QString();
 	currentProjectFullName = QString();
     currentProjectMetadata.clear();
-    QDomElement root = currentProjectMetadata.createElement("hyper3d.metadata");
+    QDomElement root = currentProjectMetadata.createElement("CHEROb.metadata");
     currentProjectMetadata.appendChild(root);
 	this->mInformation->closeAllNotes();
 	if (mProjectInfoDialog)
@@ -445,9 +445,9 @@ void MainWindow::updateXML()
     doc.appendChild(instruct);
 
 	if (!isCHE)
-		root = doc.createElement("hyper3d.project");
+		root = doc.createElement("CHEROb.project");
 	else
-		root = doc.createElement("hyper3d.cultural_heritage_entity");
+		root = doc.createElement("CHEROb.cultural_heritage_entity");
     root.setAttribute("name", currentProjectName);
     root.setAttribute("date", QDateTime::currentDateTimeUtc().toString());
 	root.setAttribute("user", mUserName);
@@ -810,13 +810,13 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
   qDebug() << fi.absoluteFilePath();
   QDomNodeList list;
   if (!readCHE)
-	list = doc.elementsByTagName("hyper3d.project");
+	list = doc.elementsByTagName("CHEROb.project");
   else
-	list = doc.elementsByTagName("hyper3d.cultural_heritage_entity");
+	list = doc.elementsByTagName("CHEROb.cultural_heritage_entity");
 
   if (list.isEmpty())
   {
-	  QString message = fi.fileName() + tr(" is not a valid Hyper3D project file.");
+	  QString message = fi.fileName() + tr(" is not a valid CHEROb project file.");
       QMessageBox::critical(this, tr("Project Error"), message);
       return false;
   }
@@ -1151,7 +1151,7 @@ void MainWindow::exportProjectXML(const QString path, const QString name, const 
     QDomProcessingInstruction instruct = doc.createProcessingInstruction("xml", "version=\"1.0\"");
     doc.appendChild(instruct);
 
-	root = doc.createElement("hyper3d.project");
+	root = doc.createElement("CHEROb.project");
     root.setAttribute("name", name);
     root.setAttribute("date", QDateTime::currentDateTimeUtc().toString());
 	root.setAttribute("user", userName);
@@ -1510,7 +1510,7 @@ void MainWindow::saveProjectAs()
 void MainWindow::importProject()
 {
 	QString fileName = QFileDialog::getOpenFileName(this,tr("Import Project File"), lastUsedDirectory.path(),
-                                            "Hyper3D Project (*.xml)");
+                                            "CHEROb Project (*.xml)");
 	fileName = QDir::toNativeSeparators(fileName);
 	QFileInfo fi(fileName);
 	lastUsedDirectory = fi.absoluteDir();
@@ -1572,7 +1572,7 @@ void MainWindow::importProject()
 void MainWindow::importCHE()
 {
 	QString fileName = QFileDialog::getOpenFileName(this,tr("Import Cultural Heritage Entity File"), lastUsedDirectory.path(),
-                                            "Hyper3D Project (*.xml)");
+                                            "CHEROb Project (*.xml)");
 	fileName = QDir::toNativeSeparators(fileName);
 	QFileInfo fi(fileName);
 	lastUsedDirectory = fi.absoluteDir();
@@ -1593,10 +1593,10 @@ void MainWindow::importCHE()
 	doc.setContent(&file);
 	QDomNodeList list;
 	file.close();
-	list = doc.elementsByTagName("hyper3d.cultural_heritage_entity");
+	list = doc.elementsByTagName("CHEROb.cultural_heritage_entity");
 	if (list.isEmpty())
 	{
-	  QString message = fi.fileName() + tr(" is not a valid Hyper3D project file.");
+	  QString message = fi.fileName() + tr(" is not a valid CHEROb project file.");
 	  QMessageBox::critical(this, tr("Project Error"), message);
 	  return;
 	}
@@ -1769,7 +1769,7 @@ bool MainWindow::openProject(QString fileName)
 
   if (fileName.isEmpty())
     fileName = QFileDialog::getOpenFileName(this,tr("Open Project File"), lastUsedDirectory.path(),
-                                            "Hyper3D Project (*.xml)");
+                                            "CHEROb Project (*.xml)");
 
   if (fileName.isEmpty()) return false;
   fileName = QDir::toNativeSeparators(fileName);
@@ -2412,12 +2412,12 @@ void MainWindow::help()
 
 void MainWindow::about()
 {
-   QMessageBox::about(this, tr("About Hyper3D") + appVer(),
-                      tr("<h2>Hyper3D</h2>"
+   QMessageBox::about(this, tr("About CHEROb") + appVer(),
+                      tr("<h2>CHEROb</h2>"
                          "<p>Yale Computer Graphics Laboratory</p>"
                          "<p>Principal Investigator: Prof. Holly Rushmeier"
                          "<p>Authors: Min H. Kim, David Tidmarsh"
-                         "<p>Hyper3D is an application that visualizes various types of image data,"
+                         "<p>CHEROb is an application that visualizes various types of image data,"
                          " e.g., hyperspectral images and 3D models, as well as CT medical images in 3D, etc."
                          "<p>This project was funded by a 2011-2012 grant from the Seaver Institute."
                          "<p>We are grateful to John ffrench and Irma Passeri of the Yale University Art Gallery"
@@ -2436,14 +2436,14 @@ void MainWindow::about()
 void MainWindow::viewOptions()
 {
    QMessageBox::about(this, tr("view test"),
-            tr("<b>Hyper3D</b> is three-dimensional refletance transformation imaging"));
+            tr("<b>CHEROb</b> is three-dimensional refletance transformation imaging"));
 }
 
 void MainWindow::saveRecentProjectList(const QString &projName)
 {
   QString pn = QDir::fromNativeSeparators(projName);
 
-  QSettings settings("Yale Graphics Lab", "Hyper3D");
+  QSettings settings("Yale Graphics Lab", "CHEROb");
   QStringList files = settings.value("recentProjList").toStringList();
   files.removeAll(pn);
   files.prepend(pn);
@@ -2467,7 +2467,7 @@ void MainWindow::saveRecentCHEList(const QString &projName)
 {
   QString pn = QDir::fromNativeSeparators(projName);
 
-  QSettings settings("Yale Graphics Lab", "Hyper3D");
+  QSettings settings("Yale Graphics Lab", "CHEROb");
   QStringList files = settings.value("recentCHEList").toStringList();
   files.removeAll(pn);
   files.prepend(pn);
@@ -2495,7 +2495,7 @@ void MainWindow::saveRecentFileList(const QString &fileName)
   // DT: This should fix bug where filenames were duplicated because of slash/backslash differences.
   QString fn = QDir::fromNativeSeparators(fi.absoluteFilePath());
 
-  QSettings settings("Yale Graphics Lab", "Hyper3D");
+  QSettings settings("Yale Graphics Lab", "CHEROb");
   QStringList files = settings.value("recentFileList").toStringList();
   files.removeAll(fn);
   files.prepend(fn);
@@ -2515,7 +2515,7 @@ void MainWindow::saveRecentFileList(const QString &fileName)
 
 void MainWindow::updateRecentProjActions()
 {
-  QSettings settings("Yale Graphics Lab", "Hyper3D");
+  QSettings settings("Yale Graphics Lab", "CHEROb");
   QStringList projs = settings.value("recentProjList").toStringList();
 
   int numRecentProjs = qMin(projs.size(), (int)MAXRECENTFILES);
@@ -2532,7 +2532,7 @@ void MainWindow::updateRecentProjActions()
 
 void MainWindow::updateRecentCHEActions()
 {
-  QSettings settings("Yale Graphics Lab", "Hyper3D");
+  QSettings settings("Yale Graphics Lab", "CHEROb");
   QStringList ches = settings.value("recentCHEList").toStringList();
 
   int numRecentProjs = qMin(ches.size(), (int)MAXRECENTFILES);
@@ -2551,7 +2551,7 @@ void MainWindow::updateRecentFileActions()
 {
   //bool activeDoc = (bool) !mdiArea->subWindowList().empty() && mdiArea->currentSubWindow();
 
-  QSettings settings("Yale Graphics Lab", "Hyper3D");
+  QSettings settings("Yale Graphics Lab", "CHEROb");
   QStringList files = settings.value("recentFileList").toStringList();
 
   int numRecentFiles = qMin(files.size(), (int)MAXRECENTFILES);
@@ -2997,7 +2997,7 @@ bool MainWindow::openCHE(QString fileName)
 
 	if (fileName.isEmpty())
 		fileName = QFileDialog::getOpenFileName(this,tr("Open Cultural Heritage Entity File"), lastUsedDirectory.path(),
-											"Hyper3D Project (*.xml)");
+											"CHEROb Project (*.xml)");
 
 	if (fileName.isEmpty()) return false;
 	fileName = QDir::toNativeSeparators(fileName);
@@ -3154,7 +3154,7 @@ bool MainWindow::closeCHE()
 	currentProjectFullName = QString();
     currentProjectMetadata.clear();
 	isCHE = false;
-    QDomElement root = currentProjectMetadata.createElement("hyper3d.cultural_heritage_entity");
+    QDomElement root = currentProjectMetadata.createElement("CHEROb.cultural_heritage_entity");
     currentProjectMetadata.appendChild(root);
 	this->mInformation->closeAllNotes();
 
@@ -3614,7 +3614,7 @@ void MainWindow::createActions()
     //MK: Window Actions
 
     aboutAct = new QAction(tr("&About"), this);
-    aboutAct->setStatusTip(tr("Show Hyper3D About box"));
+    aboutAct->setStatusTip(tr("Show CHEROb About box"));
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 
     helpAct = new QAction(tr("&Help"), this);
@@ -3949,7 +3949,7 @@ void MainWindow::createMenus()
 
 void MainWindow::helpOnline()
 {
-    QDesktopServices::openUrl(QUrl("http://sourceforge.net/projects/hyper3d/support"));
+    QDesktopServices::openUrl(QUrl("http://sourceforge.net/projects/CHEROb/support"));
 }
 
 
@@ -4307,7 +4307,7 @@ QTabWidget* MainWindow::getSearchTabWidget()
 
 void MainWindow::writeSettings()
 {
-  QSettings settings("Yale Graphics Lab", "Hyper3D");
+  QSettings settings("Yale Graphics Lab", "CHEROb");
   settings.beginGroup("MainWindow");
   settings.setValue("size", size());
   settings.setValue("geometry", saveGeometry());
@@ -4320,7 +4320,7 @@ void MainWindow::writeSettings()
 
 void MainWindow::readSettings()
 {
-    QSettings settings("Yale Graphics Lab", "Hyper3D");
+    QSettings settings("Yale Graphics Lab", "CHEROb");
     settings.beginGroup("MainWindow");
     //restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());// it will save the location of windows and dock locations too.

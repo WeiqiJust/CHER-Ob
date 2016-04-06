@@ -1,6 +1,6 @@
 /****************************************************************************
 
- - Codename: Hyper3D (Yale Computer Graphics Group)
+ - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:   Min H. Kim (minhkim@cs.yale.edu)
 
@@ -102,8 +102,8 @@ class MainWindow : public QMainWindow
 
 public:
   MainWindow();
-  const QString appName() const {return tr("Hyper3D")+appVer(); }
-  const QString appVer() const {return tr(" 1.5.0"); }
+  const QString appName() const {return tr("CHER-Ob")+appVer(); }
+  const QString appVer() const {return tr(" 1.0.0"); }
   const QString appBits() const {return tr(BITS); }
 
   void getProjectInfo(QString& projectName, QString& location, QString& keyword, QString& affiliation, QString& userName, QString& description);
@@ -171,13 +171,13 @@ public:
 
   inline void createDataLocation(QString path) {
       QStringList tokens = path.split(QDir::separator());
-      QString hyper3D = tokens.takeLast();
+      QString CHEROb = tokens.takeLast();
       path = tokens.join(QDir::separator());
       path = QDir::toNativeSeparators(path);
       if(!QDir(path).exists()) {
           QDir().mkdir(path);
       }
-      path.append(QDir::separator() + hyper3D);
+      path.append(QDir::separator() + CHEROb);
       if(!QDir(path).exists()) {
           QDir().mkdir(path);
       }

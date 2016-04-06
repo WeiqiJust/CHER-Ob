@@ -1,6 +1,6 @@
 /****************************************************************************
 
- - Codename: Hyper3D (Yale Computer Graphics Group)
+ - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:   Min H. Kim (minhkim@cs.yale.edu)
 
@@ -139,11 +139,11 @@ void DMetadataTreeWidget::dropEvent(QDropEvent* event)
         }
     }
 
-    QDomNodeList rootList = ((Metadata*)(parentWidget()->parentWidget()))->xmlFile.elementsByTagName("hyper3d.metadata");
+    QDomNodeList rootList = ((Metadata*)(parentWidget()->parentWidget()))->xmlFile.elementsByTagName("CHEROb.metadata");
     if(list.isEmpty()) {
         QMessageBox mb;
         mb.critical(this, tr("Metadata Error"),
-                    tr("Invalid Hyper3D metadata file."));
+                    tr("Invalid CHEROb metadata file."));
         return;
     }
 
@@ -932,7 +932,7 @@ QTreeWidgetItem *Metadata::createChildItem(QTreeWidgetItem *item)
 
 void Metadata::readXML()
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == "hyper3d.metadata");
+    Q_ASSERT(xml.isStartElement() && xml.name() == "CHEROb.metadata");
 
     qDebug() << "starting read.";
     while (xml.readNextStartElement()) {
@@ -1022,7 +1022,7 @@ void Metadata::refreshMetadata()
     f.open(QIODevice::ReadOnly | QIODevice::Text);
     xml.setDevice(&f);
     if(xml.readNextStartElement()) {
-        if(xml.name() == "hyper3d.metadata") {
+        if(xml.name() == "CHEROb.metadata") {
             readXML();
         } else {
             xml.raiseError(tr("Invalid XML file."));
@@ -1092,13 +1092,13 @@ Metadata::Metadata(QString path, VtkWidget *gla, bool file)
         }
 		QString path = mPath;
         QStringList tokens = path.split(QDir::separator());
-        QString hyper3D = tokens.takeLast();
+        QString CHEROb = tokens.takeLast();
         path = tokens.join(QDir::separator());
         path = QDir::toNativeSeparators(path);
         if(!QDir(path).exists()) {
             QDir().mkdir(path);
         }
-        path.append(QDir::separator() + hyper3D);
+        path.append(QDir::separator() + CHEROb);
         if(!QDir(path).exists()) {
             QDir().mkdir(path);
         }
@@ -1113,12 +1113,12 @@ Metadata::Metadata(QString path, VtkWidget *gla, bool file)
             QDomProcessingInstruction instruct = xmlFile.createProcessingInstruction("xml", "version=\"1.0\"");
             xmlFile.appendChild(instruct);
 
-            root = xmlFile.createElement("hyper3d.metadata");
+            root = xmlFile.createElement("CHEROb.metadata");
             root.setAttribute("filename", fn);
             xmlFile.appendChild(root);
         } else {
             xmlFile.setContent(&f);
-            list = xmlFile.elementsByTagName("hyper3d.metadata");
+            list = xmlFile.elementsByTagName("CHEROb.metadata");
             root = list.at(0).toElement();
         }
 
