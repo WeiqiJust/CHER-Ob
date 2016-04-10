@@ -178,6 +178,7 @@ void MainWindow::updateAllViews()
 		mInformation->reloadAnnotation();
 	  else
 	  {
+		  qDebug()<<"in clear annotation";
 		mInformation->clearAnnotation();
 	  }
   }
@@ -1480,6 +1481,7 @@ void MainWindow::saveProjectAs()
 		file.remove();
         currentProjectSave = newProjectPath;
 		currentProjectSave.append(QDir::separator() + currentProjectName + QString(".xml"));
+		QString previousProjectFullName = currentProjectFullName;
 		currentProjectFullName = newProjectPath;
         lastSavedDirectory.setPath(currentProjectFullName);
 		QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
@@ -1489,10 +1491,39 @@ void MainWindow::saveProjectAs()
 			VtkView* mvc = qobject_cast<VtkView *>(w->widget());
 			QString file = mvc->currentView()->mFilename;
 			QFileInfo fi(file);
-			mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + fi.fileName() + QDir::separator() + fi.fileName();
-			mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + fi.fileName();
-			w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
-			this->mInformation->initAnnotation(mvc->currentView()->mProjectPath);
+			if (mvc->currentView()->mCHE.isEmpty() && mvc->currentView()->mCHEObject.isEmpty())
+			{
+				mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + fi.fileName() + QDir::separator() + fi.fileName();
+				mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + fi.fileName();
+				w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
+				this->mInformation->initAnnotation(mvc->currentView()->mProjectPath);
+			}
+			else if (!mvc->currentView()->mCHE.isEmpty() && !mvc->currentView()->mCHEObject.isEmpty())
+			{
+				QStringList nameElement = mvc->currentView()->mCHE.split(QDir::separator());
+				QString CHEName = nameElement[nameElement.size() - 1];
+				mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName() + QDir::separator() + fi.fileName();
+				mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName();
+				w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
+				this->mInformation->initAnnotation(mvc->currentView()->mProjectPath);
+			}
+			else if (mvc->currentView()->mCHEObject.isEmpty())
+			{
+				QStringList nameElement = mvc->currentView()->mCHE.split(QDir::separator());
+				QString CHEName = nameElement[nameElement.size() - 1];
+				mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName() + QDir::separator() + fi.fileName();
+				mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName();
+				mvc->currentView()->mCHEObject = fi.fileName();
+				w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
+				this->mInformation->initAnnotation(mvc->currentView()->mProjectPath);
+			}
+			else	// If the CHE infomation is lost
+			{
+				QMessageBox mb;
+				mb.critical(this, tr("Save Project Error"), tr("Failed to save project due to the missing Cultural Heritage Entity info! "));
+				rmDir(currentProjectFullName);
+				return;
+			}
 		}
 		setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
 		updateXML();
@@ -1527,7 +1558,6 @@ void MainWindow::importProject()
 
 	if (objectList.size() > 0)
 	{
-		this->mInformation->refresh();
 		for (int i = 0; i < objectList.size(); i++)
 		{
 			QFileInfo finfo(objectList[i].first);
@@ -1585,8 +1615,12 @@ void MainWindow::importCHE()
 
 	QFile file(fi.absoluteFilePath());
 	file.close();
-	if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		QMessageBox::critical(this, tr("Cultural Heritage Entity Error"), tr("Cannot open Cultural Heritage Entity."));
+	if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) 
+	{
+		if (!fileName.isEmpty())
+		{
+			QMessageBox::critical(this, tr("Cultural Heritage Entity Error"), tr("Cannot open Cultural Heritage Entity."));
+		}
 		return;
 	}
 	QDomDocument doc;
@@ -1627,7 +1661,6 @@ void MainWindow::importCHE()
 		QDir CHEDir(currentProjectFullName);
 		CHEDir.mkdir(CHEName);
 		CHEDir.cd(CHEName);
-		this->mInformation->refresh();
 		for (int i = 0; i < importObjectList.size(); i++)
 		{
 			QFileInfo finfo(importObjectList[i].first);
@@ -1690,6 +1723,122 @@ void MainWindow::importCHE()
 	updateXML();
 	updateMenus();
 	updateAllViews();
+}
+
+void MainWindow::mergeProjectToCHE()
+{
+	QMap<QString, QString> objects;
+	QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+    foreach(QMdiSubWindow *w, windows)
+	{
+        VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+        VtkWidget* gla = mvc->currentView();
+		QString fn = gla->mFilename;
+		//QStringList nameElement = fn.split(QDir::separator());
+		//QString fileNameElement = nameElement[nameElement.size() - 1];
+		fn.truncate(fn.lastIndexOf(QDir::separator())); 
+		QString che = gla->mCHE;
+        QString cheObjectName = gla->mCHEObject;
+		if (che.isEmpty() || cheObjectName.isEmpty())
+			continue;
+		che.append(QDir::separator() + cheObjectName);
+		objects[fn] = che;	// provide full path of the objects in case the objects share same name
+	}
+	MergeBackToCHEDialog* dialog = new MergeBackToCHEDialog(objects);
+	dialog->exec();
+	QMap<QString, QString> mergeList = dialog->getMergeList();
+	for (QMap<QString, QString>::iterator it = mergeList.begin(); it != mergeList.end(); it++)
+	{
+		QVector<int> categories = dialog->getCategories(it.key());
+		QDir cheNoteDir(it.value());
+		QDir projectNoteDir(it.key());
+		if (!cheNoteDir.cd("Note") || !projectNoteDir.cd("Note"))
+			continue;
+		QFileInfoList items = cheNoteDir.entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
+		for (int j = 0; j < items.size(); j++)
+		{
+			if (items[j].fileName() == QString("Annotation.txt"))
+				continue;
+			QFile *file = new QFile(items[j].absoluteFilePath());
+			if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
+			{
+				qDebug() << "Open Note file " << items[j].absoluteFilePath() << " Failed"; 
+				continue;
+			}
+			QTextStream in(file);
+			while(1)
+			{
+				QString signal = in.readLine();
+				if (signal == QString("Color Type:"))
+					break;
+			}
+			QString colorType;
+			in >> colorType;
+			file->close();
+			int type = color2type(colorType.toStdString());
+			// If the category of the note is to be merged, then remove the note in original CHE
+			// The new notes will be copied to the same location
+			// The reason to remove the outdated notes
+			if (categories.indexOf(type) != -1) 
+			{
+				file->remove();
+			}
+		}
+		QString projectBookMark = it.key();
+		projectBookMark.append(QDir::separator() + QString("BookMark"));
+		QString cheBookMark = it.value();
+		cheBookMark.append(QDir::separator() + QString("BookMark"));
+		cpDir(projectBookMark, cheBookMark);
+		QString projectObject = it.key();
+		QStringList nameElements = projectObject.split(QDir::separator());
+		projectObject.append(nameElements[nameElements.size() - 1]);
+		QString cheObject = it.value();
+		nameElements = cheObject.split(QDir::separator());
+		cheObject.append(nameElements[nameElements.size() - 1]);
+		QFile::copy(projectObject, cheObject);
+		QFileInfoList newItems = projectNoteDir.entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
+		for (int j = 0; j < newItems.size(); j++)
+		{
+			QString projectNote = projectNoteDir.absolutePath();
+			projectNote = QDir::toNativeSeparators(projectNote);
+			QString CHENote = cheNoteDir.absolutePath();
+			CHENote = QDir::toNativeSeparators(CHENote);
+			if (newItems[j].fileName() == QString("Annotation.txt"))
+			{
+				projectNote.append(QDir::separator() + QString("Annotation.txt"));
+				CHENote.append(QDir::separator() + QString("Annotation.txt"));
+				QFile::copy(projectNote, CHENote);
+				continue;
+			}
+			QFile *file = new QFile(newItems[j].absoluteFilePath());
+			if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
+			{
+				qDebug() << "Open Note file " << newItems[j].absoluteFilePath() << " Failed"; 
+				continue;
+			}
+			QTextStream in(file);
+			while(1)
+			{
+				QString signal = in.readLine();
+				if (signal == QString("Color Type:"))
+					break;
+			}
+			QString colorType;
+			in >> colorType;
+			file->close();
+			int type = color2type(colorType.toStdString());
+			// If the category of the note is to be merged, then remove the note in original CHE
+			// The new notes will be copied to the same location
+			// The reason to remove the outdated notes
+			if (categories.indexOf(type) != -1) 
+			{
+				projectNote.append(QDir::separator() + newItems[j].fileName());
+				CHENote.append(QDir::separator() + newItems[j].fileName());
+				QFile::copy(projectNote, CHENote);
+			}
+		}
+
+	}
 }
 
 void MainWindow::createObjectFolder(QString path)
@@ -2097,7 +2246,10 @@ bool MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName,
 			VTKA()->mCHE = currentProjectFullName;
 			VTKA()->mCHEObject = fileName;
 		}
-		this->mInformation->initAnnotation(VTKA()->mProjectPath);
+		if (!import)
+		{
+			this->mInformation->initAnnotation(VTKA()->mProjectPath);
+		}
 
 		// update window name
 		if(!currentProjectName.isEmpty()) {
@@ -2342,7 +2494,10 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 			VTKA()->mCHE = currentProjectFullName;
 			VTKA()->mCHEObject = fileNameElement;
 		}
-		this->mInformation->initAnnotation(VTKA()->mProjectPath);
+		if (!import)
+		{
+			this->mInformation->initAnnotation(VTKA()->mProjectPath);
+		}
 
 		// update window name
 		if(!currentProjectName.isEmpty()) {
@@ -2613,6 +2768,7 @@ void MainWindow::updateMenus()
   openDICOMAct->setEnabled(projectOpen);
   importProjectAct->setEnabled(projectOpen && !isCHE);
   importCHEAct->setEnabled(projectOpen && !isCHE);
+  mergeProjectToCHEAct->setEnabled(projectOpen && !isCHE);
   removeObjectAct->setEnabled(projectOpen);
   
   saveAsAct->setEnabled(projectOpen);
@@ -3544,6 +3700,10 @@ void MainWindow::createActions()
 	importCHEAct->setStatusTip(tr("Import an exisitng cultural heritage entity into the current project"));
 	connect(importCHEAct, SIGNAL(triggered()), this, SLOT(importCHE()));
 
+	mergeProjectToCHEAct = new QAction(tr("Merge Objects to Cultural Heritage Entity..."), this);
+	mergeProjectToCHEAct->setStatusTip(tr("Merge the object in Project back to Cultural Heritage Entity"));
+	connect(mergeProjectToCHEAct, SIGNAL(triggered()), this, SLOT(mergeProjectToCHE())); 
+
     setCustomizeAct	  = new QAction(tr("P&references..."),this);
     setCustomizeAct->setShortcutContext(Qt::ApplicationShortcut);
     setCustomizeAct->setShortcut(Qt::CTRL+Qt::Key_R);
@@ -3840,6 +4000,7 @@ void MainWindow::createMenus()
   fileMenu->addAction(openDICOMAct);
   fileMenu->addAction(importProjectAct);
   fileMenu->addAction(importCHEAct);
+  fileMenu->addAction(mergeProjectToCHEAct);
   fileMenu->addAction(removeObjectAct);
 
   fileMenu->addSeparator();

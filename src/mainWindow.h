@@ -48,6 +48,7 @@
 #include "CHE/CHETab.h"
 #include "CHE/saveCHEAsDialog.h"
 #include "CHE/exportToProjectDialog.h"
+#include "CHE/mergeBackToCHEDialog.h"
 #include "CHE/importFromCHEDialog.h"
 
 #define MAXRECENTFILES 8
@@ -277,6 +278,7 @@ private slots:
   bool closeProject();
   void importProject();
   void importCHE();
+  void mergeProjectToCHE();
 
   void newCHE();
   void createNewCHE(const QString fullName, const QString name, const USERMODE mode, const CHEInfoBasic* info,
@@ -445,6 +447,7 @@ private:
   QAction *openProjectAct;
   QAction *importProjectAct;
   QAction *importCHEAct;
+  QAction *mergeProjectToCHEAct;
   QAction *recentProjActs[MAXRECENTFILES];
   QAction *recentCHEActs[MAXRECENTFILES];
   QAction *recentFileActs[MAXRECENTFILES];

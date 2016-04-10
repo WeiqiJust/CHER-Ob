@@ -133,8 +133,8 @@ public:
   QVTKWidget* mQVTKWidget;
   QString mFilename;
   QString mProjectPath;
-  QString mCHE;
-  QString mCHEObject;
+  QString mCHE;	// The path of original CHE
+  QString mCHEObject;	// The object name without path
   vtkSmartPointer<vtkRenderer> mRenderer;
 
   int getId() {return id;}
