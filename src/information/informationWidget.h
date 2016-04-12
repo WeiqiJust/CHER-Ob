@@ -139,6 +139,8 @@ public:
 
   bool checkObjectSaved();
 
+  QVector<QString> getAllNotes(const QString objectPath);
+
 signals:
   void saveAll();
 
@@ -193,7 +195,7 @@ private:
   QPushButton* saveButton;
   QPushButton* removeButton;
   QString notePath;
-  QMap<QString, std::pair<QString, bool > > content;
+  QMap<QString, std::pair<QString, bool > > content;	// Annotation
   QMap<QString, QVector<PointNote*>> mPointNotes;
   QMap<QString, QVector<SurfaceNote*>> mSurfaceNotes;
   QMap<QString, QVector<FrustumNote*>> mFrustumNotes;

@@ -50,6 +50,7 @@
 #include "CHE/exportToProjectDialog.h"
 #include "CHE/mergeBackToCHEDialog.h"
 #include "CHE/importFromCHEDialog.h"
+#include "function/reportGenerator.h"
 
 #define MAXRECENTFILES 8
 
@@ -339,6 +340,7 @@ private slots:
   void viewFromBack() {VTKA()->setOrthogonalView(BACK3D);}
   void viewSpinMotion() { VTKA()->launchSpinView(); }
 
+  void generateReport();
   void writeAnnotation();
   void writePointNote() {VTKA()->annotate(true, POINTNOTE); writeAnnotationAct->setChecked(true);}
   void writeSurfaceNote() {VTKA()->annotate(true, SURFACENOTE); writeAnnotationAct->setChecked(true);}
@@ -501,6 +503,7 @@ private:
   QAction *viewFrontAct;
   QAction *viewBackAct;
   QAction *viewSpinAct;
+  QAction *generateReportAct;
   QAction *measureDistanceAct;
   QAction *removeDistanceAct;
   QAction *writeAnnotationAct;

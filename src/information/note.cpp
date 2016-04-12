@@ -114,6 +114,11 @@ Note::Note(const int noteId, const ColorType type)
 	mDialog->hide();
 }
 
+QString Note::getContent()
+{
+	return QString(*mInfo + "\n" + mTextEdit->toPlainText());
+}
+
 void Note::setLabel(QString text)
 {		
 	mLabel->setText(text);
@@ -154,7 +159,6 @@ void Note::save()
     out << mTextEdit->toPlainText();
 	mFile->close();
 	isSaved = true;
-
 }
 
 void Note::remove()
@@ -170,7 +174,6 @@ void Note::clear()
 	mTextEdit->clear();
 	this->textChanged();
 }
-
 
 PointNote::PointNote(QString path, double* pos, const int cellId, const int noteId, const ColorType type)
 	: Note(noteId, type)

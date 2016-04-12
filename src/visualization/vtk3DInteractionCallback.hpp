@@ -1114,7 +1114,7 @@ public:
 	  }
   }
 
-  void displayFrustumNote(vtkSmartPointer<vtkDataSetMapper> mapper, vtkSmartPointer<vtkPlanes> planes)
+  bool displayFrustumNote(vtkSmartPointer<vtkDataSetMapper> mapper, vtkSmartPointer<vtkPlanes> planes)
   {
 	  vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
 	  vtkSmartPointer<vtkRenderer> renderer = interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
@@ -1126,6 +1126,9 @@ public:
 	  extractor->Update();
 
 	  mapper->SetInput(vtkDataSet::SafeDownCast(extractor->GetOutput()));
+	  if (!mapper->GetInput()->GetNumberOfCells() && !mapper->GetInput()->GetNumberOfPoints())
+		  return false;
+	  return true;
   }
 
 
@@ -1460,6 +1463,8 @@ public:
       actor->GetProperty()->SetLineWidth(5);
       actor->VisibilityOn();
       renderer->AddActor(actor);
+	  if (!res->GetNode(0))
+		  return;
 
 	  mSelectedSurface.push_back(std::make_pair(res->GetNode(0), actor));
       displaySurfaceNote(mapper, res->GetNode(0));
@@ -1472,13 +1477,12 @@ public:
 	  vtkSmartPointer<vtkRenderer> renderer = interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
 	  vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New();
 	  vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+	  if (!displayFrustumNote(mapper, mAreaPicker->GetFrustum()))
+		  return;
+
 	  mSelectedFrustum.push_back(std::make_pair(mAreaPicker->GetFrustum(), actor));
 
 	  vtkSmartPointer<vtkDataArray> normal = mAreaPicker->GetFrustum()->GetNormals();
-	 /* for (int i = 0; i < normal->GetSize(); i++)
-	  {
-		  qDebug()<< normal->GetVariantValue(i).ToDouble();
-	  }*/
 	  actor->SetMapper(mapper);
 	  actor->GetProperty()->LightingOn();
 	  qDebug()<<"Frustum color" << mColor;
@@ -1486,7 +1490,7 @@ public:
 	  actor->GetProperty()->SetLineWidth(5);
 	  actor->VisibilityOn();
 	  renderer->AddActor(actor);
-      displayFrustumNote(mapper, mAreaPicker->GetFrustum());
+      
 	  mw()->mInformation->createFrustumNote(mAreaPicker->GetFrustum()->GetPoints(), mAreaPicker->GetFrustum()->GetNormals(), mColor);
 	  mAreaPicker = vtkSmartPointer<vtkRenderedAreaPicker>::New(); //refresh the area picker so that the frustum will not be pointed to the same address 
 	  interactor->SetPicker(mAreaPicker);

@@ -161,7 +161,7 @@ public:
   void rubberbandStart();
   void rubberbandEnd();
 
-  void screenshot();
+  void screenshot(QString location = QString());
 
   void annotate(bool status, NoteMode noteMode = UNDECLARE);
   void setAnnotationColor(const ColorType color);
@@ -214,6 +214,9 @@ public:
   void setFlattenedMesh(vtkPolyData *flatMesh);
   void setNonFlattenedMesh(vtkPolyData *nonFlatMesh);
   void flattenMesh();
+
+  double get2DImageHeight();
+  double get2DImageWidth();
 
   friend void BookmarkTreeWidget::dropEvent(QDropEvent *event);
   friend bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item);
@@ -382,8 +385,6 @@ private:
   void flipITKtoVTKxy (vtkImageData* imageData);
 
   VtkView *mparentView;
-
-  int muWidth,muHeight;
 
   bool mIsHyperspectral;
   bool mIsDICOM;

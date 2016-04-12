@@ -2782,8 +2782,8 @@ void MainWindow::updateMenus()
 //  editMenu->setEnabled(activeDoc && !editMenu->actions().isEmpty());
   renderMenu->setEnabled(activeDoc);
   viewMenu->setEnabled(activeDoc);
-  toolsMenu->setEnabled(activeDoc);
-  windowsMenu->setEnabled(projectOpen);
+  toolsMenu->setEnabled(projectOpen);
+  windowsMenu->setEnabled(projectOpen && activeDoc);
   closeWindowAct->setEnabled(activeDoc);
   closeAllAct->setEnabled(activeDoc);
   openWindowAct->setEnabled(isHidden);
@@ -2799,6 +2799,7 @@ void MainWindow::updateMenus()
 
   renderModeInfoAct->setEnabled(activeDoc);
   showPolyIndicateAct->setEnabled(activeDoc);
+  generateReportAct->setEnabled(projectOpen);
   measureDistanceAct->setEnabled(activeDoc);
   removeDistanceAct->setEnabled(activeDoc);
 
@@ -3903,6 +3904,21 @@ void MainWindow::createActions()
     viewSpinAct	    = new QAction(QIcon(":/images/spin.png"),tr("Spin"),this);
     connect(viewSpinAct, SIGNAL(triggered()), this, SLOT(viewSpinMotion()) );
 #endif
+
+	//================================================================================
+    // Tool
+	generateReportAct = new QAction (tr("Generate Report"), this);
+	generateReportAct->setStatusTip(tr("Generate a report in pdf format"));
+	connect(generateReportAct, SIGNAL(triggered()), this, SLOT(generateReport()));
+
+	measureDistanceAct = new QAction(QIcon(":/images/ruler_off.png"), tr("Measuring Tool"), this);
+    measureDistanceAct->setCheckable(true);
+    connect(measureDistanceAct, SIGNAL(triggered()), this, SLOT(measureDistance()));
+
+    removeDistanceAct = new QAction(QIcon(":/images/remove_ruler_on.png"), tr("Clear Measuring Tool"), this);
+    removeDistanceAct->setCheckable(false);
+    connect(removeDistanceAct, SIGNAL(triggered()), this, SLOT(removeMeasureDistance()));
+
     writeAnnotationAct = new QAction (QIcon(":/images/annotation_off.png"), tr("Write Annotation"), this);
     writeAnnotationAct->setCheckable(true);
     connect(writeAnnotationAct, SIGNAL(triggered()), this, SLOT(writeAnnotation()));
@@ -3966,14 +3982,6 @@ void MainWindow::createActions()
     projectInfoAct->setShortcutContext(Qt::ApplicationShortcut);
     projectInfoAct->setShortcut(Qt::CTRL+Qt::Key_P);
     connect(projectInfoAct, SIGNAL(triggered()), this, SLOT(showProjectInfo()));
-
-    measureDistanceAct = new QAction(QIcon(":/images/ruler_off.png"), tr("Measuring Tool"), this);
-    measureDistanceAct->setCheckable(true);
-    connect(measureDistanceAct, SIGNAL(triggered()), this, SLOT(measureDistance()));
-
-    removeDistanceAct = new QAction(QIcon(":/images/remove_ruler_on.png"), tr("Clear Measuring Tool"), this);
-    removeDistanceAct->setCheckable(false);
-    connect(removeDistanceAct, SIGNAL(triggered()), this, SLOT(removeMeasureDistance()));
 
     flattenShortcut = new QShortcut(QKeySequence(tr("Shift+F")), this);
     connect(flattenShortcut, SIGNAL(activated()), this, SLOT(flattenMesh()));
@@ -4067,10 +4075,11 @@ void MainWindow::createMenus()
 
   // Menu Preferences
   toolsMenu = menuBar->addMenu(tr("&Tools"));
+  toolsMenu->addAction(generateReportAct);
+  toolsMenu->addSeparator();
   toolsMenu->addAction(measureDistanceAct);
   toolsMenu->addAction(removeDistanceAct);
   toolsMenu->addSeparator();
-  //toolsMenu->addAction(writeAnnotationAct);
   annotationModeMenu = toolsMenu->addMenu(tr("Write Annotation"));
   foreach(QAction *ac, annotationModeGroupAct->actions())
     annotationModeMenu->addAction(ac);
@@ -4493,6 +4502,85 @@ void MainWindow::readSettings()
     //resize(settings.value("size").toSize());
 //    qDebug() << "reading last used directory: " << lastUsedDirectory.path();
     settings.endGroup();
+}
+
+void MainWindow::generateReport()
+{
+	QString file = QFileDialog::getSaveFileName((QWidget* )0, "Export PDF", QString(), "*.pdf");
+	file = QDir::toNativeSeparators(file);
+    if (QFileInfo(file).suffix().isEmpty()) { file.append(".pdf"); }
+	QString location = file;
+	location.truncate(location.lastIndexOf(QDir::separator()));
+	ReportGenerator* report;
+
+	if (!isCHE)
+	{
+		report = new ReportGenerator(file);
+		report->setKeyword(currentProjectKeyword);
+		report->setAffiliation(currentProjectAffiliation);
+		report->setDescription(currentProjectDescription);
+	}
+	else
+	{
+		report = new ReportGenerator(file, false);
+		report->setCHEInfo(mCHETab->getCHEInfo());
+	}
+	report->setProjectName(currentProjectName);
+	report->setUserName(mUserName);
+
+	QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+	QMap<QString, QVector<QString> > objectsNotes;
+	QString tmp = location;
+	tmp.append(QDir::separator() + QString("tmp"));
+	QDir().mkdir(tmp);
+	QDir tmpFolder(tmp);
+    foreach(QMdiSubWindow *w, windows)
+	{
+        VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+        VtkWidget* gla = mvc->currentView();
+        QString path = gla->mProjectPath;
+		QString file = gla->mFilename;
+		QStringList nameElement = file.split(QDir::separator());
+		ReportObject* object = new ReportObject();
+		object->mName = nameElement[nameElement.size() - 1];
+		object->mNotes = mInformation->getAllNotes(path);
+		report->addObject(object);
+
+		WidgetMode wm = gla->getWidgetMode();
+		gla->annotate(true);
+		QString screenshot = tmp;
+		screenshot.append(QDir::separator() + object->mName);
+		qDebug()<<"in report generate"<<screenshot;
+		double ratio, height, width;
+		switch(wm)
+		{
+			case EMPTYWIDGET:
+				break;
+			case IMAGE2D:
+				gla->screenshot(screenshot);
+				height = gla->get2DImageHeight();
+				width = gla->get2DImageWidth();
+				qDebug()<< "in report generation"<<height<<width;
+				if (height != -1 && width != -1 && width != 0 )
+					ratio = height/width;
+				else
+					ratio = -1;
+				break;
+			case MODEL3D:
+				gla->screenshot(screenshot);
+				break;
+			case CTSTACK:
+				break;
+			case CTVOLUME:      
+				break;
+			case RTI2D:
+				break;
+			default: break;
+		}
+		object->mPictures.push_back(qMakePair(gla->mFilename, ratio));
+		gla->annotate(false);
+	}
+	report->generate();
 }
 
 void MainWindow::writeAnnotation()

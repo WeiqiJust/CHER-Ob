@@ -1174,6 +1174,58 @@ bool Information::checkObjectSaved()
 	return true;
 }
 
+QVector<QString> Information::getAllNotes(const QString objectPath)
+{
+	QString path = objectPath;
+	path = QDir::toNativeSeparators(path);
+	path.append(QDir::separator() + QString("Note"));
+	QVector<QString> notes;
+	if (content.find(path) == content.end())	// cannot find the object, return empty vector
+		return notes;
+	QString annotation = content[path].first;
+	notes.push_back(annotation);
+	if (mPointNotes.find(path) != mPointNotes.end())
+	{
+		for (int i = 0; i < mPointNotes[path].size(); i++)
+		{
+			if (!mPointNotes[path][i]->checkRemoved())
+				notes.push_back(mPointNotes[path][i]->getContent());
+		}
+	}
+	if (mSurfaceNotes.find(path) != mSurfaceNotes.end())
+	{
+		for (int i = 0; i < mSurfaceNotes[path].size(); i++)
+		{
+			if (!mSurfaceNotes[path][i]->checkRemoved())
+				notes.push_back(mSurfaceNotes[path][i]->getContent());
+		}
+	}
+	if (mFrustumNotes.find(path) != mFrustumNotes.end())
+	{
+		for (int i = 0; i < mFrustumNotes[path].size(); i++)
+		{
+			if (!mFrustumNotes[path][i]->checkRemoved())
+				notes.push_back(mFrustumNotes[path][i]->getContent());
+		}
+	}
+	if (mPointNotes2D.find(path) != mPointNotes2D.end())
+	{
+		for (int i = 0; i < mPointNotes2D[path].size(); i++)
+		{
+			if (!mPointNotes2D[path][i]->checkRemoved())
+				notes.push_back(mPointNotes2D[path][i]->getContent());
+		}
+	}
+	if (mSurfaceNotes2D.find(path) != mSurfaceNotes2D.end())
+	{
+		for (int i = 0; i < mSurfaceNotes2D[path].size(); i++)
+		{
+			if (!mSurfaceNotes2D[path][i]->checkRemoved())
+				notes.push_back(mSurfaceNotes2D[path][i]->getContent());
+		}
+	}
+	return notes;
+}
 
 MainWindow* Information::mw()
 {

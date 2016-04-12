@@ -1654,7 +1654,7 @@ void VtkWidget::refreshGeometry3D()
 //
 // http://www.vtk.org/Wiki/VTK/Examples/Cxx/Utilities/Screenshot
 //
-void VtkWidget::screenshot()
+void VtkWidget::screenshot(QString location)
 {
     vtkSmartPointer<vtkRenderWindow> renderWindow = mRenderer->GetRenderWindow();
 
@@ -1668,18 +1668,26 @@ void VtkWidget::screenshot()
     windowToImageFilter->SetInputBufferTypeToRGBA(); //also record the alpha (transparency) channel
     windowToImageFilter->Update();
 
-    QStringList filters;
-    filters.push_back("PNG (.png)");
-    filters.push_back("JPEG (.jpg)");
-    filters.push_back("Bitmap (.bmp)");
+	QString fn;
+	if (location.isEmpty())
+	{
+		QStringList filters;
+		filters.push_back("PNG (.png)");
+		filters.push_back("JPEG (.jpg)");
+		filters.push_back("Bitmap (.bmp)");
 
-    QFileDialog* saveShot = new QFileDialog(this, tr("Save Screenshot"), mw()->lastSavedDirectory.path(), tr("PNG (.png)"));
-    saveShot->setAcceptMode(QFileDialog::AcceptSave);
-    saveShot->setFileMode(QFileDialog::AnyFile);
-    saveShot->setDefaultSuffix("png");
+		QFileDialog* saveShot = new QFileDialog(this, tr("Save Screenshot"), mw()->lastSavedDirectory.path(), tr("PNG (.png)"));
+		saveShot->setAcceptMode(QFileDialog::AcceptSave);
+		saveShot->setFileMode(QFileDialog::AnyFile);
+		saveShot->setDefaultSuffix("png");
 
-    QString fn = saveShot->getSaveFileName(this, "Save Screenshot", mw()->lastSavedDirectory.path(),
-                                           tr("PNG (*.png);;JPG (*.jpg *.jpeg);;Bitmap (*.bmp)"));
+		fn = saveShot->getSaveFileName(this, "Save Screenshot", mw()->lastSavedDirectory.path(),
+											   tr("PNG (*.png);;JPG (*.jpg *.jpeg);;Bitmap (*.bmp)"));
+	}
+	else
+	{
+		fn = location;
+	}
 
     if(!fn.isEmpty()) {
         QString path = mw()->lastSavedDirectory.absoluteFilePath(fn);
@@ -3448,6 +3456,22 @@ void VtkWidget::flattenMesh()
         vtkSmartPointer<vtkInteractorStyleSurfaceWalkerCamera> swCam = vtkInteractorStyleSurfaceWalkerCamera::SafeDownCast(mCallback3D->GetInteractor()->GetInteractorStyle());
         swCam->flattenSubset();
     }
+}
+
+double VtkWidget::get2DImageHeight()
+{
+	if (mWidgetMode != IMAGE2D)
+		return -1;
+	else
+		return mVtkImageData->GetDimensions()[1];
+}
+
+double VtkWidget::get2DImageWidth()
+{
+	if (mWidgetMode != IMAGE2D)
+		return -1;
+	else
+		return mVtkImageData->GetDimensions()[0];
 }
 
 void VtkWidget::setFlattenedMesh(vtkPolyData *flatMesh)

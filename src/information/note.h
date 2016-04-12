@@ -76,6 +76,8 @@ public:
 
 	void setRemoved(bool status)	{isRemoved = status;}
 
+	QString getContent();
+
 protected:
 
 	void setLabel(QString text);
