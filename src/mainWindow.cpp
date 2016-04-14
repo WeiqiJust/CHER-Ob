@@ -4507,6 +4507,8 @@ void MainWindow::readSettings()
 void MainWindow::generateReport()
 {
 	QString file = QFileDialog::getSaveFileName((QWidget* )0, "Export PDF", QString(), "*.pdf");
+	if (file.isEmpty())
+		return;
 	file = QDir::toNativeSeparators(file);
     if (QFileInfo(file).suffix().isEmpty()) { file.append(".pdf"); }
 	QString location = file;
@@ -4547,7 +4549,8 @@ void MainWindow::generateReport()
 		report->addObject(object);
 
 		WidgetMode wm = gla->getWidgetMode();
-		gla->annotate(true);
+		object->mMode = wm;
+		
 		QString screenshot = tmp;
 		screenshot.append(QDir::separator() + object->mName);
 		qDebug()<<"in report generate"<<screenshot;
@@ -4567,7 +4570,9 @@ void MainWindow::generateReport()
 					ratio = -1;
 				break;
 			case MODEL3D:
+				gla->annotate(true);
 				gla->screenshot(screenshot);
+				gla->annotate(false);
 				break;
 			case CTSTACK:
 				break;
@@ -4577,8 +4582,8 @@ void MainWindow::generateReport()
 				break;
 			default: break;
 		}
-		object->mPictures.push_back(qMakePair(gla->mFilename, ratio));
-		gla->annotate(false);
+		object->mPictures.push_back(gla->mFilename);
+		
 	}
 	report->generate();
 }

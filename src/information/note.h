@@ -197,7 +197,7 @@ class PointNote2D: public Note
 	Q_OBJECT
 
 public:
-	PointNote2D(QString path, const double* point, const int noteId, const ColorType type = YELLOW);
+	PointNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type = YELLOW);
 
 	PointNote2D(QString path, QString fileName, const int noteId);
 
@@ -210,6 +210,7 @@ public:
 
 private:
 	double* mPoint;	// The size is three, x, y ,0
+	int* mImagePoint;	// The size is three, x, y ,0, image coordinate
 };
 
 class SurfaceNote2D: public Note
@@ -217,7 +218,7 @@ class SurfaceNote2D: public Note
 	Q_OBJECT
 
 public:
-	SurfaceNote2D(QString path, const double* point, const int noteId, const ColorType type = YELLOW);
+	SurfaceNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type = YELLOW);
 
 	SurfaceNote2D(QString path, QString fileName, const int noteId);
 
@@ -230,5 +231,6 @@ public:
 
 private:
 	double* mPoint;	// The size is four, start x, y, end x, y
+	int* mImagePoint;	// The size is four, start x, y, end x, y, image coordinate
 };
 #endif // NOTE_H

@@ -66,7 +66,6 @@
 #include "../information/informationWidget.h"
 #include "myVTKInteractorStyle.h"
 
-/*** redundent here ****/
 #include <vtkImageActor.h>
 #include <vtkImageMapper3D.h>
 #include <vtkInteractorStyleRubberBand2D.h>
@@ -324,6 +323,9 @@ public:
 		  double* point = new double[3];
           picker->GetPickPosition(point);
 
+		  int* pointImageCoordinate = new int[3];
+		  picker->GetPointIJK(pointImageCoordinate);
+
           if(!mw()->mInformation) return;
 
 		   for (int i = 0; i < mSelectedPoint.size(); i++)
@@ -349,7 +351,7 @@ public:
 		  renderer->AddActor(actor);
 		  mSelectedPoint.push_back(std::make_pair(point, actor));
 		  displayPointNote(mapper, point);
-		  mw()->mInformation->createPointNote2D(point, mColor);
+		  mw()->mInformation->createPointNote2D(point, pointImageCoordinate, mColor);
 
       }
 	  
@@ -369,6 +371,7 @@ public:
 	  vtkSmartPointer<vtkCellPicker> picker = vtkSmartPointer<vtkCellPicker>::New();
       picker->SetTolerance(0.0005);
 	  double* pos;
+	  int startPointImageCoordinate[3], endPointImageCoordinate[3];
 
       picker->Pick(x0, y0, 0, interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
 	  if (picker->GetCellId() == -1)
@@ -378,6 +381,7 @@ public:
 	  pos = picker->GetPickPosition();
 	  point[0] = pos[0];
 	  point[1] = pos[1];
+	  picker->GetPointIJK(startPointImageCoordinate);
 
 	  picker->Pick(x1, y1, 0, interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
 	  if (picker->GetCellId() == -1)
@@ -388,6 +392,12 @@ public:
 	  pos = picker->GetPickPosition();
 	  point[2] = pos[0];
 	  point[3] = pos[1];
+	  picker->GetPointIJK(endPointImageCoordinate);
+	  int imageCoordinate[4];
+	  imageCoordinate[0] = startPointImageCoordinate[0];
+	  imageCoordinate[1] = startPointImageCoordinate[1];
+	  imageCoordinate[2] = endPointImageCoordinate[0];
+	  imageCoordinate[3] = endPointImageCoordinate[1];
 
 	  vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 
@@ -405,7 +415,7 @@ public:
 
 	  displaySurfaceNote(mapper, point);
 
-	  mw()->mInformation->createSurfaceNote2D(point, mColor);
+	  mw()->mInformation->createSurfaceNote2D(point, imageCoordinate, mColor);
  
   }
 

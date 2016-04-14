@@ -32,17 +32,22 @@
 #include <QWidget>
 #include <QFileDialog>
 #include <QDomDocument>
+#include <QPainter>
+#include <QFont>
 #include <QTextDocument>
+#include <QRectF>
 #include "../CHE/CHEInfoDialog.h"
+#include "../vtkEnums.h"
 
 class ReportObject : public QWidget
 {
 	Q_OBJECT
 
 public:
+	WidgetMode mMode;
 	QString mName;
 	QVector<QString> mNotes;
-	QVector<QPair<QString, double> > mPictures; // <picture path, height/width ratio>
+	QVector<QString> mPictures; // <picture path, height/width ratio>
 	QString mCHEName;
 };
 

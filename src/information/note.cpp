@@ -575,11 +575,12 @@ void FrustumNote::removeFrustumNote()
 	this->hideNote(); 
 }
 
-PointNote2D::PointNote2D(QString path, const double* point, const int noteId, const ColorType type)
+PointNote2D::PointNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type)
 	: Note(noteId, type)
 {
 	mPath = new QString(path);
     mPoint = new double[3];
+	mImagePoint = new int[3];
 	mFileName = new QString(path);
 	//mFileName->append(QDir::separator() + QString("Note") + WORD_SEPARATOR + QString::number(qHash(QString::number(number))) + QString(".txt"));
 	qsrand(time(NULL));
@@ -591,12 +592,15 @@ PointNote2D::PointNote2D(QString path, const double* point, const int noteId, co
 	for (int i = 0; i < 3; i++)
 	{
 		mPoint[i] = point[i];
+		mImagePoint[i] = pointImage[i];
 	}
 
 	QString label;
-	label.append(QString("Point Note: Center (") + QString::number(point[0]) + QString(", ") + QString::number(point[1]) + QString(")"));
+	label.append(QString("Point Note: World Coordinate (") + QString::number(point[0]) + QString(", ") + QString::number(point[1]) + QString(")")); 
 	this->setLabel(label);
-	QString info(label);
+	QString info;
+	info.append(QString("Point Note: World Coordinate (") + QString::number(point[0]) + QString(", ") + QString::number(point[1]) + QString(") Image Coordinate (")
+		+ QString::number(pointImage[0]) + QString(", ") + QString::number(pointImage[1]) + QString(")"));
 
 	info.append(QString("\nColor Type:\n"));
 	info.append(QString(colortype2str(mColor).c_str()));
@@ -610,6 +614,7 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId)
 {	
 	mPath = new QString(path);
 	mPoint = new double[3];
+	mImagePoint = new int[3];
 	vtkSmartPointer<vtkIdTypeArray> ids = vtkSmartPointer<vtkIdTypeArray>::New();
 	
 	mFileName = new QString(path);
@@ -626,9 +631,19 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId)
     QString firstLine = in.readLine();
 	bool ok0, ok1;
 	double pos[3];
-	pos[0] = firstLine.split(" ")[3].split(",")[0].split("(")[1].toDouble(&ok0);
-	pos[1] = firstLine.split(" ")[4].split(")")[0].toDouble(&ok1);
+	pos[0] = firstLine.split(" ")[4].split(",")[0].split("(")[1].toDouble(&ok0);
+	pos[1] = firstLine.split(" ")[5].split(")")[0].toDouble(&ok1);
 	pos[2] = 0;
+	
+	if (!ok0 || !ok1)
+	{
+		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+	}
+
+	int posImage[3];
+	posImage[0] = firstLine.split(" ")[8].split(",")[0].split("(")[1].toInt(&ok0);
+	posImage[1] = firstLine.split(" ")[9].split(")")[0].toInt(&ok1);
+	posImage[2] = 0;
 	
 	if (!ok0 || !ok1)
 	{
@@ -637,6 +652,7 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId)
 	for (int i = 0; i < 3; i++)
 	{
 		mPoint[i] = pos[i];
+		mImagePoint[i] = posImage[i];
 	}
 
 	while(1)
@@ -662,7 +678,9 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId)
 	QString label;
 	label.append(QString("Point Note: Center (") + QString::number(mPoint[0]) + QString(", ") + QString::number(mPoint[1]) + QString(")"));
 	this->setLabel(label);
-	QString info(label);
+	QString info;
+	info.append(QString("Point Note: World Coordinate (") + QString::number(mPoint[0]) + QString(", ") + QString::number(mPoint[1]) + QString(") Image Coordinate (")
+		+ QString::number(mImagePoint[0]) + QString(", ") + QString::number(mImagePoint[1]) + QString(")"));
 
 	info.append(QString("\nColor Type:\n"));
 	info.append(colorType);
@@ -679,11 +697,12 @@ void PointNote2D::removePointNote2D()
 	this->hideNote(); 
 }
 
-SurfaceNote2D::SurfaceNote2D(QString path, const double* point, const int noteId, const ColorType type)
+SurfaceNote2D::SurfaceNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type)
 	: Note(noteId, type)
 {
 	mPath = new QString(path);
     mPoint = new double[4];
+	mImagePoint = new int[4];
 	mFileName = new QString(path);
 	//mFileName->append(QDir::separator() + QString("Note") + WORD_SEPARATOR + QString::number(qHash(QString::number(number))) + QString(".txt"));
 	qsrand(time(NULL));
@@ -695,6 +714,7 @@ SurfaceNote2D::SurfaceNote2D(QString path, const double* point, const int noteId
 	for (int i = 0; i < 4; i++)
 	{
 		mPoint[i] = point[i];
+		mImagePoint[i] = pointImage[i];
 	}
 
 	QString label;
@@ -702,6 +722,8 @@ SurfaceNote2D::SurfaceNote2D(QString path, const double* point, const int noteId
 		+ QString::number(point[2]) + QString(", ") + QString::number(point[3]) + QString(")"));
 	this->setLabel(label);
 	QString info(label);
+	info.append(" Image Coordinate Start (" + QString::number(pointImage[0]) + QString(", ") + QString::number(pointImage[1]) + QString(") End (") 
+		+ QString::number(pointImage[2]) + QString(", ") + QString::number(pointImage[3]) + QString(")"));
 
 	info.append(QString("\nColor Type:\n"));
 	info.append(QString(colortype2str(mColor).c_str()));
@@ -715,6 +737,7 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId)
 {	
 	mPath = new QString(path);
 	mPoint = new double[4];
+	mImagePoint = new int[4];
 	vtkSmartPointer<vtkIdTypeArray> ids = vtkSmartPointer<vtkIdTypeArray>::New();
 	
 	mFileName = new QString(path);
@@ -740,9 +763,20 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId)
 	{
 		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
 	}
+	int posImage[4];
+	posImage[0] = firstLine.split(" ")[11].split(",")[0].split("(")[1].toInt(&ok0);
+	posImage[1] = firstLine.split(" ")[12].split(")")[0].toInt(&ok1);
+	posImage[2] = firstLine.split(" ")[14].split(",")[0].split("(")[1].toInt(&ok2);
+	posImage[3] = firstLine.split(" ")[15].split(")")[0].toInt(&ok3);
+	
+	if (!ok0 || !ok1 || !ok2 || !ok3)
+	{
+		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+	}
 	for (int i = 0; i < 4; i++)
 	{
 		mPoint[i] = pos[i];
+		mImagePoint[i] = posImage[i];
 	}
 
 	while(1)
@@ -770,6 +804,8 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId)
 		+ QString::number(mPoint[2]) + QString(", ") + QString::number(mPoint[3]) + QString(")"));
 	this->setLabel(label);
 	QString info(label);
+	info.append(" Image Coordinate Start (" + QString::number(mImagePoint[0]) + QString(", ") + QString::number(mImagePoint[1]) + QString(") End (") 
+		+ QString::number(mImagePoint[2]) + QString(", ") + QString::number(mImagePoint[3]) + QString(")"));
 
 	info.append(QString("\nColor Type:\n"));
 	info.append(colorType);

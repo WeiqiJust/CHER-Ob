@@ -360,13 +360,13 @@ void Information::createFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartP
 
 }
 
-void Information::createPointNote2D(double* point, ColorType color)
+void Information::createPointNote2D(double* point,  int* pointImage, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
 	updateCurrentPath();
 	int size = mPointNotes2D[notePath].size();
 	qDebug() << "Create Point Note 2D, current size = " << size;
-	PointNote2D* newNote = new PointNote2D(notePath, point, size, color);
+	PointNote2D* newNote = new PointNote2D(notePath, point, pointImage, size, color);
 	newNote->showNote();
 	mPointNotes2D[notePath].push_back(newNote);
 	connect(mPointNotes2D[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removePointNote2D(int, QString*)));
@@ -374,13 +374,13 @@ void Information::createPointNote2D(double* point, ColorType color)
 	connect(this, SIGNAL(closeAll()), mPointNotes2D[notePath][size], SLOT(close()));
 }
 
-void Information::createSurfaceNote2D(double* point, ColorType color)
+void Information::createSurfaceNote2D(double* point, int* pointImage, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
 	updateCurrentPath();
 	int size = mSurfaceNotes2D[notePath].size();
 	qDebug() << "Create Surface Note 2D, current size = " << size;
-	SurfaceNote2D* newNote = new SurfaceNote2D(notePath, point, size, color);
+	SurfaceNote2D* newNote = new SurfaceNote2D(notePath, point, pointImage, size, color);
 	newNote->showNote();
 	mSurfaceNotes2D[notePath].push_back(newNote);
 	connect(mSurfaceNotes2D[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removeSurfaceNote2D(int, QString*)));

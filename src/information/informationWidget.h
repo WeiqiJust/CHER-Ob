@@ -119,9 +119,9 @@ public:
 
   void createFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, ColorType color);
 
-  void createPointNote2D(double* point, ColorType color);
+  void createPointNote2D(double* point, int* pointImage, ColorType color);	// world coordinate, image coordinate, color
 
-  void createSurfaceNote2D(double* point, ColorType color);
+  void createSurfaceNote2D(double* point, int* pointImage, ColorType color);// world coordinate, image coordinate, color
 
   void openPointNote(int cellId);
 
