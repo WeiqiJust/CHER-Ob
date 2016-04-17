@@ -577,7 +577,6 @@ void VtkWidget::setOrthogonalView(OrthogonalView3D view)
 {
   if (mRenderer == NULL)
     return;
-
   // move camera to the initial position
   vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
   camera->SetPosition(mInitCamPos);
@@ -1654,7 +1653,7 @@ void VtkWidget::refreshGeometry3D()
 //
 // http://www.vtk.org/Wiki/VTK/Examples/Cxx/Utilities/Screenshot
 //
-void VtkWidget::screenshot(QString location)
+QString VtkWidget::screenshot(QString location)
 {
     vtkSmartPointer<vtkRenderWindow> renderWindow = mRenderer->GetRenderWindow();
 
@@ -1727,6 +1726,7 @@ void VtkWidget::screenshot(QString location)
     }
 
     if(mQVTKWidget) mQVTKWidget->update();
+	return fn;
 }
 
 void VtkWidget::saveFileInfo(QWidget* editBox)

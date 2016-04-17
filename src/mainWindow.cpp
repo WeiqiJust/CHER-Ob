@@ -1542,14 +1542,19 @@ void MainWindow::importProject()
 {
 	QString fileName = QFileDialog::getOpenFileName(this,tr("Import Project File"), lastUsedDirectory.path(),
                                             "CHEROb Project (*.xml)");
+	if (fileName.isEmpty())
+		return;
+
 	fileName = QDir::toNativeSeparators(fileName);
 	QFileInfo fi(fileName);
 	lastUsedDirectory = fi.absoluteDir();
-	if(fileName != QString("") && fi.suffix().toLower()!="xml")
+
+	if(fi.suffix().toLower()!="xml")
 	{
 		QMessageBox::critical(this, tr("Project Error"), "Unknown project file extension.");
 		return;
 	}
+
 	qb->show();
 	QVector<QPair<QString, QString> > objectList;
 	QVector<QString> filterList;
@@ -2783,7 +2788,7 @@ void MainWindow::updateMenus()
   renderMenu->setEnabled(activeDoc);
   viewMenu->setEnabled(activeDoc);
   toolsMenu->setEnabled(projectOpen);
-  windowsMenu->setEnabled(projectOpen && activeDoc);
+  windowsMenu->setEnabled(projectOpen);
   closeWindowAct->setEnabled(activeDoc);
   closeAllAct->setEnabled(activeDoc);
   openWindowAct->setEnabled(isHidden);
@@ -4511,8 +4516,6 @@ void MainWindow::generateReport()
 		return;
 	file = QDir::toNativeSeparators(file);
     if (QFileInfo(file).suffix().isEmpty()) { file.append(".pdf"); }
-	QString location = file;
-	location.truncate(location.lastIndexOf(QDir::separator()));
 	ReportGenerator* report;
 
 	if (!isCHE)
@@ -4532,10 +4535,7 @@ void MainWindow::generateReport()
 
 	QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
 	QMap<QString, QVector<QString> > objectsNotes;
-	QString tmp = location;
-	tmp.append(QDir::separator() + QString("tmp"));
-	QDir().mkdir(tmp);
-	QDir tmpFolder(tmp);
+	
     foreach(QMdiSubWindow *w, windows)
 	{
         VtkView* mvc = qobject_cast<VtkView *>(w->widget());
@@ -4543,47 +4543,18 @@ void MainWindow::generateReport()
         QString path = gla->mProjectPath;
 		QString file = gla->mFilename;
 		QStringList nameElement = file.split(QDir::separator());
+		
 		ReportObject* object = new ReportObject();
+		
 		object->mName = nameElement[nameElement.size() - 1];
 		object->mNotes = mInformation->getAllNotes(path);
+		object->mGla = gla;
 		report->addObject(object);
 
 		WidgetMode wm = gla->getWidgetMode();
 		object->mMode = wm;
-		
-		QString screenshot = tmp;
-		screenshot.append(QDir::separator() + object->mName);
-		qDebug()<<"in report generate"<<screenshot;
-		double ratio, height, width;
-		switch(wm)
-		{
-			case EMPTYWIDGET:
-				break;
-			case IMAGE2D:
-				gla->screenshot(screenshot);
-				height = gla->get2DImageHeight();
-				width = gla->get2DImageWidth();
-				qDebug()<< "in report generation"<<height<<width;
-				if (height != -1 && width != -1 && width != 0 )
-					ratio = height/width;
-				else
-					ratio = -1;
-				break;
-			case MODEL3D:
-				gla->annotate(true);
-				gla->screenshot(screenshot);
-				gla->annotate(false);
-				break;
-			case CTSTACK:
-				break;
-			case CTVOLUME:      
-				break;
-			case RTI2D:
-				break;
-			default: break;
-		}
-		object->mPictures.push_back(gla->mFilename);
-		
+
+		//qDebug()<<"in report generate";
 	}
 	report->generate();
 }

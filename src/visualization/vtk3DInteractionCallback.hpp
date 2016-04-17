@@ -79,6 +79,8 @@
 #include <vtkSeedRepresentation.h>
 #include <vtkProperty2D.h>
 #include <vtkSeedWidget.h>
+#include <vtkTextActor.h>
+#include <vtkTextProperty.h>
 
 #include "../information/informationWidget.h"
 #include "../mainWindow.h"
@@ -1125,6 +1127,8 @@ public:
 	  extractor->SetFrustum(planes);
 	  extractor->Update();
 
+	  vtkDataSet* polyData  = vtkDataSet::SafeDownCast(extractor->GetOutput());
+	  qDebug()<<"selected points"<<polyData->GetNumberOfPoints();
 	  mapper->SetInput(vtkDataSet::SafeDownCast(extractor->GetOutput()));
 	  if (!mapper->GetInput()->GetNumberOfCells() && !mapper->GetInput()->GetNumberOfPoints())
 		  return false;
@@ -1357,7 +1361,7 @@ public:
 	  vtkSmartPointer<vtkDataArray> newNormals = normals;
 	  newPoints->DeepCopy(points);
 	  newNormals->DeepCopy(normals);
-	  qDebug()<<newNormals->GetSize();
+	  /*
 	  for (int i = 0; i < 6; i++)
 	  {
 		  double point[3];
@@ -1367,7 +1371,7 @@ public:
 	  for (int i = 0; i < 6; i++)
 	  {
 		qDebug()<<newNormals->GetVariantValue(3*i).ToDouble()<<newNormals->GetVariantValue(3*i + 1).ToDouble()<<newNormals->GetVariantValue(3*i + 2).ToDouble();
-	  }
+	  }*/
 	  frustum->SetPoints(newPoints);
 	  frustum->SetNormals(newNormals);
 	  mSelectedFrustum.push_back(std::make_pair(frustum, actor));
@@ -1453,7 +1457,6 @@ public:
      		qDebug() << "Selection not supported.";
 			return;
 	  }	
-
 	  vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New();
       vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
 	  actor->SetMapper(mapper);

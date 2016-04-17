@@ -196,7 +196,7 @@ PointNote::PointNote(QString path, double* pos, const int cellId, const int note
 	char id[4]; 
 	memset(id, 0, sizeof(id));
 	sprintf(id, "%d", cellId);
-	std::string message = "Note: Polygon Id ( ";
+	std::string message = "Point Note: Polygon Id ( ";
 	message += id;
 	message += " ) Coordinates ";
 	char position[256]; 
@@ -233,10 +233,10 @@ PointNote::PointNote(QString path, QString fileName, const int noteId)
 	bool ok0, ok1, ok2, ok3;
 	double pos[3];
 	int cellId;
-	cellId = firstLine.split(" ")[4].toInt(&ok0);
-	pos[0] = firstLine.split(" ")[8].split(",")[0].toDouble(&ok1);
-	pos[1] = firstLine.split(" ")[10].split(",")[0].toDouble(&ok2);
-	pos[2] = firstLine.split(" ")[12].split(",")[0].toDouble(&ok3);
+	cellId = firstLine.split(" ")[5].toInt(&ok0);
+	pos[0] = firstLine.split(" ")[9].split(",")[0].toDouble(&ok1);
+	pos[1] = firstLine.split(" ")[11].split(",")[0].toDouble(&ok2);
+	pos[2] = firstLine.split(" ")[13].split(",")[0].toDouble(&ok3);
 	if (!ok0 || !ok1 || !ok2 || !ok3)
 	{
 		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
@@ -266,7 +266,7 @@ PointNote::PointNote(QString path, QString fileName, const int noteId)
 	char id[4]; 
 	memset(id, 0, sizeof(id));
 	sprintf(id, "%d", cellId);
-	std::string message = "Note: Polygon Id ( ";
+	std::string message = "Point Note: Polygon Id ( ";
 	message += id;
 	message += " ) Coordinates ";
 	char position[256]; 

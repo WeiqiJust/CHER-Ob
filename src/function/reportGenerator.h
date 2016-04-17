@@ -36,8 +36,33 @@
 #include <QFont>
 #include <QTextDocument>
 #include <QRectF>
+
 #include "../CHE/CHEInfoDialog.h"
 #include "../vtkEnums.h"
+#include "../visualization/vtkWidget.h"
+
+
+class WidgetInfo3D
+{
+public:
+	bool infoStatus;
+	bool isMeasuring;
+	bool isAnnotation;
+	double pos[3]; // camera position
+    double foc[3]; // focal point
+    double angle; // view angle
+    double view[3]; // view up direction
+    double clip[2]; // clipping range
+    double scale; // parallel scale
+	bool isDirectionalLight;
+	double orientation[3];
+	double brightness;
+	double contrast;
+	RenderMode3D renderMode;
+	int interpolation;
+	int textureOn;
+};
+
 
 class ReportObject : public QWidget
 {
@@ -49,7 +74,9 @@ public:
 	QVector<QString> mNotes;
 	QVector<QString> mPictures; // <picture path, height/width ratio>
 	QString mCHEName;
+	VtkWidget* mGla;
 };
+
 
 class ReportGenerator : public QWidget
 {
@@ -73,6 +100,21 @@ public:
 	void addObject(ReportObject* object)	{mObjects.push_back(object);}
 
 	void generate();
+
+	static MainWindow* mw();
+
+private:
+	void detectPointVisibility(vtkSmartPointer<vtkRenderer> render, QVector<double*> points, QVector<QPair<double, double> >& visiblePoints);
+
+	void saveWidgetinfo(const VtkWidget* gla, WidgetInfo3D &info);
+
+	void initWidget(VtkWidget* gla);
+
+	void recoverWidget(VtkWidget* gla, WidgetInfo3D info);
+
+	void computeCenter(const VtkWidget* gla, QVector<int> cellIds, double* center);
+
+	void computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, double* center);
 
 private:
 	bool isProject;

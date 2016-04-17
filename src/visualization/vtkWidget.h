@@ -161,28 +161,28 @@ public:
   void rubberbandStart();
   void rubberbandEnd();
 
-  void screenshot(QString location = QString());
+  QString screenshot(QString location = QString());
 
   void annotate(bool status, NoteMode noteMode = UNDECLARE);
   void setAnnotationColor(const ColorType color);
 
-  WidgetMode getWidgetMode() {return mWidgetMode;}
-  int getSliceMax() {return mSliceMax;}
-  bool getIsTextureOn() {return mIsTextureOn;}
-  bool getIsInterpolationOn() {return mIsInterpolateOn;}
-  int getSliceCurrent() {return mSliceCurrent;}
-  bool getUseRubberband() {return mUseRubberband;}
-  bool getIsRubberbandVisible() {return mIsRubberbandVisible;}
-  CTOrientation getOrientationCurrent() {return mOrientationCurrent;}
-  CTVisualization getCTVisualization() {return mCTVisualization;}
-  int getBlendType() {return mBlendType;}
-  float getReductionFactor() {return mReductionFactor;}
-  CTVolumeRenderMode getVolumeRenderMode() {return mVolumeRenderMode;}
-  bool getIsDirectionalLight() {return mIsDirectionalLight;}
-  bool getDisplayPolyIndicateOn() {return mDisplayPolyIndicateOn;}
-  bool getDisplayInfoOn() {return mDisplayInfoOn; }
-  bool getUserAnnotationOn() {return mUserIsAnnotating;}
-  QString getmRgbTextureFilename() {return mRgbTextureFilename;}
+  WidgetMode getWidgetMode() const {return mWidgetMode;}
+  int getSliceMax() const {return mSliceMax;}
+  bool getIsTextureOn() const {return mIsTextureOn;}
+  bool getIsInterpolationOn() const {return mIsInterpolateOn;}
+  int getSliceCurrent() const {return mSliceCurrent;}
+  bool getUseRubberband() const {return mUseRubberband;}
+  bool getIsRubberbandVisible() const {return mIsRubberbandVisible;}
+  CTOrientation getOrientationCurrent() const {return mOrientationCurrent;}
+  CTVisualization getCTVisualization() const {return mCTVisualization;}
+  int getBlendType() const {return mBlendType;}
+  float getReductionFactor() const {return mReductionFactor;}
+  CTVolumeRenderMode getVolumeRenderMode() const {return mVolumeRenderMode;}
+  bool getIsDirectionalLight() const {return mIsDirectionalLight;}
+  bool getDisplayPolyIndicateOn() const {return mDisplayPolyIndicateOn;}
+  bool getDisplayInfoOn() const {return mDisplayInfoOn; }
+  bool getUserAnnotationOn() const {return mUserIsAnnotating;}
+  QString getmRgbTextureFilename() const {return mRgbTextureFilename;}
 
   void setSliceMax(int input) {mSliceMax = input;}
   void setSliceCurrent(int input) {mSliceCurrent = input;}
@@ -207,13 +207,15 @@ public:
   void setUserAnnotationOn(bool annotationon) {mUserIsAnnotating = annotationon; refreshInfo(); }
 
   void setRenderMode3D(RenderMode3D mode) {mRenderMode3D = mode; refreshRenderMode3D();}
-  RenderMode3D getRenderMode3D() {return mRenderMode3D;}
+  RenderMode3D getRenderMode3D() const {return mRenderMode3D;}
   void setOrthogonalView(OrthogonalView3D view);
   void launchSpinView();
 
   void setFlattenedMesh(vtkPolyData *flatMesh);
   void setNonFlattenedMesh(vtkPolyData *nonFlatMesh);
   void flattenMesh();
+
+  vtkSmartPointer<vtkPolyData> get3DPolyData()	const {return mVtkPolyData;}
 
   double get2DImageHeight();
   double get2DImageWidth();
