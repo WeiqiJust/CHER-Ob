@@ -37,6 +37,9 @@
 #include <QTextDocument>
 #include <QRectF>
 
+#include <vtkExtractSelectedFrustum.h>
+#include <vtkDataSet.h>
+
 #include "../CHE/CHEInfoDialog.h"
 #include "../vtkEnums.h"
 #include "../visualization/vtkWidget.h"
@@ -106,6 +109,8 @@ public:
 private:
 	void detectPointVisibility(vtkSmartPointer<vtkRenderer> render, QVector<double*> points, QVector<QPair<double, double> >& visiblePoints);
 
+	void detectFrustumVisibility(const VtkWidget* gla, QVector<double*> center, QVector<QPair<double, double> >& visiblePoints, QVector<vtkSmartPointer<vtkDataSet> > dataset, OrthogonalView3D view);
+
 	void saveWidgetinfo(const VtkWidget* gla, WidgetInfo3D &info);
 
 	void initWidget(VtkWidget* gla);
@@ -114,7 +119,7 @@ private:
 
 	void computeCenter(const VtkWidget* gla, QVector<int> cellIds, double* center);
 
-	void computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, double* center);
+	void computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, double* center, vtkSmartPointer<vtkDataSet>& polyData);
 
 private:
 	bool isProject;

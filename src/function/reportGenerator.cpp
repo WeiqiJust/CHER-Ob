@@ -31,13 +31,20 @@
 #include <vtkCellLocator.h>
 #include <vtkCleanPolyData.h>
 #include <vtkPlanes.h>
-#include <vtkExtractSelectedFrustum.h>
-#include <vtkDoubleArray.h>
 
+#include <vtkDoubleArray.h>
+#include <vtkCamera.h>
+#include <vtkOBBTree.h>
+#include <vtkSelectPolyData.h>
+#include <vtkClipPolyData.h>
+#include <vtkCellArray.h>
+#include <vtkMath.h>
+#include <vtkStructuredPoints.h>
+
+#include <limits>
 #include "reportGenerator.h"
 #include "../function/lightControl.h"
 #include "../mainWindow.h"
-
 
 ReportGenerator::ReportGenerator(QString path, bool project)
 {
@@ -97,6 +104,13 @@ void ReportGenerator::generate()
 			+ QString("<p><font size=\"3\">\nImage/Audio Documentation: ") + mCHEInfo->documents + QString("\n</font></p>\n")
 			+ QString("<p><font size=\"3\">\nOthers: ") + mCHEInfo->other + QString("\n</font></p>\n");
 	}
+	// create screenshot folder
+	QString location = mLocation;
+	location.truncate(location.lastIndexOf(QDir::separator()));
+	QString tmp = location;
+	tmp.append(QDir::separator() + QString("tmp"));
+	QDir().mkdir(tmp);
+	QDir tmpFolder(tmp);
 	for (int i = 0; i < mObjects.size(); i++)
 	{
 		html = html + QString("<br></br>");
@@ -108,6 +122,7 @@ void ReportGenerator::generate()
 		QVector<double*> pointNote3D;
 		QVector<double*> surfaceNote3D;
 		QVector<double*> frustumNote3D;
+		QVector<vtkSmartPointer<vtkDataSet> > dataset;
 		//Parsing Notes
 		for (int j = 0; j < mObjects[i]->mNotes.size(); j++)
 		{
@@ -165,13 +180,14 @@ void ReportGenerator::generate()
 					{
 						bool ok0, ok1, ok2;
 						double *worldPosition = new double[3];
-						worldPosition[0] = firstLine.split(" ")[9].split(",")[0].toDouble(&ok0);
-						worldPosition[1] = firstLine.split(" ")[11].split(",")[0].toDouble(&ok1);
-						worldPosition[2] = firstLine.split(" ")[13].split(",")[0].toDouble(&ok2);
+						worldPosition[0] = firstLine.split(" ")[6].split(",")[0].split("(")[1].toDouble(&ok0);
+						worldPosition[1] = firstLine.split(" ")[7].split(",")[0].toDouble(&ok1);
+						worldPosition[2] = firstLine.split(" ")[8].split(")")[0].toDouble(&ok2);
 						if (!ok0 || !ok1 || !ok2)
 						{
 							qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
 						}
+						qDebug()<<"report generation"<<worldPosition[0]<<worldPosition[1]<<worldPosition[2];
 						pointNote3D.push_back(worldPosition);
 						mode = POINTNOTE;
 					}
@@ -253,7 +269,9 @@ void ReportGenerator::generate()
 						normals->Resize(6);
 
 						double *center = new double[3];
-						computeCenter(mObjects[i]->mGla, points, normals, center);
+						vtkSmartPointer<vtkDataSet> data = vtkSmartPointer<vtkStructuredPoints>::New(); 
+						computeCenter(mObjects[i]->mGla, points, normals, center, data);
+						dataset.push_back(data);
 						frustumNote3D.push_back(center);
 						mode = FRUSTUMNOTE;
 					}
@@ -270,14 +288,6 @@ void ReportGenerator::generate()
 				contents.push_back(qMakePair(note, mode));
 			}
 		}
-		
-		// create screenshot folder
-		QString location = mLocation;
-		location.truncate(location.lastIndexOf(QDir::separator()));
-		QString tmp = location;
-		tmp.append(QDir::separator() + QString("tmp"));
-		QDir().mkdir(tmp);
-		QDir tmpFolder(tmp);
 		QString screenshot = tmp;
 		screenshot.append(QDir::separator() + mObjects[i]->mName);
 		QString screenshotDict;
@@ -303,15 +313,15 @@ void ReportGenerator::generate()
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DFront);
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DFront);
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, frustumNote3D, frustumNote3DFront);
-				
+				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DFront, dataset, FRONT3D);
+	
 				mObjects[i]->mGla->setOrthogonalView(LEFT3D);
 				screenshotDict = screenshot;
 				screenshotDict.append("_left");
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DLeft);
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DLeft);
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, frustumNote3D, frustumNote3DLeft);
+				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DLeft, dataset, LEFT3D);
 
 				mObjects[i]->mGla->setOrthogonalView(RIGHT3D);
 				screenshotDict = screenshot;
@@ -319,7 +329,7 @@ void ReportGenerator::generate()
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DRight);
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DRight);
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, frustumNote3D, frustumNote3DRight);
+				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DRight, dataset, RIGHT3D);
 
 				mObjects[i]->mGla->setOrthogonalView(TOP3D);
 				screenshotDict = screenshot;
@@ -327,7 +337,7 @@ void ReportGenerator::generate()
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DTop);
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DTop);
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, frustumNote3D, frustumNote3DTop);
+				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DTop, dataset, TOP3D);
 
 				mObjects[i]->mGla->setOrthogonalView(BOTTOM3D);
 				screenshotDict = screenshot;
@@ -335,7 +345,7 @@ void ReportGenerator::generate()
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DBottom);
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DBottom);
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, frustumNote3D, frustumNote3DBottom);
+				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DBottom, dataset, BOTTOM3D);
 
 				mObjects[i]->mGla->setOrthogonalView(BACK3D);
 				screenshotDict = screenshot;
@@ -343,7 +353,7 @@ void ReportGenerator::generate()
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DBack);
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DBack);
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, frustumNote3D, frustumNote3DBack);
+				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DBack, dataset, BACK3D);
 				recoverWidget(mObjects[i]->mGla, info);
 				break;
 			case CTSTACK:
@@ -354,7 +364,6 @@ void ReportGenerator::generate()
 				break;
 			default: break;
 		}
-		QDir().rmdir(tmp);
 
 		//Process and add image
 		for (int j = 0; j < mObjects[i]->mPictures.size(); j++)
@@ -496,7 +505,6 @@ void ReportGenerator::generate()
 			for (int k = 0; k < frustumNote3DSelected.size(); k++)
 			{
 				int x = frustumNote3DSelected[k].first, y = img.height() - frustumNote3DSelected[k].second;
-				qDebug()<<"frustum pixel"<<x<<y;
 				if (x == -1 || y == -1)
 					continue;
 				int x1 = x - pointSize/2, y1 = y - pointSize/2;
@@ -563,11 +571,22 @@ void ReportGenerator::generate()
 		{
 			delete surfaceNote3D[j];
 		}
-		
+		for (int j = 0; j < frustumNote3D.size(); j++)
+		{
+			delete frustumNote3D[j];
+		}
 	}
+	tmpFolder.setNameFilters(QStringList() << "*.*");
+	tmpFolder.setFilter(QDir::Files);
+	foreach(QString dirFile, tmpFolder.entryList())
+	{
+		tmpFolder.remove(dirFile);
+	}
+	QDir().rmdir(tmp);
 	mDoc->setHtml(html);
 	mDoc->setPageSize(mPrinter->pageRect().size()); // This is necessary if you want to hide the page number
     mDoc->print(mPrinter);
+ 
 }
 
 void ReportGenerator::detectPointVisibility(vtkSmartPointer<vtkRenderer> render, QVector<double*> points, QVector<QPair<double, double> >& visiblePoints)
@@ -596,6 +615,90 @@ void ReportGenerator::detectPointVisibility(vtkSmartPointer<vtkRenderer> render,
 			visiblePoints.push_back(qMakePair(x, x));
 		}
 	}
+}
+
+void ReportGenerator::detectFrustumVisibility(const VtkWidget* gla, QVector<double*> center, 
+											  QVector<QPair<double, double> >& visiblePoints, QVector<vtkSmartPointer<vtkDataSet> > dataset, OrthogonalView3D view)
+{
+	vtkSmartPointer<vtkCamera> camera = gla->mRenderer->GetActiveCamera();
+	double cameraPos[3];
+	camera->GetPosition(cameraPos);
+	double point[3];
+	for (int i = 0; i < center.size(); i++)
+	{
+		vtkSmartPointer<vtkPoints> selectionPoints = vtkSmartPointer<vtkPoints>::New();
+		selectionPoints->SetNumberOfPoints(dataset[i]->GetNumberOfPoints());
+		for (int j = 0; j < dataset[i]->GetNumberOfPoints(); j++)
+		{
+			dataset[i]->GetPoint(j, point);
+			selectionPoints->SetPoint(j, point);
+		}
+
+		vtkSmartPointer<vtkCellArray> cellArray = vtkSmartPointer<vtkCellArray>::New();
+		for (int j = 0; j < dataset[i]->GetNumberOfCells(); j++)
+		{
+			vtkCell* cell = dataset[i]->GetCell(j);
+			cellArray->InsertNextCell(cell);
+		}
+
+		vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+		polyData->SetPoints(selectionPoints);
+		polyData->SetPolys(cellArray);
+
+		double intersectPoints[3], pcoord[3], t;
+		double projection[3];
+		projection[0] = center[i][0];
+		projection[1] = center[i][1];
+		projection[2] = center[i][2];
+		int sub;
+		switch(view)
+		{
+		case FRONT3D:projection[2]+=100;break;
+		case LEFT3D:projection[0]-=100;break;
+		case RIGHT3D:projection[0]+=100;break;
+		case TOP3D:projection[1]+=100;break;
+		case BOTTOM3D:projection[1]-=100;break;
+		case BACK3D:projection[2]-=100;break;
+		}
+
+		vtkSmartPointer<vtkCellLocator> cellLocator = 
+		vtkSmartPointer<vtkCellLocator>::New();
+		cellLocator->SetDataSet(polyData);
+		cellLocator->BuildLocator();
+
+		int result = cellLocator->IntersectWithLine(projection, center[i], 100, t, intersectPoints, pcoord, sub);
+
+		if (result == 0)
+		{
+			double x = -1;
+			visiblePoints.push_back(qMakePair(x, x));
+		}
+		else
+		{
+			vtkSmartPointer<vtkPoints> point = vtkSmartPointer<vtkPoints>::New();
+			vtkSmartPointer<vtkPolyData> pointData = vtkSmartPointer<vtkPolyData>::New();
+			point->SetNumberOfPoints(1);
+			point->SetPoint(0, intersectPoints[0], intersectPoints[1], intersectPoints[2]);
+			pointData->SetPoints(point);
+			vtkSmartPointer<vtkSelectVisiblePoints> selectVisiblePoints = vtkSmartPointer<vtkSelectVisiblePoints>::New();
+			selectVisiblePoints->SetInput(pointData);
+			selectVisiblePoints->SetRenderer(gla->mRenderer);
+			selectVisiblePoints->Update();
+			if (selectVisiblePoints->GetOutput()->GetNumberOfPoints() != 0)
+			{
+				double *displayPt = new double[3];
+				vtkInteractorObserver::ComputeWorldToDisplay (gla->mRenderer, intersectPoints[0], intersectPoints[1], intersectPoints[2], displayPt);
+				visiblePoints.push_back(qMakePair(displayPt[0], displayPt[1]));
+				delete displayPt;
+			}
+			else
+			{
+				double x = -1;
+				visiblePoints.push_back(qMakePair(x, x));
+			}
+		}
+	}
+
 }
 
 MainWindow* ReportGenerator::mw()
@@ -698,20 +801,15 @@ void ReportGenerator::computeCenter(const VtkWidget* gla, QVector<int> cellIds, 
 	{
 		vtkSmartPointer<vtkIdList> ptIds = vtkSmartPointer<vtkIdList>::New();
 		gla->get3DPolyData()->GetCellPoints(cellIds[i], ptIds);
+		double point[3];
 		for (int j = 0; j < ptIds->GetNumberOfIds(); j++)
 		{
-			double point[3];
 			gla->get3DPolyData()->GetPoint(ptIds->GetId(j), point);
 			points->InsertPoint(points->GetNumberOfPoints(), point);
 		}
 	}
 	vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
 	polyData->SetPoints(points);
-	/*
-	double center[3];
-	polyData->ComputeBounds();
-	polyData->GetCenter(center);
-	qDebug()<<"bounding box "<<center[0]<<center[1]<<center[2];*/
 
 	vtkSmartPointer<vtkCenterOfMass> centerOfMassFilter = vtkSmartPointer<vtkCenterOfMass>::New();
 	#if VTK_MAJOR_VERSION <= 5
@@ -734,7 +832,8 @@ void ReportGenerator::computeCenter(const VtkWidget* gla, QVector<int> cellIds, 
 	cellLocator->FindClosestPoint(CoM, center, cellId, subId, closestPointDist2);
 }
 
-void ReportGenerator::computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, double* center)
+void ReportGenerator::computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, 
+									double* center, vtkSmartPointer<vtkDataSet>& polyData)
 {
 	vtkSmartPointer<vtkPoints> newPoints = vtkSmartPointer<vtkPoints>::New();
 	vtkSmartPointer<vtkDataArray> newNormals = normals;
@@ -751,8 +850,8 @@ void ReportGenerator::computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoi
 	extractor->Update();
 
 	//vtkSmartPointer<vtkDataSet> polyData = vtkSmartPointer<vtkDataSet>::New();
-	vtkDataSet* polyData  = vtkDataSet::SafeDownCast(extractor->GetOutput());
-	qDebug()<<"selected points"<<polyData->GetNumberOfPoints();
+	polyData  = vtkDataSet::SafeDownCast(extractor->GetOutput());
+	
 	vtkSmartPointer<vtkCenterOfMass> centerOfMassFilter = vtkSmartPointer<vtkCenterOfMass>::New();
 	#if VTK_MAJOR_VERSION <= 5
 	centerOfMassFilter->SetInput(polyData);
@@ -772,5 +871,5 @@ void ReportGenerator::computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoi
 	vtkIdType cellId;
 	int subId;
 	cellLocator->FindClosestPoint(CoM, center, cellId, subId, closestPointDist2);
-	qDebug()<<"center"<<center[0]<<center[1]<<center[2];
 }
+

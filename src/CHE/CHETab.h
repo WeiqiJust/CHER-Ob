@@ -40,6 +40,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QObject>
+#include <QComboBox>
 #include "CHEInfoDialog.h"
 
 class CHETab : public CHEInfoDialog
@@ -63,6 +64,8 @@ private slots:
 
 	void editPressed();
 
+	void setFilterMode(int mode);
+
 signals:
 	void save();
 
@@ -73,8 +76,15 @@ private:
 	QPushButton* saveButton;
 	QPushButton* editButton;
 
-	QTextEdit *mObjectInfo, *mMeasurementInfo, *mCreationInfo, *mMaterialInfo, *mDescriptionInfo, *mConservationInfo,
-		*mAnalysesInfo, *mRelatedInfo, *mAdministrationInfo, *mDocumentsInfo, *mOtherInfo;
+	QComboBox* mFilter;
+	QLabel *mLabel;
+	QTextEdit* mTextEdit;
+
+	int currentMode;
+	QVector<QString> mTemptInfo;
+
+	//QTextEdit *mObjectInfo, *mMeasurementInfo, *mCreationInfo, *mMaterialInfo, *mDescriptionInfo, *mConservationInfo,
+	//	*mAnalysesInfo, *mRelatedInfo, *mAdministrationInfo, *mDocumentsInfo, *mOtherInfo;
 };
 
 

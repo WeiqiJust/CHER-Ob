@@ -2318,6 +2318,7 @@ void MainWindow::removeObject()
 					}
 				}
 				rmDir(filePath);
+				this->mInformation->removeAllNotes(filePath);
 				isClose = true;
 				mdiArea->removeSubWindow(w);
 				isClose = false;
@@ -3333,8 +3334,7 @@ bool MainWindow::closeCHE()
     }
 
     updateMenus();
-	removeDockWidget(leftDock);
-
+	rightTab->removeTab(1);
     return true;
 }
 
@@ -4279,50 +4279,16 @@ QWidget * MainWindow::mountWidgetCenter(QWidget *inputWidget)
 
 void MainWindow::createDockWindows()
 {
-   //QTabWidget* tabWidgetTop = NULL, *tabWidgetMid = NULL, *tabWidgetBottom = NULL;
-   tabWidgetTop = NULL; // YY
-   tabWidgetMid = NULL;
-   tabWidgetBottom = NULL;
-   //this->setDockOptions(QMainWindow::ForceTabbedDocks);
-
-  //MK: main window size
-  // [ver.1]-----------------------------------------------
   int mwWidth = this->sizeHint().width();
   int mwHeight = this->sizeHint().height();
-  // [ver.2]-----------------------------------------------
-//  int mwWidth = this->frameGeometry().width();
-//  int mwHeight = this->frameGeometry().height();
-
-  int dockwidth = 440;
-  //-----------------------------------------------------
-  // MK: light control dock
-  QDockWidget *dockTop = new QDockWidget(this);
-  dockTop->setObjectName("DockTop");
-  dockTop->setAllowedAreas(Qt::RightDockWidgetArea); //Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea
-//  dockTop->setFeatures(QDockWidget::NoDockWidgetFeatures); // remove the floating features.
-//  dockTop->setFloating(false);
-  dockTop->setFeatures(QDockWidget::DockWidgetFloatable);
-
-  if(mwHeight < 600) {
-      dockTop->setMinimumHeight(300);
-      dockTop->setMaximumHeight(300);
-  } else {
-      dockTop->setMinimumHeight(230);
-      dockTop->setMaximumHeight(230);
-  }
-  dockTop->setMinimumWidth(dockwidth);
-  dockTop->setMaximumWidth(dockwidth);
 
   tabWidgetTop = new QTabWidget;
   tabWidgetMid = new QTabWidget;
+  tabWidgetBottom = new QTabWidget;
+  rightTab = new QTabWidget;
 
-  //mLightControl = new LightControl(this);
-  //mLightControlRTI = new LightControlRTI(this, 160); // YY
-  //tabWidgetTop->addTab(mLightControl, tr("Light Control 3D") ); // YY
-  //tabWidgetTop->addTab(mLightControlRTI, tr("Light Control RTI") ); // YY
+  int dockwidth = 440;
 
-  
-  //YY
   mLightControl = new LightControl(this);
   tabWidgetTop->addTab(mLightControl, tr("Light Control 3D") );
   activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL));
@@ -4351,120 +4317,70 @@ void MainWindow::createDockWindows()
   emit currentWidgetModeChanged(EMPTYWIDGET);
 
   tabWidgetTop->show();
-  dockTop->setWidget(tabWidgetTop);
 
-  addDockWidget(Qt::RightDockWidgetArea, dockTop);
-//  viewMenu->addAction(dockTop->toggleViewAction());
-  //-----------------------------------------------------
-  // MK: multi orthogonal view setting
-  QDockWidget *dockMid = new QDockWidget(this);
-  dockMid->setObjectName("dockMid");
-//  dockMid->setFeatures(QDockWidget::NoDockWidgetFeatures); // remove the floating features.
-//  dockMid->setFloating(false);
-  dockMid->setFeatures(QDockWidget::DockWidgetFloatable);
-  dockMid->setAllowedAreas(Qt::RightDockWidgetArea);
-
-  if(mwHeight < 600) {
-      dockMid->setMinimumHeight(335);
-      dockMid->setMaximumHeight(335);
-  } else {
-      dockMid->setMinimumHeight(300);
-      dockMid->setMaximumHeight(300);
-  }
-  dockMid->setMinimumWidth(dockwidth);
-  dockMid->setMaximumWidth(dockwidth);
-  //-----------------------------------------------------
-
-  // CT control
   mCtControl = new CTControl;
   mPlotView = new PlotView;
 
   connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode)), mCtControl, SLOT( updateCtControlWidgetMode(WidgetMode) ) );
   emit currentWidgetModeChanged(EMPTYWIDGET);
-
-  if (mwHeight < 600) {
-      tabWidgetTop->addTab(mCtControl, tr("CT Image Control") );
-      tabWidgetTop->addTab(mPlotView, tr("Spectrum") ); // test for API
-  } else {
-      tabWidgetMid->addTab(mCtControl, tr("CT Image Control") ); // CT rendering control
-      tabWidgetMid->addTab(mPlotView, tr("Spectrum") ); // test for API
-
-      dockMid->setWidget(tabWidgetMid);
-      addDockWidget(Qt::RightDockWidgetArea, dockMid);
-  }
-
-//  qDebug() << "mwHeight: " << mwHeight; // Macbook Pro Retina 700
   mInformation = new Information(this);
   mBookmark = new BookmarkWidget(this);
   mSearch = new SearchWidget(this);
+  QDockWidget *dockBot = new QDockWidget(this);
   mSearchAll = new SearchAllWidget(this);
-  if (mwHeight < 600)
+
+  if(mwHeight < 600) 
   {
-      tabWidgetMid->addTab(mInformation, tr("Annotations") );
+	  tabWidgetTop->setFixedHeight(300);
+	  tabWidgetMid->setFixedHeight(335);
+	  tabWidgetTop->addTab(mCtControl, tr("CT Image Control") );
+      tabWidgetTop->addTab(mPlotView, tr("Spectrum") ); // test for API
+	  tabWidgetMid->addTab(mInformation, tr("Annotations") );
       tabWidgetMid->addTab(mBookmark, tr("Bookmarks") );
 	  tabWidgetMid->addTab(mSearch, tr("Search") );
 	  tabWidgetMid->addTab(mSearchAll, tr("SearchAll") );
-
-      dockMid->setWidget(tabWidgetMid);
-      addDockWidget(Qt::RightDockWidgetArea, dockMid);
-  } else {
-      QDockWidget *dockBot = new QDockWidget(this);
-      dockBot->setObjectName("DocBot");
-      dockBot->setFeatures(QDockWidget::DockWidgetFloatable);
-      dockBot->setAllowedAreas(Qt::RightDockWidgetArea);
-
-      dockBot->setMinimumHeight(335);
-      dockBot->setMaximumHeight(335);
-      dockBot->setMinimumWidth(dockwidth);
-      dockBot->setMaximumWidth(dockwidth);
-
-      tabWidgetBottom = new QTabWidget;
-      tabWidgetBottom->addTab(mInformation, tr("Annotations") );
+  } else 
+  {
+	  tabWidgetTop->setFixedHeight(230);
+	  tabWidgetMid->setFixedHeight(300);
+	  tabWidgetMid->addTab(mCtControl, tr("CT Image Control") ); // CT rendering control
+      tabWidgetMid->addTab(mPlotView, tr("Spectrum") ); // test for API
+	  tabWidgetBottom->addTab(mInformation, tr("Annotations") );
       tabWidgetBottom->addTab(mBookmark, tr("Bookmarks") );
 	  tabWidgetBottom->addTab(mSearch, tr("Search") );
 	  tabWidgetBottom->addTab(mSearchAll, tr("SearchAll") );
+  }
 
-      dockBot->setWidget(tabWidgetBottom);
-      addDockWidget(Qt::RightDockWidgetArea, dockBot);
- }
+  QVBoxLayout *controlLayout = new QVBoxLayout();
+  
+  controlLayout->addWidget(tabWidgetTop);
+  controlLayout->addStretch(1);
+  controlLayout->addWidget(tabWidgetMid);
+  controlLayout->addStretch(1);
+  controlLayout->addWidget(tabWidgetBottom);
+  controlLayout->addStretch(1);
+  QWidget* application = new QWidget();
+  application->setLayout(controlLayout);
+  rightTab->addTab(application, tr("Application"));
+  QDockWidget *dockRight = new QDockWidget(this);
+  dockRight->setObjectName("Control");
 
-  if(tabWidgetTop) tabWidgetTop->show();
-  if(tabWidgetMid) tabWidgetMid->show();
-  if(tabWidgetBottom) tabWidgetBottom->show();
+  dockRight->setFeatures(QDockWidget::DockWidgetFloatable);
+
+  dockRight->setMinimumWidth(dockwidth);
+  dockRight->setMaximumWidth(dockwidth);
+  dockRight->setWidget(rightTab); 
+  addDockWidget(Qt::RightDockWidgetArea, dockRight);
 }
 
 void MainWindow::createCHEDockWindows(const CHEInfoBasic* info)
 {
-  // [ver.1]-----------------------------------------------
-  int mwWidth = this->sizeHint().width();
-  int mwHeight = this->sizeHint().height();
-  // [ver.2]-----------------------------------------------
-//  int mwWidth = this->frameGeometry().width();
-//  int mwHeight = this->frameGeometry().height();
-
-  int dockwidth = 300;
-
-  leftDock = new QDockWidget(this);
-  leftDock->setObjectName("Cultural Heritage Entity");
-  leftDock->setAllowedAreas(Qt::LeftDockWidgetArea); //Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea
-//  dockTop->setFeatures(QDockWidget::NoDockWidgetFeatures); // remove the floating features.
-//  dockTop->setFloating(false);
-  leftDock->setFeatures(QDockWidget::DockWidgetFloatable);
-
-  leftDock->setMinimumHeight(mwHeight-100);
-  leftDock->setMaximumHeight(mwHeight-1000);
-
-  leftDock->setMinimumWidth(dockwidth);
-  leftDock->setMaximumWidth(dockwidth);
-  tabCHE = new QTabWidget();
   mCHETab = new CHETab(info, this);
   connect(mCHETab, SIGNAL(save()), this, SLOT(updateXML()));
   connect(mCHETab, SIGNAL(exportProject()), this, SLOT(exportCHEToProject()));
-  tabCHE->addTab(mCHETab, tr("Cultural Heritage Entity"));
-  leftDock->setWidget(tabCHE);
-  tabCHE->show();
-
-  addDockWidget(Qt::LeftDockWidgetArea, leftDock);
+  rightTab->setUpdatesEnabled(false);
+  rightTab->addTab(mCHETab, tr("Cultural Heritage Entity"));
+  rightTab->setUpdatesEnabled(true);
 }
 
 QTabWidget* MainWindow::getSearchTabWidget()

@@ -1403,7 +1403,9 @@ public:
       if (picker->GetCellId() != -1)
       {
           picker->GetPickPosition(mAnnotationSpot);
-          //qDebug() << "annotation spot:" << mAnnotationSpot[0] << mAnnotationSpot[1] << mAnnotationSpot[2];
+		  qDebug() << "annotation world spot:" << worldPosition[0] << worldPosition[1] << worldPosition[2];
+
+          qDebug() << "annotation spot:" << mAnnotationSpot[0] << mAnnotationSpot[1] << mAnnotationSpot[2];
 
 		  if(!mw()->mInformation) return;
 		  for (int i = 0; i < mSelectedPoints.size(); i++)

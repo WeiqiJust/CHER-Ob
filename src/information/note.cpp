@@ -193,19 +193,12 @@ PointNote::PointNote(QString path, double* pos, const int cellId, const int note
 		mPosition[i] = pos[i];
 	}
 	mCellId = cellId;
-	char id[4]; 
-	memset(id, 0, sizeof(id));
-	sprintf(id, "%d", cellId);
-	std::string message = "Point Note: Polygon Id ( ";
-	message += id;
-	message += " ) Coordinates ";
-	char position[256]; 
-	memset(position, 0, sizeof(position));
-	sprintf( position, "( %5.5f,  %5.5f,  %5.5f )", mPosition[0], mPosition[1], mPosition[2] );
-	message += position;
-	const char * text = message.c_str();
-	this->setLabel(QString(text));
-	QString info(text);
+	QString label;
+	label.append(QString("Point Note: Polygon Id (") + QString::number(cellId) + QString(")"));
+	this->setLabel(label);
+	QString info(label);
+	info.append(QString(" Coordinates (") + QString::number(mPosition[0]) + QString(", ") + QString::number(mPosition[1])
+		+ QString(", ") + QString::number(mPosition[2]) + QString(")"));
 	info.append(QString("\nColor Type:\n"));
 	info.append(QString(colortype2str(mColor).c_str()));
 	info.append(QString("\nNote Start:"));
@@ -213,7 +206,7 @@ PointNote::PointNote(QString path, double* pos, const int cellId, const int note
 	qDebug() << "finish PointNote instructor";
 }
 
-PointNote::PointNote(QString path, QString fileName, const int noteId)
+PointNote::PointNote(QString path, QString fileName, const int noteId, bool& isSucceed)
 	: Note(noteId)
 {	
 	mPath = new QString(path);
@@ -226,20 +219,30 @@ PointNote::PointNote(QString path, QString fileName, const int noteId)
     if (!mFile->open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		qDebug() << "Open Note file " << this->mNoteId << " " << mFileName << " Failed"; 
+		isSucceed = false;
+		return;
 	}
     QTextStream in(mFile);
     QString firstLine = in.readLine();
+	if (firstLine.split(" ").size() != 9)
+	{
+		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+		isSucceed = false;
+		return;
+	}
 
 	bool ok0, ok1, ok2, ok3;
 	double pos[3];
 	int cellId;
-	cellId = firstLine.split(" ")[5].toInt(&ok0);
-	pos[0] = firstLine.split(" ")[9].split(",")[0].toDouble(&ok1);
-	pos[1] = firstLine.split(" ")[11].split(",")[0].toDouble(&ok2);
-	pos[2] = firstLine.split(" ")[13].split(",")[0].toDouble(&ok3);
+	cellId = firstLine.split(" ")[4].split(")")[0].split("(")[1].toInt(&ok0);
+	pos[0] = firstLine.split(" ")[6].split(",")[0].split("(")[1].toDouble(&ok1);
+	pos[1] = firstLine.split(" ")[7].split(",")[0].toDouble(&ok2);
+	pos[2] = firstLine.split(" ")[8].split(")")[0].toDouble(&ok3);
 	if (!ok0 || !ok1 || !ok2 || !ok3)
 	{
 		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+		isSucceed = false;
+		return;
 	}
 	while(1)
 	{
@@ -263,25 +266,20 @@ PointNote::PointNote(QString path, QString fileName, const int noteId)
 		mPosition[i] = pos[i];
 	}
 	mCellId = cellId;
-	char id[4]; 
-	memset(id, 0, sizeof(id));
-	sprintf(id, "%d", cellId);
-	std::string message = "Point Note: Polygon Id ( ";
-	message += id;
-	message += " ) Coordinates ";
-	char position[256]; 
-	memset(position, 0, sizeof(position));
-	sprintf( position, "( %5.5f,  %5.5f,  %5.5f )", mPosition[0], mPosition[1], mPosition[2] );
-	message += position;
-	const char * text = message.c_str();
-    this->setLabel(QString(text));
-	QString info(text);
+	QString label;
+	label.append(QString("Point Note: Polygon Id (") + QString::number(cellId) + QString(")"));
+	this->setLabel(label);
+	QString info(label);
+	info.append(QString(" Coordinates (") + QString::number(mPosition[0]) + QString(", ") + QString::number(mPosition[1])
+		+ QString(", ") + QString::number(mPosition[2]) + QString(")"));
+
 	info.append(QString("\nColor Type:\n"));
 	info.append(colorType);
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
 	mFile->close();
 	qDebug() << "finish PointNote instructor";
+	isSucceed = true;
 }
 
 void PointNote::removePointNote()
@@ -328,7 +326,7 @@ SurfaceNote::SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds
 	qDebug() << "finish Surface Note instructor";
 }
 
-SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId)
+SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId, bool& isSucceed)
 	: Note(noteId)
 {	
 	mPath = new QString(path);
@@ -346,10 +344,18 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId)
     if (!mFile->open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		qDebug() << "Open Note file " << this->mNoteId << " " << mFileName << " Failed"; 
+		isSucceed = false;
+		return;
 	}
 	
     QTextStream in(mFile);
     QString firstLine = in.readLine();
+	if (firstLine.split(" ").size() != 9)
+	{
+		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+		isSucceed = false;
+		return;
+	}
 	bool ok0;
 	int cellNum;
 	cellNum = firstLine.split(" ")[7].toInt(&ok0);
@@ -357,6 +363,8 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId)
 	if (!ok0)
 	{
 		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+		isSucceed = false;
+		return;
 	}
 
     while(1)
@@ -413,6 +421,7 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId)
 	this->setInfo(info);
 	mFile->close();
 	qDebug() << "finish Surface instructor";
+	isSucceed = true;
 }
 
 void SurfaceNote::removeSurfaceNote()
@@ -464,7 +473,7 @@ FrustumNote::FrustumNote(QString path, vtkSmartPointer<vtkPoints> points, vtkSma
 	qDebug() << "finish Frustum Note instructor";
 }
 
-FrustumNote::FrustumNote(QString path, QString fileName, const int noteId)
+FrustumNote::FrustumNote(QString path, QString fileName, const int noteId, bool& isSucceed)
 	: Note(noteId)
 {	
 	mPath = new QString(path);
@@ -479,6 +488,8 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId)
     if (!mFile->open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		qDebug() << "Open Note file " << this->mNoteId << " " << mFileName << " Failed"; 
+		isSucceed = false;
+		return;
 	}
 	
     QTextStream in(mFile);
@@ -486,6 +497,12 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId)
 	for (int i = 0; i < 6; i++)
 	{
 		QString line = in.readLine();
+		if (line.split(" ").size() != 3)
+		{
+			qDebug() << "The Syntax of is incorrect. The First Line is " << line;
+			isSucceed = false;
+			return;
+		}
 		bool ok0, ok1, ok2;
 	    double pos[3];
 		pos[0] = line.split(" ")[0].split("(")[1].split(",")[0].toDouble(&ok0);
@@ -494,6 +511,8 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId)
 		if (!ok0 || !ok1 || !ok2)
 		{
 			qDebug() << "The Syntax of Line is incorrect. The First Line is " << line;
+			isSucceed = false;
+			return;
 		}
 		mPoints->InsertNextPoint(pos);
 	}
@@ -509,6 +528,12 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId)
 	for (int i = 0; i < 6; i++)
 	{
 		QString line = in.readLine();
+		if (line.split(" ").size() != 3)
+		{
+			qDebug() << "The Syntax of First Line is incorrect. The First Line is " << line;
+			isSucceed = false;
+			return;
+		}
 		bool ok0, ok1, ok2;
 	    double pos[3];
 		pos[0] = line.split(" ")[0].split("(")[1].split(",")[0].toDouble(&ok0);
@@ -517,6 +542,8 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId)
 		if (!ok0 || !ok1 || !ok2)
 		{
 			qDebug() << "The Syntax of input note is incorrect. The First Line is " << line;
+			isSucceed = false;
+			return;
 		}
 		mNormals->InsertComponent(i, 0, pos[0]);
 		mNormals->InsertComponent(i, 1, pos[1]);
@@ -567,6 +594,7 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId)
 	this->setInfo(info);
 	mFile->close();
 	qDebug() << "finish Frustum instructor";
+	isSucceed = true;
 }
 
 void FrustumNote::removeFrustumNote()
@@ -609,7 +637,7 @@ PointNote2D::PointNote2D(QString path, const double* point, const int* pointImag
 	qDebug() << "finish Point Note 2D instructor";
 }
 
-PointNote2D::PointNote2D(QString path, QString fileName, const int noteId)
+PointNote2D::PointNote2D(QString path, QString fileName, const int noteId, bool& isSucceed)
 	: Note(noteId)
 {	
 	mPath = new QString(path);
@@ -625,10 +653,19 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId)
     if (!mFile->open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		qDebug() << "Open Note file " << this->mNoteId << " " << mFileName << " Failed"; 
+		isSucceed = false;
+		return;
 	}
 	
     QTextStream in(mFile);
     QString firstLine = in.readLine();
+	if (firstLine.split(" ").size() != 10)
+	{
+		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+		isSucceed = false;
+		return;
+	}
+
 	bool ok0, ok1;
 	double pos[3];
 	pos[0] = firstLine.split(" ")[4].split(",")[0].split("(")[1].toDouble(&ok0);
@@ -638,6 +675,8 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId)
 	if (!ok0 || !ok1)
 	{
 		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+		isSucceed = false;
+		return;
 	}
 
 	int posImage[3];
@@ -648,6 +687,8 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId)
 	if (!ok0 || !ok1)
 	{
 		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+		isSucceed = false;
+		return;
 	}
 	for (int i = 0; i < 3; i++)
 	{
@@ -688,6 +729,7 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId)
 	this->setInfo(info);
 	mFile->close();
 	qDebug() << "finish Point instructor";
+	isSucceed = true;
 }
 
 void PointNote2D::removePointNote2D()
@@ -732,7 +774,7 @@ SurfaceNote2D::SurfaceNote2D(QString path, const double* point, const int* point
 	qDebug() << "finish Surface Note 2D instructor";
 }
 
-SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId)
+SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId, bool& isSucceed)
 	: Note(noteId)
 {	
 	mPath = new QString(path);
@@ -748,10 +790,18 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId)
     if (!mFile->open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		qDebug() << "Open Note file " << this->mNoteId << " " << mFileName << " Failed"; 
+		isSucceed = false;
+		return;
 	}
 	
     QTextStream in(mFile);
     QString firstLine = in.readLine();
+	if (firstLine.split(" ").size() != 16)
+	{
+		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+		isSucceed = false;
+		return;
+	}
 	bool ok0, ok1, ok2, ok3;
 	double pos[4];
 	pos[0] = firstLine.split(" ")[3].split(",")[0].split("(")[1].toDouble(&ok0);
@@ -762,6 +812,8 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId)
 	if (!ok0 || !ok1 || !ok2 || !ok3)
 	{
 		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+		isSucceed = false;
+		return;
 	}
 	int posImage[4];
 	posImage[0] = firstLine.split(" ")[11].split(",")[0].split("(")[1].toInt(&ok0);
@@ -772,6 +824,8 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId)
 	if (!ok0 || !ok1 || !ok2 || !ok3)
 	{
 		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+		isSucceed = false;
+		return;
 	}
 	for (int i = 0; i < 4; i++)
 	{
@@ -813,6 +867,7 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId)
 	this->setInfo(info);
 	mFile->close();
 	qDebug() << "finish Surface instructor";
+	isSucceed = true;
 }
 
 void SurfaceNote2D::removeSurfaceNote2D()

@@ -419,8 +419,7 @@ private:
   QTabWidget *tabWidgetTop;
   QTabWidget *tabWidgetMid;
   QTabWidget *tabWidgetBottom;
-  QTabWidget *tabCHE;
-  QDockWidget *leftDock;
+  QTabWidget* rightTab;
 
   //---------------------------------------------
   // QToolbars

@@ -36,44 +36,45 @@ CHETab::CHETab(const CHEInfoBasic* info, QWidget *parent)
 	editButton = new QPushButton("Edit");
 	connect(editButton, SIGNAL(clicked()), this, SLOT(editPressed()));
 	//exportButton->setEnabled(false);
+	mTextEdit = new QTextEdit(info->object);
 
-	mObjectInfo = new QTextEdit(info->object);
-	mMeasurementInfo = new QTextEdit(info->measurement);
-	mCreationInfo = new QTextEdit(info->creation);
-	mMaterialInfo = new QTextEdit(info->material);
-	mDescriptionInfo = new QTextEdit(info->description);
-	mConservationInfo = new QTextEdit(info->conservation);
-	mAnalysesInfo = new QTextEdit(info->analyses);
-	mRelatedInfo = new QTextEdit(info->related);
-	mAdministrationInfo = new QTextEdit(info->administration);
-	mDocumentsInfo = new QTextEdit(info->documents);
-	mOtherInfo = new QTextEdit(info->other);
+	mLabel = new QLabel("Please select the category");
 
-	mVBox->insertWidget(0, mObject);
-	mVBox->insertWidget(1, mObjectInfo);
-	mVBox->insertWidget(2, mMeasurement);
-	mVBox->insertWidget(3, mMeasurementInfo);
-	mVBox->insertWidget(4, mCreation);
-	mVBox->insertWidget(5, mCreationInfo);
-	mVBox->insertWidget(6, mMaterial);
-	mVBox->insertWidget(7, mMaterialInfo);
-	mVBox->insertWidget(8, mDescription);
-	mVBox->insertWidget(9, mDescriptionInfo);
-	mVBox->insertWidget(10, mConservation);
-	mVBox->insertWidget(11, mConservationInfo);
-	mVBox->insertWidget(12, mAnalyses);
-	mVBox->insertWidget(13, mAnalysesInfo);
-	mVBox->insertWidget(14, mRelated);
-	mVBox->insertWidget(15, mRelatedInfo);
-	mVBox->insertWidget(16, mAdministration);
-	mVBox->insertWidget(17, mAdministrationInfo);
-	mVBox->insertWidget(18, mDocuments);
-	mVBox->insertWidget(19, mDocumentsInfo);
-	mVBox->insertWidget(20, mOther);
-	mVBox->insertWidget(21, mOtherInfo);
-	mHBox->addWidget(exportButton, 0, Qt::AlignRight);
-	mHBox->addWidget(saveButton, 0, Qt::AlignRight);
-	mHBox->addWidget(editButton, 0, Qt::AlignRight);
+	mFilter = new QComboBox();
+	mFilter->addItem("Object / Work"); 
+	mFilter->addItem("Physical Dimensions / Measurement");
+	mFilter->addItem("Creation"); 
+	mFilter->addItem("Materials and Techniques"); 
+	mFilter->addItem("Stylisyic Analysis and Descriptions"); 
+	mFilter->addItem("Condition and Conservation"); 
+	mFilter->addItem("Analyses"); 
+	mFilter->addItem("Related Works"); 
+	mFilter->addItem("Exhibition / Loans and Legal Issues"); 
+	mFilter->addItem("Image/Audio Documentation"); 
+	mFilter->addItem("Others");
+	mFilter->setCurrentIndex(0);
+	currentMode = 0;
+	connect(mFilter, SIGNAL(currentIndexChanged(int)), this, SLOT(setFilterMode(int)));
+
+	mVBox->addWidget(mLabel);
+	mVBox->addWidget(mFilter);
+	mVBox->addWidget(mTextEdit);
+
+	mTemptInfo.push_back(info->object);
+	mTemptInfo.push_back(info->measurement);
+	mTemptInfo.push_back(info->creation);
+	mTemptInfo.push_back(info->material);
+	mTemptInfo.push_back(info->description);
+	mTemptInfo.push_back(info->conservation);
+	mTemptInfo.push_back(info->analyses);
+	mTemptInfo.push_back(info->related);
+	mTemptInfo.push_back(info->administration);
+	mTemptInfo.push_back(info->documents);
+	mTemptInfo.push_back(info->other);
+
+	mHBox->addWidget(exportButton);
+	mHBox->addWidget(saveButton);
+	mHBox->addWidget(editButton);
 	mVBox->addLayout(mHBox);
 
 	savePressed();
@@ -87,33 +88,35 @@ CHETab::CHETab(const CHEInfoBasic* info, QWidget *parent)
 CHEInfoBasic* CHETab::getCHEInfo()
 {
 	CHEInfoBasic* info = new CHEInfoBasic();
-	info->object = mObjectInfo->toPlainText();
-	info->measurement = mMeasurementInfo->toPlainText();
-	info->creation = mCreationInfo->toPlainText();
-	info->material = mMaterialInfo->toPlainText();
-	info->description = mDescriptionInfo->toPlainText();
-	info->conservation = mConservationInfo->toPlainText();
-	info->analyses = mAnalysesInfo->toPlainText();
-	info->related = mRelatedInfo->toPlainText();
-	info->administration = mAdministrationInfo->toPlainText();
-	info->documents = mDocumentsInfo->toPlainText();
-	info->other = mOtherInfo->toPlainText();
+
+	info->object = mTemptInfo[0];
+	info->measurement = mTemptInfo[1];
+	info->creation = mTemptInfo[2];
+	info->material = mTemptInfo[3];
+	info->description = mTemptInfo[4];
+	info->conservation = mTemptInfo[5];
+	info->analyses = mTemptInfo[6];
+	info->related = mTemptInfo[7];
+	info->administration = mTemptInfo[8];
+	info->documents = mTemptInfo[9];
+	info->other = mTemptInfo[10];
 	return info;
 }
 
 void CHETab::updateCHEInfo(const CHEInfoBasic* info)
 {
-	mObjectInfo->setText(info->object);
-	mMeasurementInfo->setText(info->measurement);
-	mCreationInfo->setText(info->creation);
-	mMaterialInfo->setText(info->material);
-	mDescriptionInfo->setText(info->description);
-	mConservationInfo->setText(info->conservation);
-	mAnalysesInfo->setText(info->analyses);
-	mRelatedInfo->setText(info->related);
-	mAdministrationInfo->setText(info->administration);
-	mDocumentsInfo->setText(info->documents);
-	mOtherInfo->setText(info->other);
+	mTemptInfo[0] = info->object;
+	mTemptInfo[1] = info->measurement;
+	mTemptInfo[2] = info->creation;
+	mTemptInfo[3] = info->material;
+	mTemptInfo[4] = info->description;
+	mTemptInfo[5] = info->conservation;
+	mTemptInfo[6] = info->analyses;
+	mTemptInfo[7] = info->related;
+	mTemptInfo[8] = info->administration;
+	mTemptInfo[9] = info->documents;
+	mTemptInfo[10] = info->other;
+	mTextEdit->setText(mTemptInfo[currentMode]);
 	savePressed();
 }
 
@@ -122,17 +125,7 @@ void CHETab::editPressed()
 	editButton->setEnabled(false);
 	saveButton->setEnabled(true);
 
-	mObjectInfo->setEnabled(true);
-	mMeasurementInfo->setEnabled(true);
-	mCreationInfo->setEnabled(true);
-	mMaterialInfo->setEnabled(true);
-	mDescriptionInfo->setEnabled(true);
-	mConservationInfo->setEnabled(true);
-	mAnalysesInfo->setEnabled(true);
-	mRelatedInfo->setEnabled(true);
-	mAdministrationInfo->setEnabled(true);
-	mDocumentsInfo->setEnabled(true);
-	mOtherInfo->setEnabled(true);
+	mTextEdit->setEnabled(true);
 }
 
 void CHETab::savePressed()
@@ -140,31 +133,27 @@ void CHETab::savePressed()
 	editButton->setEnabled(true);
 	saveButton->setEnabled(false);
 
-	mObjectInfo->setEnabled(false);
-	mMeasurementInfo->setEnabled(false);
-	mCreationInfo->setEnabled(false);
-	mMaterialInfo->setEnabled(false);
-	mDescriptionInfo->setEnabled(false);
-	mConservationInfo->setEnabled(false);
-	mAnalysesInfo->setEnabled(false);
-	mRelatedInfo->setEnabled(false);
-	mAdministrationInfo->setEnabled(false);
-	mDocumentsInfo->setEnabled(false);
-	mOtherInfo->setEnabled(false);
-
-	object = mObjectInfo->toPlainText();
-	measurement = mMeasurementInfo->toPlainText();
-	creation = mCreationInfo->toPlainText();
-	material = mMaterialInfo->toPlainText();
-	description = mDescriptionInfo->toPlainText();
-	conservation = mConservationInfo->toPlainText();
-	analyses = mAnalysesInfo->toPlainText();
-	related = mRelatedInfo->toPlainText();
-	administration = mAdministrationInfo->toPlainText();
-	documents = mDocumentsInfo->toPlainText();
-	other = mOtherInfo->toPlainText();
+	mTextEdit->setEnabled(false);
+	object = mTemptInfo[0];
+	measurement = mTemptInfo[1];
+	creation = mTemptInfo[2];
+	material = mTemptInfo[3];
+	description = mTemptInfo[4];
+	conservation = mTemptInfo[5];
+	analyses = mTemptInfo[6];
+	related = mTemptInfo[7];
+	administration = mTemptInfo[8];
+	documents = mTemptInfo[9];
+	other = mTemptInfo[10];
 
 	emit save();
 }
 
+
+void CHETab::setFilterMode(int mode)
+{
+	mTemptInfo[currentMode] = mTextEdit->toPlainText();
+	mTextEdit->setText(mTemptInfo[mode]);
+	currentMode = mode;
+}
 

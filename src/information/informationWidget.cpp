@@ -388,16 +388,23 @@ void Information::createSurfaceNote2D(double* point, int* pointImage, ColorType 
 	connect(this, SIGNAL(closeAll()), mSurfaceNotes2D[notePath][size], SLOT(close()));
 }
 
-void Information::loadPointNote(const QString path)
+bool Information::loadPointNote(const QString path)
 {
 	QDir dir(notePath);
 	dir.setNameFilters(QStringList()<<"PointNote_*.txt");
 	dir.setSorting(QDir::Name|QDir::LocaleAware);
 	QStringList fileList = dir.entryList();
+	bool isLoadSucceed = true;
+	bool isSucceed;
 	for (int i = 0; i < fileList.size(); ++i)
 	{
 		qDebug() << fileList[i];
-		PointNote* newNote = new PointNote(notePath, fileList[i], i);
+		PointNote* newNote = new PointNote(notePath, fileList[i], i, isSucceed);
+		if (!isSucceed)
+		{
+			isLoadSucceed = false;
+			continue;
+		}
 		mPointNotes[notePath].push_back(newNote);
 		connect(mPointNotes[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removePointNote(int, QString*)));
 		connect(this, SIGNAL(saveAll()), mPointNotes[notePath][i], SLOT(save()));
@@ -411,18 +418,27 @@ void Information::loadPointNote(const QString path)
 		
 	}
 	qDebug() << "Load "<<mPointNotes[notePath].size() <<" Point Note";
+	return isLoadSucceed;
 }
 
-void Information::loadSurfaceNote(const QString path)
+bool Information::loadSurfaceNote(const QString path)
 {
 	QDir dir(notePath);
 	dir.setNameFilters(QStringList()<<"SurfaceNote_*.txt");
 	dir.setSorting(QDir::Name|QDir::LocaleAware);
 	QStringList fileList = dir.entryList();
+	bool isLoadSucceed = true;
+	bool isSucceed;
 	for (int i = 0; i < fileList.size(); ++i)
 	{
 		qDebug() << fileList[i];
-		SurfaceNote* newNote = new SurfaceNote(notePath, fileList[i], i);
+		SurfaceNote* newNote = new SurfaceNote(notePath, fileList[i], i, isSucceed);
+		if (!isSucceed)
+		{
+			qDebug()<<"!!!!!";
+			isLoadSucceed = false;
+			continue;
+		}
 		mSurfaceNotes[notePath].push_back(newNote);
 		connect(mSurfaceNotes[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removeSurfaceNote(int, QString*)));
 		connect(this, SIGNAL(saveAll()), mSurfaceNotes[notePath][i], SLOT(save()));
@@ -434,18 +450,27 @@ void Information::loadSurfaceNote(const QString path)
 		//	qDebug()<<"Cannot find the window!!!!";
 	}
 	qDebug() << "Load "<<mSurfaceNotes[notePath].size()<<" Surface Note";
+	return isLoadSucceed;
 }
 
-void Information::loadFrustumNote(const QString path)
+bool Information::loadFrustumNote(const QString path)
 {
 	QDir dir(notePath);
 	dir.setNameFilters(QStringList()<<"FrustumNote_*.txt");
 	dir.setSorting(QDir::Name|QDir::LocaleAware);
 	QStringList fileList = dir.entryList();
+	bool isLoadSucceed = true;
+	bool isSucceed;
 	for (int i = 0; i < fileList.size(); ++i)
 	{
 		qDebug() << fileList[i];
-		FrustumNote* newNote = new FrustumNote(notePath, fileList[i], i);
+		bool isSucceed;
+		FrustumNote* newNote = new FrustumNote(notePath, fileList[i], i, isSucceed);
+		if (!isSucceed)
+		{
+			isLoadSucceed = false;
+			continue;
+		}
 		mFrustumNotes[notePath].push_back(newNote);
 		connect(mFrustumNotes[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removeFrustumNote(int, QString*)));
 		connect(this, SIGNAL(saveAll()), mFrustumNotes[notePath][i], SLOT(save()));
@@ -458,18 +483,26 @@ void Information::loadFrustumNote(const QString path)
 
 	}
 	qDebug() << "Load "<<mFrustumNotes[notePath].size()<<" Frustum Note";
+	return isLoadSucceed;
 }
 
-void Information::loadPointNote2D(const QString path)
+bool Information::loadPointNote2D(const QString path)
 {
 	QDir dir(notePath);
 	dir.setNameFilters(QStringList()<<"PointNote2D_*.txt");
 	dir.setSorting(QDir::Name|QDir::LocaleAware);
 	QStringList fileList = dir.entryList();
+	bool isLoadSucceed = true;
+	bool isSucceed;
 	for (int i = 0; i < fileList.size(); ++i)
 	{
 		qDebug() << fileList[i];
-		PointNote2D* newNote = new PointNote2D(notePath, fileList[i], i);
+		PointNote2D* newNote = new PointNote2D(notePath, fileList[i], i, isSucceed);
+		if (!isSucceed)
+		{
+			isLoadSucceed = false;
+			continue;
+		}
 		mPointNotes2D[notePath].push_back(newNote);
 		connect(mPointNotes2D[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removePointNote2D(int, QString*)));
 		connect(this, SIGNAL(saveAll()), mPointNotes2D[notePath][i], SLOT(save()));
@@ -482,18 +515,26 @@ void Information::loadPointNote2D(const QString path)
 	}
 	qDebug()<<"Load Point Note2d "<<notePath;
 	qDebug() << "Load "<<mPointNotes2D[notePath].size()<<" Point Note";
+	return isLoadSucceed;
 }
 
-void Information::loadSurfaceNote2D(const QString path)
+bool Information::loadSurfaceNote2D(const QString path)
 {
 	QDir dir(notePath);
 	dir.setNameFilters(QStringList()<<"SurfaceNote2D_*.txt");
 	dir.setSorting(QDir::Name|QDir::LocaleAware);
 	QStringList fileList = dir.entryList();
+	bool isLoadSucceed = true;
+	bool isSucceed;
 	for (int i = 0; i < fileList.size(); ++i)
 	{
 		qDebug() << fileList[i];
-		SurfaceNote2D* newNote = new SurfaceNote2D(notePath, fileList[i], i);
+		SurfaceNote2D* newNote = new SurfaceNote2D(notePath, fileList[i], i, isSucceed);
+		if (!isSucceed)
+		{
+			isLoadSucceed = false;
+			continue;
+		}
 		mSurfaceNotes2D[notePath].push_back(newNote);
 		connect(mSurfaceNotes2D[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removeSurfaceNote2D(int, QString*)));
 		connect(this, SIGNAL(saveAll()), mSurfaceNotes2D[notePath][i], SLOT(save()));
@@ -506,6 +547,7 @@ void Information::loadSurfaceNote2D(const QString path)
 
 	}
 	qDebug() << "Load "<<mSurfaceNotes2D[notePath].size()<<" Surface Note";
+	return isLoadSucceed;
 }
 
 void Information::openPointNote(int cellId)
@@ -941,6 +983,49 @@ void Information::removeAllNotes()
 		mSurfaceNotes2D[notePath][i]->setRemoved(true);
 	}
 	mSurfaceNotes2D.remove(notePath);
+}
+
+void Information::removeAllNotes(QString path)
+{
+	qDebug() << "remove ALL Note ";
+	QString removePath = path;
+	removePath.append(QDir::separator() + QString("Note"));
+	hasNotesRemoved[removePath] = true;
+	for (int i = 0; i < mPointNotes[removePath].size(); ++i) 
+	{
+		mw()->VTKA()->removePointNoteMark(mPointNotes[removePath][i]->getCellId());
+		mPointNotes[removePath][i]->removePointNote();
+		mPointNotes[removePath][i]->setRemoved(true);
+	}
+	mPointNotes.remove(removePath);
+	for (int i = 0; i < mSurfaceNotes[removePath].size(); ++i) 
+	{
+		mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[removePath][i]->getCellIds());
+		mSurfaceNotes[removePath][i]->removeSurfaceNote();
+		mSurfaceNotes[removePath][i]->setRemoved(true);
+	}
+	mSurfaceNotes.remove(removePath);
+	for (int i = 0; i < mFrustumNotes[removePath].size(); ++i) 
+	{
+		mw()->VTKA()->removeFrustumNoteMark(mFrustumNotes[removePath][i]->getPoints(), mFrustumNotes[removePath][i]->getNormals());
+		mFrustumNotes[removePath][i]->removeFrustumNote();
+		mFrustumNotes[removePath][i]->setRemoved(true);
+	}
+	mFrustumNotes.remove(removePath);
+	for (int i = 0; i < mPointNotes2D[removePath].size(); ++i) 
+	{
+		mw()->VTKA()->removePointNote2DMark(mPointNotes2D[removePath][i]->getPoint());
+		mPointNotes2D[removePath][i]->removePointNote2D();
+		mPointNotes2D[removePath][i]->setRemoved(true);
+	}
+	mPointNotes2D.remove(removePath);
+	for (int i = 0; i < mSurfaceNotes2D[removePath].size(); ++i) 
+	{
+		mw()->VTKA()->removeSurfaceNote2DMark(mSurfaceNotes2D[removePath][i]->getPoint());
+		mSurfaceNotes2D[removePath][i]->removeSurfaceNote2D();
+		mSurfaceNotes2D[removePath][i]->setRemoved(true);
+	}
+	mSurfaceNotes2D.remove(removePath);
 }
 
 void Information::removeUnSavedNotes()

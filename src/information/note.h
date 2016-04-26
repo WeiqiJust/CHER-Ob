@@ -133,7 +133,7 @@ class PointNote: public Note
 public:
 	PointNote(QString path, double* pos, const int cellId, const int noteId, const ColorType type = YELLOW);
 
-	PointNote(QString path, QString fileName, const int noteId);
+	PointNote(QString path, QString fileName, const int noteId, bool& isSucceed);
 
 	double* getPosition() { return mPosition; }
 
@@ -156,7 +156,7 @@ class SurfaceNote: public Note
 public:
 	SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds, const int noteId, const ColorType type = YELLOW);
 
-	SurfaceNote(QString path, QString fileName, const int noteId);
+	SurfaceNote(QString path, QString fileName, const int noteId, bool& isSucceed);
 
 	vtkSmartPointer<vtkSelectionNode> getCellIds() { return mCellIds; }
 
@@ -176,7 +176,7 @@ class FrustumNote: public Note
 public:
 	FrustumNote(QString path, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const int noteId, const ColorType type = YELLOW);
 
-	FrustumNote(QString path, QString fileName, const int noteId);
+	FrustumNote(QString path, QString fileName, const int noteId, bool& isSucceed);
 
 	vtkSmartPointer<vtkPoints> getPoints() { return mPoints; }
 
@@ -199,7 +199,7 @@ class PointNote2D: public Note
 public:
 	PointNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type = YELLOW);
 
-	PointNote2D(QString path, QString fileName, const int noteId);
+	PointNote2D(QString path, QString fileName, const int noteId, bool& isSucceed);
 
 	double* getPoint() { return mPoint; }
 
@@ -220,7 +220,7 @@ class SurfaceNote2D: public Note
 public:
 	SurfaceNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type = YELLOW);
 
-	SurfaceNote2D(QString path, QString fileName, const int noteId);
+	SurfaceNote2D(QString path, QString fileName, const int noteId, bool& isSucceed);
 
 	double* getPoint() { return mPoint; }
 

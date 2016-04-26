@@ -107,6 +107,8 @@ public:
 
   void removeAllNotes();
 
+  void removeAllNotes(QString path);
+
   void removeUnSavedNotes();
 
   void closeAllNotes();
@@ -162,15 +164,15 @@ public slots:
 
 private:
 
-  void loadPointNote(const QString path);
+  bool loadPointNote(const QString path);
 
-  void loadSurfaceNote(const QString path);
+  bool loadSurfaceNote(const QString path);
 
-  void loadFrustumNote(const QString path);
+  bool loadFrustumNote(const QString path);
 
-  void loadPointNote2D(const QString path);
+  bool loadPointNote2D(const QString path);
 
-  void loadSurfaceNote2D(const QString path);
+  bool loadSurfaceNote2D(const QString path);
 
   void hideNotes();
 
