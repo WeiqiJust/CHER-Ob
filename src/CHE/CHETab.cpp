@@ -133,6 +133,8 @@ void CHETab::savePressed()
 	editButton->setEnabled(true);
 	saveButton->setEnabled(false);
 
+	mTemptInfo[currentMode] = mTextEdit->toPlainText();
+
 	mTextEdit->setEnabled(false);
 	object = mTemptInfo[0];
 	measurement = mTemptInfo[1];

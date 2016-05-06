@@ -83,42 +83,41 @@ void ReportGenerator::setCHEInfo(const CHEInfoBasic* info)
 void ReportGenerator::generate()
 {
 	QString html;
-	//html.append("<p><font size=\"3\" color=\"#033F81\" face=\"Times New Roman\"><div align=\"right\"><strong>CHER-Ob<\strong></div></font></p>\n");
-	html.append("<p><font size=\"9\" color=\"#033F81\" face=\"Times New Roman\"><div align=\"center\"><strong>\n" + mProjectName + "\n<\strong></div></font></p>\n");
+	html.append("<p><font size=\"9\" color=\"#033F81\" face=\"Times New Roman\"><div align=\"center\"><strong>\n" + mProjectName + "\n</strong></div></font></p>\n");
 	html = html + QString("<p style=\"line-height:1\"><font size=\"3\" face=\"Garamond\"><div align=\"center\">\n") + mUserName + QString("\n</div></font></p>\n");
 	html = html + QString("<p style=\"line-height:1\"><font size=\"3\" face=\"Garamond\"><div align=\"center\">\n") + mAffiliation + QString("\n</div></font></p>\n");
 	html = html + QString("<br><\br>");
 	if (isProject)
 	{
-		html = html	+ QString("<p><font size=\"3\" color=\"#033F81\" face=\"Times New Roman\">\nDescription:</font></p>")
-			+ QString("<p><font size=\"3\" face=\"Times New Roman\">") + mDescription + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"3\" color=\"#033F81\" face=\"Times New Roman\">\nKeyword:\n</font></p>\n")
-			+ QString("<p><font size=\"3\" face=\"Times New Roman\">\n") + mKeyword + QString("</font></p>\n");
+		html = html	+ QString("<p><font size=\"3\" color=\"#033F81\" face=\"Garamond\">\nDescription:\n</font></p>")
+			+ QString("<p><font size=\"3\" face=\"Garamond\">\n") + mDescription + QString("\n</font></p><hr>\n")
+			+ QString("<p><font size=\"3\" color=\"#033F81\" face=\"Garamond\">\nKeyword:\n</font></p>\n")
+			+ QString("<p><font size=\"3\" face=\"Garamond\">\n") + mKeyword + QString("\n</font></p>\n");
 	}
 	else
 	{
-		html = html	+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\nObject / Work:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Times New Roman\">") + mCHEInfo->object + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\nPhysical Dimensions / Measurement:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Times New Roman\">") +  mCHEInfo->measurement  + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\nCreation:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Times New Roman\">") + mCHEInfo->creation + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\nMaterials and Techniques:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Times New Roman\">") + mCHEInfo->material + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\nStylisyic Analysis and Descriptions:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Times New Roman\">") + mCHEInfo->description + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\nCondition and Conservation:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Times New Roman\">") + mCHEInfo->conservation + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\nAnalyses:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Times New Roman\">") + mCHEInfo->analyses + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\nRelated Works:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Times New Roman\">") + mCHEInfo->related + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\nExhibition / Loans and Legal Issues:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Times New Roman\">") + mCHEInfo->administration + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\nImage/Audio Documentation:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Times New Roman\">") + mCHEInfo->documents + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\nOthers:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Times New Roman\">") + mCHEInfo->other + QString("</font></p>\n");
+		html = html	+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nObject / Work:</font></p>\n")
+			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->object + QString("</font></p><hr>\n")
+			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nPhysical Dimensions / Measurement:</font></p>\n")
+			+ QString("<p><font size=\"2\" face=\"Garamond\">") +  mCHEInfo->measurement  + QString("</font></p><hr>\n")
+			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nCreation:</font></p>\n")
+			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->creation + QString("</font></p><hr>\n")
+			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nMaterials and Techniques:</font></p>\n")
+			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->material + QString("</font></p><hr>\n")
+			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nStylisyic Analysis and Descriptions:</font></p>\n")
+			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->description + QString("</font></p><hr>\n")
+			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nCondition and Conservation:</font></p>\n")
+			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->conservation + QString("</font></p><hr>\n")
+			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nAnalyses:</font></p>\n")
+			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->analyses + QString("</font></p><hr>\n")
+			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nRelated Works:</font></p>\n")
+			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->related + QString("</font></p><hr>\n")
+			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nExhibition / Loans and Legal Issues:</font></p>\n")
+			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->administration + QString("</font></p><hr>\n")
+			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nImage/Audio Documentation:</font></p>\n")
+			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->documents + QString("</font></p><hr>\n")
+			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nOthers:</font></p>\n")
+			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->other + QString("</font></p>\n");
 	}
 	// create screenshot folder
 	QString location = mLocation;
@@ -129,8 +128,9 @@ void ReportGenerator::generate()
 	QDir tmpFolder(tmp);
 	for (int i = 0; i < mObjects.size(); i++)
 	{
-		html = html + QString("<br></br>");
-		html = html + QString("<p><font size=\"3\" color=\"#033F81\" face=\"Times New Roman\"><strong>\nObject " +  QString::number(i+1) + QString(": ") + mObjects[i]->mName + QString("\n</strong></font></p>\n"));
+		//html = html + QString("<br></br>");
+		html += QString("<div style=\"page-break-after:always\"></div>");
+		html = html + QString("<p><font size=\"3\" color=\"#033F81\" face=\"Garamond\"><strong>\nObject " +  QString::number(i+1) + QString(": ") + mObjects[i]->mName + QString("\n</strong></font></p>\n"));
 		QString annotation;
 		QVector<QPair<QString, NoteMode> > contents;
 		QVector<QPair<int, int> > pointNote2D;
@@ -281,7 +281,6 @@ void ReportGenerator::generate()
 							normals->InsertComponent(k, 2, pos[2]);
 						}
 						
-
 						normals->Resize(6);
 
 						double *center = new double[3];
@@ -400,8 +399,11 @@ void ReportGenerator::generate()
 
 			QPainter painter(&img);
 			QFont font = painter.font();
+			
 			int pointSize = font.pointSize();
-			pointSize *= imgHeight*imgWidth / 600 / 400;
+			//qDebug()<<"font"<<i<<pointSize;
+			pointSize = pointSize*2 + 3.5*imgWidth / 400;
+			//qDebug()<<"object"<<i<<imgHeight<<imgWidth<<pointSize;
 			font.setPointSize(pointSize);
 			painter.setFont(font);
 			painter.setRenderHint(QPainter::Antialiasing);
@@ -442,8 +444,8 @@ void ReportGenerator::generate()
 				painter.drawText(rectangle,  Qt::AlignCenter, QString::number(k+pointNote2D.size()+1));
 			}
 			font = painter.font();
-			pointSize = pointSize / 1.2;
-			if (pointSize == 0)	pointSize = 1;
+			pointSize = pointSize * 1.2;
+			//if (pointSize == 0)	pointSize = 1;
 			font.setPointSize(pointSize);
 			painter.setFont(font);
 			QVector<QPair<double, double> > pointNote3DSelected, surfaceNote3DSelected, frustumNote3DSelected;
@@ -522,7 +524,7 @@ void ReportGenerator::generate()
 				painter.setPen(QPen(Qt::red, 4));
 				painter.drawRect(rectangle);
 				painter.setPen(QPen(Qt::black, 4));
-				painter.drawText(rectangle,  Qt::AlignCenter, QString::number(k+1+pointNote3DSelected.size()));
+				painter.drawText(rectangle, Qt::AlignCenter, QString::number(k+1+pointNote3DSelected.size()));
 			}
 			for (int k = 0; k < frustumNote3DSelected.size(); k++)
 			{
@@ -569,11 +571,11 @@ void ReportGenerator::generate()
 		}
 		//Add annotation and notes
 		if (!annotation.isEmpty())
-			html = html + QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\nGeneral Annotation Text</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Times New Roman\">") + annotation + QString("</font></p><hr>\n");
+			html = html //+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nGeneral Annotation Text</font></p>\n")
+			+ QString("<p><font size=\"2\" face=\"Garamond\">") + annotation + QString("</font></p><hr>\n");
 		for (int j = 0; j < contents.size(); j++)
 		{
-			html += QString("<p><font size=\"2\" color=\"#033F81\" face=\"Times New Roman\">\n");
+			html += QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\n");
 			switch(contents[j].second)
 			{
 				case POINTNOTE:	html += QString("Point Note "); break;
@@ -582,7 +584,7 @@ void ReportGenerator::generate()
 				default: continue;
 			}
 			html += QString(QString::number(j+1) + QString(": </font></p>\n") 
-				+ QString("<p><font size=\"2\" face=\"Times New Roman\">") + contents[j].first + QString("</font></p>"));
+				+ QString("<p><font size=\"2\" face=\"Garamond\">") + contents[j].first + QString("</font></p>"));
 			if (j != contents.size()-1)
 				html += QString("<hr>\n");
 		}
@@ -613,13 +615,12 @@ void ReportGenerator::generate()
 	}
 	QDir().rmdir(tmp);
 	mDoc->setHtml(html);
+	mPrinter->setPageMargins(10, 10, 5, 20, QPrinter::Millimeter);
 	mDoc->setPageSize(mPrinter->pageRect().size());
 
-	mPrinter->setPageMargins(10, 10, 10, 20, QPrinter::Millimeter);
-
 	QRect innerRect = mPrinter->pageRect();
-    innerRect.setTop(innerRect.top() + 10);
-    innerRect.setBottom(innerRect.bottom() - 20);
+    innerRect.setTop(innerRect.top());
+    innerRect.setBottom(innerRect.bottom());
     QRect contentRect = QRect(QPoint(0,0), mDoc->size().toSize());
     QRect currentRect = QRect(QPoint(0,0), innerRect.size());
 	
@@ -630,20 +631,21 @@ void ReportGenerator::generate()
     int count = 0;
     painter.save();
     painter.translate(0, 30);
-    while (currentRect.intersects(contentRect)) {
+    while (currentRect.intersects(contentRect)) 
+	{
         mDoc->drawContents(&painter, currentRect);
         count++;
         currentRect.translate(0, currentRect.height());
         painter.restore();
 		painter.setPen(QColor(3,63,129));
-		painter.setFont(QFont("Times New Roman", 12, QFont::Bold));
+		painter.setFont(QFont("Garamond", 12, QFont::Bold));
         painter.drawText(mPrinter->pageRect().right() - 100, 10, QString("CHER-Ob"));
 		painter.setPen(Qt::black);
-		painter.setFont(QFont("Times New Roman", 10));
-		painter.drawText(mPrinter->pageRect().left(), mPrinter->pageRect().bottom() , date.toString("MM/dd/yyyy"));
-        painter.drawText(mPrinter->pageRect().right() - 70, mPrinter->pageRect().bottom() , QString("Page %1").arg(count));
+		painter.setFont(QFont("Garamond", 8));
+		painter.drawText(mPrinter->pageRect().left(), mPrinter->pageRect().bottom()+5, date.toString("MM/dd/yyyy"));
+        painter.drawText(mPrinter->pageRect().right() - 70, mPrinter->pageRect().bottom()+5, QString("Page %1").arg(count));
         painter.save();
-        painter.translate(0, -currentRect.height() * count + 30);
+        painter.translate(0, -currentRect.height() * count+30);
         if (currentRect.intersects(contentRect))
             mPrinter->newPage();
     }
