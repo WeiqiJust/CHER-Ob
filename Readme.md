@@ -1,4 +1,4 @@
-CHER-Ob 
+CHER-Ob  
 Yale Computer Graphics Group
 
 License:  
