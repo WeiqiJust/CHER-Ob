@@ -240,6 +240,15 @@ void MainWindow::renderPolyIndicate()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+	if (currentProjectName != QString())
+	{
+		if (!closeProject())
+		{
+			event->ignore();
+			return;
+		}
+	}
+	
 	isClose = true;
     mdiArea->closeAllSubWindows();
 	isClose = false;
@@ -454,6 +463,7 @@ void MainWindow::updateXML()
 	root.setAttribute("user", mUserName);
     doc.appendChild(root);
 
+	QDir projectDir(currentProjectFullName);
 	if (!isCHE)
 	{
 		QDomElement projectInfo = doc.createElement("project");
@@ -516,6 +526,7 @@ void MainWindow::updateXML()
         QString file = gla->mFilename;
         QFileInfo finfo(file);
         QDomElement item = doc.createElement("item");
+		file = projectDir.relativeFilePath(file);
         item.setAttribute("filename", file);
 
         vtkSmartPointer<vtkCamera> camera = gla->mRenderer->GetActiveCamera();
@@ -867,7 +878,8 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
   for(int i = 0; i < items.length(); i++) {
     QDomElement elt = items.at(i).toElement();
     QString fn = elt.attribute("filename");
-	fn = QDir::toNativeSeparators(fn);
+	QFileInfo file(fn);
+	fn = QDir::toNativeSeparators(file.absoluteFilePath());
 	QStringList nameElement = fn.split(QDir::separator());
 	QString fileNameElement = nameElement[nameElement.size() - 1];
 	// if the object name is in the filter list, this object should not be imported
@@ -2967,6 +2979,7 @@ void MainWindow::updateMenus()
         annotationToolBar->setEnabled(true);
         toolsMenu->setEnabled(true);
 		annotationModeMenu->setEnabled(true);
+		frustumNote->setEnabled(false);
         measureDistanceAct->setEnabled(false);
         removeDistanceAct->setEnabled(false);
         viewToolBar->setEnabled(false);

@@ -2067,20 +2067,6 @@ void VtkWidget::Rendering2D()
         mCallback2D->SetWindowLevels();
     mCallback2D->displayInfoAnnotation();
     mCallback2D->SetDisplayInfoOn(mDisplayInfoOn);
-/*
-    style->AddObserver(vtkCommand::MouseMoveEvent, mCallback2D);
-    style->AddObserver(vtkCommand::LeftButtonPressEvent, mCallback2D);
-    style->AddObserver(vtkCommand::LeftButtonReleaseEvent, mCallback2D);
-    style->AddObserver(vtkCommand::MiddleButtonPressEvent, mCallback2D);
-    style->AddObserver(vtkCommand::MiddleButtonReleaseEvent, mCallback2D);
-    style->AddObserver(vtkCommand::RightButtonPressEvent, mCallback2D);
-    style->AddObserver(vtkCommand::RightButtonReleaseEvent, mCallback2D);
-    style->AddObserver(vtkCommand::MouseWheelForwardEvent, mCallback2D);
-    style->AddObserver(vtkCommand::MouseWheelBackwardEvent, mCallback2D);
-	style->AddObserver(vtkCommand::SelectionChangedEvent, mCallback2D);
-	style->AddObserver(vtkCommand::PickEvent, mCallback2D);
-    style->AddObserver(vtkCommand::StartPickEvent, mCallback2D);
-    style->AddObserver(vtkCommand::EndPickEvent, mCallback2D);*/
 
 	interactor->AddObserver(vtkCommand::MouseMoveEvent, mCallback2D);
     interactor->AddObserver(vtkCommand::LeftButtonPressEvent, mCallback2D);
@@ -3057,15 +3043,15 @@ void VtkWidget::RenderingRTIData()
     mCallback2D->displayInfoAnnotation();
     mCallback2D->SetDisplayInfoOn(mDisplayInfoOn);
 
-    style->AddObserver(vtkCommand::MouseMoveEvent, mCallback2D);
-    style->AddObserver(vtkCommand::LeftButtonPressEvent, mCallback2D);
-    style->AddObserver(vtkCommand::LeftButtonReleaseEvent, mCallback2D);
-    style->AddObserver(vtkCommand::MiddleButtonPressEvent, mCallback2D);
-    style->AddObserver(vtkCommand::MiddleButtonReleaseEvent, mCallback2D);
-    style->AddObserver(vtkCommand::RightButtonPressEvent, mCallback2D);
-    style->AddObserver(vtkCommand::RightButtonReleaseEvent, mCallback2D);
-    style->AddObserver(vtkCommand::MouseWheelForwardEvent, mCallback2D);
-    style->AddObserver(vtkCommand::MouseWheelBackwardEvent, mCallback2D);
+    interactor->AddObserver(vtkCommand::MouseMoveEvent, mCallback2D);
+    interactor->AddObserver(vtkCommand::LeftButtonPressEvent, mCallback2D);
+    interactor->AddObserver(vtkCommand::LeftButtonReleaseEvent, mCallback2D);
+    interactor->AddObserver(vtkCommand::MiddleButtonPressEvent, mCallback2D);
+    interactor->AddObserver(vtkCommand::MiddleButtonReleaseEvent, mCallback2D);
+    interactor->AddObserver(vtkCommand::RightButtonPressEvent, mCallback2D);
+    interactor->AddObserver(vtkCommand::RightButtonReleaseEvent, mCallback2D);
+    interactor->AddObserver(vtkCommand::MouseWheelForwardEvent, mCallback2D);
+    interactor->AddObserver(vtkCommand::MouseWheelBackwardEvent, mCallback2D);
     //---------------------------------------------------------------------------------------------
 
     // connect VTK signal to QT slot

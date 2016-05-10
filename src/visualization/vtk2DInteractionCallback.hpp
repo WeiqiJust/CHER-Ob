@@ -260,6 +260,12 @@ public:
 		  style->SetCurrentRenderer(renderer);
 		  interactor->SetPicker(mAreaPicker);
 	  }
+	  else
+	  {
+		  vtkSmartPointer<myVTKInteractorStyle> style =  vtkSmartPointer<myVTKInteractorStyle>::New();
+		  interactor->SetInteractorStyle(style);
+		  style->SetCurrentRenderer(renderer);
+	  }
   }	
 
   void finishNote()
