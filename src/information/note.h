@@ -38,6 +38,7 @@
 #include <QToolBar>
 #include <QTextBrowser>
 #include <QFile>
+#include <QScrollArea>
 
 #include <vtkSelectionNode.h>
 #include <vtkAbstractArray.h>
@@ -47,8 +48,7 @@
 #include <vtkPoints.h>
 
 #include "../mainWindow.h"
-
-
+#include "imageNote.h"
 
 class Note: public QWidget
 {
@@ -92,13 +92,20 @@ public slots:
 
 	void close() {this->hideNote();}
 
-private slots:
+	void removeImage(int id);
 
-    void clear();
+protected slots:
+
+	void addImage(const QString fileName = QString());
+
+private slots:
 
     void remove();
 	
     void textChanged();
+
+private:
+	void clearLayout(QLayout* layout, bool deleteWidgets = true);
 
 signals:
 
@@ -111,6 +118,7 @@ protected:
 	double* mPosition;
 	int mNoteId;
 	ColorType mColor;
+	QVector<ImageNote*> mImageNotes;
 
 private:
 	QDialog* mDialog;
@@ -118,7 +126,7 @@ private:
 	QTextEdit* mTextEdit;
 	QHBoxLayout* mButtons;
     QPushButton* mSaveButton;
-	QPushButton* mClearButton;
+	QPushButton* mAddImageButton;
     QPushButton* mRemoveButton;
 	QLabel* mLabel;
 	QString* mInfo;

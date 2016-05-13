@@ -252,9 +252,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	isClose = true;
     mdiArea->closeAllSubWindows();
 	isClose = false;
-    if (mdiArea->currentSubWindow()) {
+    if (mdiArea->currentSubWindow()) 
+	{
         event->ignore();
-    } else {
+    } else 
+	{
         writeSettings();
         event->accept();
     }
@@ -3190,7 +3192,7 @@ bool MainWindow::openCHE(QString fileName)
 	// this change of dir is needed for subsequent textures/materials loading
 	QDir::setCurrent(fi.absoluteDir().absolutePath());
 	qb->show();
-	qDebug()<<"Open CHE path"<<QDir::currentPath();
+	//qDebug()<<"Open CHE path"<<QDir::currentPath();
 	currentProjectSave = QDir::toNativeSeparators(fileName);
 	QVector<QPair<QString, QString> > objectList;
 	isCHE = true;

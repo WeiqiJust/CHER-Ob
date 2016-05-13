@@ -89,26 +89,31 @@ Note::Note(const int noteId, const ColorType type)
 	mLabel = new QLabel(mDialog);
 	mSaveButton = new QPushButton("Save");
 	mRemoveButton = new QPushButton("Remove");
-	mClearButton = new QPushButton("Clear");
-	mSaveButton->setEnabled(false);
-	mClearButton->setEnabled(false);
+	mAddImageButton = new QPushButton("Add Image");
+	mSaveButton->setEnabled(true);
+	mAddImageButton->setEnabled(true);
     mRemoveButton->setEnabled(true);
 
 	connect(mTextEdit, SIGNAL(textChanged()), this, SLOT(textChanged()));
 	connect(mSaveButton, SIGNAL(clicked()), this, SLOT(save()));
-	connect(mClearButton, SIGNAL(clicked()), this, SLOT(clear()));
+	connect(mAddImageButton, SIGNAL(clicked()), this, SLOT(addImage()));
     connect(mRemoveButton, SIGNAL(clicked()), this, SLOT(remove()));
 
 	mVbox->addWidget(mLabel);
     mVbox->addWidget(mTextEdit);
 
+	mButtons->addWidget(mAddImageButton);
 	mButtons->addWidget(mSaveButton);
-	mButtons->addWidget(mClearButton);
     mButtons->addWidget(mRemoveButton);
 
 	mVbox->addLayout(mButtons);
+
+	QScrollArea* scrollArea = new QScrollArea;
+	scrollArea->setBackgroundRole(QPalette::Dark);
+	scrollArea->setWidget(this);
 	
     mDialog->setLayout(mVbox);
+	mDialog->adjustSize();
 	isSaved = false;
 	isRemoved = false;
 	mDialog->hide();
@@ -116,7 +121,13 @@ Note::Note(const int noteId, const ColorType type)
 
 QString Note::getContent()
 {
-	return QString(*mInfo + "\n" + mTextEdit->toPlainText());
+	QString content(*mInfo + "\n" + mTextEdit->toPlainText());
+	content.append("\nLinked Images:\n");
+	for (int i = 0; i < mImageNotes.size(); i++)
+	{
+		content.append(mImageNotes[i]->getPath() + "\n");
+	}
+	return content;
 }
 
 void Note::setLabel(QString text)
@@ -132,16 +143,6 @@ void Note::setInfo(QString text)
 void Note::textChanged()
 {
 	isSaved = false;
-	if (!mTextEdit->toPlainText().isEmpty())
-	{
-		mSaveButton->setEnabled(true);
-		mClearButton->setEnabled(true);
-	}
-	else
-	{
-		mSaveButton->setEnabled(false);
-		mClearButton->setEnabled(false);
-	}
 }
 
 void Note::save()
@@ -157,8 +158,41 @@ void Note::save()
 
 	out << *mInfo << "\n";
     out << mTextEdit->toPlainText();
+	out << "\nLinked Images:\n";
+	for (int i = 0; i < mImageNotes.size(); i++)
+	{
+		out << mImageNotes[i]->getPath() << "\n";
+	}
 	mFile->close();
 	isSaved = true;
+}
+
+void Note::clearLayout(QLayout* layout, bool deleteWidgets)
+{
+    while (QLayoutItem* item = layout->takeAt(0))
+    {
+        if (deleteWidgets)
+        {
+            if (QWidget* widget = item->widget())
+                //delete widget;
+				widget->deleteLater();
+        }
+        if (QLayout* childLayout = item->layout())
+            clearLayout(childLayout, deleteWidgets);
+        delete item;
+    }
+}
+
+void Note::removeImage(int id)
+{
+	isSaved = false;
+	mImageNotes.remove(id);
+	clearLayout(mVbox->itemAt(2+id)->layout());
+	mVbox->removeItem(mVbox->itemAt(2+id));
+	for (int i = 0; i < mImageNotes.size(); i++)
+	{
+		mImageNotes[i]->setId(i);
+	}
 }
 
 void Note::remove()
@@ -169,10 +203,27 @@ void Note::remove()
 	emit removeNote(mNoteId, mPath);
 }
 
-void Note::clear()
+void Note::addImage(QString fileName)
 {
-	mTextEdit->clear();
-	this->textChanged();
+	QString objectPath(*mPath);
+	objectPath.truncate(objectPath.lastIndexOf(QDir::separator()));
+	ImageNote* imageNote = new ImageNote(objectPath, fileName, mImageNotes.size());
+	if (imageNote->getPath() == QString())
+	{
+		delete imageNote;
+		return;
+	}
+	QVBoxLayout* mImageVBox = new QVBoxLayout();
+	QHBoxLayout* mInfoHBox = new QHBoxLayout();
+	mImageVBox->addWidget(imageNote->getImage());
+	mInfoHBox->addWidget(imageNote->getName());
+	mInfoHBox->addWidget(imageNote->getButton());
+	mImageVBox->addLayout(mInfoHBox);
+	connect(imageNote, SIGNAL(removeImage(int)), this, SLOT(removeImage(int)));
+	mVbox->insertLayout(2+mImageNotes.size(), mImageVBox);
+	mImageNotes.push_back(imageNote);
+	mDialog->adjustSize();
+	isSaved = false;
 }
 
 PointNote::PointNote(QString path, double* pos, const int cellId, const int noteId, const ColorType type)
@@ -260,7 +311,21 @@ PointNote::PointNote(QString path, QString fileName, const int noteId, bool& isS
 			break;
 	}
 	QString content = in.readAll();
-	this->setText(content);
+	QString text = content.split("\nLinked Images:\n")[0];
+	QString imagePaths = content.split("\nLinked Images:\n")[1];
+	QStringList imagePathList = imagePaths.split("\n");
+	for (int i = 0; i < imagePathList.size(); i++)
+	{
+		//qDebug()<<"Image Path"<<imagePathList[i];
+		QFileInfo finfo(imagePathList[i]);
+		if (!finfo.exists())
+			continue;
+		QString extension = finfo.suffix().toLower();
+		if (extension != tr("png") && extension != tr("jpg") && extension != tr("jpeg") && extension != tr("tif") && extension != tr("bmp"))
+			continue;
+		addImage(imagePathList[i]);
+	}
+	this->setText(text);
 	for (int i = 0; i < 3; i++)
 	{
 		mPosition[i] = pos[i];
@@ -399,7 +464,21 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId, bool&
 	}
 
 	QString content = in.readAll();
-	this->setText(content);
+	QString text = content.split("\nLinked Images:\n")[0];
+	QString imagePaths = content.split("\nLinked Images:\n")[1];
+	QStringList imagePathList = imagePaths.split("\n");
+	for (int i = 0; i < imagePathList.size(); i++)
+	{
+		qDebug()<<"Image Path"<<imagePathList[i];
+		QFileInfo finfo(imagePathList[i]);
+		if (!finfo.exists())
+			continue;
+		QString extension = finfo.suffix().toLower();
+		if (extension != tr("png") && extension != tr("jpg") && extension != tr("jpeg") && extension != tr("tif") && extension != tr("bmp"))
+			continue;
+		addImage(imagePathList[i]);
+	}
+	this->setText(text);
 
 	QString label;
 	label.append(QString("Surface Note: Number of Selected Polygon ( ") + QString::number(cellNum) + QString(" )"));
@@ -570,7 +649,21 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId, bool&
 	}
 
 	QString content = in.readAll();
-	this->setText(content);
+	QString text = content.split("\nLinked Images:\n")[0];
+	QString imagePaths = content.split("\nLinked Images:\n")[1];
+	QStringList imagePathList = imagePaths.split("\n");
+	for (int i = 0; i < imagePathList.size(); i++)
+	{
+		qDebug()<<"Image Path"<<imagePathList[i];
+		QFileInfo finfo(imagePathList[i]);
+		if (!finfo.exists())
+			continue;
+		QString extension = finfo.suffix().toLower();
+		if (extension != tr("png") && extension != tr("jpg") && extension != tr("jpeg") && extension != tr("tif") && extension != tr("bmp"))
+			continue;
+		addImage(imagePathList[i]);
+	}
+	this->setText(text);
 
 	QString label;
 	label.append(QString("Frustum Note: Origin Point of Each Plane:\n"));
@@ -714,7 +807,21 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId, bool&
 	}
 
 	QString content = in.readAll();
-	this->setText(content);
+	QString text = content.split("\nLinked Images:\n")[0];
+	QString imagePaths = content.split("\nLinked Images:\n")[1];
+	QStringList imagePathList = imagePaths.split("\n");
+	for (int i = 0; i < imagePathList.size(); i++)
+	{
+		qDebug()<<"Image Path"<<imagePathList[i];
+		QFileInfo finfo(imagePathList[i]);
+		if (!finfo.exists())
+			continue;
+		QString extension = finfo.suffix().toLower();
+		if (extension != tr("png") && extension != tr("jpg") && extension != tr("jpeg") && extension != tr("tif") && extension != tr("bmp"))
+			continue;
+		addImage(imagePathList[i]);
+	}
+	this->setText(text);
 
 	QString label;
 	label.append(QString("Point Note: Center (") + QString::number(mPoint[0]) + QString(", ") + QString::number(mPoint[1]) + QString(")"));
@@ -851,7 +958,21 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId, b
 	}
 
 	QString content = in.readAll();
-	this->setText(content);
+	QString text = content.split("\nLinked Images:\n")[0];
+	QString imagePaths = content.split("\nLinked Images:\n")[1];
+	QStringList imagePathList = imagePaths.split("\n");
+	for (int i = 0; i < imagePathList.size(); i++)
+	{
+		qDebug()<<"Image Path"<<imagePathList[i];
+		QFileInfo finfo(imagePathList[i]);
+		if (!finfo.exists())
+			continue;
+		QString extension = finfo.suffix().toLower();
+		if (extension != tr("png") && extension != tr("jpg") && extension != tr("jpeg") && extension != tr("tif") && extension != tr("bmp"))
+			continue;
+		addImage(imagePathList[i]);
+	}
+	this->setText(text);
 
 	QString label;
 	label.append(QString("Surface Note: Start (") + QString::number(mPoint[0]) + QString(", ") + QString::number(mPoint[1]) + QString(") End (") 
