@@ -51,6 +51,7 @@
 #include <QTreeView>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QStyledItemDelegate>
 #include "../vtkEnums.h"
 #include "vtkImageData.h"
 #include "vtkImageViewer2.h"
@@ -58,6 +59,16 @@
 #include "vtkTexture.h"
 
 class MainWindow;
+
+
+class HtmlDelegate : public QStyledItemDelegate
+{
+protected:
+    void paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const;
+    QSize sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const;
+};
+
+
 
 class SearchWidget : public QWidget
 {

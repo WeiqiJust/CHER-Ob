@@ -79,6 +79,48 @@ std::string color2category(const std::string str)
 }
 
 
+void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    QStyleOptionViewItemV4 options = option;
+    initStyleOption(&options, index);
+
+    painter->save();
+
+    QTextDocument doc;
+    doc.setHtml(options.text);
+
+    options.text = "";
+    options.widget->style()->drawControl(QStyle::CE_ItemViewItem, &options, painter);
+
+    // shift text right to make icon visible
+    QSize iconSize = options.icon.actualSize(options.rect.size());
+    painter->translate(options.rect.left()+iconSize.width(), options.rect.top());
+    QRect clip(0, 0, options.rect.width()+iconSize.width(), options.rect.height());
+
+    //doc.drawContents(painter, clip);
+
+    painter->setClipRect(clip);
+    QAbstractTextDocumentLayout::PaintContext ctx;
+    // set text color to red for selected item
+    if (option.state & QStyle::State_Selected)
+        ctx.palette.setColor(QPalette::Text, QColor("black"));
+    ctx.clip = clip;
+    doc.documentLayout()->draw(painter, ctx);
+
+    painter->restore();
+}
+
+QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    QStyleOptionViewItemV4 optionV4 = option;
+    initStyleOption(&optionV4, index);
+
+    QTextDocument doc;
+    doc.setHtml(optionV4.text);
+    doc.setTextWidth(optionV4.rect.width());
+    return QSize(doc.idealWidth(), doc.size().height());
+}
+
 SearchWidget::SearchWidget(QWidget *parent)
     : QWidget(parent)
 {
@@ -133,6 +175,9 @@ SearchWidget::SearchWidget(QWidget *parent)
 	refreshSearchTab(false);
 	this->setLayout(vlay);
 	this->show();
+
+	HtmlDelegate* delegation = new HtmlDelegate();
+    mTreeWidget->setItemDelegate(delegation);
 }
 
 void SearchWidget::showTreeWidgetItem(QTreeWidgetItem* item, int column)
@@ -187,7 +232,9 @@ void SearchWidget::search()
 	text.setCaseSensitivity(Qt::CaseInsensitive);
 	int inputSize = mInput->text().size();
 	int spareSize = (MATCHSIZE - inputSize) / 2;
+	if (spareSize < 0) spareSize = 0;
 	QString category = "Annocation";	// for annotation
+	
 	QDir dir(mPath);
 	dir.setNameFilters(QStringList()<<"*.txt");
 	dir.setSorting(QDir::Name|QDir::LocaleAware);
@@ -223,6 +270,7 @@ void SearchWidget::search()
 			}
 		}
 		QString content = in.readAll();
+		content = content.split("\nLinked Images:\n")[0];
 		int size = content.size();
 		int cur = 0;
 		while (cur < size)
@@ -235,18 +283,24 @@ void SearchWidget::search()
 			if (pos < spareSize)
 			{
 				match = content.left(MATCHSIZE);
+				match.insert(pos+inputSize, QString("</span>"));
+				match.insert(pos, QString("<span style=\"background-color: #FFFF00\">"));
 				if (size > MATCHSIZE)
 					match.append("...");
 			}
 			else if (pos > size - spareSize)
 			{
 				match = content.right(MATCHSIZE);
+				match.insert(MATCHSIZE-size+pos+inputSize, QString("</span>"));
+				match.insert(MATCHSIZE-size+pos, QString("<span style=\"background-color: #FFFF00\">"));
 				if (size > MATCHSIZE)
 					match.prepend("...");
 			}
 			else
 			{
 				match = content.mid(pos - spareSize, MATCHSIZE);
+				match.insert(spareSize+inputSize, QString("</span>"));
+				match.insert(spareSize, QString("<span style=\"background-color: #FFFF00\">"));
 				match.append("...");
 				match.prepend("...");
 			}
@@ -369,6 +423,9 @@ SearchAllWidget::SearchAllWidget(QWidget *parent)
 	refreshSearchTab(false);
 	this->setLayout(vlay);
 	this->show();
+
+	HtmlDelegate* delegation = new HtmlDelegate();
+    mTreeWidget->setItemDelegate(delegation);
 }
 
 void SearchAllWidget::showTreeWidgetItem(QTreeWidgetItem* item, int column)
@@ -432,18 +489,24 @@ QStringList SearchAllWidget::matchString(QString content, QString matchStr)
 		if (pos < spareSize)
 		{
 			match = content.left(MATCHSIZE);
+			match.insert(pos+inputSize, QString("</span>"));
+			match.insert(pos, QString("<span style=\"background-color: #FFFF00\">"));
 			if (size > MATCHSIZE)
 				match.append("...");
 		}
 		else if (pos > size - spareSize)
 		{
 			match = content.right(MATCHSIZE);
+			match.insert(MATCHSIZE-size+pos+inputSize, QString("</span>"));
+			match.insert(MATCHSIZE-size+pos, QString("<span style=\"background-color: #FFFF00\">"));
 			if (size > MATCHSIZE)
 				match.prepend("...");
 		}
 		else
 		{
 			match = content.mid(pos - spareSize, MATCHSIZE);
+			match.insert(spareSize+inputSize, QString("</span>"));
+			match.insert(spareSize, QString("<span style=\"background-color: #FFFF00\">"));
 			match.append("...");
 			match.prepend("...");
 		}
@@ -510,6 +573,7 @@ void SearchAllWidget::search()
 				}
 			}
 			QString content = in.readAll();
+			content = content.split("\nLinked Images:\n")[0];
 			QStringList match = matchString(content, text);
 			for (int j = 0; j < match.size(); j++)
 			{

@@ -107,10 +107,6 @@ Note::Note(const int noteId, const ColorType type)
     mButtons->addWidget(mRemoveButton);
 
 	mVbox->addLayout(mButtons);
-
-	QScrollArea* scrollArea = new QScrollArea;
-	scrollArea->setBackgroundRole(QPalette::Dark);
-	scrollArea->setWidget(this);
 	
     mDialog->setLayout(mVbox);
 	mDialog->adjustSize();
