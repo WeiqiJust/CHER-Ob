@@ -137,11 +137,16 @@ public:
 
   void openNoteFromTreeWidget(QTreeWidgetItem* item);
 
+  void openNoteFromNavigation(QTreeWidgetItem* item);
+
   bool checkAllSaved();
 
   bool checkObjectSaved();
 
   QVector<QString> getAllNotes(const QString objectPath);
+
+  // return the number of notes for each note type (annotation, point, surface, frustm, point2d, surface2d)for navigation
+  QVector<int> getNoteNumber(const QString objectPath);	
 
 signals:
   void saveAll();

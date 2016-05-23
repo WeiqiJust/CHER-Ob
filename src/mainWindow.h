@@ -51,6 +51,7 @@
 #include "CHE/mergeBackToCHEDialog.h"
 #include "CHE/importFromCHEDialog.h"
 #include "function/reportGenerator.h"
+#include "function/navigation.h"
 
 #define MAXRECENTFILES 8
 
@@ -161,6 +162,7 @@ public:
 			if (mvc->currentView()->mProjectPath == path)
 			{
 				mdiArea->setActiveSubWindow(w);
+				break;
 			}
 		}
   }
@@ -185,6 +187,7 @@ public:
       }
   }
 
+  QTabWidget* getRightTabWidget()	{return rightTab;}
   QTabWidget* getTabWidgetTop() {return tabWidgetTop;}
   QTabWidget* getSearchTabWidget();
   void activateTabWidgetTop(int index)
@@ -235,6 +238,7 @@ private:
   void createToolBars();
   void createStatusBar();
   void createDockWindows();
+  void createNavigationDockWindows();
   void createCHEDockWindows(const CHEInfoBasic* info);
 
   void readSettings();
@@ -382,7 +386,9 @@ private:
   ProjectInfoDialog *mProjectInfoDialog;
   bool isClose;
   bool isCHE;
+  Navigation* mNavigation;
   CHETab* mCHETab;
+  QVector<QString> mObjectList;	// save objects' names in the project/CHE
   QSignalMapper *windowMapper;
 
   //---------------------------------------------

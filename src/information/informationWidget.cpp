@@ -203,6 +203,7 @@ Information::~Information()
 
 void Information::refresh()
 {
+	dText->clear();
 	content.clear();
 	mPointNotes.clear();
 	mSurfaceNotes.clear();
@@ -781,7 +782,7 @@ void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
 	int slashpos = path.lastIndexOf(QDir::separator());
 	QString projectPath = path;
 	projectPath.chop(path.length() - slashpos);
-	mw()->switchSubWindow(projectPath);
+	//mw()->switchSubWindow(projectPath);
 	if (path == QString("Project Info"))
 	{
 		mw()->showProjectInfo();
@@ -797,7 +798,6 @@ void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
 	QString type = file.split("_")[0];
 	QStringList options;
 	options << "Annotation.txt" << "PointNote" << "SurfaceNote" << "FrustumNote" << "PointNote2D" << "SurfaceNote2D";
-	bool isOpen = false;
 	QTabWidget* tab = new QTabWidget();
 
 	switch(options.indexOf(type))
@@ -811,9 +811,11 @@ void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
 			{
 				if (mPointNotes[path][i]->getFileName() == fileName)
 				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
 					mPointNotes[path][i]->hideNote();
 					mPointNotes[path][i]->showNote();
-					isOpen = true;
 					break;
 				}
 			}
@@ -823,9 +825,11 @@ void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
 			{
 				if (mSurfaceNotes[path][i]->getFileName() == fileName)
 				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
 					mSurfaceNotes[path][i]->hideNote();
 					mSurfaceNotes[path][i]->showNote();
-					isOpen = true;
 					break;
 				}
 			}
@@ -835,9 +839,11 @@ void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
 			{
 				if (mFrustumNotes[path][i]->getFileName() == fileName)
 				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
 					mFrustumNotes[path][i]->hideNote();
 					mFrustumNotes[path][i]->showNote();
-					isOpen = true;
 					break;
 				}
 			}
@@ -847,9 +853,11 @@ void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
 			{
 				if (mPointNotes2D[path][i]->getFileName() == fileName)
 				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
 					mPointNotes2D[path][i]->hideNote();
 					mPointNotes2D[path][i]->showNote();
-					isOpen = true;
 					break;
 				}
 			}
@@ -859,22 +867,123 @@ void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
 			{
 				if (mSurfaceNotes2D[path][i]->getFileName() == fileName)
 				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
 					mSurfaceNotes2D[path][i]->hideNote();
 					mSurfaceNotes2D[path][i]->showNote();
-					isOpen = true;
 					break;
 				}
 			}
 			break;
 		default: qDebug() << "Incorrect Note File!";
 	}
-	if (isOpen)
-	{
-		if (mw()->VTKA())
-			mw()->VTKA()->annotate(true);
-		emit updateMenu();
-	}
+	mw()->switchSubWindow(projectPath);
 }
+
+void Information::openNoteFromNavigation(QTreeWidgetItem* item)
+{
+	qDebug()<<item->text(0)<<item->text(1);
+	QString file = item->text(0);
+	QString path = item->text(1);
+	QString projectPath = path;
+	
+	path.append(QDir::separator() + QString("Note"));
+	QString type = file.split(" ")[0];
+	int number;
+	if (type != QString("Annotation"))
+		number = file.split(" ")[1].toInt();
+	QStringList options;
+	options << "Annotation" << "PointNote" << "SurfaceNote" << "FrustumNote";
+	QTabWidget* rightTab = new QTabWidget();
+	QTabWidget* functionTab = new QTabWidget();
+
+	switch(options.indexOf(type))
+	{
+		case 0:	
+			rightTab = mw()->getRightTabWidget();
+			rightTab->setCurrentIndex(0);
+			functionTab = mw()->getSearchTabWidget();
+			functionTab->setCurrentIndex(0);
+			break;
+		case 1:
+			if (mPointNotes[path].size() >= number)
+			{
+				if (!mPointNotes[path][number-1]->checkRemoved())
+				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
+					mPointNotes[path][number-1]->hideNote();
+					mPointNotes[path][number-1]->showNote();
+				}
+			}
+			else if (mPointNotes2D[path].size() >= number)
+			{
+				if (!mPointNotes2D[path][number-1]->checkRemoved())
+				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
+					mPointNotes2D[path][number-1]->hideNote();
+					mPointNotes2D[path][number-1]->showNote();
+				}
+			}
+			else
+			{
+				qDebug()<<"Incorrect Notes!";
+			}
+			break;
+		case 2:
+			if (mSurfaceNotes[path].size() >= number)
+			{
+				if (!mSurfaceNotes[path][number-1]->checkRemoved())
+				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
+					mSurfaceNotes[path][number-1]->hideNote();
+					mSurfaceNotes[path][number-1]->showNote();
+				}
+			}
+			else if (mSurfaceNotes2D[path].size() >= number)
+			{
+				if (!mSurfaceNotes2D[path][number-1]->checkRemoved())
+				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
+					mSurfaceNotes2D[path][number-1]->hideNote();
+					mSurfaceNotes2D[path][number-1]->showNote();
+				}
+			}
+			else
+			{
+				qDebug()<<"Incorrect Notes!";
+			}
+			break;
+		case 3:
+			if (mFrustumNotes[path].size() >= number)
+			{
+				if (!mFrustumNotes[path][number-1]->checkRemoved())
+				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
+					mFrustumNotes[path][number-1]->hideNote();
+					mFrustumNotes[path][number-1]->showNote();
+				}
+			}
+			else
+			{
+				qDebug()<<"Incorrect Notes!";
+			}
+			break;
+		default: qDebug() << "Incorrect Note File!";
+	}
+	mw()->switchSubWindow(projectPath);
+}
+
 
 void Information::saveAllNotes()
 {
@@ -1309,6 +1418,48 @@ QVector<QString> Information::getAllNotes(const QString objectPath)
 				notes.push_back(mSurfaceNotes2D[path][i]->getContent());
 		}
 	}
+	return notes;
+}
+
+QVector<int> Information::getNoteNumber(const QString objectPath)
+{
+	//qDebug()<<"get note number"<<objectPath;
+	QString path = objectPath;
+	path = QDir::toNativeSeparators(path);
+	path.append(QDir::separator() + QString("Note"));
+	QVector<int> notes;
+	if (content.find(path) == content.end())	// cannot find the object, return empty vector
+		return notes;
+	if(content[path].first == QString())
+		notes.push_back(0);
+	else
+		notes.push_back(1);
+
+	if (mPointNotes.find(path) != mPointNotes.end())
+		notes.push_back(mPointNotes[path].size());
+	else
+		notes.push_back(0);
+
+	if (mSurfaceNotes.find(path) != mSurfaceNotes.end())
+		notes.push_back(mSurfaceNotes[path].size());
+	else
+		notes.push_back(0);
+
+	if (mFrustumNotes.find(path) != mFrustumNotes.end())
+		notes.push_back(mFrustumNotes[path].size());
+	else
+		notes.push_back(0);
+
+	if (mPointNotes2D.find(path) != mPointNotes2D.end())
+		notes.push_back(mPointNotes2D[path].size());
+	else
+		notes.push_back(0);
+	
+	if (mSurfaceNotes2D.find(path) != mSurfaceNotes2D.end())
+		notes.push_back(mSurfaceNotes2D[path].size());
+	else
+		notes.push_back(0);
+	qDebug()<<"!!!!get note number"<<notes.size();
 	return notes;
 }
 

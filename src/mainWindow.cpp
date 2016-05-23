@@ -118,6 +118,7 @@ MainWindow::MainWindow()
   readSettings();
 
   createDockWindows(); // docking toolbard on the right
+  createNavigationDockWindows();
   createActions(); // createActions() should come second.
   // This is important for MAC
   menuBar = new QMenuBar(0);
@@ -242,10 +243,21 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
 	if (currentProjectName != QString())
 	{
-		if (!closeProject())
+		if (!isCHE)
 		{
-			event->ignore();
-			return;
+			if (!closeProject())
+			{
+				event->ignore();
+				return;
+			}
+		}
+		else
+		{
+			if (!closeCHE())
+			{
+				event->ignore();
+				return;
+			}
 		}
 	}
 	
@@ -424,7 +436,10 @@ bool MainWindow::closeProject()
     currentProjectMetadata.clear();
     QDomElement root = currentProjectMetadata.createElement("CHEROb.metadata");
     currentProjectMetadata.appendChild(root);
+	mNavigation->clear();
+	mObjectList.clear();
 	this->mInformation->closeAllNotes();
+	this->mInformation->refresh();
 	if (mProjectInfoDialog)
 	{
 		mProjectInfoDialog->hide();
@@ -842,10 +857,15 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
   QString name = root.attribute("name");
   mUserName = root.attribute("user");
 
-  //If the readXML is called by importProject, then project name should not be changed to the imporedt project name
-  //Otherwise, it should be called by openProject, then project name should be changed.
-  if (!import)	currentProjectName = name;	
-  qDebug()<<"Project Name"<<currentProjectName;
+  //If the readXML is called by "import", then project name should not be changed, objectlist is not cleared
+  //Otherwise, it should be called by "open", then project name should be changed, and objectlist is cleared
+  if (!import)	
+  {
+	  currentProjectName = name;
+	  mNavigation->init(currentProjectName, !isCHE);
+	  mObjectList.clear();
+  }
+  //qDebug()<<"Project Name"<<currentProjectName;
 
   if (!readCHE)
   {
@@ -881,7 +901,16 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
     QDomElement elt = items.at(i).toElement();
     QString fn = elt.attribute("filename");
 	QFileInfo file(fn);
-	fn = QDir::toNativeSeparators(file.absoluteFilePath());
+	if (import)	// if import the object absolute path is xml path + relative path
+	{
+		QString absolutePath = QDir::toNativeSeparators(fileName);
+		absolutePath.truncate(absolutePath.lastIndexOf(QDir::separator()));
+		fn = absolutePath.append(QDir::separator() + fn);
+	}
+	else
+	{
+		fn = QDir::toNativeSeparators(file.absoluteFilePath());
+	}
 	QStringList nameElement = fn.split(QDir::separator());
 	QString fileNameElement = nameElement[nameElement.size() - 1];
 	// if the object name is in the filter list, this object should not be imported
@@ -1477,6 +1506,7 @@ void MainWindow::saveProjectAs()
 		currentProjectAffiliation = dialog->getAffiliation();
 		currentProjectDescription = dialog->getDescription();
 		QString newProjectPath = fn;
+		/** change the navigation **/
 		if (newProjectPath[newProjectPath.size()-1] == QDir::separator())
 		{
 			newProjectPath.append(currentProjectName);
@@ -1580,16 +1610,8 @@ void MainWindow::importProject()
 		for (int i = 0; i < objectList.size(); i++)
 		{
 			QFileInfo finfo(objectList[i].first);
-			qDebug()<<"import project"<<currentProjectFullName;
+			//qDebug()<<"import project"<<currentProjectFullName;
 			QDir currentDir(currentProjectFullName);
-			if (!objectList[i].second.isEmpty())
-			{
-				QStringList cheNameElement = objectList[i].second.split(QDir::separator());
-				QString cheName = cheNameElement[cheNameElement.size() - 1];
-				currentDir.mkdir(cheName);
-				if (!currentDir.cd(cheName))
-					qDebug()<<"Fail to create CHE when import project!"<<currentDir;
-			}
 			QDir objectDir = finfo.absoluteDir();
 			bool ok = objectDir.cdUp();
 			if (!ok || objectDir != currentDir)
@@ -1600,6 +1622,13 @@ void MainWindow::importProject()
 				{
 					cpDir(objectDir.absolutePath(), currentDir.absolutePath());
 					this->mInformation->initAnnotation(currentDir.absolutePath());
+					QString che;
+					if (objectList[i].second != QString())
+					{
+						QStringList nameElements = objectList[i].second.split(QDir::separator());
+						che = nameElements[nameElements.size() - 1];
+					}
+					mNavigation->addObject(currentDir.absolutePath(), che);
 				}
 				else
 				{
@@ -1678,12 +1707,10 @@ void MainWindow::importCHE()
 	if (importObjectList.size() > 0)
 	{
 		QDir CHEDir(currentProjectFullName);
-		CHEDir.mkdir(CHEName);
-		CHEDir.cd(CHEName);
 		for (int i = 0; i < importObjectList.size(); i++)
 		{
 			QFileInfo finfo(importObjectList[i].first);
-			qDebug()<<"import project"<<importObjectList[i];
+			//qDebug()<<"import project"<<importObjectList[i];
 			QDir currentDir = CHEDir;
 			QDir objectDir = finfo.absoluteDir();
 			bool ok = objectDir.cdUp();
@@ -1726,6 +1753,13 @@ void MainWindow::importCHE()
 						}
 					}
 					this->mInformation->initAnnotation(currentDir.absolutePath());
+					QString che;
+					if (importObjectList[i].second != QString())
+					{
+						QStringList nameElements = importObjectList[i].second.split(QDir::separator());
+						che = nameElements[nameElements.size() - 1];
+					}
+					mNavigation->addObject(currentDir.absolutePath(), che);
 				}
 				else
 				{
@@ -1746,6 +1780,7 @@ void MainWindow::importCHE()
 
 void MainWindow::mergeProjectToCHE()
 {
+	/** change navigation **/
 	QMap<QString, QString> objects;
 	QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
     foreach(QMdiSubWindow *w, windows)
@@ -1955,12 +1990,15 @@ bool MainWindow::openProject(QString fileName)
   // this change of dir is needed for subsequent textures/materials loading
   QDir::setCurrent(fi.absoluteDir().absolutePath());
   qb->show();
-  qDebug()<<"Open project path"<<QDir::currentPath();
+  //qDebug()<<"Open project path"<<QDir::currentPath();
   currentProjectSave = QDir::toNativeSeparators(fileName);
   QVector<QPair<QString, QString> > objectList;
   QVector<QString> filterList;
   if (!readXML(fileName, objectList, filterList, false, false))
+  {
+	  mNavigation->clear();
 	  return false;
+  }
 
   isSaved = true;
   setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
@@ -2084,6 +2122,7 @@ void MainWindow::createNewVtkProject(const QString fullName, const QString name,
 	if (!QDir().exists(currentProjectFullName))
 		QDir().mkdir(currentProjectFullName);
 	QDir::setCurrent(currentProjectFullName);
+	mNavigation->init(currentProjectName, true);
 	if (!object.isEmpty())
 	{
 		QString objectName = object.simplified();
@@ -2173,6 +2212,11 @@ bool MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName,
 			lastUsedDirectory.setPath(path);
 		}
 
+		if (mObjectList.indexOf(fileName) != -1)	// the object is already in the project/CHE
+		{
+			QMessageBox::critical(this, tr("Opening Error"), fileName + " is already opened!");
+			return false;
+		}
 		// DT: create new VtkWidget
 		newImage();
 
@@ -2219,6 +2263,7 @@ bool MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName,
 		QString newFileName = currentWindowPath;
 		newFileName.append(QDir::separator() + fileName);
 
+		/*
 		if (!import)	// open	
 		{
 			if (createFolder)	// open object directly: use the current project path
@@ -2259,15 +2304,20 @@ bool MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName,
 				VTKA()->mFilename = newFileName;
 				VTKA()->mProjectPath = currentWindowPath;
 			}	
-		}
+		}*/
+
+		VTKA()->mFilename = newFileName;
+		VTKA()->mProjectPath = currentWindowPath;
 		if (isCHE)
 		{
 			VTKA()->mCHE = currentProjectFullName;
 			VTKA()->mCHEObject = fileName;
 		}
+		// if the object is imported from another project/CHE, note and navigation will be updated after the file is copied
 		if (!import)
 		{
 			this->mInformation->initAnnotation(VTKA()->mProjectPath);
+			mNavigation->addObject(currentWindowPath, CHEName);
 		}
 
 		// update window name
@@ -2280,6 +2330,7 @@ bool MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName,
 		//updateXML();
 		updateAllViews();
 		isSaved = false;
+		mObjectList.push_back(fileName);
 		return true;
 	}
 	else return false;
@@ -2347,24 +2398,6 @@ void MainWindow::removeObject()
 
 bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import, bool readCHE)
 {
-	//MK: file filters
-	//[3d] *.ply *.obj *.stl *.3ds, *.wrl
-	//[2d] *.png, *.jpg, *.tif, *.bmp, *.exr
-
-	//  QStringList filters;
-	//  filters.push_back("Images (*.ply *.obj *.wrl *.png *.jpg *.tif *.bmp *.exr *.dcm)");
-	//  filters.push_back("*.ply");
-	//  filters.push_back("*.obj");
-	//  filters.push_back("*.wrl");
-	//  filters.push_back("*.exr");
-	//  filters.push_back("*.png");
-	//  filters.push_back("*.jpg");
-	//  filters.push_back("*.tif");
-	//  filters.push_back("*.bmp");
-	//  filters.push_back("*.dcm");
-	////  filters.push_back("*");
-
-	//-------------YY------------------------//
 	QStringList filters;
 	filters.push_back("Images (*.ply *.obj *.wrl *.png *.jpg *.tif *.bmp *.exr *.dcm *rti *ptm *hsh *mview)");
 	filters.push_back("*.ply");
@@ -2380,7 +2413,6 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 	filters.push_back("*.ptm");
 	filters.push_back("*.hsh");
 	filters.push_back("*.mview");
-	//-------------YY------------------------//
 
 	//MK: open file open dialog
 	QString fileName;
@@ -2408,7 +2440,7 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 		currentWindowPath.append(QDir::separator() + fileNameElement);
 		//save path away so we can use it again
 		QString path = fileName;
-		qDebug()<<"In open image!!!!!";
+		//qDebug()<<"In open image!!!!!";
 		#ifdef __APPLE__
 		path.truncate(path.lastIndexOf("/")); // Mac
 		#else
@@ -2419,10 +2451,15 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 			lastUsedDirectory.setPath(path);
 		}
 
+		if (mObjectList.indexOf(fileNameElement) != -1)	// the object is already in the project/CHE
+		{
+			QMessageBox::critical(this, tr("Opening Error"), fileNameElement + " is already opened!");
+			return false;
+		}
+
 		newImage();
 		qDebug()<<fileName;
 		bool open = VTKA()->ReadData(fileName);
-		//this->mInformation->startAnnotation();
 		if(open && saveRecent)
 		{
 			saveRecentFileList(fileName);
@@ -2459,7 +2496,7 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 		}
 		QString newFileName = currentWindowPath;
 		newFileName.append(QDir::separator() + fileNameElement);
-		if (!import)	// open	
+		/*if (!import)	// open	
 		{
 			if (createFolder)	// open object directly: use the current project path
 			{
@@ -2499,7 +2536,7 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 					VTKA()->mFilename = newFileName;
 					VTKA()->mProjectPath = currentWindowPath;
 				}
-				else	// import CHE from from the project
+				else	// import CHE's object from project
 				{
 					VTKA()->mProjectPath = currentProjectFullName;
 					VTKA()->mProjectPath.append(QDir::separator() + CHEName + QDir::separator() + fileNameElement);
@@ -2507,16 +2544,20 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 					VTKA()->mFilename.append(QDir::separator() + fileNameElement);
 				}
 			}	
-		}
+		}*/
 
+		VTKA()->mFilename = newFileName;
+		VTKA()->mProjectPath = currentWindowPath;
 		if (isCHE)
 		{
 			VTKA()->mCHE = currentProjectFullName;
 			VTKA()->mCHEObject = fileNameElement;
 		}
+		// if the object is imported from another project/CHE, note and navigation will be updated after the file is copied
 		if (!import)
 		{
 			this->mInformation->initAnnotation(VTKA()->mProjectPath);
+			mNavigation->addObject(currentWindowPath, CHEName);
 		}
 
 		// update window name
@@ -2529,6 +2570,7 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 		isSaved = false;
 		//updateXML();
 		updateAllViews();
+		mObjectList.push_back(fileNameElement);
 		return true;
 	}
 	else return false;
@@ -3115,6 +3157,7 @@ void MainWindow::createNewCHE(const QString fullName, const QString name, const 
 	if (!QDir().exists(currentProjectFullName))
 		QDir().mkdir(currentProjectFullName);
 	QDir::setCurrent(currentProjectFullName);
+	mNavigation->init(currentProjectName, false);
 	createCHEDockWindows(info);
 	if (!object.isEmpty())
 	{
@@ -3200,6 +3243,7 @@ bool MainWindow::openCHE(QString fileName)
 	if (!readXML(fileName, objectList, filterList, false, true))
 	{
 		isCHE = false;
+		mNavigation->clear();
 		return false;
 	}
 
@@ -3247,10 +3291,6 @@ void MainWindow::saveCHEAs()
 	dialog->exec();
 	if (!dialog->checkOk())
 		return;
-
-	//QString fn = QFileDialog::getExistingDirectory(this, tr("Save Project As.."), lastSavedDirectory.path().append(""),
-	//													QFileDialog::ShowDirsOnly
-    //                                                   | QFileDialog::DontResolveSymlinks);
 	QString fn = dialog->getProjectPath();
 	fn = QDir::toNativeSeparators(fn);
 
@@ -3334,8 +3374,10 @@ bool MainWindow::closeCHE()
 	isCHE = false;
     QDomElement root = currentProjectMetadata.createElement("CHEROb.cultural_heritage_entity");
     currentProjectMetadata.appendChild(root);
+	mNavigation->clear();
 	this->mInformation->closeAllNotes();
-
+	this->mInformation->refresh();
+	mObjectList.clear();
     QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
     foreach(QMdiSubWindow *w, windows)
     {
@@ -3349,7 +3391,7 @@ bool MainWindow::closeCHE()
     }
 
     updateMenus();
-	rightTab->removeTab(1);
+	rightTab->removeTab(2);
     return true;
 }
 
@@ -4386,6 +4428,14 @@ void MainWindow::createDockWindows()
   dockRight->setMaximumWidth(dockwidth);
   dockRight->setWidget(rightTab); 
   addDockWidget(Qt::RightDockWidgetArea, dockRight);
+}
+
+void MainWindow::createNavigationDockWindows()
+{
+  mNavigation = new Navigation();
+  rightTab->setUpdatesEnabled(false);
+  rightTab->addTab(mNavigation, tr("Navigation"));
+  rightTab->setUpdatesEnabled(true);
 }
 
 void MainWindow::createCHEDockWindows(const CHEInfoBasic* info)
