@@ -294,6 +294,8 @@ void Information::saveAnnotation()
 	QString fileName = notePath;
 	fileName.append(QDir::separator() + QString("Annotation.txt"));
 	QFile file(fileName);
+	if (!file.exists())
+		emit addNavigationItem(notePath, QString("Annotation"));
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
 	{
 		qDebug() << "Open Annotation File Failed"; 
@@ -330,6 +332,7 @@ void Information::createPointNote(double *pos, int cellId, ColorType color)
 	connect(mPointNotes[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removePointNote(int, QString*)));
 	connect(this, SIGNAL(saveAll()), mPointNotes[notePath][size], SLOT(save()));
 	connect(this, SIGNAL(closeAll()), mPointNotes[notePath][size], SLOT(close()));
+	emit addNavigationItem(notePath, QString("PointNote"));
 }
 
 void Information::createSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, ColorType color)
@@ -344,6 +347,7 @@ void Information::createSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, C
 	connect(mSurfaceNotes[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removeSurfaceNote(int, QString*)));
 	connect(this, SIGNAL(saveAll()), mSurfaceNotes[notePath][size], SLOT(save()));
 	connect(this, SIGNAL(closeAll()), mSurfaceNotes[notePath][size], SLOT(close()));
+	emit addNavigationItem(notePath, QString("SurfaceNote"));
 }
 
 void Information::createFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, ColorType color)
@@ -358,7 +362,7 @@ void Information::createFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartP
 	connect(mFrustumNotes[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removeFrustumNote(int, QString*)));
 	connect(this, SIGNAL(saveAll()), mFrustumNotes[notePath][size], SLOT(save()));
 	connect(this, SIGNAL(closeAll()), mFrustumNotes[notePath][size], SLOT(close()));
-
+	emit addNavigationItem(notePath, QString("FrustumNote"));
 }
 
 void Information::createPointNote2D(double* point,  int* pointImage, ColorType color)
@@ -373,6 +377,7 @@ void Information::createPointNote2D(double* point,  int* pointImage, ColorType c
 	connect(mPointNotes2D[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removePointNote2D(int, QString*)));
 	connect(this, SIGNAL(saveAll()), mPointNotes2D[notePath][size], SLOT(save()));
 	connect(this, SIGNAL(closeAll()), mPointNotes2D[notePath][size], SLOT(close()));
+	emit addNavigationItem(notePath, QString("PointNote"));
 }
 
 void Information::createSurfaceNote2D(double* point, int* pointImage, ColorType color)
@@ -387,6 +392,7 @@ void Information::createSurfaceNote2D(double* point, int* pointImage, ColorType 
 	connect(mSurfaceNotes2D[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removeSurfaceNote2D(int, QString*)));
 	connect(this, SIGNAL(saveAll()), mSurfaceNotes2D[notePath][size], SLOT(save()));
 	connect(this, SIGNAL(closeAll()), mSurfaceNotes2D[notePath][size], SLOT(close()));
+	emit addNavigationItem(notePath, QString("SurfaceNote"));
 }
 
 bool Information::loadPointNote(const QString path)

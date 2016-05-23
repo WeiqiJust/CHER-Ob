@@ -74,11 +74,16 @@ private:
 private slots:
 	void showTreeWidgetItem(QTreeWidgetItem* item, int column);
 
+	void addNoteItem(const QString path, const QString type);
+
+	void removeNoteItem(const QString path, const QString type, const int id);
+
 private:
 	QVBoxLayout* mVBox;
 	QString mName;
 	QTreeWidget* mTreeWidget;
 	QList<QTreeWidgetItem *> mItems;
+	bool isCurrentProject;
 
 };
 

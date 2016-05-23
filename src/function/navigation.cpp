@@ -36,6 +36,8 @@ Navigation::Navigation()
 	QStringList ColumnNames;
 	ColumnNames << "Navigation";
 	mTreeWidget->setHeaderLabels(ColumnNames);
+	connect(mw()->mInformation, SIGNAL(addNavigationItem(const QString, const QString)), this, SLOT(addNoteItem(const QString, const QString)));
+	connect(mw()->mInformation, SIGNAL(removeNavigationItem(const QString, const QString, const int)), this, SLOT(removeNoteItem(const QString, const QString, const int)));
 	connect(mTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(showTreeWidgetItem(QTreeWidgetItem*, int)));
 	mVBox = new QVBoxLayout();
 	mVBox->addWidget(mTreeWidget);
@@ -50,6 +52,7 @@ void Navigation::init(const QString name, bool isProject)
 
 	mName = name;
 	QTreeWidgetItem *itm = new QTreeWidgetItem();
+	isCurrentProject = isProject;
 	if (isProject)
 	{
 		itm->setText(0, QString("Project: ").append(name));
@@ -84,7 +87,7 @@ void Navigation::addObject(const QString path, const QString CHE)
 	QFileIconProvider iconProvider;
 	object->setIcon(0, iconProvider.icon(QFileIconProvider::Folder));
 
-	if (CHE != QString())
+	if (CHE != QString() && isCurrentProject)
 	{
 		bool isFound = false;
 		int i = 0;
@@ -184,6 +187,104 @@ void Navigation::showTreeWidgetItem(QTreeWidgetItem* item, int column)
 {
 	if (item->columnCount() == 2)	// check the item is note or not
 		mw()->mInformation->openNoteFromNavigation(item);
+}
+
+void Navigation::addNoteItem(const QString path, const QString type)
+{
+	// path shoule be in the form of path/object/Note
+	QStringList elements = path.split(QDir::separator());
+	QString fileName = elements[elements.size()-2];
+	QString objectPath = path;
+	objectPath.truncate(objectPath.lastIndexOf(QDir::separator()));
+	bool isFound = false;
+	QTreeWidgetItem* object;
+	for (int i = 0; i < mItems[0]->childCount(); i++)
+	{
+		QString text = mItems[0]->child(i)->text(0);
+		if (text.split(": ")[0] == QString("Cultural Heritage Entity"))	//should use icon
+		{
+			for (int j = 0; j < mItems[0]->child(i)->childCount(); j++)
+			{
+				if (mItems[0]->child(i)->child(j)->text(0) == fileName)
+				{
+					object = mItems[0]->child(i)->child(j)->child(0);
+					isFound = true;
+					break;
+				}
+			}
+		}
+		else
+		{
+			if (text == fileName)
+			{
+				object = mItems[0]->child(i)->child(0);
+				isFound = true;
+			}
+		}
+		if (isFound)
+			break;
+	}
+
+	if (isFound)
+	{
+		int point = 0, surface = 0, frustum = 0;
+		for (int k = 0; k < object->childCount(); k++)
+		{
+			if (object->child(k)->text(0).split(" ")[0] == QString("PointNote"))
+				point++;
+			else if (object->child(k)->text(0).split(" ")[0] == QString("SurfaceNote"))
+				surface++;
+			else if (object->child(k)->text(0).split(" ")[0] == QString("FrustumNote"))
+				frustum++;
+		}
+		QFileIconProvider iconProvider;
+		QTreeWidgetItem* newNote = new QTreeWidgetItem();
+		newNote->setIcon(0, iconProvider.icon(QFileIconProvider::File));
+		if (type == QString("Annotation"))
+		{
+			newNote->setText(0, QString("Annotation"));
+			newNote->setText(1, objectPath);
+			if (object->childCount() == 0)
+				object->addChild(newNote);
+			else if (object->child(0)->text(0) != QString("Annotation"))
+				object->insertChild(0, newNote);
+		}
+		if (type == QString("PointNote"))
+		{
+			newNote->setText(0, QString("PointNote ").append(QString::number(point+1)));
+			newNote->setText(1, objectPath);
+			if (object->childCount() == 0)
+				object->addChild(newNote);
+			else if (object->child(0)->text(0) == QString("Annotation"))
+				object->insertChild(point+1, newNote);
+			else
+				object->insertChild(point, newNote);
+		}
+		else if (type == QString("SurfaceNote"))
+		{
+			newNote->setText(0, QString("SurfaceNote ").append(QString::number(surface+1)));
+			if (object->childCount() == 0)
+				object->addChild(newNote);
+			else if (object->child(0)->text(0) == QString("Annotation"))
+				object->insertChild(point+surface+1, newNote);
+			else
+				object->insertChild(point+surface, newNote);
+		}
+		else if (type == QString("FrustumNote "))
+		{
+			newNote->setText(0, QString("FrustumNote").append(QString::number(frustum+1)));
+			if (object->childCount() == 0)
+				object->addChild(newNote);
+			else if (object->child(0)->text(0) == QString("Annotation"))
+				object->insertChild(point+surface+frustum+1, newNote);
+			else
+				object->insertChild(point+surface+frustum, newNote);
+		}
+	}
+}
+
+void Navigation::removeNoteItem(const QString path, const QString type, const int id)
+{
 }
 
 MainWindow* Navigation::mw()

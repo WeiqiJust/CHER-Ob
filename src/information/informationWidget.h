@@ -155,6 +155,10 @@ signals:
 
   void updateMenu();
 
+  void addNavigationItem(const QString path, const QString type);
+
+  void removeNavigationItem(const QString path, const QString type, const int id);
+
 public slots:
 
   void removePointNote(int noteId, QString* path);
