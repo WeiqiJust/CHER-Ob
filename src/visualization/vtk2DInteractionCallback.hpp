@@ -622,7 +622,7 @@ public:
 	  {
 		  const double* select = mSelectedPoint[i].first;
 		  bool isSame = true;
-		  for (int j = 0; j  < 3; j++)
+		  for (int j = 0; j < 3; j++)
 		  {
 			  if (select[j] != point[j])
 			  {

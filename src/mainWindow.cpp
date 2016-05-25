@@ -4528,6 +4528,8 @@ void MainWindow::generateReport()
 		ReportObject* object = new ReportObject();
 		
 		object->mName = nameElement[nameElement.size() - 1];
+		object->mNotesPath = path;
+		object->mNotesPath.append(QDir::separator() + QString("Note"));
 		object->mNotes = mInformation->getAllNotes(path);
 		object->mGla = gla;
 		report->addObject(object);

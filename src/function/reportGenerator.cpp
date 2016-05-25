@@ -587,18 +587,17 @@ void ReportGenerator::generate()
 			QString content =  contents[j].first;
 			QString text = content.split("\nLinked Images:\n")[0];
 			QStringList imagePaths = content.split("\nLinked Images:\n")[1].split("\n", QString::SkipEmptyParts);
+			QDir dir(mObjects[i]->mNotesPath);
 			for (int k = 0; k < imagePaths.size(); k++)
 			{
-				QImage imgNote(imagePaths[k]);
+				QImage imgNote(dir.absoluteFilePath(imagePaths[k]));
 				QString name = mObjects[i]->mName + "_" + QString::number(j) + "_" + QString::number(k);
 				mDoc->addResource(QTextDocument::ImageResource, QUrl(name), imgNote);
 				if (k == 0)
-					html += QString("<p><div align=\"center\"><img src=\"" + name + "\"width=\"" + QString::number(50) + "\" height=\"" + QString::number(50) + "\">");
-				else if (k == imagePaths.size() - 1)
-					html += QString("<img src=\"" + name + "\"width=\"" + QString::number(50) + "\" height=\"" + QString::number(50) + "\"></div></p>\n");
-				else
-					html += QString("<img src=\"" + name + "\"width=\"" + QString::number(50) + "\" height=\"" + QString::number(50) + "\">");	
-
+					html += QString("<p><div align=\"center\">");
+				html += QString("<img src=\"" + name + "\"width=\"" + QString::number(50) + "\" height=\"" + QString::number(50) + "\">");
+				if (k == imagePaths.size() - 1)
+					html += QString("</div></p>\n");
 			}
 			html += QString("<p><font size=\"2\" face=\"Garamond\">") + text + QString("</font></p>");
 			if (j != contents.size()-1)

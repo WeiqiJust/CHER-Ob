@@ -74,6 +74,7 @@ class ReportObject : public QWidget
 public:
 	WidgetMode mMode;
 	QString mName;
+	QString mNotesPath;
 	QVector<QString> mNotes;
 	QVector<QString> mPictures; // <picture path, height/width ratio>
 	QString mCHEName;

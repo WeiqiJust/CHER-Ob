@@ -139,6 +139,8 @@ public:
 
   void openNoteFromNavigation(QTreeWidgetItem* item);
 
+  void undoRemoveNote(QTreeWidgetItem* item);
+
   bool checkAllSaved();
 
   bool checkObjectSaved();
@@ -155,9 +157,9 @@ signals:
 
   void updateMenu();
 
-  void addNavigationItem(const QString path, const QString type);
+  void addNavigationItem(const QString path, const NoteMode type);
 
-  void removeNavigationItem(const QString path, const QString type, const int id);
+  void removeNavigationItem(const QString path, const NoteMode type, const int id);
 
 public slots:
 
@@ -213,6 +215,7 @@ private:
   QMap<QString, QVector<PointNote2D*>> mPointNotes2D;
   QMap<QString, QVector<SurfaceNote2D*>> mSurfaceNotes2D;
   QMap<QString, bool> hasNotesRemoved;
+  QMap<QString, QString> removedAnnotation;
   bool skipTextChange;
 };
 #endif // INFORMATION_H

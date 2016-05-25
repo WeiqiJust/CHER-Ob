@@ -44,7 +44,9 @@
 #include <QFileDialog>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
-
+#include <QPoint>
+#include "htmlDelegate.h"
+#include "../vtkEnums.h" 
 
 class MainWindow;
 
@@ -74,9 +76,11 @@ private:
 private slots:
 	void showTreeWidgetItem(QTreeWidgetItem* item, int column);
 
-	void addNoteItem(const QString path, const QString type);
+	void addNoteItem(const QString path, const NoteMode type);
 
-	void removeNoteItem(const QString path, const QString type, const int id);
+	void removeNoteItem(const QString path, const NoteMode type, const int id);
+
+	void showContextMenu(const QPoint& pos);
 
 private:
 	QVBoxLayout* mVBox;

@@ -155,9 +155,11 @@ void Note::save()
 	out << *mInfo << "\n";
     out << mTextEdit->toPlainText();
 	out << "\nLinked Images:\n";
+	QDir dir(*mPath);
 	for (int i = 0; i < mImageNotes.size(); i++)
 	{
-		out << mImageNotes[i]->getPath() << "\n";
+		
+		out << dir.relativeFilePath(mImageNotes[i]->getPath()) << "\n";
 	}
 	mFile->close();
 	isSaved = true;
@@ -310,16 +312,17 @@ PointNote::PointNote(QString path, QString fileName, const int noteId, bool& isS
 	QString text = content.split("\nLinked Images:\n")[0];
 	QString imagePaths = content.split("\nLinked Images:\n")[1];
 	QStringList imagePathList = imagePaths.split("\n");
+	QDir dir(*mPath);
 	for (int i = 0; i < imagePathList.size(); i++)
 	{
-		//qDebug()<<"Image Path"<<imagePathList[i];
-		QFileInfo finfo(imagePathList[i]);
+		qDebug()<<"Image Path"<<imagePathList[i];
+		QFileInfo finfo(dir.absoluteFilePath(imagePathList[i]));
 		if (!finfo.exists())
 			continue;
 		QString extension = finfo.suffix().toLower();
 		if (extension != tr("png") && extension != tr("jpg") && extension != tr("jpeg") && extension != tr("tif") && extension != tr("bmp"))
 			continue;
-		addImage(imagePathList[i]);
+		addImage(finfo.absoluteFilePath());
 	}
 	this->setText(text);
 	for (int i = 0; i < 3; i++)
@@ -463,16 +466,17 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId, bool&
 	QString text = content.split("\nLinked Images:\n")[0];
 	QString imagePaths = content.split("\nLinked Images:\n")[1];
 	QStringList imagePathList = imagePaths.split("\n");
+	QDir dir(*mPath);
 	for (int i = 0; i < imagePathList.size(); i++)
 	{
 		qDebug()<<"Image Path"<<imagePathList[i];
-		QFileInfo finfo(imagePathList[i]);
+		QFileInfo finfo(dir.absoluteFilePath(imagePathList[i]));
 		if (!finfo.exists())
 			continue;
 		QString extension = finfo.suffix().toLower();
 		if (extension != tr("png") && extension != tr("jpg") && extension != tr("jpeg") && extension != tr("tif") && extension != tr("bmp"))
 			continue;
-		addImage(imagePathList[i]);
+		addImage(finfo.absoluteFilePath());
 	}
 	this->setText(text);
 
@@ -648,16 +652,17 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId, bool&
 	QString text = content.split("\nLinked Images:\n")[0];
 	QString imagePaths = content.split("\nLinked Images:\n")[1];
 	QStringList imagePathList = imagePaths.split("\n");
+	QDir dir(*mPath);
 	for (int i = 0; i < imagePathList.size(); i++)
 	{
 		qDebug()<<"Image Path"<<imagePathList[i];
-		QFileInfo finfo(imagePathList[i]);
+		QFileInfo finfo(dir.absoluteFilePath(imagePathList[i]));
 		if (!finfo.exists())
 			continue;
 		QString extension = finfo.suffix().toLower();
 		if (extension != tr("png") && extension != tr("jpg") && extension != tr("jpeg") && extension != tr("tif") && extension != tr("bmp"))
 			continue;
-		addImage(imagePathList[i]);
+		addImage(finfo.absoluteFilePath());
 	}
 	this->setText(text);
 
@@ -806,16 +811,17 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId, bool&
 	QString text = content.split("\nLinked Images:\n")[0];
 	QString imagePaths = content.split("\nLinked Images:\n")[1];
 	QStringList imagePathList = imagePaths.split("\n");
+	QDir dir(*mPath);
 	for (int i = 0; i < imagePathList.size(); i++)
 	{
 		qDebug()<<"Image Path"<<imagePathList[i];
-		QFileInfo finfo(imagePathList[i]);
+		QFileInfo finfo(dir.absoluteFilePath(imagePathList[i]));
 		if (!finfo.exists())
 			continue;
 		QString extension = finfo.suffix().toLower();
 		if (extension != tr("png") && extension != tr("jpg") && extension != tr("jpeg") && extension != tr("tif") && extension != tr("bmp"))
 			continue;
-		addImage(imagePathList[i]);
+		addImage(finfo.absoluteFilePath());
 	}
 	this->setText(text);
 
@@ -957,16 +963,17 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId, b
 	QString text = content.split("\nLinked Images:\n")[0];
 	QString imagePaths = content.split("\nLinked Images:\n")[1];
 	QStringList imagePathList = imagePaths.split("\n");
+	QDir dir(*mPath);
 	for (int i = 0; i < imagePathList.size(); i++)
 	{
 		qDebug()<<"Image Path"<<imagePathList[i];
-		QFileInfo finfo(imagePathList[i]);
+		QFileInfo finfo(dir.absoluteFilePath(imagePathList[i]));
 		if (!finfo.exists())
 			continue;
 		QString extension = finfo.suffix().toLower();
 		if (extension != tr("png") && extension != tr("jpg") && extension != tr("jpeg") && extension != tr("tif") && extension != tr("bmp"))
 			continue;
-		addImage(imagePathList[i]);
+		addImage(finfo.absoluteFilePath());
 	}
 	this->setText(text);
 

@@ -59,7 +59,7 @@ ImageNote::ImageNote(const QString path, const QString file, const int id)
 
 	mPath = folder + QDir::separator() + nameElements[nameElements.size() - 1];
     QFile::copy(fileName, mPath);
-	qDebug()<<mPath;
+	//qDebug()<<mPath;
 	QPixmap image(mPath);
 	mImage = new QLabel();
 	mImage->setPixmap(image);
