@@ -73,6 +73,8 @@ public:
 private:
 	static MainWindow* mw();
 
+	bool findObjectItem(const QString fileName, QTreeWidgetItem* &object);
+
 private slots:
 	void showTreeWidgetItem(QTreeWidgetItem* item, int column);
 

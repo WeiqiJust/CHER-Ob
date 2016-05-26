@@ -1251,7 +1251,7 @@ void Information::removeAllNotes()
 
 void Information::removeAllNotes(QString path)
 {
-	qDebug() << "remove ALL Note ";
+	qDebug() << "remove ALL Note "<<path;
 	QString removePath = path;
 	removePath.append(QDir::separator() + QString("Note"));
 	hasNotesRemoved[removePath] = true;
@@ -1260,7 +1260,7 @@ void Information::removeAllNotes(QString path)
 		mw()->VTKA()->removePointNoteMark(mPointNotes[removePath][i]->getCellId());
 		mPointNotes[removePath][i]->removePointNote();
 		mPointNotes[removePath][i]->setRemoved(true);
-		emit removeNavigationItem(notePath, POINTNOTE, i);
+		emit removeNavigationItem(removePath, POINTNOTE, i);
 	}
 	//mPointNotes.remove(removePath);
 	for (int i = 0; i < mSurfaceNotes[removePath].size(); ++i) 
@@ -1268,7 +1268,7 @@ void Information::removeAllNotes(QString path)
 		mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[removePath][i]->getCellIds());
 		mSurfaceNotes[removePath][i]->removeSurfaceNote();
 		mSurfaceNotes[removePath][i]->setRemoved(true);
-		emit removeNavigationItem(notePath, SURFACENOTE, i);
+		emit removeNavigationItem(removePath, SURFACENOTE, i);
 	}
 	//mSurfaceNotes.remove(removePath);
 	for (int i = 0; i < mFrustumNotes[removePath].size(); ++i) 
@@ -1276,7 +1276,7 @@ void Information::removeAllNotes(QString path)
 		mw()->VTKA()->removeFrustumNoteMark(mFrustumNotes[removePath][i]->getPoints(), mFrustumNotes[removePath][i]->getNormals());
 		mFrustumNotes[removePath][i]->removeFrustumNote();
 		mFrustumNotes[removePath][i]->setRemoved(true);
-		emit removeNavigationItem(notePath, FRUSTUMNOTE, i);
+		emit removeNavigationItem(removePath, FRUSTUMNOTE, i);
 	}
 	//mFrustumNotes.remove(removePath);
 	for (int i = 0; i < mPointNotes2D[removePath].size(); ++i) 
@@ -1284,7 +1284,7 @@ void Information::removeAllNotes(QString path)
 		mw()->VTKA()->removePointNote2DMark(mPointNotes2D[removePath][i]->getPoint());
 		mPointNotes2D[removePath][i]->removePointNote2D();
 		mPointNotes2D[removePath][i]->setRemoved(true);
-		emit removeNavigationItem(notePath, POINTNOTE, i);
+		emit removeNavigationItem(removePath, POINTNOTE, i);
 	}
 	//mPointNotes2D.remove(removePath);
 	for (int i = 0; i < mSurfaceNotes2D[removePath].size(); ++i) 
@@ -1292,7 +1292,7 @@ void Information::removeAllNotes(QString path)
 		mw()->VTKA()->removeSurfaceNote2DMark(mSurfaceNotes2D[removePath][i]->getPoint());
 		mSurfaceNotes2D[removePath][i]->removeSurfaceNote2D();
 		mSurfaceNotes2D[removePath][i]->setRemoved(true);
-		emit removeNavigationItem(notePath, SURFACENOTE, i);
+		emit removeNavigationItem(removePath, SURFACENOTE, i);
 	}
 	//mSurfaceNotes2D.remove(removePath);
 }

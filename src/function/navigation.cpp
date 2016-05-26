@@ -188,8 +188,58 @@ void Navigation::loadObjectBookMark(QTreeWidgetItem *object, const QString path)
 	object->addChild(bookmark);
 }
 
-void Navigation::removeObject(const QString name)
+void Navigation::removeObject(const QString path)
 {
+	
+	QStringList elements = path.split(QDir::separator());
+	QString fileName = elements[elements.size()-1];
+	bool isFound = false;
+	QTreeWidgetItem* object;
+	isFound = findObjectItem(fileName, object);
+
+	if (!isFound)
+		return;
+	QTreeWidgetItem* parent = object->parent();
+	parent->removeChild(object);
+	qDebug()<<"parent"<<parent->text(0);
+	if (parent->text(0).split(": ")[0] == QString("Cultural Heritage Entity") && parent->childCount() == 0)
+	{
+		QTreeWidgetItem* project = parent->parent();
+		if (project)
+			project->removeChild(parent);
+	}
+}
+
+bool Navigation::findObjectItem(const QString fileName, QTreeWidgetItem* &object)
+{
+	bool isFound = false;
+	for (int i = 0; i < mItems[0]->childCount(); i++)
+	{
+		QString text = mItems[0]->child(i)->text(0);
+		if (text.split(": ")[0] == QString("Cultural Heritage Entity"))
+		{
+			for (int j = 0; j < mItems[0]->child(i)->childCount(); j++)
+			{
+				if (mItems[0]->child(i)->child(j)->text(0) == fileName)
+				{
+					object = mItems[0]->child(i)->child(j);
+					isFound = true;
+					break;
+				}
+			}
+		}
+		else
+		{
+			if (text == fileName)
+			{
+				object = mItems[0]->child(i);
+				isFound = true;
+			}
+		}
+		if (isFound)
+			return true;
+	}
+	return false;
 }
 
 void Navigation::showTreeWidgetItem(QTreeWidgetItem* item, int column)
@@ -207,35 +257,12 @@ void Navigation::addNoteItem(const QString path, const NoteMode type)
 	objectPath.truncate(objectPath.lastIndexOf(QDir::separator()));
 	bool isFound = false;
 	QTreeWidgetItem* object;
-	for (int i = 0; i < mItems[0]->childCount(); i++)
-	{
-		QString text = mItems[0]->child(i)->text(0);
-		if (text.split(": ")[0] == QString("Cultural Heritage Entity"))
-		{
-			for (int j = 0; j < mItems[0]->child(i)->childCount(); j++)
-			{
-				if (mItems[0]->child(i)->child(j)->text(0) == fileName)
-				{
-					object = mItems[0]->child(i)->child(j)->child(0);
-					isFound = true;
-					break;
-				}
-			}
-		}
-		else
-		{
-			if (text == fileName)
-			{
-				object = mItems[0]->child(i)->child(0);
-				isFound = true;
-			}
-		}
-		if (isFound)
-			break;
-	}
+
+	isFound = findObjectItem(fileName, object);
 
 	if (isFound)
 	{
+		object = object->child(0);
 		int point = 0, surface = 0, frustum = 0;
 		for (int k = 0; k < object->childCount(); k++)
 		{
@@ -308,34 +335,12 @@ void Navigation::removeNoteItem(const QString path, const NoteMode type, const i
 	objectPath.truncate(objectPath.lastIndexOf(QDir::separator()));
 	bool isFound = false;
 	QTreeWidgetItem* object;
-	for (int i = 0; i < mItems[0]->childCount(); i++)
-	{
-		QString text = mItems[0]->child(i)->text(0);
-		if (text.split(": ")[0] == QString("Cultural Heritage Entity"))	//should use icon
-		{
-			for (int j = 0; j < mItems[0]->child(i)->childCount(); j++)
-			{
-				if (mItems[0]->child(i)->child(j)->text(0) == fileName)
-				{
-					object = mItems[0]->child(i)->child(j)->child(0);
-					isFound = true;
-					break;
-				}
-			}
-		}
-		else
-		{
-			if (text == fileName)
-			{
-				object = mItems[0]->child(i)->child(0);
-				isFound = true;
-			}
-		}
-		if (isFound)
-			break;
-	}
+	isFound = findObjectItem(fileName, object);
+	qDebug()<<"remove note item"<<object->text(0)<<path;
+	
 	if (isFound)
 	{
+		object = object->child(0);
 		int point = 0, surface = 0, frustum = 0;
 		for (int k = 0; k < object->childCount(); k++)
 		{

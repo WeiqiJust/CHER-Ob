@@ -2384,6 +2384,7 @@ void MainWindow::removeObject()
 				}
 				rmDir(filePath);
 				this->mInformation->removeAllNotes(filePath);
+				mNavigation->removeObject(filePath);
 				isClose = true;
 				mdiArea->removeSubWindow(w);
 				isClose = false;
