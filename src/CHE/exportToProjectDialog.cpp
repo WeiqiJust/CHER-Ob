@@ -88,7 +88,7 @@ ExportToProjectDialog::ExportToProjectDialog(const QString user, const QString p
 
 	mKeywordLabel = new QLabel(tr("Keywords:"));
 	mKeywordLineEdit = new QLineEdit();
-	mKeywordLineEdit->setFixedWidth(350);\
+	mKeywordLineEdit->setFixedWidth(350);
 	mKeywordLabel->setBuddy(mKeywordLineEdit);
 	mKeywordHBox = new QHBoxLayout();
 	mKeywordHBox->addWidget(mKeywordLabel);

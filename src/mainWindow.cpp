@@ -41,44 +41,18 @@
 #include "vtkAssembly.h"
 #include "vtkCamera.h"
 
-#include "function/lightControl.h"
-#include "function/plotView.h"
-#include "function/CTControl.h"
 #include "information/informationWidget.h"
 #include "information/bookmarkWidget.h"
 #include "information/searchWidget.h"
-#include "function/lightControlRTI.h" //YY
-#include "function/renderingdialog.h" // YY
+
+#include "function/lightControl.h"
+#include "function/plotView.h"
+#include "function/CTControl.h"
+#include "function/lightControlRTI.h"
+#include "function/renderingdialog.h"
+#include "function/reportFilter.h"
 
 QProgressBar *MainWindow::qb;
-
-int color2type(const std::string str)
-{
-	if (str == "MAROON")
-		return 0;
-	else if (str == "RED")
-		return 1; 
-	else if (str == "ORANGE")
-		return 2;
-	else if (str == "YELLOW")
-		return 3;
-	else if (str == "LIME")
-		return 4;
-	else if (str == "GREEN")
-		return 5;
-	else if (str == "AQUA")
-		return 6;
-	else if (str == "BLUE")
-		return 7;
-	else if (str == "PINK")
-		return 8;
-	else if (str == "PURPLE")
-		return 9;
-	else if (str == "WHITE")
-		return 10;
-	else
-		return 10;
-}
 
 MainWindow::MainWindow()
 {
@@ -2385,6 +2359,7 @@ void MainWindow::removeObject()
 				rmDir(filePath);
 				this->mInformation->removeAllNotes(filePath);
 				mNavigation->removeObject(filePath);
+				mObjectList.remove(mObjectList.indexOf(name));
 				isClose = true;
 				mdiArea->removeSubWindow(w);
 				isClose = false;
@@ -4071,7 +4046,7 @@ void MainWindow::createMenus()
   fileMenu->addAction(openDICOMAct);
   fileMenu->addAction(importProjectAct);
   fileMenu->addAction(importCHEAct);
-  fileMenu->addAction(mergeProjectToCHEAct);
+ // fileMenu->addAction(mergeProjectToCHEAct);	// Notice: merge back is currently disabled since it is buggy.
   fileMenu->addAction(removeObjectAct);
 
   fileMenu->addSeparator();
@@ -4517,6 +4492,11 @@ void MainWindow::generateReport()
 
 	QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
 	QMap<QString, QVector<QString> > objectsNotes;
+
+	ReportFilter *dialog = new ReportFilter(mObjectList);
+	dialog->exec();
+
+	QVector<QString> filterList = dialog->getFilterList();
 	
     foreach(QMdiSubWindow *w, windows)
 	{
@@ -4525,13 +4505,16 @@ void MainWindow::generateReport()
         QString path = gla->mProjectPath;
 		QString file = gla->mFilename;
 		QStringList nameElement = file.split(QDir::separator());
-		
+		QString name = nameElement[nameElement.size() - 1];
+		if (filterList.indexOf(name) != -1)	// object is filtered
+			continue;
 		ReportObject* object = new ReportObject();
 		
-		object->mName = nameElement[nameElement.size() - 1];
+		object->mName = name;
 		object->mNotesPath = path;
 		object->mNotesPath.append(QDir::separator() + QString("Note"));
 		object->mNotes = mInformation->getAllNotes(path);
+		object->mCategories = dialog->getCategories(name);
 		object->mGla = gla;
 		report->addObject(object);
 

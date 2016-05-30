@@ -44,8 +44,37 @@
 #include <limits>
 #include <qwt_plot.h>
 #include "reportGenerator.h"
-#include "../function/lightControl.h"
+#include "lightControl.h"
+#include "../information/searchWidget.h"
 #include "../mainWindow.h"
+
+std::string color2categoryFullName(const std::string str)
+{
+	if (str == "MAROON")
+		return "Object / Work";
+	else if (str == "RED")
+		return "Physical Dimensions / Measurements"; 
+	else if (str == "ORANGE")
+		return "Creation";
+	else if (str == "YELLOW")
+		return "Materials and Techniques";
+	else if (str == "LIME")
+		return "Stylisyic Analysis and Descriptions";
+	else if (str == "GREEN")
+		return "Condition and Conservation";
+	else if (str == "AQUA")
+		return "Analyses";
+	else if (str == "BLUE")
+		return "Related Works";
+	else if (str == "PINK")
+		return "Exhibition / Loans and Legal Issues";
+	else if (str == "PURPLE")
+		return "Image/Audio Documentation";
+	else if (str == "WHITE")
+		return "Other";
+	else
+		return "Other";
+}
 
 ReportGenerator::ReportGenerator(QString path, bool project)
 {
@@ -98,7 +127,7 @@ void ReportGenerator::generate()
 	{
 		html = html	+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nObject / Work:</font></p>\n")
 			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->object + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nPhysical Dimensions / Measurement:</font></p>\n")
+			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nPhysical Dimensions / Measurements:</font></p>\n")
 			+ QString("<p><font size=\"2\" face=\"Garamond\">") +  mCHEInfo->measurement  + QString("</font></p><hr>\n")
 			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nCreation:</font></p>\n")
 			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->creation + QString("</font></p><hr>\n")
@@ -147,6 +176,13 @@ void ReportGenerator::generate()
 				annotation = note;
 			else
 			{
+				int index = note.indexOf("\nColor Type:\n");
+				if (index == -1)
+					continue;
+				QString color = note.split("\nColor Type:\n")[1].split("\n")[0];
+				int type = color2type(color.toStdString());
+				if (mObjects[i]->mCategories.indexOf(type) == -1)
+					continue;
 				NoteMode mode;
 				if (mObjects[i]->mMode == IMAGE2D)
 				{
@@ -296,10 +332,7 @@ void ReportGenerator::generate()
 						continue;
 					}
 				}
-				int index = note.indexOf("Note Start:\n");
-				if (index == -1)
-					continue;
-				note.remove(0, index+12);
+				note.remove(0, index+13);
 				contents.push_back(qMakePair(note, mode));
 			}
 		}
@@ -575,6 +608,11 @@ void ReportGenerator::generate()
 			+ QString("<p><font size=\"2\" face=\"Garamond\">") + annotation + QString("</font></p><hr>\n");
 		for (int j = 0; j < contents.size(); j++)
 		{
+			QString content =  contents[j].first;
+			QString color = content.split("\nNote Start:\n")[0];
+			int type = color2type(color.toStdString());
+			if (mObjects[i]->mCategories.indexOf(type) == -1)
+				continue;
 			html += QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\n");
 			switch(contents[j].second)
 			{
@@ -583,11 +621,13 @@ void ReportGenerator::generate()
 				case FRUSTUMNOTE:	html += QString("Frustum Note "); break;
 				default: continue;
 			}
-			html += QString(QString::number(j+1) + QString(": </font></p>\n"));
-			QString content =  contents[j].first;
-			QString text = content.split("\nLinked Images:\n")[0];
+
+			QString text = content.split("\nLinked Images:\n")[0].split("Note Start:\n")[1];
+			QString category = QString(color2categoryFullName(color.toStdString()).c_str());
 			QStringList imagePaths = content.split("\nLinked Images:\n")[1].split("\n", QString::SkipEmptyParts);
 			QDir dir(mObjects[i]->mNotesPath);
+			html += QString::number(j+1) + QString(": </font></p>\n")
+				+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">Category: ") + category + QString("</font></p>");
 			for (int k = 0; k < imagePaths.size(); k++)
 			{
 				QImage imgNote(dir.absoluteFilePath(imagePaths[k]));
