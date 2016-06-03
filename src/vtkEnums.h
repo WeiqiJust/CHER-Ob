@@ -57,4 +57,116 @@ double const ColorPixel[11][3] = {
   {1.00, 1.00, 1.00}	// white
 };
 
+static std::string num2category(int mode)
+{
+	switch (mode)
+	{
+		case 0: return "Object / Work";
+		case 1: return "Physical Dimensions / Measurement";
+		case 2: return "Creation";
+		case 3: return "Materials and Techniques";
+		case 4: return "Stylisyic Analysis and Descriptions";
+		case 5: return "Condition and Conservation";
+		case 6: return "Analyses";
+		case 7: return "Related Works";
+		case 8: return "Exhibition / Loans and Legal Issues";
+		case 9: return "Image/Audio Documentation";
+		case 10: return "Others";
+	}
+}
+
+static std::string num2label(int mode)
+{
+	switch (mode)
+	{
+		case 0: return "Object";
+		case 1: return "Measurement";
+		case 2: return "Creation";
+		case 3: return "Material";
+		case 4: return "Description";
+		case 5: return "Conservation";
+		case 6: return "Analyses";
+		case 7: return "Related";
+		case 8: return "Administration";
+		case 9: return "Documentation";
+		case 10: return "Others";
+	}
+}
+
+static int color2type(const std::string str)
+{
+	if (str == "MAROON")
+		return 0;
+	else if (str == "RED")
+		return 1; 
+	else if (str == "ORANGE")
+		return 2;
+	else if (str == "YELLOW")
+		return 3;
+	else if (str == "LIME")
+		return 4;
+	else if (str == "GREEN")
+		return 5;
+	else if (str == "AQUA")
+		return 6;
+	else if (str == "BLUE")
+		return 7;
+	else if (str == "PINK")
+		return 8;
+	else if (str == "PURPLE")
+		return 9;
+	else if (str == "WHITE")
+		return 10;
+	else
+		return 10;
+}
+
+static std::string colortype2str(const ColorType type)
+{
+	switch(type)
+	{
+		case 0:  return "MAROON";
+		case 1:  return "RED";
+		case 2:  return "ORANGE";
+		case 3:  return "YELLOW";
+		case 4:  return "LIME";
+		case 5:  return "GREEN";
+		case 6:  return "AQUA";
+		case 7:  return "BLUE";
+		case 8:  return "PINK";
+		case 9:  return "PURPLE";
+		case 10: return "WHITE";
+		default: return "WHITE";
+	}
+}
+
+static ColorType str2colortype(const std::string str)
+{
+	if (str == "MAROON")
+		return MAROON;
+	else if (str == "RED")
+		return RED; 
+	else if (str == "ORANGE")
+		return ORANGE;
+	else if (str == "YELLOW")
+		return YELLOW;
+	else if (str == "LIME")
+		return LIME;
+	else if (str == "GREEN")
+		return GREEN;
+	else if (str == "AQUA")
+		return AQUA;
+	else if (str == "BLUE")
+		return BLUE;
+	else if (str == "PINK")
+		return PINK;
+	else if (str == "PURPLE")
+		return PURPLE;
+	else if (str == "WHITE")
+		return WHITE;
+	else
+		return WHITE;
+}
+
+
 #endif // VTKENUMS_H

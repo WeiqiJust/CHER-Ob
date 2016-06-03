@@ -28,54 +28,8 @@
 #include "note.h"
 #include <time.h> 
 #include "../mainWindow.h"
+#include "../vtkEnums.h"
 #include <sstream>
-
-std::string colortype2str(const ColorType type)
-{
-	switch(type)
-	{
-		case 0:  return "MAROON";
-		case 1:  return "RED";
-		case 2:  return "ORANGE";
-		case 3:  return "YELLOW";
-		case 4:  return "LIME";
-		case 5:  return "GREEN";
-		case 6:  return "AQUA";
-		case 7:  return "BLUE";
-		case 8:  return "PINK";
-		case 9:  return "PURPLE";
-		case 10: return "WHITE";
-		default: return "WHITE";
-	}
-}
-
-ColorType str2colortype(const std::string str)
-{
-	if (str == "MAROON")
-		return MAROON;
-	else if (str == "RED")
-		return RED; 
-	else if (str == "ORANGE")
-		return ORANGE;
-	else if (str == "YELLOW")
-		return YELLOW;
-	else if (str == "LIME")
-		return LIME;
-	else if (str == "GREEN")
-		return GREEN;
-	else if (str == "AQUA")
-		return AQUA;
-	else if (str == "BLUE")
-		return BLUE;
-	else if (str == "PINK")
-		return PINK;
-	else if (str == "PURPLE")
-		return PURPLE;
-	else if (str == "WHITE")
-		return WHITE;
-	else
-		return WHITE;
-}
 
 Note::Note(const int noteId, const ColorType type)
 {

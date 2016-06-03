@@ -123,6 +123,8 @@ MainWindow::MainWindow()
   currentProjectMetadata.createElement("CHEROb.metadata");
   mNewProjectDialog = NULL;
   mProjectInfoDialog = NULL;
+  mClassifiedInfoTab = NULL;
+  mCHETab = NULL;
   isClose = false;
   isCHE = false;
 
@@ -434,7 +436,8 @@ bool MainWindow::closeProject()
     }
 
     updateMenus();
-
+	if (rightTab->count() == 3)
+		rightTab->removeTab(2);
     return true;
 }
 
@@ -847,6 +850,8 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 	  currentProjectKeyword = projectInfo.at(0).toElement().elementsByTagName("keyword").at(0).toElement().text();
 	  currentProjectAffiliation = projectInfo.at(0).toElement().elementsByTagName("affiliation").at(0).toElement().text();
 	  currentProjectDescription = projectInfo.at(0).toElement().elementsByTagName("description").at(0).toElement().text();
+	  if (!import)
+		createClassifiedInfoDockWindows();
   }
   else
   {
@@ -877,9 +882,10 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 	QFileInfo file(fn);
 	if (import)	// if import the object absolute path is xml path + relative path
 	{
-		QString absolutePath = QDir::toNativeSeparators(fileName);
+		QString absolutePath = fileName;
 		absolutePath.truncate(absolutePath.lastIndexOf(QDir::separator()));
 		fn = absolutePath.append(QDir::separator() + fn);
+		fn = QDir::toNativeSeparators(fn);
 	}
 	else
 	{
@@ -1673,11 +1679,39 @@ void MainWindow::importCHE()
 	dialog->exec();
 
 	QVector<QString> filterList = dialog->getFilterList();
+	qDebug()<<"Import che"<<filterList[0];
 	QVector<QPair<QString, QString> > importObjectList;
 	if (!readXML(fileName, importObjectList, filterList, true, true))
 	{
 		return;
 	}
+
+	QVector<int> categories = dialog->getCategories(QString("Category Information"));
+	QDomNodeList CHEInfo = root.elementsByTagName("cultural_heritage_entity");
+	QVector<QString> contents, categoryLabel;
+	for (int i = 0; i < categories.size(); i++)
+	{
+		QString content;
+		switch (categories[i])
+		{
+			case 0: content = CHEInfo.at(0).toElement().elementsByTagName("object").at(0).toElement().text(); break;
+			case 1: content = CHEInfo.at(0).toElement().elementsByTagName("measurement").at(0).toElement().text(); break;
+			case 2: content = CHEInfo.at(0).toElement().elementsByTagName("creation").at(0).toElement().text(); break;
+			case 3: content = CHEInfo.at(0).toElement().elementsByTagName("material").at(0).toElement().text(); break;
+			case 4: content = CHEInfo.at(0).toElement().elementsByTagName("description").at(0).toElement().text(); break;
+			case 5: content = CHEInfo.at(0).toElement().elementsByTagName("conservation").at(0).toElement().text(); break;
+			case 6: content = CHEInfo.at(0).toElement().elementsByTagName("analyses").at(0).toElement().text(); break;
+			case 7: content = CHEInfo.at(0).toElement().elementsByTagName("related").at(0).toElement().text(); break;
+			case 8: content = CHEInfo.at(0).toElement().elementsByTagName("administration").at(0).toElement().text(); break;
+			case 9: content = CHEInfo.at(0).toElement().elementsByTagName("documents").at(0).toElement().text(); break;
+			case 10: content = CHEInfo.at(0).toElement().elementsByTagName("other").at(0).toElement().text(); break;
+		}
+		contents.push_back(content);
+		categoryLabel.push_back(QString(num2label(categories[i]).c_str()));
+	}
+	mClassifiedInfoTab->addCHEInfo(CHEName, categoryLabel, contents);
+	mClassifiedInfoTab->addCHEInfoToFile(CHEName);
+
 	if (importObjectList.size() > 0)
 	{
 		QDir CHEDir(currentProjectFullName);
@@ -1754,7 +1788,6 @@ void MainWindow::importCHE()
 
 void MainWindow::mergeProjectToCHE()
 {
-	/** change navigation **/
 	QMap<QString, QString> objects;
 	QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
     foreach(QMdiSubWindow *w, windows)
@@ -1782,6 +1815,7 @@ void MainWindow::mergeProjectToCHE()
 		QDir projectNoteDir(it.key());
 		if (!cheNoteDir.cd("Note") || !projectNoteDir.cd("Note"))
 			continue;
+		/*
 		QFileInfoList items = cheNoteDir.entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
 		for (int j = 0; j < items.size(); j++)
 		{
@@ -1806,12 +1840,11 @@ void MainWindow::mergeProjectToCHE()
 			int type = color2type(colorType.toStdString());
 			// If the category of the note is to be merged, then remove the note in original CHE
 			// The new notes will be copied to the same location
-			// The reason to remove the outdated notes
 			if (categories.indexOf(type) != -1) 
 			{
 				file->remove();
 			}
-		}
+		}*/
 		QString projectBookMark = it.key();
 		projectBookMark.append(QDir::separator() + QString("BookMark"));
 		QString cheBookMark = it.value();
@@ -1835,6 +1868,9 @@ void MainWindow::mergeProjectToCHE()
 			{
 				projectNote.append(QDir::separator() + QString("Annotation.txt"));
 				CHENote.append(QDir::separator() + QString("Annotation.txt"));
+				// QFile::copy cannot overwrite an existing file, therefore we need to remove the previous one
+				if (QFile::exists(CHENote))
+					QFile::remove(CHENote);
 				QFile::copy(projectNote, CHENote);
 				continue;
 			}
@@ -1857,16 +1893,17 @@ void MainWindow::mergeProjectToCHE()
 			int type = color2type(colorType.toStdString());
 			// If the category of the note is to be merged, then remove the note in original CHE
 			// The new notes will be copied to the same location
-			// The reason to remove the outdated notes
 			if (categories.indexOf(type) != -1) 
 			{
 				projectNote.append(QDir::separator() + newItems[j].fileName());
 				CHENote.append(QDir::separator() + newItems[j].fileName());
+				if (QFile::exists(CHENote))
+					QFile::remove(CHENote);
 				QFile::copy(projectNote, CHENote);
 			}
 		}
-
 	}
+	save();
 }
 
 void MainWindow::createObjectFolder(QString path)
@@ -1941,7 +1978,7 @@ void MainWindow::createCTFolder(QString path)
 
 bool MainWindow::openProject(QString fileName)
 {
-  if (!this->closeAll())
+  if (currentProjectFullName != NULL && !this->closeAll())
 	  return false;
 
   if (fileName.isEmpty())
@@ -2056,7 +2093,7 @@ bool MainWindow::rmDir(const QString &dirPath)
 
 void MainWindow::newVtkProject(const QString& projName)
 {
-    if (!this->closeAll())
+    if (currentProjectFullName != NULL && !this->closeAll())
 		return;
     QString projectName, projectPath;
 	if (mNewProjectDialog)
@@ -2097,6 +2134,7 @@ void MainWindow::createNewVtkProject(const QString fullName, const QString name,
 		QDir().mkdir(currentProjectFullName);
 	QDir::setCurrent(currentProjectFullName);
 	mNavigation->init(currentProjectName, true);
+	createClassifiedInfoDockWindows();
 	if (!object.isEmpty())
 	{
 		QString objectName = object.simplified();
@@ -3102,7 +3140,7 @@ void MainWindow::updateWindowMenu()
 
 void MainWindow::newCHE()
 {
-    if (!this->closeAll())
+    if (currentProjectFullName != NULL && !this->closeAll())
 		return;
 	NewCHEDialog* dialog = new NewCHEDialog();
 	connect(dialog, SIGNAL(createCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString, const QString, const QString)), 
@@ -3124,7 +3162,6 @@ void MainWindow::createNewCHE(const QString fullName, const QString name, const 
 	setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
 	currentProjectSave = currentProjectFullName;
 	currentProjectSave.append(QDir::separator() + currentProjectName + QString(".xml"));
-
 	mUserName = userName;
 	if (QDir().exists(currentProjectFullName))	// if the folder exists, remove all the content since user already choosed to overwrite
 	{
@@ -3189,7 +3226,7 @@ void MainWindow::createNewCHE(const QString fullName, const QString name, const 
 
 bool MainWindow::openCHE(QString fileName)
 {
-	if (!this->closeAll())
+	if (currentProjectFullName != NULL && !this->closeAll())
 	  return false;
 
 	if (fileName.isEmpty())
@@ -4046,7 +4083,7 @@ void MainWindow::createMenus()
   fileMenu->addAction(openDICOMAct);
   fileMenu->addAction(importProjectAct);
   fileMenu->addAction(importCHEAct);
- // fileMenu->addAction(mergeProjectToCHEAct);	// Notice: merge back is currently disabled since it is buggy.
+  fileMenu->addAction(mergeProjectToCHEAct);	// Notice: merge back is currently disabled since it is buggy.
   fileMenu->addAction(removeObjectAct);
 
   fileMenu->addSeparator();
@@ -4414,8 +4451,20 @@ void MainWindow::createNavigationDockWindows()
   rightTab->setUpdatesEnabled(true);
 }
 
+void MainWindow::createClassifiedInfoDockWindows()
+{
+  if (mClassifiedInfoTab != NULL)
+	  delete mClassifiedInfoTab;
+  mClassifiedInfoTab = new ProjectClassifiedInfoTab(currentProjectFullName, mUserName);
+  rightTab->setUpdatesEnabled(false);
+  rightTab->addTab(mClassifiedInfoTab, tr("Classified Info"));
+  rightTab->setUpdatesEnabled(true);
+}
+
 void MainWindow::createCHEDockWindows(const CHEInfoBasic* info)
 {
+  if (mCHETab != NULL)
+	  delete mCHETab;
   mCHETab = new CHETab(info, this);
   connect(mCHETab, SIGNAL(save()), this, SLOT(updateXML()));
   connect(mCHETab, SIGNAL(exportProject()), this, SLOT(exportCHEToProject()));

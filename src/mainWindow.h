@@ -52,6 +52,7 @@
 #include "CHE/importFromCHEDialog.h"
 #include "function/reportGenerator.h"
 #include "function/navigation.h"
+#include "function/projectCITab.h"
 
 #define MAXRECENTFILES 8
 
@@ -239,6 +240,7 @@ private:
   void createStatusBar();
   void createDockWindows();
   void createNavigationDockWindows();
+  void createClassifiedInfoDockWindows();
   void createCHEDockWindows(const CHEInfoBasic* info);
 
   void readSettings();
@@ -387,6 +389,7 @@ private:
   bool isClose;
   bool isCHE;
   Navigation* mNavigation;
+  ProjectClassifiedInfoTab * mClassifiedInfoTab;
   CHETab* mCHETab;
   QVector<QString> mObjectList;	// save objects' names in the project/CHE
   QSignalMapper *windowMapper;

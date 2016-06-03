@@ -51,8 +51,7 @@
 #include <QTreeView>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
-
-std::string num2category(int mode);
+#include "../vtkEnums.h"
 
 class ExportToProjectDialog : public QWidget
 {

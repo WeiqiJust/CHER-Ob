@@ -44,34 +44,6 @@
 #include "../vtkEnums.h"
 #include "../visualization/vtkWidget.h"
 
-static int color2type(const std::string str)
-{
-	if (str == "MAROON")
-		return 0;
-	else if (str == "RED")
-		return 1; 
-	else if (str == "ORANGE")
-		return 2;
-	else if (str == "YELLOW")
-		return 3;
-	else if (str == "LIME")
-		return 4;
-	else if (str == "GREEN")
-		return 5;
-	else if (str == "AQUA")
-		return 6;
-	else if (str == "BLUE")
-		return 7;
-	else if (str == "PINK")
-		return 8;
-	else if (str == "PURPLE")
-		return 9;
-	else if (str == "WHITE")
-		return 10;
-	else
-		return 10;
-}
-
 class WidgetInfo3D
 {
 public:

@@ -41,10 +41,13 @@ ImportFromCHEDialog::ImportFromCHEDialog(QVector<QString> objects)
 	ColumnNames << "Object";
 	mTreeWidget->setHeaderLabels(ColumnNames);
 	mObject = objects;
-	for (int i = 0; i < objects.size(); i++)
+	for (int i = 0; i < objects.size() + 1; i++)
 	{
 		QTreeWidgetItem *item = new QTreeWidgetItem();
-		item->setText(0, QString(objects[i]));
+		if (i == 0)
+			item->setText(0, QString("Category Information"));
+		else
+			item->setText(0, QString(objects[i - 1]));
 		item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
 		item->setCheckState(0, Qt::Unchecked);
 		for (int j = 0; j < 11; j++)
@@ -93,16 +96,19 @@ QVector<int> ImportFromCHEDialog::getCategories(const QString object)
 {
 	QMap<QString, QVector<int> >::const_iterator it = mSelected.find(object);
 	if (it != mSelected.end())
+	{
 		return it.value();
+	}
 	QVector<int> empty;
 	return empty;
 }
 
 void ImportFromCHEDialog::import()
 {
+	// mItems[0] is category information, and it should be added into selected to take up the first element
 	for (int i = 0; i < mItems.size(); i++)
 	{
-		if (mItems[i]->checkState(0) == Qt::Checked)
+		if (i == 0 || mItems[i]->checkState(0) == Qt::Checked)
 		{
 			QVector<int> categories;
 			for (int j = 0; j < mItems[i]->childCount(); j++)
