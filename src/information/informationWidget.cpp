@@ -331,7 +331,7 @@ void Information::createPointNote(double *pos, int cellId, ColorType color)
 	updateCurrentPath();
 	int size = mPointNotes[notePath].size();
 	qDebug() << "Create Point Note, current size = " << size;
-	PointNote* newNote = new PointNote(notePath, pos, cellId, size, color);
+	PointNote* newNote = new PointNote(notePath, pos, cellId, size, color, mw()->mUserName);
 	newNote->showNote();
 	mPointNotes[notePath].push_back(newNote);
 	connect(mPointNotes[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removePointNote(int, QString*)));
@@ -346,7 +346,7 @@ void Information::createSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, C
 	updateCurrentPath();
 	int size = mSurfaceNotes[notePath].size();
 	qDebug() << "Create Surface Note, current size = " << size;
-	SurfaceNote* newNote = new SurfaceNote(notePath, cellIds, size, color);
+	SurfaceNote* newNote = new SurfaceNote(notePath, cellIds, size, color, mw()->mUserName);
 	newNote->showNote();
 	mSurfaceNotes[notePath].push_back(newNote);
 	connect(mSurfaceNotes[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removeSurfaceNote(int, QString*)));
@@ -361,7 +361,7 @@ void Information::createFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartP
 	updateCurrentPath();
 	int size = mFrustumNotes[notePath].size();
 	qDebug() << "Create Frustum Note, current size = " << size;
-	FrustumNote* newNote = new FrustumNote(notePath, points, normals, size, color);
+	FrustumNote* newNote = new FrustumNote(notePath, points, normals, size, color, mw()->mUserName);
 	newNote->showNote();
 	mFrustumNotes[notePath].push_back(newNote);
 	connect(mFrustumNotes[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removeFrustumNote(int, QString*)));
@@ -376,7 +376,7 @@ void Information::createPointNote2D(double* point,  int* pointImage, ColorType c
 	updateCurrentPath();
 	int size = mPointNotes2D[notePath].size();
 	qDebug() << "Create Point Note 2D, current size = " << size;
-	PointNote2D* newNote = new PointNote2D(notePath, point, pointImage, size, color);
+	PointNote2D* newNote = new PointNote2D(notePath, point, pointImage, size, color, mw()->mUserName);
 	newNote->showNote();
 	mPointNotes2D[notePath].push_back(newNote);
 	connect(mPointNotes2D[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removePointNote2D(int, QString*)));
@@ -391,7 +391,7 @@ void Information::createSurfaceNote2D(double* point, int* pointImage, ColorType 
 	updateCurrentPath();
 	int size = mSurfaceNotes2D[notePath].size();
 	qDebug() << "Create Surface Note 2D, current size = " << size;
-	SurfaceNote2D* newNote = new SurfaceNote2D(notePath, point, pointImage, size, color);
+	SurfaceNote2D* newNote = new SurfaceNote2D(notePath, point, pointImage, size, color, mw()->mUserName);
 	newNote->showNote();
 	mSurfaceNotes2D[notePath].push_back(newNote);
 	connect(mSurfaceNotes2D[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removeSurfaceNote2D(int, QString*)));
@@ -1004,6 +1004,74 @@ void Information::openNoteFromNavigation(QTreeWidgetItem* item)
 		default: qDebug() << "Incorrect Note File!";
 	}
 	mw()->switchSubWindow(projectPath);
+}
+
+
+void Information::openNotesByUsers(const QVector<QString> users)
+{
+	if (!updateCurrentPath())
+		return;
+	QVector<QString> mUsers;
+	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
+	{
+		mUsers = mPointNotes[notePath][i]->getUser();
+		for (int j = 0; j < users.size(); j++)
+		{
+			if (mUsers.indexOf(users[j]) != -1)
+			{
+				mw()->VTKA()->openPointNoteMark(mPointNotes[notePath][i]->getCellId());
+				break;
+			}
+		}
+	}
+	for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
+	{
+		mUsers = mSurfaceNotes[notePath][i]->getUser();
+		for (int j = 0; j < users.size(); j++)
+		{
+			if (mUsers.indexOf(users[j]) != -1)
+			{
+				mw()->VTKA()->openSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds());
+				break;
+			}
+		}
+	}
+	for (int i = 0; i < mFrustumNotes[notePath].size(); ++i) 
+	{
+		mUsers = mFrustumNotes[notePath][i]->getUser();
+		for (int j = 0; j < users.size(); j++)
+		{
+			if (mUsers.indexOf(users[j]) != -1)
+			{
+				mw()->VTKA()->openFrustumNoteMark(mFrustumNotes[notePath][i]->getPoints(), mFrustumNotes[notePath][i]->getNormals());
+				break;
+			}
+		}
+	}
+	for (int i = 0; i < mPointNotes2D[notePath].size(); ++i) 
+	{
+		mUsers = mPointNotes2D[notePath][i]->getUser();
+		for (int j = 0; j < users.size(); j++)
+		{
+			if (mUsers.indexOf(users[j]) != -1)
+			{
+				mw()->VTKA()->openPointNote2DMark(mPointNotes2D[notePath][i]->getPoint());
+				break;
+			}
+		}
+	}
+	for (int i = 0; i < mSurfaceNotes2D[notePath].size(); ++i) 
+	{
+		mUsers = mSurfaceNotes2D[notePath][i]->getUser();
+		for (int j = 0; j < users.size(); j++)
+		{
+			if (mUsers.indexOf(users[j]) != -1)
+			{
+				mw()->VTKA()->openSurfaceNote2DMark(mSurfaceNotes2D[notePath][i]->getPoint());
+				break;
+			}
+		}
+	}
 }
 
 void Information::undoRemoveNote(QTreeWidgetItem* item)
@@ -1624,8 +1692,51 @@ QVector<int> Information::getNoteNumber(const QString objectPath)
 		notes.push_back(mSurfaceNotes2D[path].size());
 	else
 		notes.push_back(0);
-	qDebug()<<"!!!!get note number"<<notes.size();
 	return notes;
+}
+
+QVector<QString> Information::getAllUsers()
+{
+	QVector<QString> mUsers;
+	if (!updateCurrentPath())
+		return mUsers;
+	std::vector<std::string> users;	// need to use std::unique to remove redundency
+	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
+	{
+		QVector<QString> noteUser = mPointNotes[notePath][i]->getUser();
+		for (int j = 0; j < noteUser.size(); j++)
+			users.push_back(noteUser[j].toStdString());
+	}
+	for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
+	{
+		QVector<QString> noteUser = mSurfaceNotes[notePath][i]->getUser();
+		for (int j = 0; j < noteUser.size(); j++)
+			users.push_back(noteUser[j].toStdString());
+	}
+	for (int i = 0; i < mFrustumNotes[notePath].size(); ++i) 
+	{
+		QVector<QString> noteUser = mFrustumNotes[notePath][i]->getUser();
+		for (int j = 0; j < noteUser.size(); j++)
+			users.push_back(noteUser[j].toStdString());
+	}
+	for (int i = 0; i < mPointNotes2D[notePath].size(); ++i) 
+	{
+		QVector<QString> noteUser = mPointNotes2D[notePath][i]->getUser();
+		for (int j = 0; j < noteUser.size(); j++)
+			users.push_back(noteUser[j].toStdString());
+	}
+	for (int i = 0; i < mSurfaceNotes2D[notePath].size(); ++i) 
+	{
+		QVector<QString> noteUser = mSurfaceNotes2D[notePath][i]->getUser();
+		for (int j = 0; j < noteUser.size(); j++)
+			users.push_back(noteUser[j].toStdString());
+	}
+	std::sort(users.begin(), users.end());
+	std::vector<std::string>::iterator end_unique = std::unique(users.begin(), users.end());
+	users.erase(end_unique, users.end());
+	for (int i = 0; i < users.size(); i++)
+		mUsers.push_back(QString(users[i].c_str()));
+	return mUsers;
 }
 
 MainWindow* Information::mw()

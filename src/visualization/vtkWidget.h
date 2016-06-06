@@ -163,7 +163,7 @@ public:
 
   QString screenshot(QString location = QString());
 
-  void annotate(bool status, NoteMode noteMode = UNDECLARE);
+  void annotate(bool status, NoteMode noteMode = UNDECLARE, bool visibilityOn = true);
   void setAnnotationColor(const ColorType color);
 
   WidgetMode getWidgetMode() const {return mWidgetMode;}
@@ -283,14 +283,20 @@ public slots:
   void removePointNoteMark(const int cellId); 
   void removeSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds);
   void removeFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals);
+
+  void openPointNoteMark(const int cellId); 
+  void openSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds);
+  void openFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals);
  
   void loadPointNoteMark(const int cellId, const ColorType color);
   void loadSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, const ColorType color);
   void loadFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const ColorType color);
 
   void removeSurfaceNote2DMark(double* point);
+  void openSurfaceNote2DMark(double* point);
   void loadSurfaceNote2DMark(double* point, const ColorType color);
   void removePointNote2DMark(double* point);
+  void openPointNote2DMark(double* point);
   void loadPointNote2DMark(double* point, const ColorType color);
 
 protected slots:

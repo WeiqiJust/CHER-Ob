@@ -2,7 +2,7 @@
 
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
- - Writers:  Weiqi Shi (weiqi.shi@yale.edu)
+ - Writers:   Min H. Kim (minhkim@cs.yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -18,63 +18,46 @@
 
  - Acknowledgments: Some portions of this file are based on the example codes
    of ITK/VTK library from Kitware, QT API from Nokia. I would like to thank
-   anonymous help from various software engineering communities.
-
-   This file defines the different classes of bookmark that the user may work
-   with (corresponding to the different file types that may be displayed).
+   annonymous help by various software engineering communities.
 
 *****************************************************************************/
-
-#ifndef IMPORT_FROM_CHE_DIALOG_H
-#define IMPORT_FROM_CHE_DIALOG_H
+#ifndef ANNOTATION_FILTER_DIALOG_H
+#define ANNOTATION_FILTER_DIALOG_H
 
 #include <QtScript>
 #include <QWidget>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QTextEdit>
 #include <QPushButton>
-#include <QComboBox>
-#include <QFontComboBox>
-#include <QToolBar>
-#include <QTextBrowser>
 #include <QFile>
-#include <QWizard>
-#include <QFileDialog>
 #include <QCheckBox>
-#include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
-#include <QRadioButton>
 #include <QObject>
 #include <QMessageBox>
 #include <QTreeView>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 
-class ImportFromCHEDialog : public QWidget
+class AnnotationFilterDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
-	ImportFromCHEDialog(QVector<QString> objects);
-
-	QVector<QString> getFilterList();	// objects that are not selected
-
-	QVector<int> getCategories(const QString object);	// categories from selected objects
+	AnnotationFilterDialog(const QVector<QString> users);
+		
+	QVector<QString> getSelectedUsers();
 
 	void exec()	{mDialog->exec();}
 
-	bool isImport() {return isImported;}
+	bool isFilter() {return isFiltered;}
 
 private slots:
-	void import();
+	void filter();
 
 	void cancel();
 
 	void selectAll();
-
-	void itemChanged(QTreeWidgetItem * item, int column);
 
 private:
 	QDialog* mDialog;
@@ -82,7 +65,7 @@ private:
 
 	QGridLayout* mButtonGridBox;
 
-	QPushButton* mImportButton;
+	QPushButton* mFilterButton;
 	QPushButton* mCancelButton;
 	QPushButton* mSelectAllButton;
 
@@ -90,10 +73,8 @@ private:
 
 	QTreeWidget* mTreeWidget;
 	QList<QTreeWidgetItem *> mItems;
-	QVector<QString> mObject;
-	QMap<QString, QVector<int> > mSelected; 
-	bool isImported;	// import button pressed true, otherwise false;
-
+	QVector<QString> mSelectedUsers;
+	bool isFiltered; //filter button pressed true, otherwise false;
 };
 
-#endif // IMPORT_FROM_CHE_DIALOG
+#endif

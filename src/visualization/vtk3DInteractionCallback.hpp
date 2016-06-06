@@ -432,7 +432,7 @@ public:
 	  mw()->VTKA()->update();
   }
 
-  void SetAnnotation(bool status, NoteMode NoteMode, ColorType color = YELLOW)
+  void SetAnnotation(bool status, NoteMode NoteMode, ColorType color = YELLOW, bool visibilityOn = true)
   {
 	  //turnoffHighlight();
       this->mUserIsAnnotating = status;
@@ -442,17 +442,20 @@ public:
 	  {
 		  mw()->mInformation->startAnnotation();
 		 initNote();
-		 for (int i = 0; i < mSelectedFrustum.size(); i++)
+		 if (visibilityOn)
 		 {
-		     mSelectedFrustum[i].second->VisibilityOn();
-		 }
-		 for (int i = 0; i < mSelectedPoints.size(); i++)
-		 {
-			 mSelectedPoints[i].second->VisibilityOn();
-		 }
-		 for (int i = 0; i < mSelectedSurface.size(); i++)
-		 {
-			 mSelectedSurface[i].second->VisibilityOn();
+			 for (int i = 0; i < mSelectedFrustum.size(); i++)
+			 {
+				 mSelectedFrustum[i].second->VisibilityOn();
+			 }
+			 for (int i = 0; i < mSelectedPoints.size(); i++)
+			 {
+				 mSelectedPoints[i].second->VisibilityOn();
+			 }
+			 for (int i = 0; i < mSelectedSurface.size(); i++)
+			 {
+				 mSelectedSurface[i].second->VisibilityOn();
+			 }
 		 }
          mSelectedActor2->VisibilityOn();
 		 mSurfaceSelector->VisibilityOn();
@@ -1239,6 +1242,8 @@ public:
 	  {
 		  for (int i = 0; i < mSelectedPoints.size(); i++)
 		  {
+			  if (!mSelectedPoints[i].second->GetVisibility())
+				  continue;
 			  if (mSelectedPoints[i].first->LookupValue(picker->GetCellId()) != -1)
 			  {
 				  //highlightPointNote(i);
@@ -1264,6 +1269,8 @@ public:
 	  {
 		  for (int i = 0; i < mSelectedSurface.size(); i++)
 		  {
+			  if (!mSelectedSurface[i].second->GetVisibility())
+				  continue;
 			  if (mSelectedSurface[i].first->GetSelectionList()->LookupValue(picker->GetCellId()) != -1)
 			  {
 				  //highlightSurfaceNote(i);
@@ -1292,6 +1299,8 @@ public:
 	  pointsPolydata->SetPoints(points);
 	  for (int i = 0; i < mSelectedFrustum.size(); i++)
 	  {
+		  if (!mSelectedFrustum[i].second->GetVisibility())
+			  continue;
 		  vtkSmartPointer<vtkFrustumSource> frustum = vtkSmartPointer<vtkFrustumSource>::New();
 		  frustum->SetPlanes(mSelectedFrustum[i].first);
 		  vtkSmartPointer<vtkSelectEnclosedPoints> selectEnclosedPoints = vtkSmartPointer<vtkSelectEnclosedPoints>::New();
@@ -1590,6 +1599,93 @@ public:
 	      }
 	  }
 	  if (!isFound)	qDebug() << "Cannot Find the Exact FrustumNote to remove!"<<endl;
+  }
+
+   void openPointNoteMark(int cellId)
+  {
+	  for (int i = 0; i < mSelectedPoints.size(); i++)
+	  {
+		  if (mSelectedPoints[i].first->LookupValue(cellId) != -1)
+		  {
+			  mSelectedPoints[i].second->VisibilityOn();
+			  break;
+		  }
+	  }
+  }
+
+  void openSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds)
+  {
+	  if (!cellIds->GetSelectionList())
+	  {
+		  qDebug() << "Cannot open Empty Surface Note!" << endl;
+		  return;
+	  }
+	  bool open = false;
+	  for (int i = 0; i < mSelectedSurface.size(); i++)
+	  {
+		  if (cellIds->GetSelectionList()->GetSize() != mSelectedSurface[i].first->GetSelectionList()->GetSize())
+			  continue;
+		  bool elementExist = true;
+		  for (int j = 0; j < mSelectedSurface[i].first->GetSelectionList()->GetSize(); j++)
+		  {
+			  if (cellIds->GetSelectionList()->LookupValue(mSelectedSurface[i].first->GetSelectionList()->GetVariantValue(j)) == -1)
+			  {
+				  elementExist = false;
+				  break;
+			  }
+		  }
+		  if (elementExist)
+		  {
+			  mSelectedSurface[i].second->VisibilityOn();
+			  open = true;
+			  break;
+		  }
+	  }
+  }
+
+  void openFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals)
+  {
+	  if (points->GetNumberOfPoints() != 6 || normals->GetSize() != 18)
+	  {
+		  qDebug() << "Cannot open Empty Frustum Note!" << endl;
+		  return;
+	  }
+	  bool isFound = false;
+	  for (int i = 0; i < mSelectedFrustum.size(); ++i) 
+	  {
+		  bool elementExist = true;
+		  for (int j = 0; j < 6; j++)
+	      {
+			  vtkSmartPointer<vtkPlane> plane = mSelectedFrustum[i].first->GetPlane(i);
+			  bool planeExist = false;
+			  for (int k = 0; k < 6; k++)
+			  {
+				  double pos[3], norm[3], planeNorm[3];
+				  points->GetPoint(k, pos);
+				  norm[0] = normals->GetVariantValue(3*k).ToDouble();
+				  norm[1] = normals->GetVariantValue(3*k + 1).ToDouble();
+				  norm[2] = normals->GetVariantValue(3*k + 2).ToDouble();
+				  plane->GetNormal(planeNorm);
+				  if (plane->EvaluateFunction(pos) == 0 && norm[0] == planeNorm[0] && norm[1] == planeNorm[1] && norm[2] == planeNorm[2])
+				  {
+					  planeExist = true;
+					  break;
+				  }
+			  }
+			  if (!planeExist)
+			  {
+			     elementExist = false;
+				 break;
+			  }
+	      }
+	      if (elementExist)
+	      {
+			  mSelectedFrustum[i].second->VisibilityOn();
+		      isFound = true;
+		      break;
+	      }
+	  }
+	  if (!isFound)	qDebug() << "Cannot Find the Exact FrustumNote to open!"<<endl;
   }
 
   void getRubberbandStart()

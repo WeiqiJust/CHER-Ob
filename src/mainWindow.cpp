@@ -44,6 +44,7 @@
 #include "information/informationWidget.h"
 #include "information/bookmarkWidget.h"
 #include "information/searchWidget.h"
+#include "information/annotationFilterDialog.h"
 
 #include "function/lightControl.h"
 #include "function/plotView.h"
@@ -1677,6 +1678,8 @@ void MainWindow::importCHE()
 	}
 	ImportFromCHEDialog *dialog = new ImportFromCHEDialog(CHEObjectList);
 	dialog->exec();
+	if (!dialog->isImport())
+		return;
 
 	QVector<QString> filterList = dialog->getFilterList();
 	qDebug()<<"Import che"<<filterList[0];
@@ -2890,6 +2893,7 @@ void MainWindow::updateMenus()
   }
   annotationModeMenu->setEnabled(activeDoc);
   removeAnnotationAct->setEnabled(activeDoc);
+  filterAnnotationAct->setEnabled(activeDoc);
 
   screenshotAct->setEnabled(activeDoc);
   bookmarkAct->setEnabled(activeDoc);
@@ -4030,9 +4034,13 @@ void MainWindow::createActions()
     connect(annotationPurple, SIGNAL(triggered()), this, SLOT(setAnnotationColorPurple()));
 	connect(annotationWhite, SIGNAL(triggered()), this, SLOT(setAnnotationColorWhite()));
 
-    removeAnnotationAct = new QAction (QIcon(":/images/remove_annotation_on.png"), tr("Remove Annotation"), this);
+	removeAnnotationAct = new QAction (QIcon(":/images/remove_annotation_on.png"), tr("Remove Annotation"), this);
     removeAnnotationAct->setCheckable(true);
     connect(removeAnnotationAct, SIGNAL(triggered()), this, SLOT(removeAnnotation()));
+
+	filterAnnotationAct = new QAction (tr("Filter Annotation"), this);
+    filterAnnotationAct->setCheckable(true);
+    connect(filterAnnotationAct, SIGNAL(triggered()), this, SLOT(filterAnnotation()));
 
     screenshotAct = new QAction (QIcon(":/images/snapshot.png"), tr("Screenshot"), this);
     screenshotAct->setShortcutContext(Qt::ApplicationShortcut);
@@ -4163,6 +4171,7 @@ void MainWindow::createMenus()
   foreach(QAction *ac, annotationColorGroupAct->actions())
     annotationColorMenu->addAction(ac);
   toolsMenu->addAction(removeAnnotationAct);
+  toolsMenu->addAction(filterAnnotationAct);
   toolsMenu->addSeparator();
   toolsMenu->addAction(screenshotAct);
   toolsMenu->addSeparator();
@@ -4577,11 +4586,44 @@ void MainWindow::generateReport()
 
 void MainWindow::writeAnnotation()
 {
-  QAction *a = qobject_cast<QAction* >(sender());
-  bool answer = a->isChecked() ? true : false;
-  if (VTKA())
-    VTKA()->annotate(answer);
-  updateMenus();
+	QAction *a = qobject_cast<QAction* >(sender());
+	bool answer = a->isChecked() ? true : false;
+	if (VTKA())
+		VTKA()->annotate(answer);
+	updateMenus();
+}
+
+void MainWindow::writePointNote() 
+{
+	if (writeAnnotationAct->isChecked())
+		VTKA()->annotate(true, POINTNOTE, false); 
+	else
+	{
+		VTKA()->annotate(true, POINTNOTE); 
+		writeAnnotationAct->setChecked(true);
+	}
+}
+
+void MainWindow::writeSurfaceNote() 
+{
+	if (writeAnnotationAct->isChecked())
+		VTKA()->annotate(true, SURFACENOTE, false); 
+	else
+	{
+		VTKA()->annotate(true, SURFACENOTE); 
+		writeAnnotationAct->setChecked(true);
+	}
+}
+
+void MainWindow::writeFrustumNote()
+{
+	if (writeAnnotationAct->isChecked())
+		VTKA()->annotate(true, FRUSTUMNOTE, false); 
+	else
+	{
+		VTKA()->annotate(true, FRUSTUMNOTE);
+		writeAnnotationAct->setChecked(true);
+	}
 }
 
 void MainWindow::removeAnnotation()
@@ -4599,6 +4641,25 @@ void MainWindow::removeAnnotation()
     VTKA()->annotate(false);
 
   updateMenus();
+}
+
+void MainWindow::filterAnnotation()
+{
+	QVector<QString> users = mInformation->getAllUsers();
+	AnnotationFilterDialog* filter = new AnnotationFilterDialog(users);
+	filter->exec();
+	if (!filter->isFilter())
+		return;
+
+	if (VTKA())
+	{
+		VTKA()->annotate(false);
+		VTKA()->annotate(true, UNDECLARE, false);
+	}
+	QVector<QString> selectedUsers = filter->getSelectedUsers();
+	mInformation->openNotesByUsers(selectedUsers);
+	writeAnnotationAct->setChecked(true);
+	updateMenus();
 }
 
 void MainWindow::takeScreenshot()

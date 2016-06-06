@@ -78,6 +78,8 @@ public:
 
 	QString getContent();
 
+	QVector<QString> getUser()	{return mUsers;}
+
 protected:
 
 	void setLabel(QString text);
@@ -107,6 +109,12 @@ private slots:
 private:
 	void clearLayout(QLayout* layout, bool deleteWidgets = true);
 
+	static MainWindow* mw(); // find the mainframe
+
+	void updateInfo();
+
+	void updateLabel();
+
 signals:
 
 	void removeNote(int mNoteId, QString* mPath);
@@ -119,6 +127,7 @@ protected:
 	int mNoteId;
 	ColorType mColor;
 	QVector<ImageNote*> mImageNotes;
+	QVector<QString> mUsers;
 
 private:
 	QDialog* mDialog;
@@ -139,7 +148,7 @@ class PointNote: public Note
 	Q_OBJECT
 
 public:
-	PointNote(QString path, double* pos, const int cellId, const int noteId, const ColorType type = YELLOW);
+	PointNote(QString path, double* pos, const int cellId, const int noteId, const ColorType type = YELLOW, const QString user = QString());
 
 	PointNote(QString path, QString fileName, const int noteId, bool& isSucceed);
 
@@ -162,7 +171,7 @@ class SurfaceNote: public Note
 	Q_OBJECT
 
 public:
-	SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds, const int noteId, const ColorType type = YELLOW);
+	SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds, const int noteId, const ColorType type = YELLOW, const QString user = QString());
 
 	SurfaceNote(QString path, QString fileName, const int noteId, bool& isSucceed);
 
@@ -182,7 +191,8 @@ class FrustumNote: public Note
 	Q_OBJECT
 
 public:
-	FrustumNote(QString path, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const int noteId, const ColorType type = YELLOW);
+	FrustumNote(QString path, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const int noteId,
+		const ColorType type = YELLOW, const QString user = QString());
 
 	FrustumNote(QString path, QString fileName, const int noteId, bool& isSucceed);
 
@@ -205,7 +215,7 @@ class PointNote2D: public Note
 	Q_OBJECT
 
 public:
-	PointNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type = YELLOW);
+	PointNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type = YELLOW, const QString user = QString());
 
 	PointNote2D(QString path, QString fileName, const int noteId, bool& isSucceed);
 
@@ -226,7 +236,7 @@ class SurfaceNote2D: public Note
 	Q_OBJECT
 
 public:
-	SurfaceNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type = YELLOW);
+	SurfaceNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type = YELLOW, const QString user = QString());
 
 	SurfaceNote2D(QString path, QString fileName, const int noteId, bool& isSucceed);
 

@@ -139,6 +139,8 @@ public:
 
   void openNoteFromNavigation(QTreeWidgetItem* item);
 
+  void openNotesByUsers(const QVector<QString> users);
+
   void undoRemoveNote(QTreeWidgetItem* item);
 
   bool checkAllSaved();
@@ -149,6 +151,8 @@ public:
 
   // return the number of notes for each note type (annotation, point, surface, frustm, point2d, surface2d)for navigation
   QVector<int> getNoteNumber(const QString objectPath);	
+
+  QVector<QString> getAllUsers();
 
 signals:
   void saveAll();

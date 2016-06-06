@@ -72,6 +72,7 @@ static std::string num2category(int mode)
 		case 8: return "Exhibition / Loans and Legal Issues";
 		case 9: return "Image/Audio Documentation";
 		case 10: return "Others";
+		default: return "Others";
 	}
 }
 
@@ -90,6 +91,7 @@ static std::string num2label(int mode)
 		case 8: return "Administration";
 		case 9: return "Documentation";
 		case 10: return "Others";
+		default: return "Others";
 	}
 }
 

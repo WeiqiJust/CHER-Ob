@@ -348,9 +348,9 @@ private slots:
 
   void generateReport();
   void writeAnnotation();
-  void writePointNote() {VTKA()->annotate(true, POINTNOTE); writeAnnotationAct->setChecked(true);}
-  void writeSurfaceNote() {VTKA()->annotate(true, SURFACENOTE); writeAnnotationAct->setChecked(true);}
-  void writeFrustumNote() {VTKA()->annotate(true, FRUSTUMNOTE); writeAnnotationAct->setChecked(true);}
+  void writePointNote();
+  void writeSurfaceNote();
+  void writeFrustumNote();
   void setAnnotationColorRed() {VTKA()->setAnnotationColor(RED);}
   void setAnnotationColorMarron() {VTKA()->setAnnotationColor(MAROON);}
   void setAnnotationColorOrange() {VTKA()->setAnnotationColor(ORANGE);}
@@ -363,6 +363,7 @@ private slots:
   void setAnnotationColorPurple() {VTKA()->setAnnotationColor(PURPLE);}
   void setAnnotationColorWhite() {VTKA()->setAnnotationColor(WHITE);}
   void removeAnnotation();
+  void filterAnnotation();
 
   void takeScreenshot();
   void makeBookmark();
@@ -532,6 +533,7 @@ private:
   QAction *annotationPurple;
   QAction *annotationWhite;
   QAction *removeAnnotationAct;
+  QAction *filterAnnotationAct;
   QAction *screenshotAct;
   QAction *bookmarkAct;
   QAction *fileInfoAct;

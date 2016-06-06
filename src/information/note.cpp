@@ -97,7 +97,7 @@ void Note::textChanged()
 
 void Note::save()
 {
-	if (isRemoved)
+	if (isRemoved || isSaved)
 		return;
     if (!mFile->open(QIODevice::WriteOnly | QIODevice::Text))
 	{
@@ -105,6 +105,16 @@ void Note::save()
         return;
 	}
     QTextStream out(mFile);
+
+	if (mUsers.indexOf(mw()->mUserName) == -1 && mw()->mUserName != QString())
+	{
+		int index = mUsers.indexOf(QString("Unknown"));
+		if (index != -1)
+			mUsers.remove(index);
+		mUsers.push_back(mw()->mUserName);
+		updateInfo();
+		updateLabel();
+	}
 
 	out << *mInfo << "\n";
     out << mTextEdit->toPlainText();
@@ -133,6 +143,55 @@ void Note::clearLayout(QLayout* layout, bool deleteWidgets)
             clearLayout(childLayout, deleteWidgets);
         delete item;
     }
+}
+
+MainWindow* Note::mw()
+{
+  foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+    MainWindow* mainwindow = dynamic_cast<MainWindow*>(widget);
+    if (mainwindow)
+    {
+      return mainwindow;
+    }
+  }
+}
+
+void Note::updateInfo()
+{
+	int start = mInfo->indexOf("User: \n");
+	if (start == -1)
+		return;
+	int end = mInfo->indexOf("Color Type:") - 1;
+	mInfo->remove(start+7, end - start - 6);
+	QString user;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		user.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			user.append(QString(";"));
+		else
+			user.append(QString("\n"));
+	}
+	mInfo->insert(start+7, user);
+	mInfo->simplified();
+}
+
+void Note::updateLabel()
+{
+	QString label = mLabel->text();
+	int start = label.indexOf("User: ");
+	if (start == -1)
+		return;
+	label = label.left(start+6);
+	QString user;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		user.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			user.append(QString(";"));
+	}
+	label.append(user);
+	setLabel(label);
 }
 
 void Note::removeImage(int id)
@@ -178,7 +237,7 @@ void Note::addImage(QString fileName)
 	isSaved = false;
 }
 
-PointNote::PointNote(QString path, double* pos, const int cellId, const int noteId, const ColorType type)
+PointNote::PointNote(QString path, double* pos, const int cellId, const int noteId, const ColorType type, const QString user)
 	: Note(noteId, type)
 {
 	mPath = new QString(path);
@@ -188,6 +247,18 @@ PointNote::PointNote(QString path, double* pos, const int cellId, const int note
 	mFileName = new QString(path);
 	//mFileName->append(QDir::separator() + QString("Note") + WORD_SEPARATOR + QString::number(qHash(QString::number(number))) + QString(".txt"));
 	mFileName->append(QDir::separator() + QString("PointNote") + WORD_SEPARATOR + QString::number(cellId) + QString(".txt"));
+	QString mUser = user;
+	if (user == QString())
+		mUsers.push_back(QString("Unknown"));
+	else
+	{
+		mUser.simplified();
+		mUser.replace("; ", ";");
+		mUser.replace(" ;", ";");
+		QStringList users = mUser.split(";");
+		for (int i = 0; i < users.size(); i++)
+			mUsers.push_back(users[i]);
+	}
 
 	qDebug(mFileName->toLatin1());
 	mFile = new QFile(*mFileName);
@@ -198,11 +269,21 @@ PointNote::PointNote(QString path, double* pos, const int cellId, const int note
 	mCellId = cellId;
 	QString label;
 	label.append(QString("Point Note: Polygon Id (") + QString::number(cellId) + QString(")"));
-	this->setLabel(label);
 	QString info(label);
 	info.append(QString(" Coordinates (") + QString::number(mPosition[0]) + QString(", ") + QString::number(mPosition[1])
-		+ QString(", ") + QString::number(mPosition[2]) + QString(")"));
-	info.append(QString("\nColor Type:\n"));
+		+ QString(", ") + QString::number(mPosition[2]) + QString(")\n"));
+	QString userLabel = QString("User: ");
+	QString userInfo;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		userInfo.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			userInfo.append(QString(";"));
+	}
+	label.append(QString("\n") + userLabel + userInfo);
+	this->setLabel(label);
+	info.append(userLabel + QString("\n") + userInfo + QString("\n"));
+	info.append(QString("Color Type:\n"));
 	info.append(QString(colortype2str(mColor).c_str()));
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
@@ -247,20 +328,47 @@ PointNote::PointNote(QString path, QString fileName, const int noteId, bool& isS
 		isSucceed = false;
 		return;
 	}
-	while(1)
+
+	while(!in.atEnd())
+	{
+		QString signal = in.readLine();
+		if (signal == QString("User: "))
+			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
+	QString userLine;
+	in >> userLine;
+	QStringList users = userLine.split(";");
+	for (int i = 0; i < users.size(); i++)
+		mUsers.push_back(users[i]);
+	while(!in.atEnd())
 	{
 		QString signal = in.readLine();
 		if (signal == QString("Color Type:"))
 			break;
 	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
 	QString colorType;
 	in >> colorType;
 	mColor = str2colortype(colorType.toStdString());
-    while(1)
+    while(!in.atEnd())
 	{
 		QString signal = in.readLine();
 		if (signal == QString("Note Start:"))
 			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
 	}
 	QString content = in.readAll();
 	QString text = content.split("\nLinked Images:\n")[0];
@@ -286,12 +394,21 @@ PointNote::PointNote(QString path, QString fileName, const int noteId, bool& isS
 	mCellId = cellId;
 	QString label;
 	label.append(QString("Point Note: Polygon Id (") + QString::number(cellId) + QString(")"));
-	this->setLabel(label);
 	QString info(label);
 	info.append(QString(" Coordinates (") + QString::number(mPosition[0]) + QString(", ") + QString::number(mPosition[1])
-		+ QString(", ") + QString::number(mPosition[2]) + QString(")"));
-
-	info.append(QString("\nColor Type:\n"));
+		+ QString(", ") + QString::number(mPosition[2]) + QString(")\n"));
+	QString userLabel = QString("User: ");
+	QString userInfo;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		userInfo.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			userInfo.append(QString(";"));
+	}
+	label.append(QString("\n") + userLabel + userInfo);
+	this->setLabel(label);
+	info.append(userLabel + QString("\n") + userInfo + QString("\n"));
+	info.append(QString("Color Type:\n"));
 	info.append(colorType);
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
@@ -306,7 +423,7 @@ void PointNote::removePointNote()
 	this->hideNote(); 
 }
 
-SurfaceNote::SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds, const int noteId, const ColorType type)
+SurfaceNote::SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds, const int noteId, const ColorType type, const QString user)
 	: Note(noteId, type)
 {
 	mPath = new QString(path);
@@ -318,6 +435,18 @@ SurfaceNote::SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds
 	qsrand(time(NULL) * cellIds->GetSelectionList()->GetSize());
 	int number = qrand();
 	mFileName->append(QDir::separator() + QString("SurfaceNote") + WORD_SEPARATOR + QString::number(qHash(QString::number(number))) + QString(".txt"));
+	QString mUser = user;
+	if (user == QString())
+		mUsers.push_back(QString("Unknown"));
+	else
+	{
+		mUser.simplified();
+		mUser.replace("; ", ";");
+		mUser.replace(" ;", ";");
+		QStringList users = mUser.split(";");
+		for (int i = 0; i < users.size(); i++)
+			mUsers.push_back(users[i]);
+	}
 
 	qDebug(mFileName->toLatin1());
 	mFile = new QFile(*mFileName);
@@ -326,7 +455,6 @@ SurfaceNote::SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds
 
 	QString label;
 	label.append(QString("Surface Note: Number of Selected Polygon ( ") + QString::number(mCellIds->GetSelectionList()->GetSize()) + QString(" )"));
-	this->setLabel(label);
 	QString info(label);
 	info.append(QString("\nPolygon Ids:\n"));
 	for (int i = 0; i < mCellIds->GetSelectionList()->GetSize(); i++)
@@ -337,6 +465,17 @@ SurfaceNote::SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds
 		else
 			info.append(QString("\n"));
 	}
+	QString userLabel= QString("User: ");
+	QString userInfo;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		userInfo.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			userInfo.append(QString(";"));
+	}
+	label.append(QString("\n") + userLabel + userInfo);
+	this->setLabel(label);
+	info.append(userLabel + QString("\n") + userInfo + QString("\n"));
 	info.append(QString("Color Type:\n"));
 	info.append(QString(colortype2str(mColor).c_str()));
 	info.append(QString("\nNote Start:"));
@@ -385,11 +524,16 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId, bool&
 		return;
 	}
 
-    while(1)
+    while(!in.atEnd())
 	{
 		QString signal = in.readLine();
 		if (signal == QString("Polygon Ids:"))
 			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
 	}
 	ids->Resize(cellNum);
 	for (int i = 0; i < cellNum; i++)
@@ -399,21 +543,48 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId, bool&
 		ids->InsertNextValue(cellId);
 	}
 	mCellIds->SetSelectionList(ids);
-	while(1)
+
+	while(!in.atEnd())
+	{
+		QString signal = in.readLine();
+		if (signal == QString("User: "))
+			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
+	QString userLine;
+	in >> userLine;
+	QStringList users = userLine.split(";");
+	for (int i = 0; i < users.size(); i++)
+		mUsers.push_back(users[i]);
+	while(!in.atEnd())
 	{
 		QString signal = in.readLine();
 		if (signal == QString("Color Type:"))
 			break;
 	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
 	QString colorType;
 	in >> colorType;
 
 	mColor = str2colortype(colorType.toStdString());
-	while(1)
+	while(!in.atEnd())
 	{
 		QString signal = in.readLine();
 		if (signal == QString("Note Start:"))
 			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
 	}
 
 	QString content = in.readAll();
@@ -436,7 +607,6 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId, bool&
 
 	QString label;
 	label.append(QString("Surface Note: Number of Selected Polygon ( ") + QString::number(cellNum) + QString(" )"));
-	this->setLabel(label);
 	QString info(label);
 	info.append(QString("\nPolygon Ids:\n"));
 
@@ -448,6 +618,18 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId, bool&
 		else
 			info.append(QString("\n"));
 	}
+
+	QString userLabel= QString("User: ");
+	QString userInfo;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		userInfo.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			userInfo.append(QString(";"));
+	}
+	label.append(QString("\n") + userLabel + userInfo);
+	this->setLabel(label);
+	info.append(userLabel + QString("\n") + userInfo + QString("\n"));
 	info.append(QString("Color Type:\n"));
 	info.append(colorType);
 	info.append(QString("\nNote Start:"));
@@ -464,7 +646,7 @@ void SurfaceNote::removeSurfaceNote()
 }
 
 
-FrustumNote::FrustumNote(QString path, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const int noteId, const ColorType type)
+FrustumNote::FrustumNote(QString path, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const int noteId, const ColorType type, const QString user)
 	: Note(noteId, type)
 {
 	mPath = new QString(path);
@@ -475,6 +657,18 @@ FrustumNote::FrustumNote(QString path, vtkSmartPointer<vtkPoints> points, vtkSma
 	qsrand(time(NULL));
 	int number = qrand();
 	mFileName->append(QDir::separator() + QString("FrustumNote") + WORD_SEPARATOR + QString::number(qHash(QString::number(number))) + QString(".txt"));
+	QString mUser = user;
+	if (user == QString())
+		mUsers.push_back(QString("Unknown"));
+	else
+	{
+		mUser.simplified();
+		mUser.replace("; ", ";");
+		mUser.replace(" ;", ";");
+		QStringList users = mUser.split(";");
+		for (int i = 0; i < users.size(); i++)
+			mUsers.push_back(users[i]);
+	}
 
 	qDebug(mFileName->toLatin1());
 	mFile = new QFile(*mFileName);
@@ -490,8 +684,6 @@ FrustumNote::FrustumNote(QString path, vtkSmartPointer<vtkPoints> points, vtkSma
 		points->GetPoint(i, point);
 		label.append(QString("(") + QString::number(point[0]) + ", " + QString::number(point[1]) + ", " + QString::number(point[2]) + ")\n");
 	}
-	this->setLabel(label);
-	
 	QString info(label);
 	info.append(QString("Normal Point of Each Plane:\n"));
 	for (int i = 0; i < 6; i++)
@@ -499,6 +691,17 @@ FrustumNote::FrustumNote(QString path, vtkSmartPointer<vtkPoints> points, vtkSma
 		info.append(QString("(") + QString::number(mNormals->GetVariantValue(i*3).ToDouble()) + ", " 
 			+ QString::number(mNormals->GetVariantValue(i*3 + 1).ToDouble()) + ", " + QString::number(mNormals->GetVariantValue(i*3 + 2).ToDouble()) + ")\n");
 	}
+	QString userLabel = QString("User: ");
+	QString userInfo;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		userInfo.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			userInfo.append(QString(";"));
+	}
+	label.append(userLabel + userInfo);
+	this->setLabel(label);
+	info.append(userLabel + QString("\n") + userInfo + QString("\n"));
 	info.append(QString("Color Type:\n"));
 	info.append(QString(colortype2str(mColor).c_str()));
 	info.append(QString("\nNote Start:"));
@@ -550,11 +753,16 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId, bool&
 		mPoints->InsertNextPoint(pos);
 	}
 
-	while(1)
+	while(!in.atEnd())
 	{
 		QString signal = in.readLine();
 		if (signal == QString("Normal Point of Each Plane:"))
 			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
 	}
 	mNormals->SetNumberOfComponents(3);
 	mNormals->SetNumberOfTuples(6);
@@ -585,21 +793,48 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId, bool&
 
 	mNormals->Resize(6);
 
-	while(1)
+	while(!in.atEnd())
+	{
+		QString signal = in.readLine();
+		if (signal == QString("User: "))
+			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
+	QString userLine;
+	in >> userLine;
+	QStringList users = userLine.split(";");
+	for (int i = 0; i < users.size(); i++)
+		mUsers.push_back(users[i]);
+
+	while(!in.atEnd())
 	{
 		QString signal = in.readLine();
 		if (signal == QString("Color Type:"))
 			break;
 	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
 	QString colorType;
 	in >> colorType;
 
 	mColor = str2colortype(colorType.toStdString());
-	while(1)
+	while(!in.atEnd())
 	{
 		QString signal = in.readLine();
 		if (signal == QString("Note Start:"))
 			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
 	}
 
 	QString content = in.readAll();
@@ -628,7 +863,6 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId, bool&
 		mPoints->GetPoint(i, point);
 		label.append(QString("(") + QString::number(point[0]) + ", " + QString::number(point[1]) + ", " + QString::number(point[2]) + ")\n");
 	}
-	this->setLabel(label);
 	QString info(label);
 	info.append(QString("Normal Point of Each Plane:\n"));
 	for (int i = 0; i < 6; i++)
@@ -636,6 +870,18 @@ FrustumNote::FrustumNote(QString path, QString fileName, const int noteId, bool&
 		info.append(QString("(") + QString::number(mNormals->GetVariantValue(i*3).ToDouble()) + ", " 
 			+ QString::number(mNormals->GetVariantValue(i*3 + 1).ToDouble()) + ", " + QString::number(mNormals->GetVariantValue(i*3 + 2).ToDouble()) + ")\n");
 	}
+
+	QString userLabel = QString("User: ");
+	QString userInfo;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		userInfo.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			userInfo.append(QString(";"));
+	}
+	label.append(userLabel + userInfo);
+	this->setLabel(label);
+	info.append(userLabel + QString("\n") + userInfo + QString("\n"));
 	info.append(QString("Color Type:\n"));
 	info.append(colorType);
 	info.append(QString("\nNote Start:"));
@@ -651,7 +897,7 @@ void FrustumNote::removeFrustumNote()
 	this->hideNote(); 
 }
 
-PointNote2D::PointNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type)
+PointNote2D::PointNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type, const QString user)
 	: Note(noteId, type)
 {
 	mPath = new QString(path);
@@ -662,6 +908,18 @@ PointNote2D::PointNote2D(QString path, const double* point, const int* pointImag
 	qsrand(time(NULL));
 	int number = qrand();
 	mFileName->append(QDir::separator() + QString("PointNote2D") + WORD_SEPARATOR + QString::number(qHash(QString::number(number))) + QString(".txt"));
+	QString mUser = user;
+	if (user == QString())
+		mUsers.push_back(QString("Unknown"));
+	else
+	{
+		mUser.simplified();
+		mUser.replace("; ", ";");
+		mUser.replace(" ;", ";");
+		QStringList users = mUser.split(";");
+		for (int i = 0; i < users.size(); i++)
+			mUsers.push_back(users[i]);
+	}
 
 	qDebug(mFileName->toLatin1());
 	mFile = new QFile(*mFileName);
@@ -673,12 +931,21 @@ PointNote2D::PointNote2D(QString path, const double* point, const int* pointImag
 
 	QString label;
 	label.append(QString("Point Note: World Coordinate (") + QString::number(point[0]) + QString(", ") + QString::number(point[1]) + QString(")")); 
-	this->setLabel(label);
 	QString info;
 	info.append(QString("Point Note: World Coordinate (") + QString::number(point[0]) + QString(", ") + QString::number(point[1]) + QString(") Image Coordinate (")
-		+ QString::number(pointImage[0]) + QString(", ") + QString::number(pointImage[1]) + QString(")"));
-
-	info.append(QString("\nColor Type:\n"));
+		+ QString::number(pointImage[0]) + QString(", ") + QString::number(pointImage[1]) + QString(")\n"));
+	QString userLabel = QString("User: ");
+	QString userInfo;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		userInfo.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			userInfo.append(QString(";"));
+	}
+	label.append(QString("\n") + userLabel + userInfo);
+	this->setLabel(label);
+	info.append(userLabel + QString("\n") + userInfo + QString("\n"));
+	info.append(QString("Color Type:\n"));
 	info.append(QString(colortype2str(mColor).c_str()));
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
@@ -744,21 +1011,48 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId, bool&
 		mImagePoint[i] = posImage[i];
 	}
 
-	while(1)
+	while(!in.atEnd())
+	{
+		QString signal = in.readLine();
+		if (signal == QString("User: "))
+			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
+	QString userLine;
+	in >> userLine;
+	QStringList users = userLine.split(";");
+	for (int i = 0; i < users.size(); i++)
+		mUsers.push_back(users[i]);
+
+	while(!in.atEnd())
 	{
 		QString signal = in.readLine();
 		if (signal == QString("Color Type:"))
 			break;
 	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
 	QString colorType;
 	in >> colorType;
 
 	mColor = str2colortype(colorType.toStdString());
-	while(1)
+	while(!in.atEnd())
 	{
 		QString signal = in.readLine();
 		if (signal == QString("Note Start:"))
 			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
 	}
 
 	QString content = in.readAll();
@@ -781,12 +1075,22 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId, bool&
 
 	QString label;
 	label.append(QString("Point Note: Center (") + QString::number(mPoint[0]) + QString(", ") + QString::number(mPoint[1]) + QString(")"));
-	this->setLabel(label);
 	QString info;
 	info.append(QString("Point Note: World Coordinate (") + QString::number(mPoint[0]) + QString(", ") + QString::number(mPoint[1]) + QString(") Image Coordinate (")
-		+ QString::number(mImagePoint[0]) + QString(", ") + QString::number(mImagePoint[1]) + QString(")"));
+		+ QString::number(mImagePoint[0]) + QString(", ") + QString::number(mImagePoint[1]) + QString(")\n"));
+	QString userLabel = QString("User: ");
+	QString userInfo;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		userInfo.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			userInfo.append(QString(";"));
+	}
+	label.append(QString("\n") + userLabel + userInfo);
+	this->setLabel(label);
+	info.append(userLabel + QString("\n") + userInfo + QString("\n"));
 
-	info.append(QString("\nColor Type:\n"));
+	info.append(QString("Color Type:\n"));
 	info.append(colorType);
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
@@ -802,7 +1106,7 @@ void PointNote2D::removePointNote2D()
 	this->hideNote(); 
 }
 
-SurfaceNote2D::SurfaceNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type)
+SurfaceNote2D::SurfaceNote2D(QString path, const double* point, const int* pointImage, const int noteId, const ColorType type, const QString user)
 	: Note(noteId, type)
 {
 	mPath = new QString(path);
@@ -813,6 +1117,18 @@ SurfaceNote2D::SurfaceNote2D(QString path, const double* point, const int* point
 	qsrand(time(NULL));
 	int number = qrand();
 	mFileName->append(QDir::separator() + QString("SurfaceNote2D") + WORD_SEPARATOR + QString::number(qHash(QString::number(number))) + QString(".txt"));
+	QString mUser = user;
+	if (user == QString())
+		mUsers.push_back(QString("Unknown"));
+	else
+	{
+		mUser.simplified();
+		mUser.replace("; ", ";");
+		mUser.replace(" ;", ";");
+		QStringList users = mUser.split(";");
+		for (int i = 0; i < users.size(); i++)
+			mUsers.push_back(users[i]);
+	}
 
 	qDebug(mFileName->toLatin1());
 	mFile = new QFile(*mFileName);
@@ -825,12 +1141,22 @@ SurfaceNote2D::SurfaceNote2D(QString path, const double* point, const int* point
 	QString label;
 	label.append(QString("Surface Note: Start (") + QString::number(point[0]) + QString(", ") + QString::number(point[1]) + QString(") End (") 
 		+ QString::number(point[2]) + QString(", ") + QString::number(point[3]) + QString(")"));
-	this->setLabel(label);
 	QString info(label);
 	info.append(" Image Coordinate Start (" + QString::number(pointImage[0]) + QString(", ") + QString::number(pointImage[1]) + QString(") End (") 
-		+ QString::number(pointImage[2]) + QString(", ") + QString::number(pointImage[3]) + QString(")"));
+		+ QString::number(pointImage[2]) + QString(", ") + QString::number(pointImage[3]) + QString(")\n"));
+	QString userLabel = QString("User: ");
+	QString userInfo;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		userInfo.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			userInfo.append(QString(";"));
+	}
+	label.append(QString("\n") + userLabel + userInfo);
+	this->setLabel(label);
+	info.append(userLabel + QString("\n") + userInfo + QString("\n"));
 
-	info.append(QString("\nColor Type:\n"));
+	info.append(QString("Color Type:\n"));
 	info.append(QString(colortype2str(mColor).c_str()));
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
@@ -896,21 +1222,48 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId, b
 		mImagePoint[i] = posImage[i];
 	}
 
-	while(1)
+	while(!in.atEnd())
+	{
+		QString signal = in.readLine();
+		if (signal == QString("User: "))
+			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
+	QString userLine;
+	in >> userLine;
+	QStringList users = userLine.split(";");
+	for (int i = 0; i < users.size(); i++)
+		mUsers.push_back(users[i]);
+
+	while(!in.atEnd())
 	{
 		QString signal = in.readLine();
 		if (signal == QString("Color Type:"))
 			break;
 	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
 	QString colorType;
 	in >> colorType;
 
 	mColor = str2colortype(colorType.toStdString());
-	while(1)
+	while(!in.atEnd())
 	{
 		QString signal = in.readLine();
 		if (signal == QString("Note Start:"))
 			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
 	}
 
 	QString content = in.readAll();
@@ -937,9 +1290,21 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId, b
 	this->setLabel(label);
 	QString info(label);
 	info.append(" Image Coordinate Start (" + QString::number(mImagePoint[0]) + QString(", ") + QString::number(mImagePoint[1]) + QString(") End (") 
-		+ QString::number(mImagePoint[2]) + QString(", ") + QString::number(mImagePoint[3]) + QString(")"));
+		+ QString::number(mImagePoint[2]) + QString(", ") + QString::number(mImagePoint[3]) + QString(")\n"));
 
-	info.append(QString("\nColor Type:\n"));
+	QString userLabel = QString("User: ");
+	QString userInfo;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		userInfo.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			userInfo.append(QString(";"));
+	}
+	label.append(QString("\n") + userLabel + userInfo);
+	this->setLabel(label);
+	info.append(userLabel + QString("\n") + userInfo + QString("\n"));
+
+	info.append(QString("Color Type:\n"));
 	info.append(colorType);
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);

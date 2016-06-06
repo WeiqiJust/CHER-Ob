@@ -196,7 +196,7 @@ public:
     this->CurrPicker = picker;
     }
 
-  void SetAnnotation(bool status, NoteMode noteMode, ColorType color = YELLOW)
+  void SetAnnotation(bool status, NoteMode noteMode, ColorType color = YELLOW, bool visibilityOn = true)
   {
 	  //turnoffHighlight();
 	  if (noteMode != POINTNOTE && noteMode != SURFACENOTE)
@@ -211,13 +211,16 @@ public:
 	  {
 		  qDebug()<<"Load surface size"<<mSelectedSurface.size() << " point size "<<mSelectedPoint.size();
 		  initNote();
-		  for (int i = 0; i <  mSelectedPoint.size(); i++)
+		  if (visibilityOn)
 		  {
-			 mSelectedPoint[i].second->VisibilityOn();
-		  }
-		  for (int i = 0; i <  mSelectedSurface.size(); i++)
-		  {
-			 mSelectedSurface[i].second->VisibilityOn();
+			  for (int i = 0; i <  mSelectedPoint.size(); i++)
+			  {
+				 mSelectedPoint[i].second->VisibilityOn();
+			  }
+			  for (int i = 0; i <  mSelectedSurface.size(); i++)
+			  {
+				 mSelectedSurface[i].second->VisibilityOn();
+			  }
 		  }
 		  mw()->mInformation->startAnnotation();
 		  mw()->VTKA()->update();
@@ -561,6 +564,8 @@ public:
 		  if(!mw()->mInformation) return false;
 		  for (int i = 0; i < mSelectedPoint.size(); i++)
 		  {
+			  if (!mSelectedPoint[i].second->GetVisibility())
+				  continue;
 			  const double* center = mSelectedPoint[i].first;
 			  double distant = sqrt(pow(center[0] - pos[0], 2) + pow(center[1] - pos[1],2));
 			  //qDebug()<<"radius = "<<mRadius<<" distant = "<<distant;
@@ -596,6 +601,8 @@ public:
 
 		  for (int i = 0; i < mSelectedSurface.size(); i++)
 		  {
+			  if (!mSelectedSurface[i].second->GetVisibility())
+				  continue;
 			  const double* edge = mSelectedSurface[i].first;
 			  double maxX = std::max(edge[0], edge[2]);
 			  double minX = std::min(edge[0], edge[2]);
@@ -666,6 +673,50 @@ public:
 		  }
 	  }
 	  if (!erase)	qDebug() << "Cannot Find the Exact SurfaceNote to remove!"<<endl;
+  }
+
+  void openPointNoteMark(double* point)
+  {
+	  for (int i = 0; i < mSelectedPoint.size(); ++i) 
+	  {
+		  const double* select = mSelectedPoint[i].first;
+		  bool isSame = true;
+		  for (int j = 0; j < 3; j++)
+		  {
+			  if (select[j] != point[j])
+			  {
+				  isSame = false;
+				  break;
+			  }
+		  }
+		  if (isSame)
+		  {
+			  mSelectedPoint[i].second->VisibilityOn();
+			  break;
+		  }
+	  }
+  }
+
+  void openSurfaceNoteMark(double* point)
+  {
+	  for (int i = 0; i < mSelectedSurface.size(); ++i) 
+	  {
+		  const double* select = mSelectedSurface[i].first;
+		  bool isSame = true;
+		  for (int j = 0; j  < 4; j++)
+		  {
+			  if (select[j] != point[j])
+			  {
+				  isSame = false;
+				  break;
+			  }
+		  }
+		  if (isSame)
+		  {
+			  mSelectedSurface[i].second->VisibilityOn();
+			  break;
+		  }
+	  }
   }
 
   void displayLoadPointNote(double* point, const ColorType color)

@@ -480,15 +480,15 @@ void VtkWidget::setAnnotationColor(const ColorType color)
 	}
 }
 
-void VtkWidget::annotate(bool status, NoteMode noteMode)
+void VtkWidget::annotate(bool status, NoteMode noteMode, bool visibilityOn)
 {
     mUserIsAnnotating = status;
 	if (noteMode != UNDECLARE)
 		mNoteMode = noteMode;
-    if (mCallback2D) mCallback2D->SetAnnotation(mUserIsAnnotating, mNoteMode, mAnnotationColor);
+    if (mCallback2D) mCallback2D->SetAnnotation(mUserIsAnnotating, mNoteMode, mAnnotationColor, visibilityOn);
     if (mCallback3D) 
 	{
-		mCallback3D->SetAnnotation(mUserIsAnnotating, mNoteMode, mAnnotationColor);
+		mCallback3D->SetAnnotation(mUserIsAnnotating, mNoteMode, mAnnotationColor, visibilityOn);
 		if (!status)
 		{
 			setCameraMode(mLastCameraMode3D);
@@ -518,6 +518,21 @@ void VtkWidget::removeFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmar
 	mCallback3D->removeFrustumNoteMark(points, normals);
 }
 
+void VtkWidget::openPointNoteMark(const int cellId)
+{
+	mCallback3D->openPointNoteMark(cellId);
+}
+
+void VtkWidget::openSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds)
+{
+	mCallback3D->openSurfaceNoteMark(cellIds);
+}
+
+void VtkWidget::openFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals)
+{
+	mCallback3D->openFrustumNoteMark(points, normals);
+}
+
 void VtkWidget::loadPointNoteMark(const int cellId, const ColorType color)
 {
 	mCallback3D->displayLoadPointNote(cellId, color);
@@ -538,10 +553,19 @@ void VtkWidget::removePointNote2DMark(double* point)
 	mCallback2D->removePointNoteMark(point);
 }
 
-
 void VtkWidget::removeSurfaceNote2DMark(double* point)
 {
 	mCallback2D->removeSurfaceNoteMark(point);
+}
+
+void VtkWidget::openPointNote2DMark(double* point)
+{
+	mCallback2D->openPointNoteMark(point);
+}
+
+void VtkWidget::openSurfaceNote2DMark(double* point)
+{
+	mCallback2D->openSurfaceNoteMark(point);
 }
 
 void VtkWidget::loadPointNote2DMark(double* point, const ColorType color)

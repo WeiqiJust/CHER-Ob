@@ -25,7 +25,7 @@
 
 *****************************************************************************/
 #include "importFromCHEDialog.h"
-#include "exportToProjectDialog.h"
+#include "../vtkEnums.h"
 
 ImportFromCHEDialog::ImportFromCHEDialog(QVector<QString> objects)
 {
@@ -79,6 +79,7 @@ ImportFromCHEDialog::ImportFromCHEDialog(QVector<QString> objects)
 	mVbox->addLayout(mButtonGridBox);
 	mDialog->setMinimumWidth(250);
 	mDialog->setLayout(mVbox);
+	isImported = false;
 }
 
 QVector<QString> ImportFromCHEDialog::getFilterList()
@@ -122,6 +123,7 @@ void ImportFromCHEDialog::import()
 		}
 	}
 	mDialog->hide();
+	isImported = true;
 }
 
 
