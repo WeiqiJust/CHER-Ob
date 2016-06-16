@@ -45,7 +45,7 @@ CHETab::CHETab(const CHEInfoBasic* info, QWidget *parent)
 	mFilter->addItem("Physical Dimensions / Measurement");
 	mFilter->addItem("Creation"); 
 	mFilter->addItem("Materials and Techniques"); 
-	mFilter->addItem("Stylisyic Analysis and Descriptions"); 
+	mFilter->addItem("Stylistic Analysis and Descriptions"); 
 	mFilter->addItem("Condition and Conservation"); 
 	mFilter->addItem("Analyses"); 
 	mFilter->addItem("Related Works"); 

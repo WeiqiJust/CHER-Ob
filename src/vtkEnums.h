@@ -65,7 +65,7 @@ static std::string num2category(int mode)
 		case 1: return "Physical Dimensions / Measurement";
 		case 2: return "Creation";
 		case 3: return "Materials and Techniques";
-		case 4: return "Stylisyic Analysis and Descriptions";
+		case 4: return "Stylistic Analysis and Descriptions";
 		case 5: return "Condition and Conservation";
 		case 6: return "Analyses";
 		case 7: return "Related Works";

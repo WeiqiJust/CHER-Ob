@@ -26,6 +26,7 @@
 *****************************************************************************/
 #include "mergeBackToCHEDialog.h"
 #include "exportToProjectDialog.h"
+#include "mergeBackToCHELocationDialog.h"
 
 MergeBackToCHEDialog::MergeBackToCHEDialog(QMap<QString, QString> objects)
 {
@@ -34,7 +35,7 @@ MergeBackToCHEDialog::MergeBackToCHEDialog(QMap<QString, QString> objects)
 
 	mDialog->setWindowTitle(tr("Merge Back to Cultural Heritage Entity"));
 
-	mLabel = new QLabel("Please select the objects and categories to be merged back to cultural heritage entity\n Notice ");
+	mLabel = new QLabel("Please select the objects and categories to be merged back");
 
 	mTreeWidget = new QTreeWidget();
 	QStringList ColumnNames;
@@ -157,6 +158,27 @@ void MergeBackToCHEDialog::itemChanged(QTreeWidgetItem * item, int column)
 			for (int i = 0; i < item->childCount(); i++)
 			{
 				item->child(i)->setCheckState(column, Qt::Checked);
+			}
+			if (item->text(1) == QString())
+			{
+				QVector<QString> locations;
+				for (int i = 0; i < mObject.values().size(); i++)
+				{
+					QString che = mObject.values().at(i);
+					che.truncate(che.lastIndexOf(QDir::separator()));
+					if (locations.indexOf(che) == -1)
+						locations.push_back(che);
+				}
+				MergeBackToCHELocationDialog* dialog = new MergeBackToCHELocationDialog(locations);
+				dialog->exec();
+				if (dialog->checkOk())
+				{
+					QString location = dialog->getSelected();
+					QStringList elements = item->text(0).split(QDir::separator());
+					location.append(QDir::separator() + elements[elements.size() - 1]);
+					mItems[mItems.indexOf(item)]->setText(1, location);
+					mObject[item->text(0)] = location;
+				}
 			}
 		}
 	}

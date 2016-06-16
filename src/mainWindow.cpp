@@ -1550,7 +1550,7 @@ void MainWindow::saveProjectAs()
 				return;
 			}
 		}
-		setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
+		setWindowTitle(appName()+appBits()+QString(" Project ")+currentProjectName);
 		updateXML();
 		
         return;
@@ -1682,7 +1682,6 @@ void MainWindow::importCHE()
 		return;
 
 	QVector<QString> filterList = dialog->getFilterList();
-	qDebug()<<"Import che"<<filterList[0];
 	QVector<QPair<QString, QString> > importObjectList;
 	if (!readXML(fileName, importObjectList, filterList, true, true))
 	{
@@ -1804,9 +1803,12 @@ void MainWindow::mergeProjectToCHE()
 		QString che = gla->mCHE;
         QString cheObjectName = gla->mCHEObject;
 		if (che.isEmpty() || cheObjectName.isEmpty())
-			continue;
-		che.append(QDir::separator() + cheObjectName);
-		objects[fn] = che;	// provide full path of the objects in case the objects share same name
+			objects[fn] = QString();
+		else
+		{
+			che.append(QDir::separator() + cheObjectName);
+			objects[fn] = che;	// provide full path of the objects in case the objects share same name
+		}
 	}
 	MergeBackToCHEDialog* dialog = new MergeBackToCHEDialog(objects);
 	dialog->exec();
@@ -1816,49 +1818,28 @@ void MainWindow::mergeProjectToCHE()
 		QVector<int> categories = dialog->getCategories(it.key());
 		QDir cheNoteDir(it.value());
 		QDir projectNoteDir(it.key());
-		if (!cheNoteDir.cd("Note") || !projectNoteDir.cd("Note"))
+		if (!projectNoteDir.cd("Note"))
 			continue;
-		/*
-		QFileInfoList items = cheNoteDir.entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
-		for (int j = 0; j < items.size(); j++)
+		if (!cheNoteDir.exists())
 		{
-			if (items[j].fileName() == QString("Annotation.txt"))
-				continue;
-			QFile *file = new QFile(items[j].absoluteFilePath());
-			if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
-			{
-				qDebug() << "Open Note file " << items[j].absoluteFilePath() << " Failed"; 
-				continue;
-			}
-			QTextStream in(file);
-			while(1)
-			{
-				QString signal = in.readLine();
-				if (signal == QString("Color Type:"))
-					break;
-			}
-			QString colorType;
-			in >> colorType;
-			file->close();
-			int type = color2type(colorType.toStdString());
-			// If the category of the note is to be merged, then remove the note in original CHE
-			// The new notes will be copied to the same location
-			if (categories.indexOf(type) != -1) 
-			{
-				file->remove();
-			}
-		}*/
+			QDir().mkdir(it.value());
+			cheNoteDir.mkdir("Note");
+			cheNoteDir.cd("Note");
+		}
 		QString projectBookMark = it.key();
 		projectBookMark.append(QDir::separator() + QString("BookMark"));
 		QString cheBookMark = it.value();
 		cheBookMark.append(QDir::separator() + QString("BookMark"));
+		if (!QDir().exists(cheBookMark))
+			QDir().mkdir(cheBookMark);
 		cpDir(projectBookMark, cheBookMark);
 		QString projectObject = it.key();
 		QStringList nameElements = projectObject.split(QDir::separator());
-		projectObject.append(nameElements[nameElements.size() - 1]);
+		projectObject.append(QDir::separator() + nameElements[nameElements.size() - 1]);
 		QString cheObject = it.value();
 		nameElements = cheObject.split(QDir::separator());
-		cheObject.append(nameElements[nameElements.size() - 1]);
+		cheObject.append(QDir::separator() + nameElements[nameElements.size() - 1]);
+		qDebug()<<"!!!"<<cheObject;
 		QFile::copy(projectObject, cheObject);
 		QFileInfoList newItems = projectNoteDir.entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
 		for (int j = 0; j < newItems.size(); j++)
@@ -2015,7 +1996,7 @@ bool MainWindow::openProject(QString fileName)
   }
 
   isSaved = true;
-  setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
+  setWindowTitle(appName()+appBits()+QString(" Project ")+currentProjectName);
   updateMenus();
   if(this->VTKA() == 0)  return false;
   qb->reset();
@@ -2121,7 +2102,7 @@ void MainWindow::createNewVtkProject(const QString fullName, const QString name,
 	lastUsedDirectory.setPath(currentProjectFullName);
 	
 	currentProjectName = name.simplified(); // remove leading/trailing whitespace
-	setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
+	setWindowTitle(appName()+appBits()+QString(" Project ")+currentProjectName);
 	currentProjectSave = currentProjectFullName;
 	currentProjectSave.append(QDir::separator() + currentProjectName + QString(".xml"));
 
@@ -3163,7 +3144,7 @@ void MainWindow::createNewCHE(const QString fullName, const QString name, const 
 	lastUsedDirectory.setPath(currentProjectFullName);
 	
 	currentProjectName = name.simplified(); // remove leading/trailing whitespace
-	setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
+	setWindowTitle(appName()+appBits()+QString(" CHE ")+currentProjectName);
 	currentProjectSave = currentProjectFullName;
 	currentProjectSave.append(QDir::separator() + currentProjectName + QString(".xml"));
 	mUserName = userName;
@@ -3265,7 +3246,7 @@ bool MainWindow::openCHE(QString fileName)
 	}
 
 	isSaved = true;
-	setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
+	setWindowTitle(appName()+appBits()+QString(" CHE ")+currentProjectName);
 	updateMenus();
 	if(this->VTKA() == 0)  return false;
 	qb->reset();
@@ -3349,7 +3330,7 @@ void MainWindow::saveCHEAs()
 			w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
 			this->mInformation->initAnnotation(mvc->currentView()->mProjectPath);
 		}
-		setWindowTitle(appName()+appBits()+QString(" ")+currentProjectName);
+		setWindowTitle(appName()+appBits()+QString(" CHE ")+currentProjectName);
 		CHEInfoBasic* info = new CHEInfoBasic();
 		info = dialog->getCHEInfo();
 		mCHETab->updateCHEInfo(info);

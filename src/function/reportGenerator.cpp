@@ -59,7 +59,7 @@ std::string color2categoryFullName(const std::string str)
 	else if (str == "YELLOW")
 		return "Materials and Techniques";
 	else if (str == "LIME")
-		return "Stylisyic Analysis and Descriptions";
+		return "Stylistic Analysis and Descriptions";
 	else if (str == "GREEN")
 		return "Condition and Conservation";
 	else if (str == "AQUA")
@@ -133,7 +133,7 @@ void ReportGenerator::generate()
 			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->creation + QString("</font></p><hr>\n")
 			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nMaterials and Techniques:</font></p>\n")
 			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->material + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nStylisyic Analysis and Descriptions:</font></p>\n")
+			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nStylistic Analysis and Descriptions:</font></p>\n")
 			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->description + QString("</font></p><hr>\n")
 			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nCondition and Conservation:</font></p>\n")
 			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->conservation + QString("</font></p><hr>\n")
@@ -429,10 +429,8 @@ void ReportGenerator::generate()
 			int imgWidth = img.width();
 			QStringList nameElements = mObjects[i]->mPictures[j].split(QDir::separator());
 			QString url = nameElements[nameElements.size() - 1];
-
 			QPainter painter(&img);
 			QFont font = painter.font();
-			
 			int pointSize = font.pointSize();
 			//qDebug()<<"font"<<i<<pointSize;
 			pointSize = pointSize*2 + 3.5*imgWidth / 400;
@@ -706,11 +704,6 @@ void ReportGenerator::generate()
     }
     painter.restore();
     painter.end();
-
-
-	
-  //  mDoc->print(mPrinter);
- 
 }
 
 void ReportGenerator::detectPointVisibility(vtkSmartPointer<vtkRenderer> render, QVector<double*> points, QVector<QPair<double, double> >& visiblePoints)

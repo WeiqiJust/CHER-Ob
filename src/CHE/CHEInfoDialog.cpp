@@ -81,7 +81,7 @@ CHEInfoDialog::CHEInfoDialog(QWidget *parent)
 	mCreation->setBuddy(mCreationContent);
 	mMaterial = new QLabel("Materials and Techniques:");
 	mMaterial->setBuddy(mMaterialContent);
-	mDescription = new QLabel("Stylisyic Analysis and Descriptions:");
+	mDescription = new QLabel("Stylistic Analysis and Descriptions:");
 	mDescription->setBuddy(mDescriptionContent);
 	mConservation = new QLabel("Condition and Conservation:");
 	mConservation->setBuddy(mConservationContent);
