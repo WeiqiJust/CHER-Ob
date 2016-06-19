@@ -226,7 +226,7 @@ void Note::addImage(QString fileName)
 	}
 	QVBoxLayout* mImageVBox = new QVBoxLayout();
 	QHBoxLayout* mInfoHBox = new QHBoxLayout();
-	mImageVBox->addWidget(imageNote->getImage());
+	mImageVBox->addWidget(imageNote->getImage(), 1, Qt::AlignCenter);
 	mInfoHBox->addWidget(imageNote->getName());
 	mInfoHBox->addWidget(imageNote->getButton());
 	mImageVBox->addLayout(mInfoHBox);

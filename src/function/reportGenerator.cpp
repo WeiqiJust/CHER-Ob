@@ -602,8 +602,7 @@ void ReportGenerator::generate()
 		}
 		//Add annotation and notes
 		if (!annotation.isEmpty())
-			html = html //+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nGeneral Annotation Text</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Garamond\">") + annotation + QString("</font></p><hr>\n");
+			html = html + QString("<p><font size=\"2\" face=\"Garamond\">") + annotation + QString("</font></p><hr>\n");
 		for (int j = 0; j < contents.size(); j++)
 		{
 			QString content =  contents[j].first;
@@ -629,13 +628,29 @@ void ReportGenerator::generate()
 			for (int k = 0; k < imagePaths.size(); k++)
 			{
 				QImage imgNote(dir.absoluteFilePath(imagePaths[k]));
+				int imgNoteHeight = imgNote.height();
+				int imgNoteWidth = imgNote.width();
+				if (imgNoteHeight == 0 || imgNoteWidth == 0)
+					continue;
+				int height, width;
+				if (imgNoteWidth/imgNoteHeight >= 3)
+				{	
+					width = 300;
+					height = (double)width * imgNoteHeight / imgNoteWidth;
+				}
+				else if (imgNoteWidth/imgNoteHeight >= 0.5)
+				{
+					width = 150;
+					height = (double)width * imgNoteHeight / imgNoteWidth;
+				}
+				else
+				{
+					height = 250;
+					width = (double)height * imgNoteWidth / imgNoteHeight;
+				}
 				QString name = mObjects[i]->mName + "_" + QString::number(j) + "_" + QString::number(k);
-				mDoc->addResource(QTextDocument::ImageResource, QUrl(name), imgNote);
-				if (k == 0)
-					html += QString("<p><div align=\"center\">");
-				html += QString("<img src=\"" + name + "\"width=\"" + QString::number(50) + "\" height=\"" + QString::number(50) + "\">");
-				if (k == imagePaths.size() - 1)
-					html += QString("</div></p>\n");
+				mDoc->addResource(QTextDocument::ImageResource, QUrl(name), imgNote);		
+				html += QString("<p><div align=\"center\"><img src=\"" + name + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>");
 			}
 			html += QString("<p><font size=\"2\" face=\"Garamond\">") + text + QString("</font></p>");
 			if (j != contents.size()-1)

@@ -64,7 +64,29 @@ ImageNote::ImageNote(const QString path, const QString file, const int id)
 	mImage = new QLabel();
 	mImage->setPixmap(image);
 	mImage->setScaledContents(true);
-    mImage->setFixedSize(300,150);
+
+	int imgNoteHeight = image.height();
+	int imgNoteWidth = image.width();
+	if (imgNoteHeight == 0 || imgNoteWidth == 0)
+		return;
+	int height, width;
+	if (imgNoteWidth/imgNoteHeight >= 3)
+	{	
+		width = 300;
+		height = (double)width * imgNoteHeight / imgNoteWidth;
+	}
+	else if (imgNoteWidth/imgNoteHeight >= 0.5)
+	{
+		width = 150;
+		height = (double)width * imgNoteHeight / imgNoteWidth;
+	}
+	else
+	{
+		height = 250;
+		width = (double)height * imgNoteWidth / imgNoteHeight;
+	};
+
+    mImage->setFixedSize(width, height);
 	mButton = new QPushButton("Remove");
 	connect(mButton, SIGNAL(clicked()), this, SLOT(remove()));
 }

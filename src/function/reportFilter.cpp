@@ -67,9 +67,9 @@ ReportFilter::ReportFilter(QVector<QString> objects)
 	connect(mCancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
 	mSelectAllButton = new QPushButton("Select All");
 	connect(mSelectAllButton, SIGNAL(clicked()), this, SLOT(selectAll()));
-	mButtonGridBox->addWidget(mSelectAllButton, 0, 5, 1, 1,  Qt::AlignVCenter | Qt::AlignLeft);
-	mButtonGridBox->addWidget(mGenerateButton, 0, 5, 1, 4,  Qt::AlignVCenter | Qt::AlignRight);
-	mButtonGridBox->addWidget(mCancelButton, 0, 5, 1, 5, Qt::AlignVCenter | Qt::AlignRight);
+	mButtonGridBox->addWidget(mSelectAllButton, 0, 4, 1, 1,  Qt::AlignVCenter | Qt::AlignLeft);
+	mButtonGridBox->addWidget(mGenerateButton, 0, 4, 1, 3,  Qt::AlignVCenter | Qt::AlignRight);
+	mButtonGridBox->addWidget(mCancelButton, 0, 4, 1, 4, Qt::AlignVCenter | Qt::AlignRight);
 	
 	mVbox->addWidget(mLabel);
 	mVbox->addWidget(mTreeWidget);
