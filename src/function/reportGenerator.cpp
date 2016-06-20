@@ -89,8 +89,11 @@ ReportGenerator::ReportGenerator(QString path, bool project)
     mDoc = new QTextDocument();
 	QFile file(path);
 	file.close();
-   // mDoc->setHtml("<h1>Hello, World!</h1>\n<p>Lorem ipsum dolor sit amet, consectitur adipisci elit.</p>");
-    
+
+	if (QFileInfo(mLocation).suffix() == QString("pdf"))
+		isPdf = true;
+	else
+		isPdf = false;
 }
 
 void ReportGenerator::setCHEInfo(const CHEInfoBasic* info)
@@ -115,7 +118,7 @@ void ReportGenerator::generate()
 	html.append("<p><font size=\"9\" color=\"#033F81\" face=\"Times New Roman\"><div align=\"center\"><strong>\n" + mProjectName + "\n</strong></div></font></p>\n");
 	html = html + QString("<p style=\"line-height:1\"><font size=\"3\" face=\"Garamond\"><div align=\"center\">\n") + mUserName + QString("\n</div></font></p>\n");
 	html = html + QString("<p style=\"line-height:1\"><font size=\"3\" face=\"Garamond\"><div align=\"center\">\n") + mAffiliation + QString("\n</div></font></p>\n");
-	html = html + QString("<br><\br>");
+	html = html + QString("<br></br>");
 	if (isProject)
 	{
 		html = html	+ QString("<p><font size=\"3\" color=\"#033F81\" face=\"Garamond\">\nDescription:\n</font></p>")
@@ -155,6 +158,12 @@ void ReportGenerator::generate()
 	tmp.append(QDir::separator() + QString("tmp"));
 	QDir().mkdir(tmp);
 	QDir tmpFolder(tmp);
+	QString htmlFolder = location;
+	if (!isPdf)
+	{
+		htmlFolder.append(QDir::separator() + QString("report"));
+		QDir().mkdir(htmlFolder);
+	}
 	for (int i = 0; i < mObjects.size(); i++)
 	{
 		//html = html + QString("<br></br>");
@@ -414,7 +423,6 @@ void ReportGenerator::generate()
 		}
 
 		//Process and add image
-		
 		for (int j = 0; j < mObjects[i]->mPictures.size(); j++)
 		{
 			QString path = QDir::toNativeSeparators(mObjects[i]->mPictures[j]);
@@ -432,9 +440,7 @@ void ReportGenerator::generate()
 			QPainter painter(&img);
 			QFont font = painter.font();
 			int pointSize = font.pointSize();
-			//qDebug()<<"font"<<i<<pointSize;
 			pointSize = pointSize*2 + 3.5*imgWidth / 400;
-			//qDebug()<<"object"<<i<<imgHeight<<imgWidth<<pointSize;
 			font.setPointSize(pointSize);
 			painter.setFont(font);
 			painter.setRenderHint(QPainter::Antialiasing);
@@ -586,18 +592,39 @@ void ReportGenerator::generate()
 			{
 				double height = 200, width = 300;
 				height = (double)width * imgHeight / imgWidth;
-				html = html + QString("<p><div align=\"center\"><img src=\"" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>\n");
+				if (isPdf)
+					html = html + QString("<p><div align=\"center\"><img src=\"" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>\n");
+				else
+				{
+					QString fileName = htmlFolder;
+					fileName.append(QDir::separator() + url);
+					img.save(fileName);
+					html = html + QString("<p><div align=\"center\"><img src=\"report/" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>\n");
+				}
 			}
 			else if (mObjects[i]->mMode == MODEL3D)
 			{
 				double height = 100, width = 150;
 				height = (double)width * imgHeight / imgWidth;
-				if (j == 0)
-					html += QString("<p><div align=\"center\"><img src=\"" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\">");
-				else if (j == mObjects[i]->mPictures.size() - 1)
-					html += QString("<img src=\"" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>\n");
+				if (isPdf)
+				{
+					if (j == 0)
+						html += QString("<p><div align=\"center\">");
+					html += QString("<img src=\"" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\">");
+					if (j == mObjects[i]->mPictures.size() - 1)
+						html += QString("</div></p>\n");
+				}
 				else
-					html += QString("<img src=\"" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\">");	
+				{
+					QString fileName = htmlFolder;
+					fileName.append(QDir::separator() + url);
+					img.save(fileName);
+					if (j == 0)
+						html += QString("<p><div align=\"center\">");
+					html += QString("<img src=\"report/" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\">");
+					if (j == mObjects[i]->mPictures.size() - 1)
+						html += QString("</div></p>\n");
+				}
 			}
 		}
 		//Add annotation and notes
@@ -648,9 +675,18 @@ void ReportGenerator::generate()
 					height = 250;
 					width = (double)height * imgNoteWidth / imgNoteHeight;
 				}
-				QString name = mObjects[i]->mName + "_" + QString::number(j) + "_" + QString::number(k);
-				mDoc->addResource(QTextDocument::ImageResource, QUrl(name), imgNote);		
-				html += QString("<p><div align=\"center\"><img src=\"" + name + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>");
+				QString name = mObjects[i]->mName;
+				name.insert(name.lastIndexOf("."), QString("_" + QString::number(j) + "_" + QString::number(k)));
+				mDoc->addResource(QTextDocument::ImageResource, QUrl(name), imgNote);
+				if (isPdf)
+					html += QString("<p><div align=\"center\"><img src=\"" + name + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>");
+				else
+				{
+					QString fileName = htmlFolder;
+					fileName.append(QDir::separator() + name);
+					imgNote.save(fileName);
+					html += QString("<p><div align=\"center\"><img src=\"report/" + name + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>");
+				}
 			}
 			html += QString("<p><font size=\"2\" face=\"Garamond\">") + text + QString("</font></p>");
 			if (j != contents.size()-1)
@@ -673,7 +709,6 @@ void ReportGenerator::generate()
 			delete frustumNote3D[j];
 		}
 	}
-	
 
 	tmpFolder.setNameFilters(QStringList() << "*.*");
 	tmpFolder.setFilter(QDir::Files);
@@ -682,6 +717,21 @@ void ReportGenerator::generate()
 		tmpFolder.remove(dirFile);
 	}
 	QDir().rmdir(tmp);
+
+	if (QFileInfo(mLocation).suffix() == QString("html"))
+	{
+		QFile file(mLocation);
+		  if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+		{
+			qDebug() << "Cannot write to file " << mLocation; 
+			return;
+		}
+		QTextStream out(&file);
+		out << html;
+		file.close();
+		return;
+	}
+
 	mDoc->setHtml(html);
 	mPrinter->setPageMargins(10, 10, 5, 20, QPrinter::Millimeter);
 	mDoc->setPageSize(mPrinter->pageRect().size());

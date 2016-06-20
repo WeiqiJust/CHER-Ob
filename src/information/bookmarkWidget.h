@@ -123,6 +123,7 @@ private:
   QHBoxLayout* hbox1, *hbox2;
   QVBoxLayout* vbox;
   QPushButton* newFolderButton;
+  QPushButton* addButton;
   QPushButton* editButton;
   QPushButton* deleteButton;
 

@@ -124,6 +124,7 @@ private:
 
 private:
 	bool isProject;
+	bool isPdf;
 	QString mLocation;
 	QPrinter* mPrinter;
 	QTextDocument* mDoc;

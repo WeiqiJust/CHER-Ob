@@ -217,9 +217,9 @@ public:
 
 public slots:
   void updateAllViews();
-  bool openImages(const QString& fileNameStart = QString(), const QString& CHEName = QString(),
+  OPENRESULT openImages(const QString& fileNameStart = QString(), const QString& CHEName = QString(),
 	  bool saveRecent = true, bool createFolder = true, bool import = false, bool readCHE = false); // open 2/3D image
-  bool openDICOM(const QString& fileNameStart = QString(), const QString& CHEName = QString(),
+  OPENRESULT openDICOM(const QString& fileNameStart = QString(), const QString& CHEName = QString(),
 	  bool saveRecent = true, bool createFolder = true, bool import = false, bool readCHE = false); // open DICOM folder
   void updateMenus(); // update toolbars
   void showFileInfo();

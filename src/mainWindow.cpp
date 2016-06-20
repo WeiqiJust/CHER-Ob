@@ -906,19 +906,19 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 	QFileInfo finfo(fn);
     QDomNodeList ftlist = elt.elementsByTagName("filetype");
     filetype = ftlist.at(0).toElement().text().toInt();
-    bool success = false;
+    OPENRESULT result;
 	if (fn != QString())
 	{
 		if(filetype == CTSTACK || filetype == CTVOLUME) 
 		{
-			success = openDICOM(fn, cheName, false, false, import, readCHE);
+			result = openDICOM(fn, cheName, false, false, import, readCHE);
 		} 
 		else 
 		{
-			success = openImages(fn, cheName, false, false, import, readCHE);
+			result = openImages(fn, cheName, false, false, import, readCHE);
 		}
 	}
-    if(!success) continue;
+    if(result == FAILED) continue;
 	
 	if(!che.isEmpty()) 
 	{
@@ -926,6 +926,7 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
         VTKA()->mCHEObject = cheObject;
     }
 	objectList.push_back(qMakePair(fn, chePath));
+	if(result == EXISTED) continue;	// when import, existed object will be updated
 
     // DT: Assumes that windows are sorted from first created to last created (default behavior).
     QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
@@ -1714,67 +1715,64 @@ void MainWindow::importCHE()
 	mClassifiedInfoTab->addCHEInfo(CHEName, categoryLabel, contents);
 	mClassifiedInfoTab->addCHEInfoToFile(CHEName);
 
-	if (importObjectList.size() > 0)
+	// copy object to current project folder
+	for (int i = 0; i < importObjectList.size(); i++)
 	{
-		QDir CHEDir(currentProjectFullName);
-		for (int i = 0; i < importObjectList.size(); i++)
+		QFileInfo finfo(importObjectList[i].first);
+		//qDebug()<<"import project"<<importObjectList[i];
+		QDir currentDir(currentProjectFullName);
+		QDir objectDir = finfo.absoluteDir();
+		bool ok = objectDir.cdUp();
+		if (ok && objectDir != currentDir)
 		{
-			QFileInfo finfo(importObjectList[i].first);
-			//qDebug()<<"import project"<<importObjectList[i];
-			QDir currentDir = CHEDir;
-			QDir objectDir = finfo.absoluteDir();
-			bool ok = objectDir.cdUp();
-			if (!ok || objectDir != currentDir)
+			objectDir = finfo.absoluteDir();
+			currentDir.mkdir(objectDir.dirName());
+			if (currentDir.cd(objectDir.dirName()))
 			{
-				objectDir = finfo.absoluteDir();
-				currentDir.mkdir(objectDir.dirName());
-				if (currentDir.cd(objectDir.dirName()))
+				cpDir(objectDir.absolutePath(), currentDir.absolutePath());
+				QVector<int> categories = dialog->getCategories(objectDir.dirName());
+				QDir projectDir = currentDir;
+				if (!projectDir.cd("Note"))
+					continue;
+				QFileInfoList items = projectDir.entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
+				for (int j = 0; j < items.size(); j++)
 				{
-					cpDir(objectDir.absolutePath(), currentDir.absolutePath());
-					QVector<int> categories = dialog->getCategories(objectDir.dirName());
-					QDir projectDir = currentDir;
-					if (!projectDir.cd("Note"))
+					if (items[j].fileName() == QString("Annotation.txt"))
 						continue;
-					QFileInfoList items = projectDir.entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
-					for (int j = 0; j < items.size(); j++)
+					QFile *file = new QFile(items[j].absoluteFilePath());
+					if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
 					{
-						if (items[j].fileName() == QString("Annotation.txt"))
-							continue;
-						QFile *file = new QFile(items[j].absoluteFilePath());
-						if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
-						{
-							qDebug() << "Open Note file " << items[j].absoluteFilePath() << " Failed"; 
-							continue;
-						}
-						QTextStream in(file);
-						while(1)
-						{
-							QString signal = in.readLine();
-							if (signal == QString("Color Type:"))
-								break;
-						}
-						QString colorType;
-						in >> colorType;
-						file->close();
-						int type = color2type(colorType.toStdString());
-						if (categories.indexOf(type) == -1)
-						{
-							file->remove();
-						}
+						qDebug() << "Open Note file " << items[j].absoluteFilePath() << " Failed"; 
+						continue;
 					}
-					this->mInformation->initAnnotation(currentDir.absolutePath());
-					QString che;
-					if (importObjectList[i].second != QString())
+					QTextStream in(file);
+					while(1)
 					{
-						QStringList nameElements = importObjectList[i].second.split(QDir::separator());
-						che = nameElements[nameElements.size() - 1];
+						QString signal = in.readLine();
+						if (signal == QString("Color Type:"))
+							break;
 					}
-					mNavigation->addObject(currentDir.absolutePath(), che);
+					QString colorType;
+					in >> colorType;
+					file->close();
+					int type = color2type(colorType.toStdString());
+					if (categories.indexOf(type) == -1)
+					{
+						file->remove();
+					}
 				}
-				else
+				this->mInformation->initAnnotation(currentDir.absolutePath());
+				QString che;
+				if (importObjectList[i].second != QString())
 				{
-					qDebug()<<"The Object Directory does not exist!"<<currentDir<<objectDir.absolutePath();
+					QStringList nameElements = importObjectList[i].second.split(QDir::separator());
+					che = nameElements[nameElements.size() - 1];
 				}
+				mNavigation->addObject(currentDir.absolutePath(), che);
+			}
+			else
+			{
+				qDebug()<<"The Object Directory does not exist!"<<currentDir<<objectDir.absolutePath();
 			}
 		}
 	}
@@ -2173,7 +2171,7 @@ void MainWindow::createNewVtkProject(const QString fullName, const QString name,
 
 
 //MK: DICOM input should be directory.
-bool MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import, bool readCHE)
+OPENRESULT MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import, bool readCHE)
 {
 	QString dirName;
 	if (fileNameStart.isEmpty())
@@ -2211,7 +2209,7 @@ bool MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName,
 		if (mObjectList.indexOf(fileName) != -1)	// the object is already in the project/CHE
 		{
 			QMessageBox::critical(this, tr("Opening Error"), fileName + " is already opened!");
-			return false;
+			return EXISTED;
 		}
 		// DT: create new VtkWidget
 		newImage();
@@ -2246,7 +2244,7 @@ bool MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName,
 			  QMessageBox::critical(this, tr("DICOM Opening Error"), "Unable to open " + fi.fileName() + ": Directory not found.");
 		  }
 		  updateAllViews();
-		  return false;
+		  return FAILED;
 		}
 
 		QDir dir = fi.absoluteDir();
@@ -2258,49 +2256,6 @@ bool MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName,
 		}
 		QString newFileName = currentWindowPath;
 		newFileName.append(QDir::separator() + fileName);
-
-		/*
-		if (!import)	// open	
-		{
-			if (createFolder)	// open object directly: use the current project path
-			{
-				VTKA()->mFilename = newFileName;
-				VTKA()->mProjectPath = currentWindowPath;
-			}
-			else	// open project/CHE from XML: use the path in XML directly in case of the CHE path 
-			{
-				VTKA()->mFilename = fileNameStart;
-				QString projectPath = fileNameStart;
-				projectPath.truncate(fileNameStart.lastIndexOf(QDir::separator()));
-				VTKA()->mProjectPath = projectPath;
-			}
-		}
-		else	// import
-		{
-			if (readCHE)	// import CHE: add CHE name in the path
-			{
-				QStringList nameElement = fileNameStart.split(QDir::separator());
-				if (nameElement.size() >= 3) 
-				{
-					QString fileNameElement = nameElement[nameElement.size() - 1];
-					QString CHEName = nameElement[nameElement.size() - 3];
-					VTKA()->mProjectPath = currentProjectFullName;
-					VTKA()->mProjectPath.append(QDir::separator() + CHEName + QDir::separator() + fileNameElement);
-					VTKA()->mFilename = VTKA()->mProjectPath;
-					VTKA()->mFilename.append(QDir::separator() + fileNameElement);
-				}
-				else
-				{
-					qDebug() << "The CHE path in XML is incorrect!!";
-					QMessageBox::critical(this, tr("Import Error"), "The path of Cultural Herritage Entity " + fileNameStart + " specified in XML file is incorrect! ");
-				}
-			}
-			else	// import Project: use the current project path
-			{
-				VTKA()->mFilename = newFileName;
-				VTKA()->mProjectPath = currentWindowPath;
-			}	
-		}*/
 
 		VTKA()->mFilename = newFileName;
 		VTKA()->mProjectPath = currentWindowPath;
@@ -2327,9 +2282,9 @@ bool MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName,
 		updateAllViews();
 		isSaved = false;
 		mObjectList.push_back(fileName);
-		return true;
+		return SUCCEED;
 	}
-	else return false;
+	else return FAILED;
 }
 
 void MainWindow::removeObject()
@@ -2394,7 +2349,7 @@ void MainWindow::removeObject()
 	updateAllViews();
 }
 
-bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import, bool readCHE)
+OPENRESULT MainWindow::openImages(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import, bool readCHE)
 {
 	QStringList filters;
 	filters.push_back("Images (*.ply *.obj *.wrl *.png *.jpg *.tif *.bmp *.exr *.dcm *rti *ptm *hsh *mview)");
@@ -2430,7 +2385,7 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 		if (!fi.isFile())
 		{
 			QMessageBox::critical(this, tr("Opening Object Error"), "Unable to open " + fi.fileName() + ": It is not a File!");
-			return false;
+			return FAILED;
 		}
 		QStringList nameElement = fileName.split(QDir::separator());
 		QString fileNameElement = nameElement[nameElement.size() - 1];
@@ -2452,7 +2407,7 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 		if (mObjectList.indexOf(fileNameElement) != -1)	// the object is already in the project/CHE
 		{
 			QMessageBox::critical(this, tr("Opening Error"), fileNameElement + " is already opened!");
-			return false;
+			return EXISTED;
 		}
 
 		newImage();
@@ -2481,7 +2436,7 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 			}
 
 			updateAllViews();
-			return false;
+			return FAILED;
 		}
 
 		QDir dir = fi.absoluteDir();
@@ -2494,55 +2449,6 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 		}
 		QString newFileName = currentWindowPath;
 		newFileName.append(QDir::separator() + fileNameElement);
-		/*if (!import)	// open	
-		{
-			if (createFolder)	// open object directly: use the current project path
-			{
-				VTKA()->mFilename = newFileName;
-				VTKA()->mProjectPath = currentWindowPath;
-			}
-			else	// open project/CHE from XML: use the path in XML directly in case of the CHE path 
-			{
-				VTKA()->mFilename = fileNameStart;
-				QString projectPath = fileNameStart;
-				projectPath.truncate(fileNameStart.lastIndexOf(QDir::separator()));
-				VTKA()->mProjectPath = projectPath;
-			}
-		}
-		else	// import
-		{
-			if (readCHE)	// import CHE: add CHE name in the path
-			{
-				QStringList nameElement = fileNameStart.split(QDir::separator());
-				if (!CHEName.isEmpty()) 
-				{
-					VTKA()->mProjectPath = currentProjectFullName;
-					VTKA()->mProjectPath.append(QDir::separator() + CHEName + QDir::separator() + fileNameElement);
-					VTKA()->mFilename = VTKA()->mProjectPath;
-					VTKA()->mFilename.append(QDir::separator() + fileNameElement);
-				}
-				else
-				{
-					qDebug() << "The CHE path in XML is incorrect!!";
-					QMessageBox::critical(this, tr("Import Error"), "The path of Cultural Herritage Entity " + fileNameStart + " specified in XML file is incorrect! ");
-				}
-			}
-			else	// import Project: use the current project path
-			{
-				if (CHEName.isEmpty())	// import single object from the project
-				{
-					VTKA()->mFilename = newFileName;
-					VTKA()->mProjectPath = currentWindowPath;
-				}
-				else	// import CHE's object from project
-				{
-					VTKA()->mProjectPath = currentProjectFullName;
-					VTKA()->mProjectPath.append(QDir::separator() + CHEName + QDir::separator() + fileNameElement);
-					VTKA()->mFilename = VTKA()->mProjectPath;
-					VTKA()->mFilename.append(QDir::separator() + fileNameElement);
-				}
-			}	
-		}*/
 
 		VTKA()->mFilename = newFileName;
 		VTKA()->mProjectPath = currentWindowPath;
@@ -2569,9 +2475,9 @@ bool MainWindow::openImages(const QString& fileNameStart, const QString& CHEName
 		//updateXML();
 		updateAllViews();
 		mObjectList.push_back(fileNameElement);
-		return true;
+		return SUCCEED;
 	}
-	else return false;
+	else return FAILED;
 }
 
 void MainWindow::save()
@@ -4507,11 +4413,14 @@ void MainWindow::readSettings()
 
 void MainWindow::generateReport()
 {
-	QString file = QFileDialog::getSaveFileName((QWidget* )0, "Export PDF", QString(), "*.pdf");
+	QStringList filters;
+	filters.push_back("*.pdf");
+	filters.push_back("*.html");
+	QString file = QFileDialog::getSaveFileName((QWidget* )0, "Export PDF", QString(), filters.join(";;"));
 	if (file.isEmpty())
 		return;
 	file = QDir::toNativeSeparators(file);
-    if (QFileInfo(file).suffix().isEmpty()) { file.append(".pdf"); }
+    if (QFileInfo(file).suffix().isEmpty()) return;
 	ReportGenerator* report;
 
 	if (!isCHE)

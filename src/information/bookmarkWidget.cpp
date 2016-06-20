@@ -44,14 +44,17 @@ BookmarkWidget::BookmarkWidget(QWidget *parent)
   hbox1->addWidget(bTreeWidget);
 
   hbox2 = new QHBoxLayout();
-  newFolderButton = new QPushButton("New Folder");
+  //newFolderButton = new QPushButton("New Folder");
+  addButton = new QPushButton("Add");
   editButton = new QPushButton("Edit");
   deleteButton = new QPushButton("Delete");
-  newFolderButton->setEnabled(false);
+  //newFolderButton->setEnabled(false);
+  addButton->setEnabled(false);
   editButton->setEnabled(false);
   deleteButton->setEnabled(false);
 
-  hbox2->addWidget(newFolderButton);
+  //hbox2->addWidget(newFolderButton);
+  hbox2->addWidget(addButton);
   hbox2->addWidget(editButton);
   hbox2->addWidget(deleteButton);
 
@@ -60,9 +63,10 @@ BookmarkWidget::BookmarkWidget(QWidget *parent)
   connect(bTreeWidget, SIGNAL(itemCollapsed(QTreeWidgetItem*)), this, SLOT(saveFolderState(QTreeWidgetItem*)));
   connect(bTreeWidget, SIGNAL(customContextMenuRequested(const QPoint&)),
           this, SLOT(showContextMenu(const QPoint&)));
-  connect(newFolderButton, SIGNAL(clicked()), this, SLOT(createFolder()) );
-  connect(editButton, SIGNAL(clicked()), this, SLOT(editItem()) );
-  connect(deleteButton, SIGNAL(clicked()), this, SLOT(deleteItem()) );
+  //connect(newFolderButton, SIGNAL(clicked()), this, SLOT(createFolder()));
+  connect(addButton, SIGNAL(clicked()), this, SLOT(createBookmark()));
+  connect(editButton, SIGNAL(clicked()), this, SLOT(editItem()));
+  connect(deleteButton, SIGNAL(clicked()), this, SLOT(deleteItem()));
 
   vbox = new QVBoxLayout();
   vbox->addLayout(hbox1);
@@ -122,8 +126,8 @@ void BookmarkWidget::showContextMenu(const QPoint &pos)
     QPoint globalPos = bTreeWidget->mapToGlobal(pos);
     QTreeWidgetItem* item = bTreeWidget->itemAt(pos);
     if(!item) {
-        QAction* addFolderAct = menu.addAction(tr("Add Folder..."));
-        addFolderAct->setData(QVariant(ADD_FOLDER));
+        //QAction* addFolderAct = menu.addAction(tr("Add Folder..."));
+        //addFolderAct->setData(QVariant(ADD_FOLDER));
         QAction* addBookmarkAct = menu.addAction(tr("Add Bookmark..."));
         addBookmarkAct->setData(QVariant(ADD_BOOKMARK));
     } else { 
@@ -150,7 +154,7 @@ void BookmarkWidget::showContextMenu(const QPoint &pos)
     {
         int a = act->data().toInt();
         switch(a) {
-        case ADD_FOLDER: { createFolder(); break; }
+        //case ADD_FOLDER: { createFolder(); break; }
         case ADD_BOOKMARK: { createBookmark(); break; }
         case EDIT_ITEM: { editItem(item); break; }
         case DELETE_ITEM: { deleteItem(item); break; }
@@ -438,13 +442,15 @@ void BookmarkWidget::refreshBookmarkList()
     bTreeWidget->clear();
 
     if(!mw()->VTKA() ){
-        newFolderButton->setEnabled(false);
+        //newFolderButton->setEnabled(false);
+		addButton->setEnabled(false);
         editButton->setEnabled(false);
         deleteButton->setEnabled(false);
         return;
     }
 
-    newFolderButton->setEnabled(true);
+    //newFolderButton->setEnabled(true);
+	addButton->setEnabled(true);
     editButton->setEnabled(true);
     deleteButton->setEnabled(true);
 
