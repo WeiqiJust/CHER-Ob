@@ -15,6 +15,10 @@ class vtkPolyData;
 class VtkWidget;
 class LSCM;
 
+/**
+ * This class is to designed to provide surface walker camera mode. It is buggy and not being used!
+ */
+
 class vtkInteractorStyleSurfaceWalkerCamera : public vtkInteractorStyleTrackballCamera
 {
 public:

@@ -419,6 +419,7 @@ private:
   QMenu *viewFromMenu;
   QMenu *annotationModeMenu;
   QMenu *annotationColorMenu;
+  QMenu *colorDropMenu;
   QMenu *handleMenu;
   QMenu *splitMenu;
   QMenu *unSplitMenu;

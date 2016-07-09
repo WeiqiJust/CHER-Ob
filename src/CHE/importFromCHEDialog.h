@@ -52,28 +52,54 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 
+/**
+ * This class is designed as a dialog to choose what information
+ * should be imported from a CHE.
+ */
+
 class ImportFromCHEDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * Constructor with all the objects' full path as input.
+	 */
 	ImportFromCHEDialog(QVector<QString> objects);
 
-	QVector<QString> getFilterList();	// objects that are not selected
+	/**
+	 * Get the filter result, which contains all the objects that are not selected for import.
+	 */
+	QVector<QString> getFilterList();
 
-	QVector<int> getCategories(const QString object);	// categories from selected objects
+	/**
+	 * Get the categories of the selected object.
+	 * Input is the full path of a selected object .
+	 */
+	QVector<int> getCategories(const QString object);	
 
 	void exec()	{mDialog->exec();}
 
+	/**
+	 * Test whether the import should be processed or canceled.
+	 */
 	bool isImport() {return isImported;}
 
 private slots:
+	/**
+	 * Handle buttons.
+	 */
 	void import();
 
 	void cancel();
 
 	void selectAll();
 
+	/**
+	 * Handle the change of check state of items in tree widget.
+	 * If the object item is checked, then all its child (category items) should all be checked.
+	 * If the object item is unchecked, then all its child (category items) should all be unchecked.
+	 */
 	void itemChanged(QTreeWidgetItem * item, int column);
 
 private:

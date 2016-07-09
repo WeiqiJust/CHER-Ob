@@ -1560,6 +1560,7 @@ void VtkWidget::Rendering3D()
   mRenderer->AddViewProp(annotation);
   mCallback3D->displayInfoAnnotation();
   mCallback3D->SetDisplayInfoOn(mDisplayInfoOn);
+  mCallback3D->mViewStyle = style;
   //------------------------------------------------------------------------------------------
   // keyboard connection
 

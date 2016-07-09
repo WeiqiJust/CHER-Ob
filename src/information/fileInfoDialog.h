@@ -59,17 +59,24 @@
 class MainWindow;
 class VtkWidget;
 
+/**
+ * This class is the file info dialog, which presents necessary information for each object.
+ */
 class FileInfoDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
+	// Constructor
 	FileInfoDialog(VtkWidget* w = 0);
 
 public slots:
 	void hide()	{mDialog->hide();}
 
 private:
+	/**
+	 * Get different info according to object type.
+	 */
 	void get2DInfo();
 
 	void get3DInfo();

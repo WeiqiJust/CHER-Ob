@@ -36,11 +36,16 @@
 #include <QRect>
 #include <QObject>
 #include <QAbstractTextDocumentLayout>
+
+/**
+ * This class is designed to render using html delegate. It is used in report generation, highlighting search result etc..
+ */
 class HtmlDelegate : public QStyledItemDelegate
 {
 protected:
-    void paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const;
-    QSize sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const;
+    void paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const;
+
+    QSize sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const;
 };
 
 #endif

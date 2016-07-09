@@ -782,80 +782,81 @@ void MainWindow::updateXML()
 
 bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &objectList, QVector<QString> filterList, bool import, bool readCHE)
 {
-  QFileInfo fi(fileName);
-  double pos[3]; // camera position
-  double foc[3]; // focal point
-  double angle; // view angle
-  double view[3]; // view up direction
-  double clip[2]; // clipping range
-  double scale; // parallel scale
-  int filetype;
-  double brightness = this->mLightControl->GetIntensityL1();
-  double contrast = this->mLightControl->GetIntensityL2();
-  int directionalLightOn;
-  int interpolationOn;
-  int mode3D;
-  int textureOn;
-  int ctSlice = 0;
-  int ctOrientation = 0;
-  int ctMode;
-  int ctBlendType;
-  double ctResolution;
-  double orientation[3];
+	QFileInfo fi(fileName);
+	double pos[3]; // camera position
+	double foc[3]; // focal point
+	double angle; // view angle
+	double view[3]; // view up direction
+	double clip[2]; // clipping range
+	double scale; // parallel scale
+	int filetype;
+	double brightness = this->mLightControl->GetIntensityL1();
+	double contrast = this->mLightControl->GetIntensityL2();
+	int directionalLightOn;
+	int interpolationOn;
+	int mode3D;
+	int textureOn;
+	int ctSlice = 0;
+	int ctOrientation = 0;
+	int ctMode;
+	int ctBlendType;
+	double ctResolution;
+	double orientation[3];
 
-  vtkSmartPointer<vtkAssembly> assembly = this->mLightControl->GetAssembly();
-  assembly->GetOrientation(orientation);
+	vtkSmartPointer<vtkAssembly> assembly = this->mLightControl->GetAssembly();
+	assembly->GetOrientation(orientation);
 
-  QFile file(fi.absoluteFilePath());
-  if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      QMessageBox::critical(this, tr("Project Error"), tr("Cannot open project."));
-      return false;
-  }
+	QFile file(fi.absoluteFilePath());
+	if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+	  QMessageBox::critical(this, tr("Project Error"), tr("Cannot open project."));
+	  return false;
+	}
 
-  QDomDocument doc;
-  doc.setContent(&file);
-  qDebug() << fi.absoluteFilePath();
-  QDomNodeList list;
-  if (!readCHE)
+	QDomDocument doc;
+	doc.setContent(&file);
+	qDebug() << fi.absoluteFilePath();
+	QDomNodeList list;
+	if (!readCHE)
 	list = doc.elementsByTagName("CHEROb.project");
-  else
+	else
 	list = doc.elementsByTagName("CHEROb.cultural_heritage_entity");
 
-  if (list.isEmpty())
-  {
+	if (list.isEmpty())
+	{
 	  QString message = fi.fileName() + tr(" is not a valid CHEROb project file.");
-      QMessageBox::critical(this, tr("Project Error"), message);
-      return false;
-  }
+	  QMessageBox::critical(this, tr("Project Error"), message);
+	  return false;
+	}
 
-  currentProjectFullName = QDir::toNativeSeparators(QDir::currentPath());
-  QDir currentFolder(QDir::currentPath());
+	currentProjectFullName = QDir::toNativeSeparators(QDir::currentPath());
+	QDir currentFolder(QDir::currentPath());
 
-  QDomElement root = list.at(0).toElement();
-  QString name = root.attribute("name");
-  mUserName = root.attribute("user");
+	QDomElement root = list.at(0).toElement();
+	QString name = root.attribute("name");
+	mUserName = root.attribute("user");
 
-  //If the readXML is called by "import", then project name should not be changed, objectlist is not cleared
-  //Otherwise, it should be called by "open", then project name should be changed, and objectlist is cleared
-  if (!import)	
-  {
+	//If the readXML is called by "import", then project name should not be changed, objectlist is not cleared
+	//Otherwise, it should be called by "open", then project name should be changed, and objectlist is cleared
+	if (!import)	
+	{
 	  currentProjectName = name;
 	  mNavigation->init(currentProjectName, !isCHE);
 	  mObjectList.clear();
-  }
-  //qDebug()<<"Project Name"<<currentProjectName;
+	}
+	//qDebug()<<"Project Name"<<currentProjectName;
 
-  if (!readCHE)
-  {
+	if (!readCHE)
+	{
 	  QDomNodeList projectInfo = root.elementsByTagName("project");
 	  currentProjectKeyword = projectInfo.at(0).toElement().elementsByTagName("keyword").at(0).toElement().text();
 	  currentProjectAffiliation = projectInfo.at(0).toElement().elementsByTagName("affiliation").at(0).toElement().text();
 	  currentProjectDescription = projectInfo.at(0).toElement().elementsByTagName("description").at(0).toElement().text();
 	  if (!import)
 		createClassifiedInfoDockWindows();
-  }
-  else
-  {
+	}
+	else
+	{
 	  QDomNodeList CHEInfo = root.elementsByTagName("cultural_heritage_entity");
 	  CHEInfoBasic* info = new CHEInfoBasic();
 	  info->object = CHEInfo.at(0).toElement().elementsByTagName("object").at(0).toElement().text();
@@ -871,15 +872,15 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 	  info->other = CHEInfo.at(0).toElement().elementsByTagName("other").at(0).toElement().text();
 	  if (!import)
 		createCHEDockWindows(info);
-  }
+	}
 
-  QDomNodeList items = root.elementsByTagName("item");
-  QList<QDomElement> eltList;
-  QList<QMdiSubWindow*> windowList;
-  
-  for(int i = 0; i < items.length(); i++) {
-    QDomElement elt = items.at(i).toElement();
-    QString fn = elt.attribute("filename");
+	QDomNodeList items = root.elementsByTagName("item");
+	QList<QDomElement> eltList;
+	QList<QMdiSubWindow*> windowList;
+
+	for(int i = 0; i < items.length(); i++) {
+	QDomElement elt = items.at(i).toElement();
+	QString fn = elt.attribute("filename");
 	QFileInfo file(fn);
 	if (import)	// if import the object absolute path is xml path + relative path
 	{
@@ -904,9 +905,9 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 	QStringList cheNameElements = chePath.split(QDir::separator());
 	QString cheName = cheNameElements[cheNameElements.size() - 1];
 	QFileInfo finfo(fn);
-    QDomNodeList ftlist = elt.elementsByTagName("filetype");
-    filetype = ftlist.at(0).toElement().text().toInt();
-    OPENRESULT result;
+	QDomNodeList ftlist = elt.elementsByTagName("filetype");
+	filetype = ftlist.at(0).toElement().text().toInt();
+	OPENRESULT result;
 	if (fn != QString())
 	{
 		if(filetype == CTSTACK || filetype == CTVOLUME) 
@@ -918,255 +919,255 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 			result = openImages(fn, cheName, false, false, import, readCHE);
 		}
 	}
-    if(result == FAILED) continue;
-	
+	if(result == FAILED) continue;
+
 	if(!che.isEmpty()) 
 	{
 		VTKA()->mCHE = chePath;
-        VTKA()->mCHEObject = cheObject;
-    }
+		VTKA()->mCHEObject = cheObject;
+	}
 	objectList.push_back(qMakePair(fn, chePath));
 	if(result == EXISTED) continue;	// when import, existed object will be updated
 
-    // DT: Assumes that windows are sorted from first created to last created (default behavior).
-    QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
-    QMdiSubWindow* w = windows.at(windows.length()-1);
+	// DT: Assumes that windows are sorted from first created to last created (default behavior).
+	QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+	QMdiSubWindow* w = windows.at(windows.length()-1);
 
-    windowList.append(w);
-    eltList.append(elt);
-  }
+	windowList.append(w);
+	eltList.append(elt);
+	}
 
-  mdiArea->tileSubWindows();
+	mdiArea->tileSubWindows();
 
-  for(int i = 0; i < windowList.length(); i++) {
-      QMdiSubWindow* w = windowList.at(i);
-      QDomElement elt = eltList.at(i);
-      QDomNodeList ftlist = elt.elementsByTagName("filetype");
-      filetype = ftlist.at(0).toElement().text().toInt();
+	for(int i = 0; i < windowList.length(); i++) {
+	  QMdiSubWindow* w = windowList.at(i);
+	  QDomElement elt = eltList.at(i);
+	  QDomNodeList ftlist = elt.elementsByTagName("filetype");
+	  filetype = ftlist.at(0).toElement().text().toInt();
 
-      if(!w) continue;
+	  if(!w) continue;
 
-      mdiArea->setActiveSubWindow(w);
-      VtkView* mvc = qobject_cast<VtkView *>(w->widget());
-      VtkWidget* gla = mvc->currentView();
-      QString file = gla->mFilename;
-      QFileInfo fi(file);
-      w->setWindowTitle(currentProjectName + QString(" : ") + fi.fileName());
+	  mdiArea->setActiveSubWindow(w);
+	  VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+	  VtkWidget* gla = mvc->currentView();
+	  QString file = gla->mFilename;
+	  QFileInfo fi(file);
+	  w->setWindowTitle(currentProjectName + QString(" : ") + fi.fileName());
 
-      vtkSmartPointer<vtkCamera> camera = gla->mRenderer->GetActiveCamera();
-      QDomNodeList list1 = elt.elementsByTagName("camera_position");
-      if(!list1.isEmpty()) {
-          pos[0] = list1.at(0).toElement().elementsByTagName("x").at(0).toElement().text().toDouble();
-          pos[1] = list1.at(0).toElement().elementsByTagName("y").at(0).toElement().text().toDouble();
-          pos[2] = list1.at(0).toElement().elementsByTagName("z").at(0).toElement().text().toDouble();
-          camera->SetPosition(pos);
-      }
-      QDomNodeList list2 = elt.elementsByTagName("focal_point");
-      if(!list2.isEmpty()) {
-          foc[0] = list2.at(0).toElement().elementsByTagName("x").at(0).toElement().text().toDouble();
-          foc[1] = list2.at(0).toElement().elementsByTagName("y").at(0).toElement().text().toDouble();
-          foc[2] = list2.at(0).toElement().elementsByTagName("z").at(0).toElement().text().toDouble();
-          camera->SetFocalPoint(foc);
-      }
-      QDomNodeList list3 = elt.elementsByTagName("camera_angle");
-      if(!list3.isEmpty()) {
-          angle = list3.at(0).toElement().text().toDouble();
-          camera->SetViewAngle(angle);
-      }
-      QDomNodeList list4 = elt.elementsByTagName("view_up");
-      if(!list4.isEmpty()) {
-          view[0] = list4.at(0).toElement().elementsByTagName("x").at(0).toElement().text().toDouble();
-          view[1] = list4.at(0).toElement().elementsByTagName("y").at(0).toElement().text().toDouble();
-          view[2] = list4.at(0).toElement().elementsByTagName("z").at(0).toElement().text().toDouble();
-          camera->SetViewUp(view);
-      }
-      QDomNodeList list5 = elt.elementsByTagName("clipping_range");
-      if(!list5.isEmpty()) {
-          clip[0] = list5.at(0).toElement().elementsByTagName("near_plane").at(0).toElement().text().toDouble();
-          clip[1] = list5.at(0).toElement().elementsByTagName("far_plane").at(0).toElement().text().toDouble();
-          camera->SetClippingRange(clip);
-      }
-      QDomNodeList list6 = elt.elementsByTagName("parallel_scale");
-      if(!list6.isEmpty()) {
-          scale = list6.at(0).toElement().text().toDouble();
-          camera->SetParallelScale(scale);
-      }
+	  vtkSmartPointer<vtkCamera> camera = gla->mRenderer->GetActiveCamera();
+	  QDomNodeList list1 = elt.elementsByTagName("camera_position");
+	  if(!list1.isEmpty()) {
+		  pos[0] = list1.at(0).toElement().elementsByTagName("x").at(0).toElement().text().toDouble();
+		  pos[1] = list1.at(0).toElement().elementsByTagName("y").at(0).toElement().text().toDouble();
+		  pos[2] = list1.at(0).toElement().elementsByTagName("z").at(0).toElement().text().toDouble();
+		  camera->SetPosition(pos);
+	  }
+	  QDomNodeList list2 = elt.elementsByTagName("focal_point");
+	  if(!list2.isEmpty()) {
+		  foc[0] = list2.at(0).toElement().elementsByTagName("x").at(0).toElement().text().toDouble();
+		  foc[1] = list2.at(0).toElement().elementsByTagName("y").at(0).toElement().text().toDouble();
+		  foc[2] = list2.at(0).toElement().elementsByTagName("z").at(0).toElement().text().toDouble();
+		  camera->SetFocalPoint(foc);
+	  }
+	  QDomNodeList list3 = elt.elementsByTagName("camera_angle");
+	  if(!list3.isEmpty()) {
+		  angle = list3.at(0).toElement().text().toDouble();
+		  camera->SetViewAngle(angle);
+	  }
+	  QDomNodeList list4 = elt.elementsByTagName("view_up");
+	  if(!list4.isEmpty()) {
+		  view[0] = list4.at(0).toElement().elementsByTagName("x").at(0).toElement().text().toDouble();
+		  view[1] = list4.at(0).toElement().elementsByTagName("y").at(0).toElement().text().toDouble();
+		  view[2] = list4.at(0).toElement().elementsByTagName("z").at(0).toElement().text().toDouble();
+		  camera->SetViewUp(view);
+	  }
+	  QDomNodeList list5 = elt.elementsByTagName("clipping_range");
+	  if(!list5.isEmpty()) {
+		  clip[0] = list5.at(0).toElement().elementsByTagName("near_plane").at(0).toElement().text().toDouble();
+		  clip[1] = list5.at(0).toElement().elementsByTagName("far_plane").at(0).toElement().text().toDouble();
+		  camera->SetClippingRange(clip);
+	  }
+	  QDomNodeList list6 = elt.elementsByTagName("parallel_scale");
+	  if(!list6.isEmpty()) {
+		  scale = list6.at(0).toElement().text().toDouble();
+		  camera->SetParallelScale(scale);
+	  }
 
-      if(filetype == IMAGE2D) {
-          list = elt.elementsByTagName("interpolation_on");
-          if(!list.isEmpty()) {
-              interpolationOn = list.at(0).toElement().text().toInt();
-              if(interpolationOn == INTERPOLATION_ON) {
-                  this->renderModeInterpolationAct->setChecked(true);
-                  gla->setInterpolateOn(true);
-              } else {
-                  this->renderModeInterpolationAct->setChecked(false);
-                  gla->setInterpolateOn(false);
-              }
-          }
-      } else if(filetype == MODEL3D) {
-          list = elt.elementsByTagName("directional_light");
-          if(!list.isEmpty()) {
-              directionalLightOn = list.at(0).toElement().text().toInt();
-              if(directionalLightOn) {
-                  this->setDirectionalLightAct->setChecked(true);
-                  this->mLightControl->setDirectionalLight(true);
-              } else {
-                  this->setDirectionalLightAct->setChecked(false);
-                  this->mLightControl->setDirectionalLight(false);
-              }
-          } else {
-              this->setDirectionalLightAct->setChecked(true);
-              this->mLightControl->setDirectionalLight(true);
-          }
-          list = elt.elementsByTagName("light_vector");
-          if(!list.isEmpty()) {
-              orientation[0] = list.at(0).toElement().elementsByTagName("x").at(0).toElement().text().toDouble();
-              orientation[1] = list.at(0).toElement().elementsByTagName("y").at(0).toElement().text().toDouble();
-              orientation[2] = list.at(0).toElement().elementsByTagName("z").at(0).toElement().text().toDouble();
-          }
-          list = elt.elementsByTagName("brightness");
-          if(!list.isEmpty()) {
-              brightness = list.at(0).toElement().text().toDouble();
-          }
-          list = elt.elementsByTagName("contrast");
-          if(!list.isEmpty()) {
-              contrast = list.at(0).toElement().text().toDouble();
-          }
+	  if(filetype == IMAGE2D) {
+		  list = elt.elementsByTagName("interpolation_on");
+		  if(!list.isEmpty()) {
+			  interpolationOn = list.at(0).toElement().text().toInt();
+			  if(interpolationOn == INTERPOLATION_ON) {
+				  this->renderModeInterpolationAct->setChecked(true);
+				  gla->setInterpolateOn(true);
+			  } else {
+				  this->renderModeInterpolationAct->setChecked(false);
+				  gla->setInterpolateOn(false);
+			  }
+		  }
+	  } else if(filetype == MODEL3D) {
+		  list = elt.elementsByTagName("directional_light");
+		  if(!list.isEmpty()) {
+			  directionalLightOn = list.at(0).toElement().text().toInt();
+			  if(directionalLightOn) {
+				  this->setDirectionalLightAct->setChecked(true);
+				  this->mLightControl->setDirectionalLight(true);
+			  } else {
+				  this->setDirectionalLightAct->setChecked(false);
+				  this->mLightControl->setDirectionalLight(false);
+			  }
+		  } else {
+			  this->setDirectionalLightAct->setChecked(true);
+			  this->mLightControl->setDirectionalLight(true);
+		  }
+		  list = elt.elementsByTagName("light_vector");
+		  if(!list.isEmpty()) {
+			  orientation[0] = list.at(0).toElement().elementsByTagName("x").at(0).toElement().text().toDouble();
+			  orientation[1] = list.at(0).toElement().elementsByTagName("y").at(0).toElement().text().toDouble();
+			  orientation[2] = list.at(0).toElement().elementsByTagName("z").at(0).toElement().text().toDouble();
+		  }
+		  list = elt.elementsByTagName("brightness");
+		  if(!list.isEmpty()) {
+			  brightness = list.at(0).toElement().text().toDouble();
+		  }
+		  list = elt.elementsByTagName("contrast");
+		  if(!list.isEmpty()) {
+			  contrast = list.at(0).toElement().text().toDouble();
+		  }
 
-          list = elt.elementsByTagName("interpolation_on");
-          if(!list.isEmpty()) {
-              interpolationOn = list.at(0).toElement().text().toInt();
-              qDebug() << interpolationOn;
-              if(interpolationOn == INTERPOLATION_ON) {
-                  this->renderModeInterpolationAct->setChecked(true);
-                  gla->setInterpolateOn(true);
-              } else {
-                  this->renderModeInterpolationAct->setChecked(false);
-                  gla->setInterpolateOn(false);
-              }
-          }
-          list = elt.elementsByTagName("display_mode");
-          if(!list.isEmpty()) {
-              mode3D = list.at(0).toElement().text().toInt();
-              if(mode3D == POINTS3D) {
-                  this->renderModePointsAct->setChecked(true);
-                  this->renderModeWireAct->setChecked(false);
-                  this->renderModeFlatAct->setChecked(false);
-                  gla->setRenderMode3D(POINTS3D);
-              } else if(mode3D == WIREFRAME3D) {
-                  this->renderModePointsAct->setChecked(false);
-                  this->renderModeWireAct->setChecked(true);
-                  this->renderModeFlatAct->setChecked(false);
-                  gla->setRenderMode3D(WIREFRAME3D);
-              } else if (mode3D == SURFACE3D){
-                  this->renderModePointsAct->setChecked(false);
-                  this->renderModeWireAct->setChecked(false);
-                  this->renderModeFlatAct->setChecked(true);
-                  gla->setRenderMode3D(SURFACE3D);
-              }
-          }
-          list = elt.elementsByTagName("texture_on");
-          if(!list.isEmpty()) {
-              textureOn = list.at(0).toElement().text().toInt();
-              if(textureOn == TEXTURE_ON) {
-                  this->renderModeTextureAct->setChecked(true);
-                  this->renderModeTextureAct->setIcon(QIcon(":/images/textureson.png"));
-                  gla->setTextureOn(true);
-              } else if(textureOn == TEXTURE_OFF){
-                  this->renderModeTextureAct->setChecked(false);
-                  this->renderModeTextureAct->setIcon(QIcon(":/images/texturesoff.png"));
-                  gla->setTextureOn(false);
-              }
-          }
-          this->mLightControl->restoreBookmarkLight(orientation, brightness, contrast, MODEL3D);
+		  list = elt.elementsByTagName("interpolation_on");
+		  if(!list.isEmpty()) {
+			  interpolationOn = list.at(0).toElement().text().toInt();
+			  qDebug() << interpolationOn;
+			  if(interpolationOn == INTERPOLATION_ON) {
+				  this->renderModeInterpolationAct->setChecked(true);
+				  gla->setInterpolateOn(true);
+			  } else {
+				  this->renderModeInterpolationAct->setChecked(false);
+				  gla->setInterpolateOn(false);
+			  }
+		  }
+		  list = elt.elementsByTagName("display_mode");
+		  if(!list.isEmpty()) {
+			  mode3D = list.at(0).toElement().text().toInt();
+			  if(mode3D == POINTS3D) {
+				  this->renderModePointsAct->setChecked(true);
+				  this->renderModeWireAct->setChecked(false);
+				  this->renderModeFlatAct->setChecked(false);
+				  gla->setRenderMode3D(POINTS3D);
+			  } else if(mode3D == WIREFRAME3D) {
+				  this->renderModePointsAct->setChecked(false);
+				  this->renderModeWireAct->setChecked(true);
+				  this->renderModeFlatAct->setChecked(false);
+				  gla->setRenderMode3D(WIREFRAME3D);
+			  } else if (mode3D == SURFACE3D){
+				  this->renderModePointsAct->setChecked(false);
+				  this->renderModeWireAct->setChecked(false);
+				  this->renderModeFlatAct->setChecked(true);
+				  gla->setRenderMode3D(SURFACE3D);
+			  }
+		  }
+		  list = elt.elementsByTagName("texture_on");
+		  if(!list.isEmpty()) {
+			  textureOn = list.at(0).toElement().text().toInt();
+			  if(textureOn == TEXTURE_ON) {
+				  this->renderModeTextureAct->setChecked(true);
+				  this->renderModeTextureAct->setIcon(QIcon(":/images/textureson.png"));
+				  gla->setTextureOn(true);
+			  } else if(textureOn == TEXTURE_OFF){
+				  this->renderModeTextureAct->setChecked(false);
+				  this->renderModeTextureAct->setIcon(QIcon(":/images/texturesoff.png"));
+				  gla->setTextureOn(false);
+			  }
+		  }
+		  this->mLightControl->restoreBookmarkLight(orientation, brightness, contrast, MODEL3D);
 
-      } else if(filetype == CTSTACK) {
-          list = elt.elementsByTagName("brightness");
-          if(!list.isEmpty()) {
-              brightness = list.at(0).toElement().text().toDouble();
-          }
-          list = elt.elementsByTagName("contrast");
-          if(!list.isEmpty()) {
-              contrast = list.at(0).toElement().text().toDouble();
-          }
+	  } else if(filetype == CTSTACK) {
+		  list = elt.elementsByTagName("brightness");
+		  if(!list.isEmpty()) {
+			  brightness = list.at(0).toElement().text().toDouble();
+		  }
+		  list = elt.elementsByTagName("contrast");
+		  if(!list.isEmpty()) {
+			  contrast = list.at(0).toElement().text().toDouble();
+		  }
 
-          list = elt.elementsByTagName("interpolation_on");
-          if(!list.isEmpty()) {
-              interpolationOn = list.at(0).toElement().text().toInt();
-              if(interpolationOn == INTERPOLATION_ON) {
-                  this->renderModeInterpolationAct->setChecked(true);
-                  gla->setInterpolateOn(true);
-              } else {
-                  this->renderModeInterpolationAct->setChecked(false);
-                  gla->setInterpolateOn(false);
-              }
-          }
+		  list = elt.elementsByTagName("interpolation_on");
+		  if(!list.isEmpty()) {
+			  interpolationOn = list.at(0).toElement().text().toInt();
+			  if(interpolationOn == INTERPOLATION_ON) {
+				  this->renderModeInterpolationAct->setChecked(true);
+				  gla->setInterpolateOn(true);
+			  } else {
+				  this->renderModeInterpolationAct->setChecked(false);
+				  gla->setInterpolateOn(false);
+			  }
+		  }
 
-          list = elt.elementsByTagName("current_slice");
-          if(!list.isEmpty()) {
-              ctSlice = list.at(0).toElement().text().toInt();
-          }
-          list = elt.elementsByTagName("current_orientation");
-          if(!list.isEmpty()) {
-              ctOrientation = list.at(0).toElement().text().toInt();
-          }
+		  list = elt.elementsByTagName("current_slice");
+		  if(!list.isEmpty()) {
+			  ctSlice = list.at(0).toElement().text().toInt();
+		  }
+		  list = elt.elementsByTagName("current_orientation");
+		  if(!list.isEmpty()) {
+			  ctOrientation = list.at(0).toElement().text().toInt();
+		  }
 
-          this->mLightControl->restoreBookmarkLight(orientation, brightness, contrast, CTSTACK);
-          this->mCtControl->restoreBookmarkCTStack(ctSlice, ctOrientation);
+		  this->mLightControl->restoreBookmarkLight(orientation, brightness, contrast, CTSTACK);
+		  this->mCtControl->restoreBookmarkCTStack(ctSlice, ctOrientation);
 
-          if(!list1.isEmpty()) camera->SetPosition(pos);
-          if(!list2.isEmpty()) camera->SetFocalPoint(foc);
-          if(!list3.isEmpty()) camera->SetViewAngle(angle);
-          if(!list4.isEmpty()) camera->SetViewUp(view);
-          if(!list5.isEmpty()) camera->SetClippingRange(clip);
-          if(!list6.isEmpty()) camera->SetParallelScale(scale);
+		  if(!list1.isEmpty()) camera->SetPosition(pos);
+		  if(!list2.isEmpty()) camera->SetFocalPoint(foc);
+		  if(!list3.isEmpty()) camera->SetViewAngle(angle);
+		  if(!list4.isEmpty()) camera->SetViewUp(view);
+		  if(!list5.isEmpty()) camera->SetClippingRange(clip);
+		  if(!list6.isEmpty()) camera->SetParallelScale(scale);
 
-      } else if(filetype == CTVOLUME) {
-          list = elt.elementsByTagName("render_mode");
-          if(!list.isEmpty()) {
-              ctMode = list.at(0).toElement().text().toInt();
-          }
-          list = elt.elementsByTagName("blend_type");
-          if(!list.isEmpty()) {
-              ctBlendType = list.at(0).toElement().text().toInt();
-          }
-          list = elt.elementsByTagName("resolution");
-          if(!list.isEmpty()) {
-              ctResolution = list.at(0).toElement().text().toDouble();
-          }
-          list = elt.elementsByTagName("light_vector");
-          if(!list.isEmpty()) {
-              orientation[0] = list.at(0).toElement().elementsByTagName("x").at(0).toElement().text().toDouble();
-              orientation[1] = list.at(0).toElement().elementsByTagName("y").at(0).toElement().text().toDouble();
-              orientation[2] = list.at(0).toElement().elementsByTagName("z").at(0).toElement().text().toDouble();
-          }
-          qDebug() << orientation[0] << orientation[1] << orientation[2];
+	  } else if(filetype == CTVOLUME) {
+		  list = elt.elementsByTagName("render_mode");
+		  if(!list.isEmpty()) {
+			  ctMode = list.at(0).toElement().text().toInt();
+		  }
+		  list = elt.elementsByTagName("blend_type");
+		  if(!list.isEmpty()) {
+			  ctBlendType = list.at(0).toElement().text().toInt();
+		  }
+		  list = elt.elementsByTagName("resolution");
+		  if(!list.isEmpty()) {
+			  ctResolution = list.at(0).toElement().text().toDouble();
+		  }
+		  list = elt.elementsByTagName("light_vector");
+		  if(!list.isEmpty()) {
+			  orientation[0] = list.at(0).toElement().elementsByTagName("x").at(0).toElement().text().toDouble();
+			  orientation[1] = list.at(0).toElement().elementsByTagName("y").at(0).toElement().text().toDouble();
+			  orientation[2] = list.at(0).toElement().elementsByTagName("z").at(0).toElement().text().toDouble();
+		  }
+		  qDebug() << orientation[0] << orientation[1] << orientation[2];
 
-          this->mCtControl->restoreBookmarkCTVolume(ctMode, ctBlendType, ctResolution);
-          //this->mLightControl->restoreBookmarkLight(orientation, brightness, contrast, CTVOLUME);
+		  this->mCtControl->restoreBookmarkCTVolume(ctMode, ctBlendType, ctResolution);
+		  //this->mLightControl->restoreBookmarkLight(orientation, brightness, contrast, CTVOLUME);
 
-          if(!list1.isEmpty()) camera->SetPosition(pos);
-          if(!list2.isEmpty()) camera->SetFocalPoint(foc);
-          if(!list3.isEmpty()) camera->SetViewAngle(angle);
-          if(!list4.isEmpty()) camera->SetViewUp(view);
-          if(!list5.isEmpty()) camera->SetClippingRange(clip);
-          if(!list6.isEmpty()) camera->SetParallelScale(scale);
+		  if(!list1.isEmpty()) camera->SetPosition(pos);
+		  if(!list2.isEmpty()) camera->SetFocalPoint(foc);
+		  if(!list3.isEmpty()) camera->SetViewAngle(angle);
+		  if(!list4.isEmpty()) camera->SetViewUp(view);
+		  if(!list5.isEmpty()) camera->SetClippingRange(clip);
+		  if(!list6.isEmpty()) camera->SetParallelScale(scale);
 
-          if(!list1.isEmpty()) camera->SetPosition(pos);
-          if(!list2.isEmpty()) camera->SetFocalPoint(foc);
-          if(!list3.isEmpty()) camera->SetViewAngle(angle);
-          if(!list4.isEmpty()) camera->SetViewUp(view);
-          if(!list5.isEmpty()) camera->SetClippingRange(clip);
-          if(!list6.isEmpty()) camera->SetParallelScale(scale);
+		  if(!list1.isEmpty()) camera->SetPosition(pos);
+		  if(!list2.isEmpty()) camera->SetFocalPoint(foc);
+		  if(!list3.isEmpty()) camera->SetViewAngle(angle);
+		  if(!list4.isEmpty()) camera->SetViewUp(view);
+		  if(!list5.isEmpty()) camera->SetClippingRange(clip);
+		  if(!list6.isEmpty()) camera->SetParallelScale(scale);
 
-          if (gla->mQVTKWidget) gla->mQVTKWidget->show();
-          if (gla->mQVTKWidget) gla->mQVTKWidget->update();
-      } else if(filetype == RTI2D) {
-      } else {
-      }
-  }
-  return true;
+		  if (gla->mQVTKWidget) gla->mQVTKWidget->show();
+		  if (gla->mQVTKWidget) gla->mQVTKWidget->update();
+	  } else if(filetype == RTI2D) {
+	  } else {
+	  }
+	}
+	return true;
 }
 
 void MainWindow::exportProjectXML(const QString path, const QString name, const QString userName, const QString keyword, 
@@ -2705,237 +2706,246 @@ void MainWindow::updateRecentFileActions()
 
 void MainWindow::updateMenus()
 {
-  bool activeDoc = false;
-  bool isHidden = false;
-  bool projectOpen = !currentProjectName.isEmpty();
-  if (mdiArea)
-  {
-	foreach(QMdiSubWindow *w, mdiArea->subWindowList())
+	bool activeDoc = false;
+	bool isHidden = false;
+	bool projectOpen = !currentProjectName.isEmpty();
+	if (mdiArea)
 	{
-	  if (!w->isHidden())
-	  {
-		  activeDoc = true;
-		  break;
-	  }
+		foreach(QMdiSubWindow *w, mdiArea->subWindowList())
+		{
+			if (!w->isHidden())
+			{
+			  activeDoc = true;
+			  break;
+			}
+		}
+		foreach(QMdiSubWindow *w, mdiArea->subWindowList())
+		{
+			if (w->isHidden())
+			{
+			  isHidden = true;
+			  break;
+			}
+		}
 	}
-	foreach(QMdiSubWindow *w, mdiArea->subWindowList())
+	else
+		return;
+	openProjectAct->setEnabled(true);
+	openObjectAct->setEnabled(projectOpen);
+	openDICOMAct->setEnabled(projectOpen);
+	importProjectAct->setEnabled(projectOpen && !isCHE);
+	importCHEAct->setEnabled(projectOpen && !isCHE);
+	mergeProjectToCHEAct->setEnabled(projectOpen && !isCHE);
+	removeObjectAct->setEnabled(projectOpen);
+
+	saveAsAct->setEnabled(projectOpen);
+	saveAct->setEnabled(projectOpen);
+	closeAct->setEnabled(projectOpen);
+	updateRecentProjActions();
+	updateRecentCHEActions();
+	updateRecentFileActions();
+	recentFileMenu->setEnabled(projectOpen);
+
+	//  editMenu->setEnabled(activeDoc && !editMenu->actions().isEmpty());
+	renderMenu->setEnabled(activeDoc);
+	viewMenu->setEnabled(activeDoc);
+	toolsMenu->setEnabled(projectOpen);
+	windowsMenu->setEnabled(projectOpen);
+	closeWindowAct->setEnabled(activeDoc);
+	closeAllAct->setEnabled(activeDoc);
+	openWindowAct->setEnabled(isHidden);
+	viewFromMenu->setEnabled(activeDoc);
+	renderModeInterpolationAct->setEnabled(activeDoc);
+
+	renderToolBar->setEnabled(activeDoc);
+	viewToolBar->setEnabled(activeDoc);
+	windowToolBar->setEnabled(activeDoc);
+	infoToolBar->setEnabled(activeDoc);
+	measureToolBar->setEnabled(activeDoc);
+	annotationToolBar->setEnabled(activeDoc);
+
+	renderModeInfoAct->setEnabled(activeDoc);
+	showPolyIndicateAct->setEnabled(activeDoc);
+	generateReportAct->setEnabled(projectOpen);
+	measureDistanceAct->setEnabled(activeDoc);
+	removeDistanceAct->setEnabled(activeDoc);
+
+	writeAnnotationAct->setEnabled(activeDoc);
+	pointNote->setEnabled(writeAnnotationAct->isChecked());
+	surfaceNote->setEnabled(writeAnnotationAct->isChecked());
+	frustumNote->setEnabled(writeAnnotationAct->isChecked());
+	colorDropMenu->setEnabled(writeAnnotationAct->isChecked());
+	if (writeAnnotationAct->isChecked())
 	{
-	  if (w->isHidden())
-	  {
-		  isHidden = true;
-		  break;
-	  }
-	}
-  }
-  else
-    return;
-  openProjectAct->setEnabled(true);
-  openObjectAct->setEnabled(projectOpen);
-  openDICOMAct->setEnabled(projectOpen);
-  importProjectAct->setEnabled(projectOpen && !isCHE);
-  importCHEAct->setEnabled(projectOpen && !isCHE);
-  mergeProjectToCHEAct->setEnabled(projectOpen && !isCHE);
-  removeObjectAct->setEnabled(projectOpen);
-  
-  saveAsAct->setEnabled(projectOpen);
-  saveAct->setEnabled(projectOpen);
-  closeAct->setEnabled(projectOpen);
-  updateRecentProjActions();
-  updateRecentCHEActions();
-  updateRecentFileActions();
-  recentFileMenu->setEnabled(projectOpen);
-
-//  editMenu->setEnabled(activeDoc && !editMenu->actions().isEmpty());
-  renderMenu->setEnabled(activeDoc);
-  viewMenu->setEnabled(activeDoc);
-  toolsMenu->setEnabled(projectOpen);
-  windowsMenu->setEnabled(projectOpen);
-  closeWindowAct->setEnabled(activeDoc);
-  closeAllAct->setEnabled(activeDoc);
-  openWindowAct->setEnabled(isHidden);
-  viewFromMenu->setEnabled(activeDoc);
-  renderModeInterpolationAct->setEnabled(activeDoc);
-
-  renderToolBar->setEnabled(activeDoc);
-  viewToolBar->setEnabled(activeDoc);
-  windowToolBar->setEnabled(activeDoc);
-  infoToolBar->setEnabled(activeDoc);
-  measureToolBar->setEnabled(activeDoc);
-  annotationToolBar->setEnabled(activeDoc);
-
-  renderModeInfoAct->setEnabled(activeDoc);
-  showPolyIndicateAct->setEnabled(activeDoc);
-  generateReportAct->setEnabled(projectOpen);
-  measureDistanceAct->setEnabled(activeDoc);
-  removeDistanceAct->setEnabled(activeDoc);
-
-  writeAnnotationAct->setEnabled(activeDoc);
-  if (writeAnnotationAct->isChecked())
-  {
 	  this->mInformation->startAnnotation();
-  }
-  else
-  {
-	  this->mInformation->finishAnnotation();
-  }
-  annotationModeMenu->setEnabled(activeDoc);
-  removeAnnotationAct->setEnabled(activeDoc);
-  filterAnnotationAct->setEnabled(activeDoc);
-
-  screenshotAct->setEnabled(activeDoc);
-  bookmarkAct->setEnabled(activeDoc);
-  fileInfoAct->setEnabled(activeDoc);
-  projectInfoAct->setEnabled(projectOpen && !isCHE);
-
-  zoomInAct->setEnabled(activeDoc);
-  zoomOutAct->setEnabled(activeDoc);
-  zoomResetAct->setEnabled(activeDoc);
-
-  showToolbarStandardAct->setChecked(mainToolBar->isVisible());
-  showToolbarRenderAct->setChecked(renderToolBar->isVisible());
-  showToolbarViewAct->setChecked(viewToolBar->isVisible());
-  showToolbarInfoAct->setChecked(infoToolBar->isVisible());
-  this->mSearch->refreshSearchTab(activeDoc);
-  this->mSearchAll->refreshSearchTab(activeDoc);
-
-  if(activeDoc && VTKA()){
-
-    const RenderMode3D &rm=VTKA()->getRenderMode3D();
-    switch (rm) {
-      case POINTS3D:
-        renderModePointsAct->setChecked(true);
-        break;
-      case WIREFRAME3D:
-        renderModeWireAct->setChecked(true);
-        break;
-      case SURFACE3D:
-        renderModeFlatAct->setChecked(true);
-        break;
-    default: break;
-    }
-
-    const WidgetMode &wm = VTKA()->getWidgetMode();
-    emit currentWidgetModeChanged(wm);
-
-    renderModeInterpolationAct->setChecked( VTKA()->getIsInterpolationOn() );
-    renderModeInfoAct->setChecked( VTKA()->getDisplayInfoOn() );
-    showPolyIndicateAct->setChecked( VTKA()->getDisplayPolyIndicateOn() );
-
-    renderModeTextureAct->setIcon( VTKA()->getIsTextureOn() ? QIcon(":/images/textureson.png") : QIcon(":/images/texturesoff.png") );
-    renderModeTextureAct->setChecked( VTKA()->getIsTextureOn() );
-    renderModeInterpolationAct->setIcon( VTKA()->getIsInterpolationOn() ? QIcon(":/images/interpolation.png") : QIcon(":/images/interpolation.png") );
-    setDirectionalLightAct->setIcon( VTKA()->getIsDirectionalLight() ? QIcon(":/images/ctrllighton.png") : QIcon(":/images/lighton.png") );
-
-    measureDistanceAct->setIcon(VTKA()->getUseRubberband() ? QIcon(":/images/ruler_on.png") : QIcon(":/images/ruler_off.png") );
-    measureDistanceAct->setChecked(VTKA()->getUseRubberband() );
-
-//    removeDistanceAct->setIcon( VTKA()->getIsRubberbandVisible() ? QIcon(":/images/remove_ruler_on.png") : QIcon(":/images/remove_ruler_off.png") );
-//    removeDistanceAct->setChecked( VTKA()->getIsRubberbandVisible() );
-
-    writeAnnotationAct->setIcon(VTKA()->getUserAnnotationOn() ? QIcon(":/images/annotation_on.png") : QIcon(":/images/annotation_off.png") );
-    writeAnnotationAct->setChecked(VTKA()->getUserAnnotationOn() );
-	if (!VTKA()->getUserAnnotationOn())
-	{
-		this->mInformation->closeObjectNotes();
+	  if (!pointNote->isChecked() && !surfaceNote->isChecked() && !frustumNote->isChecked())
+		  pointNote->setChecked(true);
 	}
-	
-    QString tfn = VTKA()->getmRgbTextureFilename();
+	else
+	{
+	  this->mInformation->finishAnnotation();
+	}
+	annotationModeMenu->setEnabled(activeDoc);
+	removeAnnotationAct->setEnabled(activeDoc);
+	filterAnnotationAct->setEnabled(activeDoc);
 
-    switch (wm) {
-    case EMPTYWIDGET:
-        renderMenu->setEnabled(false);
-        viewFromMenu->setEnabled(false);
-		annotationModeMenu->setEnabled(false);
-        renderToolBar->setEnabled(false);
-        measureToolBar->setEnabled(false);
-        annotationToolBar->setEnabled(false);
-        toolsMenu->setEnabled(false);
-        viewToolBar->setEnabled(false);
-        break;
-    case IMAGE2D:
-        renderMenu->setEnabled(false);
-        viewFromMenu->setEnabled(false);
-        renderToolBar->setEnabled(false);
-        measureToolBar->setEnabled(false);
-        annotationToolBar->setEnabled(true);
-        toolsMenu->setEnabled(true);
-		annotationModeMenu->setEnabled(true);
-		frustumNote->setEnabled(false);
-        showPolyIndicateAct->setEnabled(false);
-        measureDistanceAct->setEnabled(false);
-        removeDistanceAct->setEnabled(false);
-        viewToolBar->setEnabled(false);
-        break;
-    case MODEL3D:
-        renderMenu->setEnabled(true);
-        viewFromMenu->setEnabled(true);
-		annotationModeMenu->setEnabled(true);
-		frustumNote->setEnabled(true);
-        renderToolBar->setEnabled(true);
-        measureToolBar->setEnabled(true);
-        annotationToolBar->setEnabled(true);
-        toolsMenu->setEnabled(true);
-        viewToolBar->setEnabled(true);
+	screenshotAct->setEnabled(activeDoc);
+	bookmarkAct->setEnabled(activeDoc);
+	fileInfoAct->setEnabled(activeDoc);
+	projectInfoAct->setEnabled(projectOpen && !isCHE);
+
+	zoomInAct->setEnabled(activeDoc);
+	zoomOutAct->setEnabled(activeDoc);
+	zoomResetAct->setEnabled(activeDoc);
+
+	showToolbarStandardAct->setChecked(mainToolBar->isVisible());
+	showToolbarRenderAct->setChecked(renderToolBar->isVisible());
+	showToolbarViewAct->setChecked(viewToolBar->isVisible());
+	showToolbarInfoAct->setChecked(infoToolBar->isVisible());
+	this->mSearch->refreshSearchTab(activeDoc);
+	this->mSearchAll->refreshSearchTab(activeDoc);
+
+	if(activeDoc && VTKA())
+	{
+
+		const RenderMode3D &rm=VTKA()->getRenderMode3D();
+		switch (rm) 
+		{
+		  case POINTS3D:
+			renderModePointsAct->setChecked(true);
+			break;
+		  case WIREFRAME3D:
+			renderModeWireAct->setChecked(true);
+			break;
+		  case SURFACE3D:
+			renderModeFlatAct->setChecked(true);
+			break;
+		default: break;
+		}
+
+		const WidgetMode &wm = VTKA()->getWidgetMode();
+		emit currentWidgetModeChanged(wm);
+
+		renderModeInterpolationAct->setChecked( VTKA()->getIsInterpolationOn() );
+		renderModeInfoAct->setChecked( VTKA()->getDisplayInfoOn() );
+		showPolyIndicateAct->setChecked( VTKA()->getDisplayPolyIndicateOn() );
+
+		renderModeTextureAct->setIcon( VTKA()->getIsTextureOn() ? QIcon(":/images/textureson.png") : QIcon(":/images/texturesoff.png") );
+		renderModeTextureAct->setChecked( VTKA()->getIsTextureOn() );
+		renderModeInterpolationAct->setIcon( VTKA()->getIsInterpolationOn() ? QIcon(":/images/interpolation.png") : QIcon(":/images/interpolation.png") );
+		setDirectionalLightAct->setIcon( VTKA()->getIsDirectionalLight() ? QIcon(":/images/ctrllighton.png") : QIcon(":/images/lighton.png") );
+
+		measureDistanceAct->setIcon(VTKA()->getUseRubberband() ? QIcon(":/images/ruler_on.png") : QIcon(":/images/ruler_off.png") );
+		measureDistanceAct->setChecked(VTKA()->getUseRubberband() );
+
+		//    removeDistanceAct->setIcon( VTKA()->getIsRubberbandVisible() ? QIcon(":/images/remove_ruler_on.png") : QIcon(":/images/remove_ruler_off.png") );
+		//    removeDistanceAct->setChecked( VTKA()->getIsRubberbandVisible() );
+
+		writeAnnotationAct->setIcon(VTKA()->getUserAnnotationOn() ? QIcon(":/images/annotation_on.png") : QIcon(":/images/annotation_off.png") );
+		writeAnnotationAct->setChecked(VTKA()->getUserAnnotationOn() );
+		if (!VTKA()->getUserAnnotationOn())
+		{
+			this->mInformation->closeObjectNotes();
+		}
+
+		QString tfn = VTKA()->getmRgbTextureFilename();
+
+		switch (wm) 
+		{
+			case EMPTYWIDGET:
+				renderMenu->setEnabled(false);
+				viewFromMenu->setEnabled(false);
+				annotationModeMenu->setEnabled(false);
+				renderToolBar->setEnabled(false);
+				measureToolBar->setEnabled(false);
+				annotationToolBar->setEnabled(false);
+				toolsMenu->setEnabled(false);
+				viewToolBar->setEnabled(false);
+				break;
+			case IMAGE2D:
+				renderMenu->setEnabled(false);
+				viewFromMenu->setEnabled(false);
+				renderToolBar->setEnabled(false);
+				measureToolBar->setEnabled(false);
+				annotationToolBar->setEnabled(true);
+				toolsMenu->setEnabled(true);
+				annotationModeMenu->setEnabled(true);
+				frustumNote->setEnabled(false);
+				frustumNote->setChecked(false);
+				showPolyIndicateAct->setEnabled(false);
+				measureDistanceAct->setEnabled(false);
+				removeDistanceAct->setEnabled(false);
+				viewToolBar->setEnabled(false);
+				break;
+			case MODEL3D:
+				renderMenu->setEnabled(true);
+				viewFromMenu->setEnabled(true);
+				annotationModeMenu->setEnabled(true);
+				renderToolBar->setEnabled(true);
+				measureToolBar->setEnabled(true);
+				annotationToolBar->setEnabled(true);
+				toolsMenu->setEnabled(true);
+				viewToolBar->setEnabled(true);
 
 
-        // DT: preventing crash when these buttons are clicked w/ no texture
-        if(tfn.isEmpty()) {
-            renderModeInterpolationAct->setEnabled(false);
-            renderModeTextureAct->setEnabled(false);
-        } else {
-            renderModeInterpolationAct->setEnabled(true);
-            renderModeTextureAct->setEnabled(true);
-        }
-        break;
-    case CTSTACK:
-//        qDebug() << "this is the ct stack mode";
-        renderMenu->setEnabled(false);
-        viewFromMenu->setEnabled(false);
-        renderToolBar->setEnabled(false);
-        measureToolBar->setEnabled(false);
-        annotationToolBar->setEnabled(true);
-		annotationModeMenu->setEnabled(true);
-        toolsMenu->setEnabled(true);
-        measureDistanceAct->setEnabled(false);
-        removeDistanceAct->setEnabled(false);
-        viewToolBar->setEnabled(false);
-        break;
-    case CTVOLUME:
-//        qDebug() << "this is the ct volume mode";
-        renderMenu->setEnabled(false);
-        viewFromMenu->setEnabled(false);
-        renderToolBar->setEnabled(false);
-        measureToolBar->setEnabled(true); // bug
-        annotationToolBar->setEnabled(true);
-		annotationModeMenu->setEnabled(true);
-        toolsMenu->setEnabled(true);
-        viewToolBar->setEnabled(false);
+				// DT: preventing crash when these buttons are clicked w/ no texture
+				if(tfn.isEmpty()) {
+					renderModeInterpolationAct->setEnabled(false);
+					renderModeTextureAct->setEnabled(false);
+				} else {
+					renderModeInterpolationAct->setEnabled(true);
+					renderModeTextureAct->setEnabled(true);
+				}
+				break;
+			case CTSTACK:
+			//        qDebug() << "this is the ct stack mode";
+				renderMenu->setEnabled(false);
+				viewFromMenu->setEnabled(false);
+				renderToolBar->setEnabled(false);
+				measureToolBar->setEnabled(false);
+				annotationToolBar->setEnabled(true);
+				annotationModeMenu->setEnabled(true);
+				toolsMenu->setEnabled(true);
+				measureDistanceAct->setEnabled(false);
+				removeDistanceAct->setEnabled(false);
+				viewToolBar->setEnabled(false);
+				break;
+			case CTVOLUME:
+			//        qDebug() << "this is the ct volume mode";
+				renderMenu->setEnabled(false);
+				viewFromMenu->setEnabled(false);
+				renderToolBar->setEnabled(false);
+				measureToolBar->setEnabled(true); // bug
+				annotationToolBar->setEnabled(true);
+				annotationModeMenu->setEnabled(true);
+				toolsMenu->setEnabled(true);
+				viewToolBar->setEnabled(false);
 
-        // DT: preventing crash when these buttons are clicked w/ no texture
-        if(tfn.isEmpty()) {
-            renderModeInterpolationAct->setEnabled(false);
-            renderModeTextureAct->setEnabled(false);
-        } else {
-            renderModeInterpolationAct->setEnabled(true);
-            renderModeTextureAct->setEnabled(true);
-        }
-        break;
-    case RTI2D:
-        renderMenu->setEnabled(false);
-        viewFromMenu->setEnabled(false);
-        renderToolBar->setEnabled(false);
-        measureToolBar->setEnabled(false);
-        annotationToolBar->setEnabled(true);
-        toolsMenu->setEnabled(true);
-		annotationModeMenu->setEnabled(true);
-		frustumNote->setEnabled(false);
-        measureDistanceAct->setEnabled(false);
-        removeDistanceAct->setEnabled(false);
-        viewToolBar->setEnabled(false);
-        break;
-    default: break;
-    }
-  }// end of if
+				// DT: preventing crash when these buttons are clicked w/ no texture
+				if(tfn.isEmpty()) {
+					renderModeInterpolationAct->setEnabled(false);
+					renderModeTextureAct->setEnabled(false);
+				} else {
+					renderModeInterpolationAct->setEnabled(true);
+					renderModeTextureAct->setEnabled(true);
+				}
+				break;
+			case RTI2D:
+				renderMenu->setEnabled(false);
+				viewFromMenu->setEnabled(false);
+				renderToolBar->setEnabled(false);
+				measureToolBar->setEnabled(false);
+				annotationToolBar->setEnabled(true);
+				toolsMenu->setEnabled(true);
+				annotationModeMenu->setEnabled(true);
+				frustumNote->setEnabled(false);
+				measureDistanceAct->setEnabled(false);
+				removeDistanceAct->setEnabled(false);
+				viewToolBar->setEnabled(false);
+				break;
+			default: break;
+		}
+	}// end of if
 }
 
 
@@ -3748,33 +3758,33 @@ void MainWindow::createActions()
     helpAct->setStatusTip(tr("Show Help document"));
     connect(helpAct, SIGNAL(triggered()), this, SLOT(help()));
 
-    //================================================================================
+    //===================================================================================================
     //Render Actions for Toolbar and Menu
     renderModeGroupAct = new QActionGroup(this);
 
-    renderModePointsAct	  = new QAction(QIcon(":/images/points.png"),tr("&Points"), renderModeGroupAct);//
+    renderModePointsAct = new QAction(QIcon(":/images/points.png"),tr("&Points"), renderModeGroupAct);
     renderModePointsAct->setCheckable(true);
     connect(renderModePointsAct, SIGNAL(triggered()), this, SLOT(renderPoints()));
 
-    renderModeWireAct		  = new QAction(QIcon(":/images/wire.png"),tr("&Wireframe"), renderModeGroupAct);//
+    renderModeWireAct = new QAction(QIcon(":/images/wire.png"),tr("&Wireframe"), renderModeGroupAct);
     renderModeWireAct->setCheckable(true);
     connect(renderModeWireAct, SIGNAL(triggered()), this, SLOT(renderWireframe()));
 
-    renderModeFlatAct		  = new QAction(QIcon(":/images/flat.png"),tr("&Surface"), renderModeGroupAct);//
+    renderModeFlatAct = new QAction(QIcon(":/images/flat.png"),tr("&Surface"), renderModeGroupAct);
     renderModeFlatAct->setCheckable(true);
     connect(renderModeFlatAct, SIGNAL(triggered()), this, SLOT(renderSurface()));
 
-    renderModeTextureAct  = new QAction(QIcon(":/images/textureson.png"),tr("&Texture"),this);//
+    renderModeTextureAct = new QAction(QIcon(":/images/textureson.png"),tr("&Texture"),this);
     renderModeTextureAct->setCheckable(true);
     renderModeTextureAct->setChecked(true);
     connect(renderModeTextureAct, SIGNAL(triggered()), this, SLOT(renderTexture()));
 
-    renderModeInterpolationAct  = new QAction(QIcon(":/images/interpolation.png"),tr("&Interpolation"),this);//
+    renderModeInterpolationAct = new QAction(QIcon(":/images/interpolation.png"),tr("&Interpolation"),this);
     renderModeInterpolationAct->setCheckable(true);
     renderModeInterpolationAct->setChecked(false);
     connect(renderModeInterpolationAct, SIGNAL(triggered()), this, SLOT(renderInterpolation()));
 
-    renderModeInfoAct  = new QAction(QIcon(":/images/info.png"),tr("&Information"),this);//
+    renderModeInfoAct = new QAction(QIcon(":/images/info.png"),tr("&Information"),this);
     renderModeInfoAct->setCheckable(true);
     renderModeInfoAct->setChecked(true);
     connect(renderModeInfoAct, SIGNAL(triggered()), this, SLOT(renderInformation()));
@@ -3784,7 +3794,7 @@ void MainWindow::createActions()
     showPolyIndicateAct->setChecked(false);
     connect(showPolyIndicateAct, SIGNAL(triggered()), this, SLOT(renderPolyIndicate()));
 
-    setDirectionalLightAct	  = new QAction(QIcon(":/images/ctrllighton.png"),tr("&Directional Light On/Off"),this);//
+    setDirectionalLightAct	  = new QAction(QIcon(":/images/ctrllighton.png"),tr("&Directional Light On/Off"),this);
     setDirectionalLightAct->setCheckable(true);
     setDirectionalLightAct->setChecked(true);
     connect(setDirectionalLightAct, SIGNAL(triggered()), this, SLOT(setDirectionalLight()));
@@ -3796,7 +3806,7 @@ void MainWindow::createActions()
     showImageProvenanceAct = new QAction(tr("Toggle Provenance"),this);
     connect(showImageProvenanceAct, SIGNAL(triggered()), this, SLOT(toggleImageProvenanceFeature()));
 
-    //================================================================================
+    //===================================================================================================
     // view
     showToolbarStandardAct = new QAction (tr("&File Reading"), this);
     showToolbarStandardAct->setCheckable(true);
@@ -3846,8 +3856,8 @@ void MainWindow::createActions()
     connect(openWindowAct, SIGNAL(triggered()), this, SLOT(openWindow()));
 
     setSplitGroupAct = new QActionGroup(this);	setSplitGroupAct->setExclusive(true);
-    setSplitHAct	  = new QAction(QIcon(":/images/splitH.png"),tr("&Horizontally"),setSplitGroupAct);//
-    setSplitVAct	  = new QAction(QIcon(":/images/splitV.png"),tr("&Vertically"),setSplitGroupAct);//
+    setSplitHAct	  = new QAction(QIcon(":/images/splitH.png"),tr("&Horizontally"),setSplitGroupAct);
+    setSplitVAct	  = new QAction(QIcon(":/images/splitV.png"),tr("&Vertically"),setSplitGroupAct);
 
     connect(setSplitGroupAct, SIGNAL(triggered(QAction *)), this, SLOT(setSplit(QAction *)));
     setUnsplitAct = new QAction(tr("&Close current view"),this);
@@ -3871,7 +3881,7 @@ void MainWindow::createActions()
     connect(viewSpinAct, SIGNAL(triggered()), this, SLOT(viewSpinMotion()) );
 #endif
 
-	//================================================================================
+	//===================================================================================================
     // Tool
 	generateReportAct = new QAction (tr("Generate Report"), this);
 	generateReportAct->setStatusTip(tr("Generate a report in pdf format"));
@@ -3890,9 +3900,12 @@ void MainWindow::createActions()
     connect(writeAnnotationAct, SIGNAL(triggered()), this, SLOT(writeAnnotation()));
 
 	annotationModeGroupAct =  new QActionGroup(this);	annotationModeGroupAct->setExclusive(true);
-	pointNote = new QAction(tr("Point Note"), annotationModeGroupAct);
-    surfaceNote = new QAction(tr("Surface Note"), annotationModeGroupAct);
-    frustumNote	= new QAction(tr("Frustum Note"), annotationModeGroupAct);
+	pointNote = new QAction(QIcon(":/images/point.png"), tr("Point Note"), annotationModeGroupAct);
+	pointNote->setCheckable(true);
+    surfaceNote = new QAction(QIcon(":/images/surface.png"), tr("Surface Note"), annotationModeGroupAct);
+	surfaceNote->setCheckable(true);
+    frustumNote	= new QAction(QIcon(":/images/frustum.png"), tr("Frustum Note"), annotationModeGroupAct);
+	frustumNote->setCheckable(true);
     connect(pointNote, SIGNAL(triggered()), this, SLOT(writePointNote()));
     connect(surfaceNote, SIGNAL(triggered()), this, SLOT(writeSurfaceNote()));
     connect(frustumNote, SIGNAL(triggered()), this, SLOT(writeFrustumNote()));
@@ -3959,133 +3972,133 @@ void MainWindow::createActions()
 
 void MainWindow::createMenus()
 {
-  // Menu
-  fileMenu = menuBar->addMenu(tr("&File"));
-  newMenu = fileMenu->addMenu(tr("New"));
-  newMenu->addAction(newVtkProjectAct);
-  newMenu->addAction(newCHEAct);
+	// Menu
+	fileMenu = menuBar->addMenu(tr("&File"));
+	newMenu = fileMenu->addMenu(tr("New"));
+	newMenu->addAction(newVtkProjectAct);
+	newMenu->addAction(newCHEAct);
 
-  openMenu = fileMenu->addMenu(tr("Open"));
-  openMenu->addAction(openProjectAct);
-  openMenu->addAction(openCHEAct);
+	openMenu = fileMenu->addMenu(tr("Open"));
+	openMenu->addAction(openProjectAct);
+	openMenu->addAction(openCHEAct);
 
-  fileMenu->addAction(saveAct);
-  fileMenu->addAction(saveAsAct);
-  fileMenu->addAction(closeAct);
-  
-  fileMenu->addSeparator();
-  fileMenu->addAction(openObjectAct);
-  fileMenu->addAction(openDICOMAct);
-  fileMenu->addAction(importProjectAct);
-  fileMenu->addAction(importCHEAct);
-  fileMenu->addAction(mergeProjectToCHEAct);	// Notice: merge back is currently disabled since it is buggy.
-  fileMenu->addAction(removeObjectAct);
+	fileMenu->addAction(saveAct);
+	fileMenu->addAction(saveAsAct);
+	fileMenu->addAction(closeAct);
 
-  fileMenu->addSeparator();
+	fileMenu->addSeparator();
+	fileMenu->addAction(openObjectAct);
+	fileMenu->addAction(openDICOMAct);
+	fileMenu->addAction(importProjectAct);
+	fileMenu->addAction(importCHEAct);
+	fileMenu->addAction(mergeProjectToCHEAct);	// Notice: merge back is currently disabled since it is buggy.
+	fileMenu->addAction(removeObjectAct);
 
-  recentProjMenu = fileMenu->addMenu(tr("Recent Projects"));
-  recentCHEMenu = fileMenu->addMenu(tr("Recent Cultural Heritage Entity"));
-  recentFileMenu = fileMenu->addMenu(tr("Recent Files"));
+	fileMenu->addSeparator();
 
-  for (int i = 0; i < MAXRECENTFILES; ++i)
-  {
-    recentProjMenu->addAction(recentProjActs[i]);
-	recentCHEMenu->addAction(recentCHEActs[i]);
-    recentFileMenu->addAction(recentFileActs[i]);
-  }
-  
-  fileMenu->addSeparator();
-  fileMenu->addAction(exitAct);
-  // Menu Edit
-//  editMenu = menuBar->addMenu(tr("&Edit"));
-//  editMenu->addAction(setCustomizeAct);
+	recentProjMenu = fileMenu->addMenu(tr("Recent Projects"));
+	recentCHEMenu = fileMenu->addMenu(tr("Recent Cultural Heritage Entity"));
+	recentFileMenu = fileMenu->addMenu(tr("Recent Files"));
 
-  // Render menu
-  renderMenu = menuBar->addMenu(tr("&Render"));
+	for (int i = 0; i < MAXRECENTFILES; ++i)
+	{
+		recentProjMenu->addAction(recentProjActs[i]);
+		recentCHEMenu->addAction(recentCHEActs[i]);
+		recentFileMenu->addAction(recentFileActs[i]);
+	}
 
-  renderModeMenu = renderMenu->addMenu(tr("Render &Mode"));
-  renderModeMenu->addActions(renderModeGroupAct->actions());
-  renderModeMenu->addSeparator();
-  renderModeMenu->addAction(renderModeTextureAct);
+	fileMenu->addSeparator();
+	fileMenu->addAction(exitAct);
+	// Menu Edit
+	// editMenu = menuBar->addMenu(tr("&Edit"));
+	// editMenu->addAction(setCustomizeAct);
 
-  renderMenu->addSeparator();
+	// Render menu
+	renderMenu = menuBar->addMenu(tr("&Render"));
 
-  lightingModeMenu=renderMenu->addMenu(tr("&Lighting"));
-  lightingModeMenu->addAction(setDirectionalLightAct);
+	renderModeMenu = renderMenu->addMenu(tr("Render &Mode"));
+	renderModeMenu->addActions(renderModeGroupAct->actions());
+	renderModeMenu->addSeparator();
+	renderModeMenu->addAction(renderModeTextureAct);
 
-  renderMenu->addSeparator();
+	renderMenu->addSeparator();
 
-  cameraModeMenu = renderMenu->addMenu(tr("&Camera"));
-  cameraModeMenu->addAction(setTrackballCameraAct);
-  cameraModeMenu->addAction(setSurfaceWalkerCameraAct);
-  cameraModeMenu->addAction(showImageProvenanceAct);
+	lightingModeMenu=renderMenu->addMenu(tr("&Lighting"));
+	lightingModeMenu->addAction(setDirectionalLightAct);
 
-  //menuBar->addSeparator();
+	// Camera Mode is currently disabled.
+	/*
+	renderMenu->addSeparator();
 
-  // Menu: View
-  viewMenu		= menuBar->addMenu(tr("&View"));
-  viewMenu->addAction(renderModeInfoAct);
-  viewMenu->addSeparator();
+	cameraModeMenu = renderMenu->addMenu(tr("&Camera"));
+	cameraModeMenu->addAction(setTrackballCameraAct);
+	cameraModeMenu->addAction(setSurfaceWalkerCameraAct);
+	cameraModeMenu->addAction(showImageProvenanceAct);
+	*/
+	//menuBar->addSeparator();
 
-  viewMenu->addAction(renderModeInterpolationAct);
-  viewMenu->addSeparator();
-  viewMenu->addAction(showPolyIndicateAct);
-  viewMenu->addSeparator();
-  viewMenu->addAction(zoomResetAct);
-  viewMenu->addAction(zoomInAct);
-  viewMenu->addAction(zoomOutAct);
-  viewMenu->addSeparator();
+	// Menu: View
+	viewMenu = menuBar->addMenu(tr("&View"));
+	viewMenu->addAction(renderModeInfoAct);
+	viewMenu->addSeparator();
 
-  // View From SUBmenu
-  viewFromMenu = viewMenu->addMenu(tr("&View From"));
-  foreach(QAction *ac, viewFromGroupAct->actions())
-    viewFromMenu->addAction(ac);
+	viewMenu->addAction(renderModeInterpolationAct);
+	viewMenu->addSeparator();
+	// viewMenu->addAction(showPolyIndicateAct);
+	viewMenu->addSeparator();
+	viewMenu->addAction(zoomResetAct);
+	viewMenu->addAction(zoomInAct);
+	viewMenu->addAction(zoomOutAct);
+	viewMenu->addSeparator();
 
-  menuBar->addSeparator();
+	// View From SUBmenu
+	viewFromMenu = viewMenu->addMenu(tr("&View From"));
+	foreach(QAction *ac, viewFromGroupAct->actions())
+	viewFromMenu->addAction(ac);
 
-  // Menu Preferences
-  toolsMenu = menuBar->addMenu(tr("&Tools"));
-  toolsMenu->addAction(generateReportAct);
-  toolsMenu->addSeparator();
-  toolsMenu->addAction(measureDistanceAct);
-  toolsMenu->addAction(removeDistanceAct);
-  toolsMenu->addSeparator();
-  annotationModeMenu = toolsMenu->addMenu(tr("Write Annotation"));
-  foreach(QAction *ac, annotationModeGroupAct->actions())
-    annotationModeMenu->addAction(ac);
-  annotationModeMenu->addSeparator();
-  annotationColorMenu = annotationModeMenu->addMenu(tr("Color"));
-  foreach(QAction *ac, annotationColorGroupAct->actions())
-    annotationColorMenu->addAction(ac);
-  toolsMenu->addAction(removeAnnotationAct);
-  toolsMenu->addAction(filterAnnotationAct);
-  toolsMenu->addSeparator();
-  toolsMenu->addAction(screenshotAct);
-  toolsMenu->addSeparator();
-  toolsMenu->addAction(bookmarkAct);
-  toolsMenu->addSeparator();
-  toolsMenu->addAction(fileInfoAct);
-  toolsMenu->addAction(projectInfoAct);
+	menuBar->addSeparator();
 
-  menuBar->addSeparator();
+	// Menu Preferences
+	toolsMenu = menuBar->addMenu(tr("&Tools"));
+	toolsMenu->addAction(generateReportAct);
+	toolsMenu->addSeparator();
+	toolsMenu->addAction(measureDistanceAct);
+	toolsMenu->addAction(removeDistanceAct);
+	toolsMenu->addSeparator();
+	annotationModeMenu = toolsMenu->addMenu(tr("Write Annotation"));
+	foreach(QAction *ac, annotationModeGroupAct->actions())
+	annotationModeMenu->addAction(ac);
+	annotationModeMenu->addSeparator();
+	annotationColorMenu = annotationModeMenu->addMenu(tr("Color"));
+	foreach(QAction *ac, annotationColorGroupAct->actions())
+	annotationColorMenu->addAction(ac);
+	toolsMenu->addAction(removeAnnotationAct);
+	toolsMenu->addAction(filterAnnotationAct);
+	toolsMenu->addSeparator();
+	toolsMenu->addAction(screenshotAct);
+	toolsMenu->addSeparator();
+	toolsMenu->addAction(bookmarkAct);
+	toolsMenu->addSeparator();
+	toolsMenu->addAction(fileInfoAct);
+	toolsMenu->addAction(projectInfoAct);
 
-  // Menu: Windows
-  windowsMenu = menuBar->addMenu(tr("&Windows"));
-  connect(windowsMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
+	menuBar->addSeparator();
 
-  toolBarMenu	= windowsMenu->addMenu(tr("&ToolBars"));
-  toolBarMenu->addAction(showToolbarStandardAct);
-  toolBarMenu->addAction(showToolbarRenderAct);
-  toolBarMenu->addAction(showToolbarInfoAct);
-  connect(toolBarMenu,SIGNAL(aboutToShow()),this,SLOT(updateMenus()));
+	// Menu: Windows
+	windowsMenu = menuBar->addMenu(tr("&Windows"));
+	connect(windowsMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
 
+	toolBarMenu	= windowsMenu->addMenu(tr("&ToolBars"));
+	toolBarMenu->addAction(showToolbarStandardAct);
+	toolBarMenu->addAction(showToolbarRenderAct);
+	toolBarMenu->addAction(showToolbarInfoAct);
+	connect(toolBarMenu,SIGNAL(aboutToShow()),this,SLOT(updateMenus()));
 
-
-  // Menu: Help
-  helpMenu = menuBar->addMenu(tr("&Help"));
-  helpMenu->addAction(helpAct);
-  helpMenu->addAction(onlineHelpAct);
-  helpMenu->addAction(aboutAct);
+	// Menu: Help
+	helpMenu = menuBar->addMenu(tr("&Help"));
+	helpMenu->addAction(helpAct);
+	helpMenu->addAction(onlineHelpAct);
+	helpMenu->addAction(aboutAct);
 }
 
 void MainWindow::helpOnline()
@@ -4096,120 +4109,146 @@ void MainWindow::helpOnline()
 
 void MainWindow::createToolBars()
 {
-  //MK: add main toolbar ==============================================
-  mainToolBar = addToolBar(tr("File Reading Toolbar"));
-  mainToolBar->setObjectName("toolbarStandard");
-  mainToolBar->setIconSize(QSize(32,32));
-  mainToolBar->setMovable(false); // set the toolbar not movable
+	//MK: add main toolbar ==============================================
+	mainToolBar = addToolBar(tr("File Reading Toolbar"));
+	mainToolBar->setObjectName("toolbarStandard");
+	mainToolBar->setIconSize(QSize(32,32));
+	mainToolBar->setMovable(false); // set the toolbar not movable
 
-  mainToolBar->addAction(this->newVtkProjectAct);
-  mainToolBar->addSeparator();
-  mainToolBar->addAction(this->openProjectAct);
-  mainToolBar->addAction(this->openObjectAct);
-  mainToolBar->addAction(this->openDICOMAct);
-  mainToolBar->addSeparator();
-  mainToolBar->addAction(this->saveAsAct);
+	mainToolBar->addAction(this->newVtkProjectAct);
+	mainToolBar->addSeparator();
+	mainToolBar->addAction(this->openProjectAct);
+	mainToolBar->addAction(this->openObjectAct);
+	mainToolBar->addAction(this->openDICOMAct);
+	mainToolBar->addSeparator();
+	mainToolBar->addAction(this->saveAsAct);
 
-  mainToolBar->setVisible(true);
-  mainToolBar->setEnabled(true);
+	mainToolBar->setVisible(true);
+	mainToolBar->setEnabled(true);
 
-  //MK: add render toolbar ==============================================
-  renderToolBar = addToolBar(tr("Render Option Toolbar"));
-  renderToolBar->setObjectName("toolbarRender");
-  renderToolBar->setIconSize(QSize(32,32));
-  renderToolBar->setMovable(false); // set the toolbar not movable
+	//MK: add render toolbar ==============================================
+	renderToolBar = addToolBar(tr("Render Option Toolbar"));
+	renderToolBar->setObjectName("toolbarRender");
+	renderToolBar->setIconSize(QSize(32,32));
+	renderToolBar->setMovable(false); // set the toolbar not movable
 
-  renderToolBar->addSeparator();
-  renderToolBar->addAction(setDirectionalLightAct);
+	renderToolBar->addSeparator();
+	renderToolBar->addAction(setDirectionalLightAct);
 
-  renderToolBar->addSeparator();
-  QMenu *cameraDropMenu = new QMenu();
-  cameraDropMenu->addAction(setTrackballCameraAct);
-  cameraDropMenu->addAction(setSurfaceWalkerCameraAct);
-  cameraDropMenu->addAction(showImageProvenanceAct);
-  QToolButton *cameraToolButton = new QToolButton();
-  cameraToolButton->setText(tr("Camera"));
-  cameraToolButton->setIcon(QIcon(":/images/camera_icon.png"));
-  cameraToolButton->setMenu(cameraDropMenu);
-  cameraToolButton->setPopupMode(QToolButton::InstantPopup);
-  renderToolBar->addWidget(cameraToolButton);
+	/* Camera mode is disabled */
+	/*
+	renderToolBar->addSeparator();
+	QMenu *cameraDropMenu = new QMenu();
+	cameraDropMenu->addAction(setTrackballCameraAct);
+	cameraDropMenu->addAction(setSurfaceWalkerCameraAct);
+	cameraDropMenu->addAction(showImageProvenanceAct);
+	QToolButton *cameraToolButton = new QToolButton();
+	cameraToolButton->setText(tr("Camera"));
+	cameraToolButton->setIcon(QIcon(":/images/camera_icon.png"));
+	cameraToolButton->setMenu(cameraDropMenu);
+	cameraToolButton->setPopupMode(QToolButton::InstantPopup);
+	renderToolBar->addWidget(cameraToolButton);
+	*/
 
-  renderToolBar->addSeparator();
-  renderToolBar->addActions(renderModeGroupAct->actions());
-  renderToolBar->addSeparator();
-  renderToolBar->addAction(renderModeTextureAct);
+	renderToolBar->addSeparator();
+	renderToolBar->addActions(renderModeGroupAct->actions());
+	renderToolBar->addSeparator();
+	renderToolBar->addAction(renderModeTextureAct);
 
-  //MK: add info toolbar ==============================================
-  infoToolBar = addToolBar(tr("Information Toolbar"));
-  infoToolBar->setObjectName("toolbarInformation");
-  infoToolBar->setIconSize(QSize(32,32));
-  infoToolBar->setMovable(false); // set the toolbar not movable
+	//MK: add info toolbar ==============================================
+	infoToolBar = addToolBar(tr("Information Toolbar"));
+	infoToolBar->setObjectName("toolbarInformation");
+	infoToolBar->setIconSize(QSize(32,32));
+	infoToolBar->setMovable(false); // set the toolbar not movable
 
-  infoToolBar->addSeparator();
-  infoToolBar->addAction(renderModeInterpolationAct);
+	infoToolBar->addSeparator();
+	infoToolBar->addAction(renderModeInterpolationAct);
 
-  infoToolBar->addSeparator();
-  infoToolBar->addAction(renderModeInfoAct);
+	infoToolBar->addSeparator();
+	infoToolBar->addAction(renderModeInfoAct);
 
-  infoToolBar->addSeparator();
-  infoToolBar->addAction(showPolyIndicateAct);
+	infoToolBar->addSeparator();
+	//infoToolBar->addAction(showPolyIndicateAct);
+
+	//MK: add render toolbar ==============================================
+	measureToolBar = addToolBar(tr("Measure"));
+	measureToolBar->setObjectName("measureDistance");
+	measureToolBar->setIconSize(QSize(32,32));
+	measureToolBar->setMovable(false); // set the toolbar not movable
+	measureToolBar->addSeparator();
+	measureToolBar->addAction(measureDistanceAct);
+	measureToolBar->addAction(removeDistanceAct);
+
+	annotationToolBar = addToolBar(tr("Annotation"));
+	annotationToolBar->setObjectName("annotation");
+	annotationToolBar->setIconSize(QSize(32,32));
+	annotationToolBar->setMovable(false);
+	annotationToolBar->addSeparator();
+	annotationToolBar->addAction(writeAnnotationAct);
+	annotationToolBar->addAction(pointNote);
+	annotationToolBar->addAction(surfaceNote);
+	annotationToolBar->addAction(frustumNote);
+
+	colorDropMenu = new QMenu();
+	colorDropMenu->addAction(annotationMaroon);
+	colorDropMenu->addAction(annotationRed);
+	colorDropMenu->addAction(annotationOrange);
+	colorDropMenu->addAction(annotationYellow);
+	colorDropMenu->addAction(annotationLime);
+	colorDropMenu->addAction(annotationGreen);
+	colorDropMenu->addAction(annotationAqua);
+	colorDropMenu->addAction(annotationBlue);
+	colorDropMenu->addAction(annotationPink);
+	colorDropMenu->addAction(annotationPurple);
+	colorDropMenu->addAction(annotationWhite);
+	
+	QToolButton *colorToolButton = new QToolButton();
+	colorToolButton->setText(tr("Annotation Color"));
+	colorToolButton->setIcon(QIcon(":/images/palette.png"));
+	colorToolButton->setMenu(colorDropMenu);
+	colorToolButton->setPopupMode(QToolButton::InstantPopup);
+	annotationToolBar->addWidget(colorToolButton);
 
 
-  //MK: add render toolbar ==============================================
-  measureToolBar = addToolBar(tr("Measure"));
-  measureToolBar->setObjectName("measureDistance");
-  measureToolBar->setIconSize(QSize(32,32));
-  measureToolBar->setMovable(false); // set the toolbar not movable
-  measureToolBar->addSeparator();
-  measureToolBar->addAction(measureDistanceAct);
-  measureToolBar->addAction(removeDistanceAct);
+	annotationToolBar->addAction(removeAnnotationAct);
+	annotationToolBar->addSeparator();
+	annotationToolBar->addAction(screenshotAct);
+	annotationToolBar->addSeparator();
+	annotationToolBar->addAction(bookmarkAct);
+	annotationToolBar->addSeparator();
+	annotationToolBar->addAction(fileInfoAct);
+	annotationToolBar->addAction(projectInfoAct);
 
-  annotationToolBar = addToolBar(tr("Annotation"));
-  annotationToolBar->setObjectName("annotation");
-  annotationToolBar->setIconSize(QSize(32,32));
-  annotationToolBar->setMovable(false);
-  annotationToolBar->addSeparator();
-  annotationToolBar->addAction(writeAnnotationAct);
-  annotationToolBar->addAction(removeAnnotationAct);
-  annotationToolBar->addSeparator();
-  annotationToolBar->addAction(screenshotAct);
-  annotationToolBar->addSeparator();
-  annotationToolBar->addAction(bookmarkAct);
-  annotationToolBar->addSeparator();
-  annotationToolBar->addAction(fileInfoAct);
-  annotationToolBar->addAction(projectInfoAct);
+	windowToolBar = addToolBar(tr("Window"));
+	windowToolBar->setObjectName("windowToolbar");
+	windowToolBar->setIconSize(QSize(32,32));
+	windowToolBar->setMovable(false); // set the toolbar not movable
+	windowToolBar->addSeparator();
+	windowToolBar->addAction(windowsTileAct);
+	windowToolBar->addAction(windowsMaximizeAct);
+	#ifdef SUPPORT_WINDOW_CASCADE
+	windowToolBar->addAction(windowsCascadeAct);
+	#endif
+	windowToolBar->addAction(windowsNextAct);
 
-  windowToolBar = addToolBar(tr("Window"));
-  windowToolBar->setObjectName("windowToolbar");
-  windowToolBar->setIconSize(QSize(32,32));
-  windowToolBar->setMovable(false); // set the toolbar not movable
-  windowToolBar->addSeparator();
-  windowToolBar->addAction(windowsTileAct);
-  windowToolBar->addAction(windowsMaximizeAct);
-#ifdef SUPPORT_WINDOW_CASCADE
-  windowToolBar->addAction(windowsCascadeAct);
-#endif
-  windowToolBar->addAction(windowsNextAct);
+	//MK: add info toolbar ==============================================
+	viewToolBar = addToolBar(tr("View Toolbar"));
+	viewToolBar->setObjectName("toolbarView");
+	viewToolBar->setIconSize(QSize(32,32));
+	viewToolBar->setMovable(false); // set the toolbar not movable
 
+	viewToolBar->addSeparator();
+	viewToolBar->addAction(viewFrontAct);
+	viewToolBar->addAction(viewLeftAct);
+	viewToolBar->addAction(viewRightAct);
+	viewToolBar->addAction(viewTopAct);
+	viewToolBar->addAction(viewBottomAct);
+	viewToolBar->addAction(viewBackAct);
+	#ifdef  SUPPORT_SPINANIMATION
+	viewToolBar->addAction(viewSpinAct);
+	#endif
 
-  //MK: add info toolbar ==============================================
-  viewToolBar = addToolBar(tr("View Toolbar"));
-  viewToolBar->setObjectName("toolbarView");
-  viewToolBar->setIconSize(QSize(32,32));
-  viewToolBar->setMovable(false); // set the toolbar not movable
-
-  viewToolBar->addSeparator();
-  viewToolBar->addAction(viewFrontAct);
-  viewToolBar->addAction(viewLeftAct);
-  viewToolBar->addAction(viewRightAct);
-  viewToolBar->addAction(viewTopAct);
-  viewToolBar->addAction(viewBottomAct);
-  viewToolBar->addAction(viewBackAct);
-#ifdef  SUPPORT_SPINANIMATION
-  viewToolBar->addAction(viewSpinAct);
-#endif
-
-  viewToolBar->addSeparator(); // at the end of toolbar
+	viewToolBar->addSeparator(); // at the end of toolbar
 }
 
 void MainWindow::createStatusBar()
@@ -4217,156 +4256,157 @@ void MainWindow::createStatusBar()
     statusBar()->showMessage(tr("Ready"));
 }
 
-void MainWindow::showToolbarFile(){
+void MainWindow::showToolbarFile()
+{
     mainToolBar->setVisible(!mainToolBar->isVisible());
 }
 
-void MainWindow::showToolbarRender(){
-  renderToolBar->setVisible(!renderToolBar->isVisible());
+void MainWindow::showToolbarRender()
+{
+	renderToolBar->setVisible(!renderToolBar->isVisible());
 }
 
-void MainWindow::showToolbarInfo(){
-  infoToolBar->setVisible(!infoToolBar->isVisible());
+void MainWindow::showToolbarInfo()
+{
+	infoToolBar->setVisible(!infoToolBar->isVisible());
 }
 
-void MainWindow::showToolbarView(){
-  viewToolBar->setVisible(!viewToolBar->isVisible());
+void MainWindow::showToolbarView()
+{
+	viewToolBar->setVisible(!viewToolBar->isVisible());
 }
 
 QWidget * MainWindow::mountWidgetCenter(QWidget *inputWidget)
 {
-  QWidget * outputWidget = new QWidget();
-  QHBoxLayout *layout = new QHBoxLayout;
-  layout->addWidget(inputWidget);
-  outputWidget->setLayout(layout);
-  outputWidget->show();
-  return outputWidget;
+	QWidget * outputWidget = new QWidget();
+	QHBoxLayout *layout = new QHBoxLayout;
+	layout->addWidget(inputWidget);
+	outputWidget->setLayout(layout);
+	outputWidget->show();
+	return outputWidget;
 }
 
 void MainWindow::createDockWindows()
 {
-  int mwWidth = this->sizeHint().width();
-  int mwHeight = this->sizeHint().height();
+	int mwWidth = this->sizeHint().width();
+	int mwHeight = this->sizeHint().height();
 
-  tabWidgetTop = new QTabWidget;
-  tabWidgetMid = new QTabWidget;
-  tabWidgetBottom = new QTabWidget;
-  rightTab = new QTabWidget;
+	tabWidgetTop = new QTabWidget;
+	tabWidgetMid = new QTabWidget;
+	tabWidgetBottom = new QTabWidget;
+	rightTab = new QTabWidget;
 
-  int dockwidth = 440;
+	int dockwidth = 440;
 
-  mLightControl = new LightControl(this);
-  tabWidgetTop->addTab(mLightControl, tr("Light Control 3D") );
-  activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL));
+	mLightControl = new LightControl(this);
+	tabWidgetTop->addTab(mLightControl, tr("Light Control 3D") );
+	activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL));
 
-  
-  mLightControlRTI = new LightControlRTI(this, 160);
+	mLightControlRTI = new LightControlRTI(this, 160);
 
-  QGroupBox* renderingGroup = new QGroupBox("Rendering Mode", this);
-  renderingGroup->setFixedWidth(250);
-  renderingGroup->setFixedHeight(162);
-  
-  rendDlg = new RenderingDialog(NULL, -1, renderingGroup);
-  QVBoxLayout* rendLayout = new QVBoxLayout;
-  rendLayout->setContentsMargins(0, 0, 0, 0);
-  rendLayout->addWidget(rendDlg);
-  renderingGroup->setLayout(rendLayout);
-  QHBoxLayout *layout = new QHBoxLayout;
-  layout->addWidget(mLightControlRTI);
-  layout->addWidget(renderingGroup);
-  QWidget *windowTemp = new QWidget;
-  windowTemp->setLayout(layout);
-  tabWidgetTop->addTab(windowTemp, tr("Light Control RTI") );
+	QGroupBox* renderingGroup = new QGroupBox("Rendering Mode", this);
+	renderingGroup->setFixedWidth(250);
+	renderingGroup->setFixedHeight(162);
 
-  
-  connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode)), mLightControl, SLOT( updateLightControl(WidgetMode) ) );
-  emit currentWidgetModeChanged(EMPTYWIDGET);
+	rendDlg = new RenderingDialog(NULL, -1, renderingGroup);
+	QVBoxLayout* rendLayout = new QVBoxLayout;
+	rendLayout->setContentsMargins(0, 0, 0, 0);
+	rendLayout->addWidget(rendDlg);
+	renderingGroup->setLayout(rendLayout);
+	QHBoxLayout *layout = new QHBoxLayout;
+	layout->addWidget(mLightControlRTI);
+	layout->addWidget(renderingGroup);
+	QWidget *windowTemp = new QWidget;
+	windowTemp->setLayout(layout);
+	tabWidgetTop->addTab(windowTemp, tr("Light Control RTI") );
 
-  tabWidgetTop->show();
+	connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode)), mLightControl, SLOT( updateLightControl(WidgetMode) ) );
+	emit currentWidgetModeChanged(EMPTYWIDGET);
 
-  mCtControl = new CTControl;
-  mPlotView = new PlotView;
+	tabWidgetTop->show();
 
-  connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode)), mCtControl, SLOT( updateCtControlWidgetMode(WidgetMode) ) );
-  emit currentWidgetModeChanged(EMPTYWIDGET);
-  mInformation = new Information(this);
-  mBookmark = new BookmarkWidget(this);
-  mSearch = new SearchWidget(this);
-  QDockWidget *dockBot = new QDockWidget(this);
-  mSearchAll = new SearchAllWidget(this);
+	mCtControl = new CTControl;
+	mPlotView = new PlotView;
 
-  if(mwHeight < 600) 
-  {
+	connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode)), mCtControl, SLOT( updateCtControlWidgetMode(WidgetMode) ) );
+	emit currentWidgetModeChanged(EMPTYWIDGET);
+	mInformation = new Information(this);
+	mBookmark = new BookmarkWidget(this);
+	mSearch = new SearchWidget(this);
+	QDockWidget *dockBot = new QDockWidget(this);
+	mSearchAll = new SearchAllWidget(this);
+
+	if(mwHeight < 600) 
+	{
 	  tabWidgetTop->setFixedHeight(300);
 	  tabWidgetMid->setFixedHeight(335);
 	  tabWidgetTop->addTab(mCtControl, tr("CT Image Control") );
-      tabWidgetTop->addTab(mPlotView, tr("Spectrum") ); // test for API
+	  tabWidgetTop->addTab(mPlotView, tr("Spectrum") ); // test for API
 	  tabWidgetMid->addTab(mInformation, tr("Annotations") );
-      tabWidgetMid->addTab(mBookmark, tr("Bookmarks") );
+	  tabWidgetMid->addTab(mBookmark, tr("Bookmarks") );
 	  tabWidgetMid->addTab(mSearch, tr("Search") );
 	  tabWidgetMid->addTab(mSearchAll, tr("SearchAll") );
-  } else 
-  {
+	} 
+	else 
+	{
 	  tabWidgetTop->setFixedHeight(230);
 	  tabWidgetMid->setFixedHeight(300);
 	  tabWidgetMid->addTab(mCtControl, tr("CT Image Control") ); // CT rendering control
-      tabWidgetMid->addTab(mPlotView, tr("Spectrum") ); // test for API
+	  tabWidgetMid->addTab(mPlotView, tr("Spectrum") ); // test for API
 	  tabWidgetBottom->addTab(mInformation, tr("Annotations") );
-      tabWidgetBottom->addTab(mBookmark, tr("Bookmarks") );
+	  tabWidgetBottom->addTab(mBookmark, tr("Bookmarks") );
 	  tabWidgetBottom->addTab(mSearch, tr("Search") );
 	  tabWidgetBottom->addTab(mSearchAll, tr("SearchAll") );
-  }
+	}
 
-  QVBoxLayout *controlLayout = new QVBoxLayout();
-  
-  controlLayout->addWidget(tabWidgetTop);
-  controlLayout->addStretch(1);
-  controlLayout->addWidget(tabWidgetMid);
-  controlLayout->addStretch(1);
-  controlLayout->addWidget(tabWidgetBottom);
-  controlLayout->addStretch(1);
-  QWidget* application = new QWidget();
-  application->setLayout(controlLayout);
-  rightTab->addTab(application, tr("Application"));
-  QDockWidget *dockRight = new QDockWidget(this);
-  dockRight->setObjectName("Control");
+	QVBoxLayout *controlLayout = new QVBoxLayout();
+	controlLayout->addWidget(tabWidgetTop);
+	controlLayout->addStretch(1);
+	controlLayout->addWidget(tabWidgetMid);
+	controlLayout->addStretch(1);
+	controlLayout->addWidget(tabWidgetBottom);
+	controlLayout->addStretch(1);
+	QWidget* application = new QWidget();
+	application->setLayout(controlLayout);
+	rightTab->addTab(application, tr("Application"));
 
-  dockRight->setFeatures(QDockWidget::DockWidgetFloatable);
-
-  dockRight->setMinimumWidth(dockwidth);
-  dockRight->setMaximumWidth(dockwidth);
-  dockRight->setWidget(rightTab); 
-  addDockWidget(Qt::RightDockWidgetArea, dockRight);
+	QDockWidget *dockRight = new QDockWidget(this);
+	dockRight->setObjectName("Control");
+	dockRight->setFeatures(QDockWidget::DockWidgetFloatable);
+	dockRight->setMinimumWidth(dockwidth);
+	dockRight->setMaximumWidth(dockwidth);
+	dockRight->setWidget(rightTab); 
+	addDockWidget(Qt::RightDockWidgetArea, dockRight);
 }
 
 void MainWindow::createNavigationDockWindows()
 {
-  mNavigation = new Navigation();
-  rightTab->setUpdatesEnabled(false);
-  rightTab->addTab(mNavigation, tr("Navigation"));
-  rightTab->setUpdatesEnabled(true);
+	mNavigation = new Navigation();
+	rightTab->setUpdatesEnabled(false);
+	rightTab->addTab(mNavigation, tr("Navigation"));
+	rightTab->setUpdatesEnabled(true);
 }
 
 void MainWindow::createClassifiedInfoDockWindows()
 {
-  if (mClassifiedInfoTab != NULL)
-	  delete mClassifiedInfoTab;
-  mClassifiedInfoTab = new ProjectClassifiedInfoTab(currentProjectFullName, mUserName);
-  rightTab->setUpdatesEnabled(false);
-  rightTab->addTab(mClassifiedInfoTab, tr("Classified Info"));
-  rightTab->setUpdatesEnabled(true);
+	if (mClassifiedInfoTab != NULL)
+		delete mClassifiedInfoTab;
+	mClassifiedInfoTab = new ProjectClassifiedInfoTab(currentProjectFullName, mUserName);
+	rightTab->setUpdatesEnabled(false);
+	rightTab->addTab(mClassifiedInfoTab, tr("Classified Info"));
+	rightTab->setUpdatesEnabled(true);
 }
 
 void MainWindow::createCHEDockWindows(const CHEInfoBasic* info)
 {
-  if (mCHETab != NULL)
+	if (mCHETab != NULL)
 	  delete mCHETab;
-  mCHETab = new CHETab(info, this);
-  connect(mCHETab, SIGNAL(save()), this, SLOT(updateXML()));
-  connect(mCHETab, SIGNAL(exportProject()), this, SLOT(exportCHEToProject()));
-  rightTab->setUpdatesEnabled(false);
-  rightTab->addTab(mCHETab, tr("Cultural Heritage Entity"));
-  rightTab->setUpdatesEnabled(true);
+	mCHETab = new CHETab(info, this);
+	connect(mCHETab, SIGNAL(save()), this, SLOT(updateXML()));
+	connect(mCHETab, SIGNAL(exportProject()), this, SLOT(exportCHEToProject()));
+	rightTab->setUpdatesEnabled(false);
+	rightTab->addTab(mCHETab, tr("Cultural Heritage Entity"));
+	rightTab->setUpdatesEnabled(true);
 }
 
 QTabWidget* MainWindow::getSearchTabWidget()
@@ -4384,15 +4424,15 @@ QTabWidget* MainWindow::getSearchTabWidget()
 
 void MainWindow::writeSettings()
 {
-  QSettings settings("Yale Graphics Lab", "CHEROb");
-  settings.beginGroup("MainWindow");
-  settings.setValue("size", size());
-  settings.setValue("geometry", saveGeometry());
-  settings.setValue("state", saveState()); // it will save the location of windows and dock locations too.
-  settings.setValue("lastUsedDirectory", lastUsedDirectory.path());
-//  qDebug() << "saving last used directory: " << lastUsedDirectory.path();
-  settings.endGroup();
-  settings.sync();
+	QSettings settings("Yale Graphics Lab", "CHEROb");
+	settings.beginGroup("MainWindow");
+	settings.setValue("size", size());
+	settings.setValue("geometry", saveGeometry());
+	settings.setValue("state", saveState()); // it will save the location of windows and dock locations too.
+	settings.setValue("lastUsedDirectory", lastUsedDirectory.path());
+	//  qDebug() << "saving last used directory: " << lastUsedDirectory.path();
+	settings.endGroup();
+	settings.sync();
 }
 
 void MainWindow::readSettings()
@@ -4407,7 +4447,7 @@ void MainWindow::readSettings()
         lastUsedDirectory = path;
     showMaximized();
     //resize(settings.value("size").toSize());
-//    qDebug() << "reading last used directory: " << lastUsedDirectory.path();
+	// qDebug() << "reading last used directory: " << lastUsedDirectory.path();
     settings.endGroup();
 }
 
@@ -4443,6 +4483,9 @@ void MainWindow::generateReport()
 
 	ReportFilter *dialog = new ReportFilter(mObjectList);
 	dialog->exec();
+
+	if (!dialog->checkGenerate())
+		return;
 
 	QVector<QString> filterList = dialog->getFilterList();
 	
@@ -4492,6 +4535,9 @@ void MainWindow::writePointNote()
 		VTKA()->annotate(true, POINTNOTE); 
 		writeAnnotationAct->setChecked(true);
 	}
+	pointNote->setChecked(true);
+	surfaceNote->setChecked(false);
+	frustumNote->setChecked(false);
 }
 
 void MainWindow::writeSurfaceNote() 
@@ -4503,6 +4549,9 @@ void MainWindow::writeSurfaceNote()
 		VTKA()->annotate(true, SURFACENOTE); 
 		writeAnnotationAct->setChecked(true);
 	}
+	pointNote->setChecked(false);
+	surfaceNote->setChecked(true);
+	frustumNote->setChecked(false);
 }
 
 void MainWindow::writeFrustumNote()
@@ -4514,23 +4563,26 @@ void MainWindow::writeFrustumNote()
 		VTKA()->annotate(true, FRUSTUMNOTE);
 		writeAnnotationAct->setChecked(true);
 	}
+	pointNote->setChecked(false);
+	surfaceNote->setChecked(false);
+	frustumNote->setChecked(true);
 }
 
 void MainWindow::removeAnnotation()
 {
-  int ret = QMessageBox::warning(this, tr("Warning"),
-                               tr("Do you want to remove all the notes in current window?"),
-                               QMessageBox::Yes | QMessageBox::No,
-                               QMessageBox::No);
-  removeAnnotationAct->setChecked(false);
-  if(ret == QMessageBox::No) return;
-  writeAnnotationAct->setChecked(false);
-  this->mInformation->removeAllNotes();
-  
-  if (VTKA())
-    VTKA()->annotate(false);
+	int ret = QMessageBox::warning(this, tr("Warning"),
+							   tr("Do you want to remove all the notes in current window?"),
+							   QMessageBox::Yes | QMessageBox::No,
+							   QMessageBox::No);
+	removeAnnotationAct->setChecked(false);
+	if(ret == QMessageBox::No) return;
+	writeAnnotationAct->setChecked(false);
+	this->mInformation->removeAllNotes();
 
-  updateMenus();
+	if (VTKA())
+	VTKA()->annotate(false);
+
+	updateMenus();
 }
 
 void MainWindow::filterAnnotation()
@@ -4554,26 +4606,26 @@ void MainWindow::filterAnnotation()
 
 void MainWindow::takeScreenshot()
 {
-  if (VTKA())
-    VTKA()->screenshot();
+	if (VTKA())
+	VTKA()->screenshot();
 
-  updateMenus();
+	updateMenus();
 }
 
 void MainWindow::makeBookmark()
 {
-  if (mBookmark)
-    mBookmark->createBookmark();
+	if (mBookmark)
+	mBookmark->createBookmark();
 
-  updateMenus();
+	updateMenus();
 }
 
 void MainWindow::showFileInfo()
 {
-    if (VTKA())
-        VTKA()->displayFileInfo();
+	if (VTKA())
+		VTKA()->displayFileInfo();
 
-    updateMenus();
+	updateMenus();
 }
 
 void MainWindow::showProjectInfo()
@@ -4611,16 +4663,19 @@ void MainWindow::switchLayoutDirection()
         qApp->setLayoutDirection(Qt::LeftToRight);
 }
 
-//MK:  doesn't make it different
-void MainWindow::wrapSetActiveSubWindow(QWidget* window){
-  QMdiSubWindow* subwindow;
-  subwindow = dynamic_cast<QMdiSubWindow*>(window);
-  if(subwindow!= NULL){
-    mdiArea->setActiveSubWindow(subwindow);
-//    VTKA()->setFocus();
-  }else{
-    qDebug("Type of window is not a QMdiSubWindow*");
-  }
+void MainWindow::wrapSetActiveSubWindow(QWidget* window)
+{
+	QMdiSubWindow* subwindow;
+	subwindow = dynamic_cast<QMdiSubWindow*>(window);
+	if(subwindow!= NULL)
+	{
+		mdiArea->setActiveSubWindow(subwindow);
+		// VTKA()->setFocus();
+	}
+	else
+	{
+		qDebug("Type of window is not a QMdiSubWindow*");
+	}
 }
 
 //MK: this is old
@@ -4634,43 +4689,43 @@ void MainWindow::setActiveSubWindow(QWidget *window)
 //MK this is for rendering progress bar
 bool MainWindow::QCallBack(const int pos, const char * str)
 {
-  int static lastPos=-1;
-  if(pos==lastPos) return true;
-  lastPos=pos;
+	int static lastPos=-1;
+	if(pos==lastPos) return true;
+	lastPos=pos;
 
-  static QTime currTime;
-  if(currTime.elapsed()< 100) return true;
-  currTime.start();
-  MainWindow::globalStatusBar()->showMessage(str,5000);
-  qb->show();
-  qb->setEnabled(true);
-  qb->setValue(pos);
-  MainWindow::globalStatusBar()->update();
-  qApp->processEvents();
+	static QTime currTime;
+	if(currTime.elapsed()< 100) return true;
+	currTime.start();
+	MainWindow::globalStatusBar()->showMessage(str,5000);
+	qb->show();
+	qb->setEnabled(true);
+	qb->setValue(pos);
+	MainWindow::globalStatusBar()->update();
+	qApp->processEvents();
 
-  return true;
+	return true;
 }
 
 void MainWindow::measureDistance()
 {
-  QAction *a = qobject_cast<QAction* >(sender());
-  bool answer = a->isChecked() ? true : false;
+	QAction *a = qobject_cast<QAction* >(sender());
+	bool answer = a->isChecked() ? true : false;
 
-  if (VTKA())
-  {
-    VTKA()->setMeasureDistance( answer );
-  }
+	if (VTKA())
+	{
+	VTKA()->setMeasureDistance( answer );
+	}
 
-  updateMenus();
+	updateMenus();
 }
 
 void MainWindow::removeMeasureDistance()
 {
-  QAction *a = qobject_cast<QAction* >(sender());
-  bool answer = a->isChecked() ? true : false;
+	QAction *a = qobject_cast<QAction* >(sender());
+	bool answer = a->isChecked() ? true : false;
 
-  if (VTKA())
-    VTKA()->setVisibilityDistance( answer );
+	if (VTKA())
+	VTKA()->setVisibilityDistance( answer );
 
-  updateMenus();
+	updateMenus();
 }

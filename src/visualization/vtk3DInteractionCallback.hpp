@@ -681,7 +681,8 @@ public:
 #endif
   }
 
-  void displaySelectPoly() {
+  void displaySelectPoly()
+  {
     // get the event current position
     vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
     int lastPos[2];
@@ -694,7 +695,7 @@ public:
     picker->Pick(currPos[0], currPos[1], 0, interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
 
     if(picker->GetCellId() != -1)
-      {
+    {
       vtkSmartPointer<vtkIdTypeArray> ids = vtkSmartPointer<vtkIdTypeArray>::New();
       ids->SetNumberOfComponents(1);
       ids->InsertNextValue(picker->GetCellId());
@@ -1073,6 +1074,10 @@ public:
 		  interactor->SetInteractorStyle(style);
 		  style->SetCurrentRenderer(renderer);
 		  interactor->SetPicker(mAreaPicker);
+	  }
+	  else
+	  {
+		  interactor->SetInteractorStyle(mViewStyle);
 	  }
   }	  
 
@@ -1989,9 +1994,6 @@ public:
             newTextureLoaded = false;
         }
     }
-    //    displayAxes();
-
-    //interactor->Render();
   }
 
 
@@ -2003,15 +2005,12 @@ public:
   vtkSmartPointer<vtkAssembly> Axes;
 
   InputImageSet *inputImageSet;
-
-
+  vtkSmartPointer<vtkInteractorStyleTrackballCamera> mViewStyle;
 
 private:
   // Pointer to the interactor
   vtkSmartPointer<QVTKInteractor> mInteractor;
-  //vtkSmartPointer<vtkRenderedAreaPicker> mAreaPicker;
   vtkSmartPointer<vtkAreaPicker> mAreaPicker;
-  //vtkSmartPointer<QVTKInteractor> mDefaultInteractor;
 
   // for selection of triangle mesh
   vtkSmartPointer<vtkPolyData> mPolyData;

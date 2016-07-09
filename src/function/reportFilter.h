@@ -65,6 +65,8 @@ public:
 
 	void exec()	{mDialog->exec();}
 
+	bool checkGenerate() {return isGenerate;}
+
 private slots:
 	void generate();
 
@@ -89,7 +91,8 @@ private:
 	QTreeWidget* mTreeWidget;
 	QList<QTreeWidgetItem *> mItems;
 	QVector<QString> mObject;
-	QMap<QString, QVector<int> > mSelected; 
+	QMap<QString, QVector<int> > mSelected;
+	bool isGenerate;
 
 };
 

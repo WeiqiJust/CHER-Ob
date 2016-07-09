@@ -39,20 +39,42 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 
+/**
+ * This class is designed as a dialog to choose what information
+ * should be presented in report. It will jump out when user specifies the
+ * report name and location.
+ */
+
 class AnnotationFilterDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * Constructor with users' name list as input, so that different users'
+	 * contribution can be filtered in report.
+	 */
 	AnnotationFilterDialog(const QVector<QString> users);
-		
+	
+	/**
+	 * Get selected users whoes contributions will be presented in the report.
+	 */
 	QVector<QString> getSelectedUsers();
 
+	/**
+	 * Show the dialog.
+	 */
 	void exec()	{mDialog->exec();}
 
+	/**
+	 * Test whether the filter should be processed or canceled.
+	 */
 	bool isFilter() {return isFiltered;}
 
 private slots:
+	/**
+	 * Handle buttons.
+	 */
 	void filter();
 
 	void cancel();

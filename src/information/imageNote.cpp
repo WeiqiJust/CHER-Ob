@@ -87,8 +87,8 @@ ImageNote::ImageNote(const QString path, const QString file, const int id)
 	};
 
     mImage->setFixedSize(width, height);
-	mButton = new QPushButton("Remove");
-	connect(mButton, SIGNAL(clicked()), this, SLOT(remove()));
+	mRemoveButton = new QPushButton("Remove");
+	connect(mRemoveButton, SIGNAL(clicked()), this, SLOT(remove()));
 }
 
 void ImageNote::remove()

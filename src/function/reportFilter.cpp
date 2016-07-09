@@ -76,6 +76,7 @@ ReportFilter::ReportFilter(QVector<QString> objects)
 	mVbox->addLayout(mButtonGridBox);
 	mDialog->setMinimumWidth(250);
 	mDialog->setLayout(mVbox);
+	isGenerate = false;
 }
 
 QVector<QString> ReportFilter::getFilterList()
@@ -116,6 +117,7 @@ void ReportFilter::generate()
 		}
 	}
 	mDialog->hide();
+	isGenerate = true;
 }
 
 

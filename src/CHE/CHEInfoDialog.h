@@ -51,11 +51,15 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 
+/**
+ * This class is the base for all CHE information classes.
+ */
 class CHEInfoBasic : public QWidget
 {
 	Q_OBJECT
 
 public:
+	// Constructor.
 	CHEInfoBasic(QWidget *parent = 0);
 
 public:
@@ -64,11 +68,15 @@ public:
 
 };
 
+/**
+ * This class is dialog for user to fill in CHE information when create a new CHE.
+ */
 class CHEInfoDialog : public CHEInfoBasic
 {
 	Q_OBJECT
 
 public:
+	// Constructor.
 	CHEInfoDialog(QWidget *parent = 0);
 
 protected:

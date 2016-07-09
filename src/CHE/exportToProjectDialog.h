@@ -53,13 +53,22 @@
 #include <QTreeWidgetItem>
 #include "../vtkEnums.h"
 
+/**
+ * This class is the dialog helping user to export CHE to a new project.
+ */
 class ExportToProjectDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * Constructor with user name and system last path as input.
+	 */
 	ExportToProjectDialog(const QString user, const QString path = NULL);
 
+	/**
+	 * Get necessary information of the new project from the dialog.
+	 */
 	QString getProjectName()	{return mProjectNameEdit->text();}
 
 	QString getProjectPath()	{return mLocationLineEdit->text();}
@@ -72,18 +81,25 @@ public:
 
 	QString getDescription()	{return mDescriptionEdit->toPlainText();}
 
+	/**
+	 * Get the selected categories of CHE that will be exported to the new project.
+	 */
 	QList<int> getCategories();
 
 	void exec()	{mDialog->exec();}
 
+	/**
+	 * Test whether the export should be executed or canceled.
+	 */
 	bool checkOk()	{return isOk;}
 
 private slots:	
+	/**
+	 * Handle buttons.
+	 */
 	void locationBrowse();
 
 	void next();
-
-	void nextReady();
 
 	void nextCancel();
 
@@ -91,13 +107,28 @@ private slots:
 
 	void selectAll();
 
+	/**
+	 * Only when the name and location of the new project are specified, the next button 
+	 * can be enabled to start export.
+	 */
+	void nextReady();
+
+	/**
+	 * Enable next button.
+	 */
 	void enableNextButton();
 
+	/**
+	 * Save the state when name or location is specified or changed.
+	 */
 	void projectNameChanged(QString name);
 
 	void projectPathChanged(QString path);
 
 signals:
+	/**
+	 * Send the signal when project info changes.
+	 */
 	void infoUpdate();
 
 private:
