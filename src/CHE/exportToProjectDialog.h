@@ -62,12 +62,14 @@ class ExportToProjectDialog : public QWidget
 
 public:
 	/**
-	 * Constructor with user name and system last path as input.
+	 * @brief  Constructor.
+	 * @param  user  User name of the exported project.
+	 * @param  path  System last used path.
 	 */
 	ExportToProjectDialog(const QString user, const QString path = NULL);
 
 	/**
-	 * Get necessary information of the new project from the dialog.
+	 * @brief  Get necessary information of the new project from the dialog.
 	 */
 	QString getProjectName()	{return mProjectNameEdit->text();}
 
@@ -82,52 +84,73 @@ public:
 	QString getDescription()	{return mDescriptionEdit->toPlainText();}
 
 	/**
-	 * Get the selected categories of CHE that will be exported to the new project.
+	 * @brief  Get the selected categories of CHE that will be exported to the new project.
+	 * @return The vector of categories encoded as int id.
 	 */
 	QList<int> getCategories();
 
+	/**
+	 * @brief  Show the dialog. Overload from QWidget.
+	 */
 	void exec()	{mDialog->exec();}
 
 	/**
-	 * Test whether the export should be executed or canceled.
+	 * @brief  Test whether the export should be executed or canceled.
+	 * @return If the Ok button is pressed, then return true, otherwise return false.
 	 */
 	bool checkOk()	{return isOk;}
 
 private slots:	
 	/**
-	 * Handle buttons.
+	 * @brief  Handle Browse buttons.
 	 */
 	void locationBrowse();
 
+	/**
+	 * @brief  Handle Next buttons.
+	 */
 	void next();
 
+	/**
+	 * @brief  Handle Cancel buttons of the warning dialog.
+	 */
 	void nextCancel();
 
+	/**
+	 * @brief  Handle Cancel buttons.
+	 */
 	void cancel();
 
+	/**
+	 * @brief  Handle SelectAll buttons.
+	 */
 	void selectAll();
 
 	/**
-	 * Only when the name and location of the new project are specified, the next button 
-	 * can be enabled to start export.
+	 * @brief  Process next step when Next button is pressed and handle OK button of the warning dialog.
+	 *         Only when the name and location of the new project are specified, the next button 
+	 *         can be enabled to start export.
 	 */
 	void nextReady();
 
 	/**
-	 * Enable next button.
+	 * @brief  Enable next button.
 	 */
 	void enableNextButton();
 
 	/**
-	 * Save the state when name or location is specified or changed.
+	 * @brief  Save the state when name is specified or changed.
 	 */
 	void projectNameChanged(QString name);
 
+	/**
+	 * @brief  Save the state when location is specified or changed.
+	 */
 	void projectPathChanged(QString path);
 
 signals:
 	/**
-	 * Send the signal when project info changes.
+	 * @brief  Send the signal when project info changes.
 	 */
 	void infoUpdate();
 

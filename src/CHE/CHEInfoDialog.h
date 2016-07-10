@@ -59,7 +59,9 @@ class CHEInfoBasic : public QWidget
 	Q_OBJECT
 
 public:
-	// Constructor.
+	/**
+	 * Constructor.
+	 */
 	CHEInfoBasic(QWidget *parent = 0);
 
 public:
@@ -76,7 +78,9 @@ class CHEInfoDialog : public CHEInfoBasic
 	Q_OBJECT
 
 public:
-	// Constructor.
+	/**
+	 * Constructor.
+	 */
 	CHEInfoDialog(QWidget *parent = 0);
 
 protected:

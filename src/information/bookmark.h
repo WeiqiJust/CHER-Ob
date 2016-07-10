@@ -39,23 +39,29 @@
 
 #include "../vtkEnums.h"
 
-// Base class
+/**
+ * Base Bookmark class.
+ */
 class Bookmark
 {
 public:
     Bookmark(QString caption, QUuid uuid, QDomDocument& d, vtkSmartPointer<vtkCamera> camera, WidgetMode mode);
 
     virtual void loadBookmark() = 0;
-    inline QDomElement getBookmark() {
+
+    inline QDomElement getBookmark()
+	{
         return bmk;
     }
 
 protected:
-    inline void saveCameraAngle(double angle) {
+    inline void saveCameraAngle(double angle)
+	{
         QDomElement ang = doc.createElement("camera_angle");
         ang.appendChild(doc.createTextNode(QString::number(angle)));
         bmk.appendChild(ang);
     }
+
     inline void saveCameraPosition(double pos[3])
     {
         QDomElement position = doc.createElement("camera_position");
@@ -70,6 +76,7 @@ protected:
         pos_y.appendChild(doc.createTextNode(QString::number(pos[1])));
         pos_z.appendChild(doc.createTextNode(QString::number(pos[2])));
     }
+
     inline void saveClippingRange(double clip[2])
     {
         QDomElement clipping = doc.createElement("clipping_range");
@@ -81,6 +88,7 @@ protected:
         clip_near.appendChild(doc.createTextNode(QString::number(clip[0])));
         clip_far.appendChild(doc.createTextNode(QString::number(clip[1])));
     }
+
     inline void saveFocalPoint(double foc[3])
     {
         QDomElement focal = doc.createElement("focal_point");
@@ -95,12 +103,14 @@ protected:
         foc_y.appendChild(doc.createTextNode(QString::number(foc[1])));
         foc_z.appendChild(doc.createTextNode(QString::number(foc[2])));
     }
+
     inline void saveParallelScale(double scale)
     {
         QDomElement parallel = doc.createElement("parallel_scale");
         bmk.appendChild(parallel);
         parallel.appendChild(doc.createTextNode(QString::number(scale)));
     }
+
     inline void saveViewUp(double view[3])
     {
         QDomElement viewup = doc.createElement("view_up");
@@ -116,7 +126,8 @@ protected:
         viewup_z.appendChild(doc.createTextNode(QString::number(view[2])));
     }
 
-    inline void saveFileType(WidgetMode mode) {
+    inline void saveFileType(WidgetMode mode)
+	{
         QDomElement filetype = doc.createElement("filetype");
         filetype.appendChild(doc.createTextNode(QString::number(mode)));
         bmk.appendChild(filetype);
@@ -130,8 +141,9 @@ protected:
     QDomElement bmk;
 };
 
-
-// Class for 2D images (jpg, png, bmp, tif, exr)
+/**
+ * Class for 2D images (jpg, png, bmp, tif, exr).
+ */
 class BookmarkIMAGE2D : public Bookmark
 {
 public:
@@ -140,8 +152,9 @@ public:
     void loadBookmark() { }
 };
 
-
-// Class for 3D models (ply, obj, wrl)
+/**
+ * Class for 3D models (ply, obj, wrl).
+ */
 class BookmarkMODEL3D : public Bookmark
 {
 public:
@@ -158,7 +171,9 @@ private:
     void saveTextureOn(bool on, QString tfn);
 };
 
-// Class for 2D CT images
+/**
+ * Class for 2D CT images.
+ */
 class BookmarkCTSTACK : public Bookmark
 {
 public:
@@ -172,7 +187,9 @@ private:
     void saveOrientation(CTOrientation orientation);
 };
 
-// Class for 3D CT images
+/**
+ * Class for 3D CT images.
+ */
 class BookmarkCTVOLUME : public Bookmark
 {
 public:

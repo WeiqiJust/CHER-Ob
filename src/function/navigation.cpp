@@ -53,7 +53,7 @@ Navigation::Navigation()
 
 void Navigation::init(const QString name, bool isProject)
 {
-	qDebug()<<"in init";
+	//qDebug()<<"in init";
 	clear();
 
 	mName = name;

@@ -2,7 +2,7 @@
 
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
- - Writers:   Min H. Kim (minhkim@cs.yale.edu)
+ - Writers:   Weiqi Shi (weiqi.shi@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -47,48 +47,51 @@ class ImageNote: public QWidget
 
 public:
 	/**
-	 * Constructor.
-	 * Path is the absolute location of the object where the image attachs.
-	 * File is the image data. If file is not specified (empty string), then user
-	 * need to specify the image file.
-	 * Id is the image id starting from 0.
+	 * @brief  Constructor.
+	 * @param  path  The absolute location of the object where the image attachs.
+	 * @param  file  The image data. If file is not specified (empty string), then user
+	 *               need to specify the image file.
+	 * @param  id    The image id starting from 0.
 	 */
 	ImageNote(const QString path, const QString file, const int id);
 
 	/**
-	 * Get the image location.
+	 * @brief  Get the image location.
+	 * @return Absolute path.
 	 */
 	QString getPath()	{return mPath;}
 
 	/**
-	 * Get the remove button so that it can be added to the note dialog layout.
+	 * @brief  Get the remove button so that it can be added to the note dialog layout.
 	 */
 	QPushButton* getButton()	{return mRemoveButton;}
 
 	/**
-	 * Get the image file which is saved in QLabel.
+	 * @brief  Get the image file which is saved in QLabel.
 	 */
 	QLabel* getImage()	{return mImage;}
 
 	/**
-	 * Get the name of the image.
+	 * @brief  Get the name of the image.
 	 */
 	QLabel* getName()	{return mName;}
 
 	/**
-	 * Provide API to set image id.
+	 * @brief  Provide API to set image id.
+	 * @param  id  The value that should be set as id.
 	 */
 	void setId(const int id)	{mId = id;}
 
 signals:
 	/**
-	 * Send signal when the image is removed by remove button.
+	 * @brief  Send signal when the image is removed by remove button.
+	 * @param  id  The id of the image that should be removed.
 	 */
 	void removeImage(int id);
 
 private slots:
 	/**
-	 * Handle remove button.
+	 * @brief  Handle remove button.
 	 */
 	void remove();
 

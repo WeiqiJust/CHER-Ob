@@ -75,6 +75,9 @@ enum BWContextMenu{ADD_FOLDER=1,ADD_BOOKMARK,EDIT_ITEM,DELETE_ITEM,GET_INFO};
 
 class MainWindow;
 
+/**
+ * This class provides the bookmarktreewidget function in main frame.
+ */
 class BookmarkWidget : public QWidget
 {
   Q_OBJECT
@@ -116,9 +119,6 @@ private:
   void showFileOpenError();
   void showInvalidFileError();
 
-  /*
-   * GUI stuff
-   */
   // Main bookmark widget layouts/buttons
   QHBoxLayout* hbox1, *hbox2;
   QVBoxLayout* vbox;
@@ -132,9 +132,6 @@ private:
   QGridLayout* grid;
   QLabel* titleLabel, *uuidLabel, *createdLabel, *createdLabel2, *modifiedLabel, *modifiedLabel2, *accessedLabel, *accessedLabel2;
   QLineEdit* titleLine, *uuidLine;
-  /*
-   * end GUI
-   */
 
   // Properties of object currently being visualized
   QString bfn; // Filename

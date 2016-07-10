@@ -30,38 +30,43 @@
 
 #include <vcg/space/point3.h>
 
-//! Widget for Coefficient Enhancement settings.
-/*!
-  The class defines the widget that is showed in the Rendering Dialogto to set the parameters of the rendering mode Coefficient Enhancement.
-*/
+/**
+ * @brief Widget for Coefficient Enhancement settings.
+ */
+
+/**
+ * The class defines the widget that is showed in the Rendering Dialogto to set the parameters of the rendering mode Coefficient Enhancement.
+ */
 class CoeffEnhancControl : public QWidget, public RenderControlUtils
 {
 	Q_OBJECT
 
 public:
 
-	//! Constructor.
-	/*!
-	  /param gain value for the gain parameter.
-	*/
+	/**
+	 * @brief  Constructor.
+	 * @param  gain  Value for the gain parameter.
+	 */
 	CoeffEnhancControl(int gain, QWidget *parent = 0);
 
+	/**
+	 * @brief  Filter events, overload from QWidget.
+	 */
     bool eventFilter(QObject* watched, QEvent* event);
 
 signals:
 
-	/*!
-	  Emitted when the user changes the gain value.
-	*/
+	/**
+	 * @brief  Emitted when the user changes the gain value.
+	 * @param  value  The changed value.
+	 */
 	void gainChanged(int value);
-
 };
 
 
-//! Coefficient Enhancement class.
-/*!
-  The class defines the rendering mode Coefficient Enhancement.
-*/
+/**
+ * The class is Coefficient Enhancement class, which defines the rendering mode Coefficient Enhancement.
+ */
 class CoeffEnhancement : public QObject, public RenderingMode
 {
 
@@ -78,10 +83,14 @@ private:
 	
 public:
 
-	//! Constructor.
+	/**
+	 * @brief  Constructor.
+	 */
 	CoeffEnhancement();
 
-	//! Deconstructor
+	/**
+	 * @brief  Deconstructor.
+	 */
 	~CoeffEnhancement();
 	
 	virtual QString getTitle();
@@ -100,20 +109,21 @@ public:
 
 private:
 
-	/*!
-	  Computes the smoothed version of the coefficients.
-	  \param coeffMap pointer to coefficients map.
-	  \param width width in pixel of the map.
-	  \param height height in pixel of the map.
-	  \param ncomp number of coefficient per pixel,
-	*/
+	/**
+	 * @brief  Computes the smoothed version of the coefficients.
+	 * @param  coeffMap pointer to coefficients map.
+	 * @param  width width in pixel of the map.
+	 * @param  height height in pixel of the map.
+	 * @param  ncomp number of coefficient per pixel,
+	 */
 	void enhancedCoeff(PTMCoefficient* coeffMap, int width, int height, int ncomp);
 	
 public slots:
 
-	/*!
-	  Sets the gain value.
-	*/
+	/**
+	 * @brief  Sets the gain value.
+	 * @param  value  the input gain value.
+	 */
 	void setGain(int value);
 
 signals:
@@ -124,4 +134,4 @@ signals:
 	void refreshImage();
 };
 
-#endif /* COEFFENHANCEMENT_H */
+#endif // COEFFENHANCEMENT_H

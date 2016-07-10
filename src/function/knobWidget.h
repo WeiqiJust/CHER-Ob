@@ -29,6 +29,10 @@
 class QwtKnob;
 class QLabel;
 
+/**
+ * This class is the knob widget which is used in light control and CT control etc..
+ */
+
 class Knob: public QWidget
 {
     Q_OBJECT

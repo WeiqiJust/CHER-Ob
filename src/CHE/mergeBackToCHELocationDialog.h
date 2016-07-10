@@ -52,24 +52,57 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 
+/**
+ * This class is the dialog to specify merge-back locations of the objects without original CHE path.
+ * These objects are not imported from any CHE and their CHE paths are left as empty string.
+ * Other objects' original CHE paths are options for user to choose.
+ */
+
 class MergeBackToCHELocationDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * @brief  Constructor.
+	 * @param  locations  locations is the vector of other objects' CHE absolute paths. 
+	 *					  Each path only appear once in the vector.
+	 */
 	MergeBackToCHELocationDialog(QVector<QString> locations);
 
+	/**
+	 * @brief  Show the dialog. Overload from QWidget.
+	 */
 	void exec()	{mDialog->exec();}
 
+	/**
+	 * @brief  Test whether the dialog should be processed or canceled.
+	 * @return If Ok button is pressed then return true, otherwise return false.
+	 */
 	bool checkOk() {return isOk;}
 
+	/**
+	 * @brief  Get selected location string.
+	 * @return The string of selected absolute path.
+	 */
 	QString getSelected() {return mSelected;}
 
 private slots:
+	/**
+	 * @brief  Handle Ok button.
+	 */
 	void ok();
 
+	/**
+	 * @brief  Handle Cancel button.
+	 */
 	void cancel();
 
+	/**
+	 * @brief  When one item is checked, set other items as unchecked.
+	 * @param  item    item that is checked.
+	 * @param  column  checked column number to match the signal, useless here.
+	 */
 	void itemChanged(QTreeWidgetItem * item, int column);
 
 private:

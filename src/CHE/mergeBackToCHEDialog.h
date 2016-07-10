@@ -61,42 +61,53 @@ class MergeBackToCHEDialog : public QWidget
 
 public:
 	/**
-	 * Constructor.
-	 * Input objects is the map of <object absolute path, its CHE absolute path>.
+	 * @brief  Constructor.
+	 * @param  objects  objects is the map of <object absolute path, its CHE absolute path>.
 	 */
 	MergeBackToCHEDialog(QMap<QString, QString> objects);
 
 	/**
-	 * Get the objects that should be merged back.
-	 * Return is the map of <object absolute path, its CHE absolute path>.
+	 * @brief  Get the objects that should be merged back.
+	 * @return The map of <object absolute path, its CHE absolute path>.
 	 */
 	QMap<QString, QString> getMergeList();
 
 	/**
-	 * Get the CHE categories of the given object
-	 * Input is the object absolute path.
-	 * Return is the vector of categories encoded as int id.
+	 * @brief  Get the CHE categories of the given object
+	 * @param  object  The object absolute path.
+	 * @return The vector of categories encoded as int id.
 	 */
 	QVector<int> getCategories(const QString object);
 
+	/**
+	 * @brief  Show the dialog. Overload from QWidget.
+	 */
 	void exec()	{mDialog->exec();}
 
 private slots:
 	/**
-	 * Handle buttons.
+	 * @brief  Handle Merge button.
 	 */
 	void merge();
 
+	/**
+	 * @brief  Handle Cancel button.
+	 */
 	void cancel();
 
+	/**
+	 * @brief  Handle SelectAll button.
+	 */
 	void selectAll();
 
 	/**
-	 * Handle the change of check state of items in tree widget.
-	 * If the object item is checked, then all its child (category items) should all be checked.
-	 * If the object item is unchecked, then all its child (category items) should all be unchecked.
-	 * If an object is selected without CHE path, MergeBackToCHELocationDialog will jump out to let
-	 * user specify the location to be merged.
+	 * @brief  Handle the change of check state of items in tree widget.
+	 *         If the object item is checked, then all its child (category items) should all be checked.
+	 *         If the object item is unchecked, then all its child (category items) should all be unchecked.
+	 *         If an object is selected without CHE path, MergeBackToCHELocationDialog will jump out to let
+	 *         user specify the location to be merged.
+	 * @param  item    item that is checked.
+	 * @param  column  checked column number to match the signal, useless here.
 	 */
 	void itemChanged(QTreeWidgetItem * item, int column);
 

@@ -38,6 +38,10 @@ class WheelBox;
 class vtk3DLightInteractionCallback;
 class vtkAssembly;
 
+/**
+ * This class provide light control widget in main frame.
+ */
+
 class LightControl : public QWidget
 {
   Q_OBJECT

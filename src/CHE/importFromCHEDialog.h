@@ -63,42 +63,54 @@ class ImportFromCHEDialog : public QWidget
 
 public:
 	/**
-	 * Constructor with all the objects' full path as input.
+	 * @brief  Constructor. 
+	 * @param  objects  the vector of objects' full paths.
 	 */
 	ImportFromCHEDialog(QVector<QString> objects);
 
 	/**
-	 * Get the filter result, which contains all the objects that are not selected for import.
+	 * @brief  Get the filter result, which contains all the objects that are not selected for import.
+	 * @return the vector of filtered objects' absolute paths.
 	 */
 	QVector<QString> getFilterList();
 
 	/**
-	 * Get the categories of the selected object.
-	 * Input is the full path of a selected object .
+	 * @brief  Get the categories of the selected object.
+	 * @param  object  The full path of a selected object.
+	 * @return The vector of categories encoded as int id.
 	 */
 	QVector<int> getCategories(const QString object);	
 
 	void exec()	{mDialog->exec();}
 
 	/**
-	 * Test whether the import should be processed or canceled.
+	 * @brief  Test whether the import should be processed or canceled.
+	 * @return If the Import button is pressed, then return ture, otherwise return false.
 	 */
 	bool isImport() {return isImported;}
 
 private slots:
 	/**
-	 * Handle buttons.
+	 * @brief  Handle Import buttons.
 	 */
 	void import();
 
+	/**
+	 * @brief  Handle Cancel buttons.
+	 */
 	void cancel();
 
+	/**
+	 * @brief  Handle SelectAll buttons.
+	 */
 	void selectAll();
 
 	/**
-	 * Handle the change of check state of items in tree widget.
-	 * If the object item is checked, then all its child (category items) should all be checked.
-	 * If the object item is unchecked, then all its child (category items) should all be unchecked.
+	 * @brief  Handle the change of check state of items in tree widget.
+	 *         If the object item is checked, then all its child (category items) should all be checked.
+	 *         If the object item is unchecked, then all its child (category items) should all be unchecked.
+	 * @param  item    item that is checked.
+	 * @param  column  checked column number to match the signal, useless here.
 	 */
 	void itemChanged(QTreeWidgetItem * item, int column);
 
@@ -118,8 +130,7 @@ private:
 	QList<QTreeWidgetItem *> mItems;
 	QVector<QString> mObject;
 	QMap<QString, QVector<int> > mSelected; 
-	bool isImported;	// import button pressed true, otherwise false;
-
+	bool isImported;
 };
 
 #endif // IMPORT_FROM_CHE_DIALOG

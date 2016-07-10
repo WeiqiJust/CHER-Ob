@@ -35,6 +35,9 @@
 // Class list
 class MainWindow;
 
+/**
+ * This class provides the CT control widget in main frame.
+ */
 class CTControl : public QWidget
 {
   Q_OBJECT
@@ -56,28 +59,44 @@ public:
   void restoreBookmarkCTVolume(int ctMode, int ctBlendType, double ctResolution);
 
 signals:
-  // Add 1 to the current slide before displaying it (because count starts at 0)
+  /**
+   * @brief  Add 1 to the current slide before displaying it (because count starts at 0).
+   */
   void sendaddonelcd(int value);
 
-  // Tells VTK widget to render new slice using currentSlide value
+  /**
+   * @brief  Tells VTK widget to render new slice using currentSlide value.
+   */
   void sendSlideCurrent(int currentSlide);
 
-  // Tells VTK widget to update the current orientation of the camera
+  /**
+   * @brief  Tells VTK widget to update the current orientation of the camera.
+   */
   void sendOrientationChanged(CTOrientation currentOrient);
 
-  // Tells VTK widget to turn the camera upside-down
+  /**
+   * @brief  Tells VTK widget to turn the camera upside-down.
+   */
   void sendUpDownView();
 
-  // Tells VTK widget to change the resolution of the data
+  /**
+   * @brief  Tells VTK widget to change the resolution of the data.
+   */
   void sendReductionFactorChanged(float reductionFactor);
 
-  // Tells VTK widget to change the blend type of the data when user changes the index of the blend type combo box
+  /**
+   * @brief  Tells VTK widget to change the blend type of the data when user changes the index of the blend type combo box.
+   */
   void sendBlendTypeChanged(int blendType);
 
-  // Tells VTK widget to change the visualization from 2D to 3D or vice versa
+  /**
+   * @brief  Tells VTK widget to change the visualization from 2D to 3D or vice versa.
+   */
   void sendVisualizationChanged(CTVisualization currentVisualization);
 
-  // Tells VTK widget to change the 3D render mode
+  /**
+   * @brief  Tells VTK widget to change the 3D render mode.
+   */
   void sendVolumeRenderModeChanged(CTVolumeRenderMode currentVolumeRenderMode);
 
   friend bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item);

@@ -67,20 +67,33 @@ class FileInfoDialog : public QWidget
 	Q_OBJECT
 
 public:
-	// Constructor
+	/**
+	 * @brief  Constructor.
+	 * @param  w  Current object vtk widget.
+	 */
 	FileInfoDialog(VtkWidget* w = 0);
 
 public slots:
+	/**
+	 * @brief  Hide the dialog. Overload from QWidget.
+	 */
 	void hide()	{mDialog->hide();}
 
 private:
 	/**
-	 * Get different info according to object type.
+	 * @brief  Get 2d object info.
 	 */
 	void get2DInfo();
 
+	/**
+	 * @brief  Get 2d object info.
+	 */
 	void get3DInfo();
 
+	/**
+	 * @brief  Get file size.
+	 * @return file size.
+	 */
 	QString formatFilesize(qint64 bytes);
 
 private:

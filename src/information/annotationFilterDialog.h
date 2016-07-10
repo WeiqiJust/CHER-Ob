@@ -51,34 +51,43 @@ class AnnotationFilterDialog : public QWidget
 
 public:
 	/**
-	 * Constructor with users' name list as input, so that different users'
-	 * contribution can be filtered in report.
+	 * @brief  Constructor with users' name list as input, so that different users'
+	 *         contribution can be filtered in report.
+	 * @param  users  All the users that appears in the notes.
 	 */
 	AnnotationFilterDialog(const QVector<QString> users);
 	
 	/**
-	 * Get selected users whoes contributions will be presented in the report.
+	 * @brief  Get selected users whoes contributions will be presented in the report.
+	 * @return The vecotr of selected users.
 	 */
 	QVector<QString> getSelectedUsers();
 
 	/**
-	 * Show the dialog.
+	 * @brief  Show the dialog.
 	 */
 	void exec()	{mDialog->exec();}
 
 	/**
-	 * Test whether the filter should be processed or canceled.
+	 * @brief  Test whether the filter should be processed or canceled.
+	 * @return If Filter button is pressed then return true, otherwise return false.
 	 */
 	bool isFilter() {return isFiltered;}
 
 private slots:
 	/**
-	 * Handle buttons.
+	 * @brief  Handle Filter button.
 	 */
 	void filter();
 
+	/**
+	 * @brief  Handle Cancel button.
+	 */
 	void cancel();
 
+	/**
+	 * @brief  Handle SelectAll button.
+	 */
 	void selectAll();
 
 private:

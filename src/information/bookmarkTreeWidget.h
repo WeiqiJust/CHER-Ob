@@ -34,6 +34,9 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 
+/**
+ * This class provides the bookmarktreewidget function in bookmarkWidget.
+ */
 class BookmarkTreeWidget : public QTreeWidget
 {
     Q_OBJECT
