@@ -53,47 +53,91 @@
 class MainWindow;
 class VtkWidget;
 
+/**
+ * This class is the dialog to help user save project as another project.
+ */
+
 class SaveProjectAsDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
-    SaveProjectAsDialog(const QString user, const QString keyword, const QString affiliation, const QString description, const QString path = NULL);
+	/**
+	 * @brief  Constructor.
+	 * @param  User name, keyword, affiliation, description and system last used path.
+	 */
+    SaveProjectAsDialog(const QString user, const QString keyword, const QString affiliation,
+		const QString description, const QString path = NULL);
 
+	/**
+	 * @brief  Get the new project information.
+	 */
 	QString getProjectName()	{return mProjectNameEdit->text();}
-
 	QString getProjectPath()	{return mLocationLineEdit->text();}
-
 	QString getUserName()	{return mUserNameLineEdit->text();}
-
 	QString getKeyword()	{return mKeywordLineEdit->text();}
-
 	QString getAffiliation()	{return mAffiliationLineEdit->text();}
-
 	QString getDescription()	{return mDescriptionEdit->toPlainText();}
 
+	/**
+	 * @brief  Show the dialog. Overload from QWidget.
+	 */
 	void exec()	{mDialog->exec();}
 
+	/**
+	 * @brief  Test whether the dialog should be processed or canceled.
+	 * @return If Ok button is pressed then return true, otherwise return false.
+	 */
 	bool checkOk()	{return isOk;}
 
-private slots:	
+private slots:
+	/**
+	 * @brief  Handle Location Browse button.
+	 */
 	void locationBrowse();
 
+	/**
+	 * @brief  Handle Next button.
+	 */
 	void next();
 
+	/**
+	 * @brief  Handle Cancel button.
+	 */
 	void cancel();
 
+	/**
+	 * @brief  Change project name and trigger infoUpdate signal.
+	 * @param  name  The changed name.
+	 */
 	void projectNameChanged(QString name);
 
+	/**
+	 * @brief  Change project path and trigger infoUpdate signal.
+	 * @param  path  The changed path.
+	 */
 	void projectPathChanged(QString path);
 
+	/**
+	 * @brief  Enable Next button when name and path are specified.
+	 */
 	void enableNextButton();
 
+	/**
+	 * @brief  Hide the dialog and show the newCHEInfoDialog.
+	 */
 	void nextReady();
 
+	/**
+	 * @brief  Handle the Cancle button of the warning dialog.
+	 */
 	void nextCancel();
 
 signals:
+	/**
+	 * @brief  When project name or path is changed, send the signal. When both are specified,
+	 *         then next button is enabled.
+	 */
 	void infoUpdate();
 
 private:

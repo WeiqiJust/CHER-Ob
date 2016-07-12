@@ -183,25 +183,25 @@ public:
 
 	/**
 	 * @brief  Create 3D frustum notes with location info.
-	 * @param  points  The vector of center points in each plane, which defines the frustum.
-	 * @param  points  The normal vectors at the center points, which defines the frustum.
-	 * @param  color   The color of the note.
+	 * @param  points   The vector of center points in each plane, which defines the frustum.
+	 * @param  normals  The normal vectors at the center points, which defines the frustum.
+	 * @param  color    The color of the note.
 	 */
 	void createFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, ColorType color);
 
 	/**
 	 * @brief  Create 2D notes with location info.
 	 * @param  point       Point position in world coordinate.
-	 * @param  PointImage  The image coordinate, which is saved to mark the note on report.
-	 * @param  Color       The color of the note.
+	 * @param  pointImage  The image coordinate, which is saved to mark the note on report.
+	 * @param  color       The color of the note.
 	 */
 	void createPointNote2D(double* point, int* pointImage, ColorType color);
 
 	/**
 	 * @brief  Create 2D notes with location info.
 	 * @param  point       Four corner point positions in world coordinate.
-	 * @param  PointImage  The image coordinate of four corner points, which is saved to mark the note on report.
-	 * @param  Color       The color of the note.
+	 * @param  pointImage  The image coordinate of four corner points, which is saved to mark the note on report.
+	 * @param  color       The color of the note.
 	 */
 	void createSurfaceNote2D(double* point, int* pointImage, ColorType color);
 

@@ -44,6 +44,11 @@
 #include "../vtkEnums.h"
 #include "../visualization/vtkWidget.h"
 
+/**
+ * This class is to save the current status of 3D object since when generate a report,
+ * 3D object screenshot will change the view status. This class serves as a back-up.
+ * After the screenshot, the status will be restored.
+ */
 class WidgetInfo3D
 {
 public:
@@ -65,6 +70,10 @@ public:
 	int textureOn;
 };
 
+/**
+ * This class is to maintain the object necessary information.
+ * Main frame send the instances to the reportGenerate class.
+ */
 
 class ReportObject : public QWidget
 {
@@ -81,46 +90,122 @@ public:
 	VtkWidget* mGla;
 };
 
+/**
+ * This class is to generate a report based on users choose from reportFilter dialog.
+ */
 
 class ReportGenerator : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * @brief  Constructor.
+	 * @param  path     The absolute location of the path.
+	 * @param  project  Whether the report is about a project or CHE.
+	 */
 	ReportGenerator(QString path, bool project = true);
 
+	/**
+	 * @brief  Set necessary information for the report if it is a project.
+	 */
 	void setProjectName(const QString project)	{mProjectName = project;}
-
 	void setUserName(const QString userName)	{mUserName = userName;}
-
 	void setKeyword(const QString keyword)	{mKeyword = keyword;}
-
 	void setAffiliation(const QString affiliation)	{mAffiliation = affiliation;}
-
 	void setDescription(const QString description)	{mDescription = description;}
 
+	/**
+	 * @brief  Set CHE text information for the report if it is a CHE.
+	 */
 	void setCHEInfo(const CHEInfoBasic* info);
 
+	/**
+	 * @brief  Provide API for main frame to add a report object.
+	 * @param  object  The added object.
+	 */
 	void addObject(ReportObject* object)	{mObjects.push_back(object);}
 
+	/**
+	 * @brief  Start to generate report.
+	 */
 	void generate();
 
+	/**
+	 * @brief  Find main frame.
+	 */
 	static MainWindow* mw();
 
 private:
-	void detectPointVisibility(vtkSmartPointer<vtkRenderer> render, QVector<double*> points, QVector<QPair<double, double> >& visiblePoints);
+	/**
+	 * @brief  Detect whether the points can be seen from current directon.
+	 *         There are six directions to generate screenshot for 3D object.
+	 *         If the point is visible then transform it from world coordinate to image coordinate.
+	 *         This function is used to mark note labels as id numbers on screenshot for 3D images.
+	 *         It works for point note and surface note. For surface note, the center point of the surface
+	 *         is calculated and tested. If the center point is visible then we mark the note label.
+	 * @param  render         The current vtkRenderer that shows the object.
+	 * @param  points         The vector of points to be detected in world coordinate.
+	 * @param  visiblePoints  The vector of visible points in image coordinate.
+	 */
+	void detectPointVisibility(vtkSmartPointer<vtkRenderer> render, 
+		QVector<double*> points, QVector<QPair<double, double> >& visiblePoints);
 
-	void detectFrustumVisibility(const VtkWidget* gla, QVector<double*> center, QVector<QPair<double, double> >& visiblePoints, QVector<vtkSmartPointer<vtkDataSet> > dataset, OrthogonalView3D view);
+	/**
+	 * @brief  Detect whether the frustum can be seen from current directon.
+	 *         There are six directions to generate screenshot for 3D object.
+	 *         If the point is visible then transform it from world coordinate to image coordinate.
+	 *         This function is used to mark note labels as id numbers on screenshot for 3D images.
+	 *         It works for frustum note. The center point of frustum is calculated and serves as the
+	 *         origin point of ray tracing to the opposite of viewing direction. The intersection of
+	 *         the ray and the 3D object is used to test whether the frustum is visible.
+	 * @param  gla            The vtkWidget of the 3D object to get camera info.
+	 * @param  center         The center point of the frustum.
+	 * @param  visiblePoints  The vector of visible points in image coordinate.
+	 * @param  dataset        The 3D object dataset.
+	 * @param  view           The view direction.
+	 */
+	void detectFrustumVisibility(const VtkWidget* gla, QVector<double*> center,
+		QVector<QPair<double, double> >& visiblePoints, QVector<vtkSmartPointer<vtkDataSet> > dataset, OrthogonalView3D view);
 
+	/**
+	 * @brief  Save the current vtkWidget info to prepare for the screenshot.
+	 * @param  gla   The vtkWidget of the 3D object.
+	 * @param  info  The saved widget info.
+	 */
 	void saveWidgetinfo(const VtkWidget* gla, WidgetInfo3D &info);
 
+	/**
+	 * @brief  Init the vtkWidget for the screenshot.
+	 * @param  gla   The vtkWidget of the 3D object.
+	 */
 	void initWidget(VtkWidget* gla);
 
+	/**
+	 * @brief  recover the vtkWidget after screenshot.
+	 * @param  gla   The vtkWidget of the 3D object.
+	 * @param  info  The previous saved widget info.
+	 */
 	void recoverWidget(VtkWidget* gla, WidgetInfo3D info);
 
+	/**
+	 * @brief  Compute center point for surface note.
+	 * @param  gla      The vtkWidget of the 3D object.
+	 * @param  cellIds  The selected cell ids in the surface.
+	 * @param  center   The center point in world coordinate.
+	 */
 	void computeCenter(const VtkWidget* gla, QVector<int> cellIds, double* center);
 
-	void computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, double* center, vtkSmartPointer<vtkDataSet>& polyData);
+	/**
+	 * @brief  Compute center point for frustum note.
+	 * @param  gla       The vtkWidget of the 3D object.
+	 * @param  points    The center points of planes that defines the frustum.
+	 * @param  normals   The normal vectors of planes that defines the frustum.
+	 * @param  center    The center point in world coordinate.
+	 * @param  polyData  The 3D object dataset.
+	 */
+	void computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoints> points,
+		vtkSmartPointer<vtkDataArray> normals, double* center, vtkSmartPointer<vtkDataSet>& polyData);
 
 private:
 	bool isProject;

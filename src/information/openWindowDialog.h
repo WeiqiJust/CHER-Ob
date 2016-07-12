@@ -52,22 +52,46 @@
 #include <QTreeWidgetItem>
 #include "../vtkEnums.h"
 
+/**
+ * This class is the dialog to open closed window.
+ */
+
 class OpenWindowDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * @brief  Constructor.
+	 */
 	OpenWindowDialog();
 
+	/**
+	 * @brief  Add items of closed object in the tree widget.
+	 * @param  name  The full paht of the object.
+	 */
 	void addItem(QString name);
 
+	/**
+	 * @brief  Show the dialog. Overload from QWidget.
+	 */
 	void exec()	{mDialog->exec();}
 
+	/**
+	 * @brief  Get the checked items.
+	 * @return The list of checked items.
+	 */
 	QStringList selectedItems()	{return mSelection;}
 
 private slots:
+	/**
+	 * @brief  Handle Ok button.
+	 */
 	void ok();
 
+	/**
+	 * @brief  Handle Cancel button.
+	 */
 	void cancel();
 
 private:

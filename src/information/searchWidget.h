@@ -58,27 +58,64 @@
 
 class MainWindow;
 
+/**
+ * This class implement the search widget tab on bottom of right doc.
+ * It provides the search function for all the notes, annotation in the 
+ * object of current window.
+ */
 class SearchWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * @brief  Constructor.
+	 */
     SearchWidget(QWidget *parent);
 
+	/**
+	 * @brief  When there is an active window, enable all the button.
+	 *         If there is no avtive window (project/CHE is closed), then remove
+	 *         all the cached content.
+	 * @param  activeWindow  Whether there is an active window in main frame.
+	 */
 	void refreshSearchTab(bool activeWindow);
 
-	static MainWindow* mw(); // find the mainframe
+	/**
+	 * @brief  Find main frame.
+	 */
+	static MainWindow* mw();
 
 private:
+	/**
+	 * @brief  Set mPath to the current object's note path for search.
+	 * @return true if success, false if current object cannot be processed.
+	 */
 	bool updateCurrentPath();
 
+	/**
+	 * @brief  Set the filter for search. User can choose to search in certain categories.
+	 * @param  mode  The int value of selected item.
+	 */
 	void setFilter(int mode);
 
 private slots:
+	/**
+	 * Start to search.
+	 */
 	void search();
 
+	/**
+	 * @brief  If the item is note item, then open the note.
+	 * @param  item  The item that is double clicked.
+	 * @param  column  checked column number to match the signal, useless here.
+	 */
 	void showTreeWidgetItem(QTreeWidgetItem* item, int column);
 
+	/**
+	 * @brief  Set the filter for search to skip project info category (the first item) and call setFilter.
+	 * @param  mode  The int value of selected item.
+	 */
 	void setFilterMode(int mode);
 
 private:
@@ -96,29 +133,72 @@ private:
 	int mMode;
 };
 
+/**
+ * This class implement the SearchAll widget tab on bottom of right doc.
+ * It provides the search function for all the notes, annotation and
+ * project info in the all the objects in project/CHE.
+ */
 class SearchAllWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * @brief  Constructor.
+	 */
     SearchAllWidget(QWidget *parent);
 
+	/**
+	 * @brief  When there is an active window, enable all the button.
+	 *         If there is no avtive window (project/CHE is closed), then remove
+	 *         all the cached content.
+	 * @param  activeWindow  Whether there is an active window in main frame.
+	 */
 	void refreshSearchTab(bool activeWindow);
 
-	static MainWindow* mw(); // find the mainframe
+	/**
+	 * @brief  Find main frame.
+	 */
+	static MainWindow* mw();
 
 private:
+	/**
+	 * @brief  Set mPath to the current object's note path for search.
+	 * @return true if success, false if current object cannot be processed.
+	 */
 	bool updateCurrentPath();
 
+	/**
+	 * @brief  Match string for searching.
+	 * @param  content   The input content for searching.
+	 * @param  matchStr  The string to search.
+	 * @return The list of matched strings in certain length.
+	 */
 	QStringList matchString(QString content, QString matchStr);
 
+	/**
+	 * @brief  Set the filter for search. User can choose to search in certain categories.
+	 * @param  mode  The int value of selected item.
+	 */
 	void setFilter(int mode);
 
 private slots:
+	/**
+	 * Start to search.
+	 */
 	void search();
 
+	/**
+	 * @brief  If the item is note item, then open the note.
+	 * @param  item  The item that is double clicked.
+	 * @param  column  checked column number to match the signal, useless here.
+	 */
 	void showTreeWidgetItem(QTreeWidgetItem* item, int column);
 
+	/**
+	 * @brief  Set the filter for search to skip project info category (the first item) and call setFilter.
+	 * @param  mode  The int value of selected item.
+	 */
 	void setFilterMode(int mode);
 
 private:

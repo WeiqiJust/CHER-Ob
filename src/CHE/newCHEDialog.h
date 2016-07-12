@@ -55,49 +55,120 @@
 #include "newCHEInfoDialog.h"
 #include "../vtkEnums.h"
 
+/**
+ * This class is the dialog to help user generate new CHE.
+ */
+
 class NewCHEDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * @brief  Constructor.
+	 * @param  path  The last used system path.
+	 */
     NewCHEDialog(const QString path = NULL);
 
+	/**
+	 * @brief  Get the CHE name.
+	 * @return CHE name string.
+	 */
 	QString getCHEName();
 
+	/**
+	 * @brief  Get the CHE absolute path.
+	 * @return CHE absolute path.
+	 */
 	QString getCHEPath();
 
+	/**
+	 * @brief  Show the dialog. Overload from QWidget.
+	 */
 	void exec()	{mDialog->exec();}
 
 signals:
+	/**
+	 * @brief  When CHE name or path is changed, send the signal. When both are specified,
+	 *         then next button is enabled.
+	 */
 	void infoUpdate();
 
-	void createCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString, const QString, const QString);
+	/**
+	 * @brief  When Next button is pressed, send this signal to main frame.
+	 * @param  CHE Full Path, CHE Name, User Mode, CHE info, User Name, Imported Object Full path, 
+     *         Imported CT folder path.
+	 */
+	void createCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*,
+		const QString, const QString, const QString);
 
-private slots:	
+private slots:
+	/**
+	 * @brief  Handle Location Browse button.
+	 */
 	void locationBrowse();
 
+	/**
+	 * @brief  Handle Object Browse button.
+	 */
 	void objectBrowse();
 
+	/**
+	 * @brief  Handle CT Browse button.
+	 */
 	void ctBrowse();
 
+	/**
+	 * @brief  Handle Next Browse button.
+	 */
 	void next();
 
+	/**
+	 * @brief  Handle Cancel Browse button.
+	 */
 	void cancel();
 
+	/**
+	 * @brief  Change CHE name and trigger infoUpdate signal.
+	 * @param  name  The changed name.
+	 */
 	void CHENameChanged(QString name);
 
+	/**
+	 * @brief  Change CHE path and trigger infoUpdate signal.
+	 * @param  path  The changed path.
+	 */
 	void CHEPathChanged(QString path);
 
+	/**
+	 * @brief  Enable Next button when name and path are specified.
+	 */
 	void enableNextButton();
 
+	/**
+	 * @brief  Hide the dialog and show the newCHEInfoDialog.
+	 */
 	void nextReady();
 
+	/**
+	 * @brief  Handle the Cancle button of the warning dialog.
+	 */
 	void nextCancel();
 
+	/**
+	 * @brief  Handle newCHEInfoDialog Ok button.
+	 * @param  info  The input CHE info from newCHEinfoDialog.
+	 */
 	void CHEInfoOK(const CHEInfoBasic* info);
 
+	/**
+	 * @brief  Handle newCHEInfoDialog Back button.
+	 */
 	void CHEInfoBack();
 
+	/**
+	 * @brief  Handle newCHEInfoDialog Cancel button.
+	 */
 	void CHEInfoCancel();
 
 private:

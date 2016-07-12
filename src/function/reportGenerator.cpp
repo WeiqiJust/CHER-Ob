@@ -800,7 +800,9 @@ void ReportGenerator::detectPointVisibility(vtkSmartPointer<vtkRenderer> render,
 }
 
 void ReportGenerator::detectFrustumVisibility(const VtkWidget* gla, QVector<double*> center, 
-											  QVector<QPair<double, double> >& visiblePoints, QVector<vtkSmartPointer<vtkDataSet> > dataset, OrthogonalView3D view)
+											  QVector<QPair<double, double> >& visiblePoints,
+											  QVector<vtkSmartPointer<vtkDataSet> > dataset,
+											  OrthogonalView3D view)
 {
 	vtkSmartPointer<vtkCamera> camera = gla->mRenderer->GetActiveCamera();
 	double cameraPos[3];

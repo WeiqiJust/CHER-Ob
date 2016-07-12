@@ -55,26 +55,60 @@
 class MainWindow;
 class VtkWidget;
 
+/**
+ * This class is designed as a dialog to help user remove objects.
+ * User can choose to export the objects to somewhere else before remove them.
+ */
+
 class RemoveObjectDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * @brief  Constructor.
+	 */
 	RemoveObjectDialog();
 
+	/**
+	 * @brief  Add an object item in the treewidget. Main frame calls this function to
+	 *         list all the objects in the dialog.
+	 * @param  name  The object name.
+	 */
 	void addItem(QString name);
 
+	/**
+	 * @brief  Show the dialog. Overload from QWidget.
+	 */
 	void exec()	{mDialog->exec();}
 
+	/**
+	 * @brief  Get the selected object items for removal.
+	 * @return The list of the selected item.
+	 */
 	QStringList selectedItems()	{return mSelection;}
 
-	bool  checkExport()	{return isExport;}
+	/**
+	 * @brief  Test whether the selected objects should be exported first.
+	 * @return True if export, otherwise false.
+	 */
+	bool checkExport()	{return isExport;}
 
+	/**
+	 * @brief  Get the export path.
+	 * @return The absolute path.
+	 */
 	QString getPath()	{return mPath;}
 
 private slots:
+	/**
+	 * @brief  Handle Ok button, ask user if export before removal.
+	 */
 	void ok();
 
+	/**
+	 * @brief  Handle Cancel button.
+	 */
 	void cancel();
 
 private:

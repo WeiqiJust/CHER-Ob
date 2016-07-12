@@ -59,44 +59,104 @@
 class MainWindow;
 class VtkWidget;
 
+/**
+ * This class is the dialog to help user generate new project.
+ */
+
 class NewProjectDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * @brief  Constructor.
+	 * @param  path  The last used system path.
+	 */
     NewProjectDialog(const QString path = NULL);
 
+	/**
+	 * @brief  Get the project name.
+	 * @return Project name string.
+	 */
 	QString getProjectName();
 
+	/**
+	 * @brief  Get the CHE absolute path.
+	 * @return CHE absolute path.
+	 */
 	QString getProjectPath();
 
+	/**
+	 * @brief  Show the dialog. Overload from QWidget.
+	 */
 	void exec()	{mDialog->exec();}
 
 signals:
+	/**
+	 * @brief  When CHE name or path is changed, send the signal. When both are specified,
+	 *         then next button is enabled.
+	 */
 	void infoUpdate();
 
+	/**
+	 * @brief  When Next button is pressed, send this signal to main frame.
+	 * @param  Project Full Path, Project Name, User Mode,  User Name, Imported Object Full Path, 
+		       Imported CT Full Path, Keyword, Affiliation, Description.
+	 */
 	void nextPressed(const QString, const QString, const USERMODE, const QString, 
 		const QString, const QString, const QString, const QString, const QString);
 
-private slots:	
+private slots:
+	/**
+	 * @brief  Handle Location Browse button.
+	 */
 	void locationBrowse();
 
+	/**
+	 * @brief  Handle Object Browse button.
+	 */
 	void objectBrowse();
 
+	/**
+	 * @brief  Handle CT Browse button.
+	 */
 	void ctBrowse();
 
+	/**
+	 * @brief  Handle Next Browse button.
+	 */
 	void next();
 
+	/**
+	 * @brief  Handle Cancel Browse button.
+	 */
 	void cancel();
 
+	/**
+	 * @brief  Change project name and trigger infoUpdate signal.
+	 * @param  name  The changed name.
+	 */
 	void projectNameChanged(QString name);
 
+	/**
+	 * @brief  Change project path and trigger infoUpdate signal.
+	 * @param  path  The changed path.
+	 */
 	void projectPathChanged(QString path);
 
+	/**
+	 * @brief  Enable Next button when name and path are specified.
+	 */
 	void enableNextButton();
 
+	/**
+	 * @brief  Hide the dialog and show the newCHEInfoDialog.
+	 */
 	void nextReady();
 
+	/**
+	 * @brief  Handle the Cancle button of the warning dialog.
+	 */
 	void nextCancel();
 
 private:

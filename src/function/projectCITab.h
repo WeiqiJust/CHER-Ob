@@ -43,29 +43,71 @@
 #include <QComboBox>
 #include <QDomDocument>
 
+/**
+ * This class is the tab in project mode to show the text information if there are objects imported
+ * from CHE. User can choose specific category from specific CHE.
+ */
+
 class ProjectClassifiedInfoTab : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * @brief  Constructor.
+	 * @param  path      Project folder path.
+	 * @param  userName  The current user of the project.
+	 */
 	ProjectClassifiedInfoTab(const QString path, const QString userName, QWidget *parent = 0);
 
+	/**
+	 * @brief  Add the information of the specific CHE.
+	 * @param  CHEName     The name of the added CHE.
+	 * @param  categories  The vector of categories that the CHE contains.
+	 * @param  contents    The vector of the info content of the categories.
+	 */
 	void addCHEInfo(const QString CHEName, QVector<QString> categories, QVector<QString> contents);
 
+	/**
+	 * @brief  Write the information of specific CHE into an project/information.xml file.
+	 * @param  CHEName  The name of the CHE.
+	 */
 	void addCHEInfoToFile(const QString CHEName);
 
+	/**
+	 * @brief  Remove the information of specific CHE from the project/information.xml file.
+	 * @param  CHEName  The name of the CHE.
+	 */
 	void removeCHEInfo(const QString CHEName);
 
+	/**
+	 * @brief  Remove all the information cached in the tab.
+	 */
 	void clear();
 
 private:
+	/**
+	 * @brief  Initiate the project/information.xml by writting the basic information.
+	 * @param  userName  The current user of the project.
+	 */
 	void initFile(const QString userName);
 
+	/**
+	 * @brief  Open project/information.xml file and load the content into the tab. 
+	 */
 	void loadCHEInfo();
 
 private slots:
+	/**
+	 * @brief  Handle the CHEFilter combobox when user select a CHE.
+	 * @param  mode  The int value of selected item.
+	 */
 	void setCHEFilterMode(int mode);
 
+	/**
+	 * @brief  Handle the CategoryFilter combobox when user select a category.
+	 * @param  mode  The int value of selected item.
+	 */
 	void setCategoryFilterMode(int mode);
 
 private:

@@ -42,29 +42,61 @@
 #include <QObject>
 #include "CHEInfoDialog.h"
 
+/**
+ * This class is the dialog to input CHE info. It is shown after user choose Next button in
+ * newCHEDialog.
+ */
+
 class NewCHEInfoDialog : public CHEInfoDialog
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * @brief  Constructor.
+	 */
 	NewCHEInfoDialog();
 
+	/**
+	 * @brief  Show the dialog. Overload from QWidget.
+	 */
 	void exec()	{mDialog->exec();}
 
+	/**
+	 * @brief  Hide the dialog. Overload from QWidget.
+	 */
 	void hide() {mDialog->hide();}
 
 private slots:
+	/**
+	 * @brief  Handle Ok button.
+	 */
 	void okPressed();
 
+	/**
+	 * @brief  Handle Back button.
+	 */
 	void backPressed();
 
+	/**
+	 * @brief  Handle Cancel button.
+	 */
 	void cancelPressed(){emit cancel();}
 
 signals:
+	/**
+	 * @brief  Emit signal to newCHEDialog when Ok button is pressed.
+	 */
 	void ok(const CHEInfoBasic* info);
 
+	/**
+	 * @brief  Emit signal to newCHEDialog when Back button is pressed.
+	 */
 	void back();
 
+	/**
+	 * @brief  Emit signal to newCHEDialog when Cancel button is pressed.
+	 */
 	void cancel();
 
 private:

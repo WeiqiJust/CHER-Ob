@@ -47,30 +47,61 @@
 class MainWindow;
 class VtkWidget;
 
+/**
+ * This class is the project info dialog, which presents necessary information for the whole project.
+ * User can add the information in the dialog.
+ */
 
 class ProjectInfoDialog : public QWidget
 {
 	Q_OBJECT
 
 public:
+	/**
+	 * @brief  Constructor.
+	 * @param  Project name, project absolute full path, keyword, affiliation, user name and description of the project.
+	 */
 	ProjectInfoDialog(const QString name, const QString path, const QString keyword, const QString affiliation,
 		const QString userName, const QString description);
 
+	/**
+	 * @brief  Show the dialog. Overload from QWidget.
+	 */
 	void exec()	{mDialog->exec();}
 
 public slots:
+	/**
+	 * @brief  If the information is saved then close the dialog.
+	 */
 	void hide();
 
+	/**
+	 * @brief  Handle Edit button to change the label to lineedit.
+	 */
 	void edit();
 
+	/**
+	 * @brief  Handle Save button to change the lineedit to label.
+	 */
 	void save();
 
 private:
+	/**
+	 * @brief  Event filter to handle the close event. When user press
+	 *         the red cross to close the dialog, notify the unsaved changes
+	 *         if exsits.
+	 */
 	bool eventFilter(QObject* obj, QEvent* e);
 
+	/**
+	 * @brief  Notify user that there are unsaved changes.
+	 */
 	bool saveNotification();
 
 signals:
+	/**
+	 * @brief  If project info is changed, emit the signal to main frame.
+	 */
 	void projectInfoChanged(const QString userName, const QString keyword, const QString affiliation, const QString descrption);
 
 private:
