@@ -912,11 +912,11 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 	{
 		if(filetype == CTSTACK || filetype == CTVOLUME) 
 		{
-			result = openDICOM(fn, cheName, false, false, import, readCHE);
+			result = openDICOM(fn, cheName, false, false, import);
 		} 
 		else 
 		{
-			result = openImages(fn, cheName, false, false, import, readCHE);
+			result = openImages(fn, cheName, false, false, import);
 		}
 	}
 	if(result == FAILED) continue;
@@ -2172,7 +2172,7 @@ void MainWindow::createNewVtkProject(const QString fullName, const QString name,
 
 
 //MK: DICOM input should be directory.
-OPENRESULT MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import, bool readCHE)
+OPENRESULT MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import)
 {
 	QString dirName;
 	if (fileNameStart.isEmpty())
@@ -2350,7 +2350,7 @@ void MainWindow::removeObject()
 	updateAllViews();
 }
 
-OPENRESULT MainWindow::openImages(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import, bool readCHE)
+OPENRESULT MainWindow::openImages(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import)
 {
 	QStringList filters;
 	filters.push_back("Images (*.ply *.obj *.wrl *.png *.jpg *.tif *.bmp *.exr *.dcm *rti *ptm *hsh *mview)");
@@ -3425,7 +3425,6 @@ void MainWindow::setUnsplit()
   }
 }
 
-//set the split/unsplit menu that appears right clicking on a splitter's handle
 void MainWindow::setHandleMenu(QPoint point, Qt::Orientation orientation, QSplitter *origin){
     VtkView *mvc =  currentVtkView();
     int epsilon =10;
@@ -4686,7 +4685,6 @@ void MainWindow::setActiveSubWindow(QWidget *window)
     mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow *>(window));
 }
 
-//MK this is for rendering progress bar
 bool MainWindow::QCallBack(const int pos, const char * str)
 {
 	int static lastPos=-1;
