@@ -133,6 +133,8 @@
 #include "../function/renderingdialog.h"
 #include "myVTKInteractorStyle.h"
 
+#include <QDebug>
+
 #include "windows.h" 
 //----------------------------------------------------------
 //#define VTK_CREATE(type, name) vtkSmartPointer<type> name = vtkSmartPointer<type>::New()
@@ -3169,17 +3171,43 @@ void VtkWidget::ConvertUnsignedCharVecToVTKImageData(int iwidth, int iheight, st
 	mVtkImageData->AllocateScalars();
 
 	unsigned char *ptr = static_cast<unsigned char*>(mVtkImageData->GetScalarPointer());
+	uchar *rPtr = new uchar[iheight * iwidth];
+	uchar *gPtr = new uchar[iheight * iwidth];
+	uchar *bPtr = new uchar[iheight * iwidth];
 	int offset = 0;
 	int count = 0;
 	for (int i = 0; i < iwidth; i++) {
 		for (int j = 0; j < iheight; j++) {
 			for (int n = 0; n < 3; n++) {
 				*ptr++ = textureData[offset];
+
+				if (n == 0) { *(rPtr + count) = textureData[offset]; }
+				else if (n == 1) { *(gPtr + count) = textureData[offset]; }
+				else { *(bPtr + count) = textureData[offset]; }
+
 				offset += 1;
 			}
+			count += 1;
 			offset += 1;
 		}
-	} 
+	}
+
+	// save an image //QImage::Format_RGB888 QImage::Format_Indexed8
+	QImage qImage(iwidth, iheight, QImage::Format_RGB888);
+	count = 0;
+	for (int i = 0; i < iheight; i++) {
+		for (int j = 0; j < iwidth; j++) { 
+			qImage.setPixel(j, i, qRgb(rPtr[count], gPtr[count], bPtr[count])); count += 1; 
+		}
+	}
+	QPixmap pixmap( QPixmap::fromImage(qImage) );
+
+	bool success = pixmap.save("RTI.jpg", "JPG");
+
+	delete []rPtr;
+	delete []gPtr;
+	delete []bPtr;
+
 	mVtkImageData->Update();
 	mVtkImageData->Modified();
 	///***************Method 3*********************/

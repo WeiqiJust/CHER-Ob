@@ -120,6 +120,19 @@ BookmarkIMAGE2D::BookmarkIMAGE2D(QString caption, QUuid uuid, QDomDocument& d, v
     save2DInterpolation(interpOn);
 }
 
+
+BookmarkRTI2D::BookmarkRTI2D(QString caption, QUuid uuid, QDomDocument& d, vtkSmartPointer<vtkCamera> camera, WidgetMode mode, 
+							 bool interpOn, vcg::Point3f light) : Bookmark(caption, uuid, d, camera, mode)
+{
+	double orientation[3];
+	orientation[0] = light[0];
+	orientation[1] = light[1];
+	orientation[2] = light[2];
+	saveLightVector(orientation);
+
+	save2DInterpolation(interpOn);
+}
+
 // 3D model bookmarks preserve directional light on/off, lighting position & key/fill lights, interpolation,
 // display mode, and texture on/off.
 BookmarkMODEL3D::BookmarkMODEL3D(QString caption, QUuid uuid, QDomDocument &d, vtkSmartPointer<vtkCamera> camera, WidgetMode mode,

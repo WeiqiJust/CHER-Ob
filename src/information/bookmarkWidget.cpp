@@ -32,6 +32,7 @@
 #include "bookmarkXMLReader.h"
 #include "../function/CTControl.h"
 #include "../function/lightControl.h"
+#include "../function/lightControlRTI.h"
 #include "../mainWindow.h"
 
 BookmarkWidget::BookmarkWidget(QWidget *parent)
@@ -637,7 +638,30 @@ bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item)
                 mw()->VTKA()->setInterpolateOn(false);
             }
         }
-    } else if(filetype == MODEL3D) {
+	} else if(filetype == RTI2D) {
+		list = elt.elementsByTagName("light_vector");
+		vcg::Point3f light;
+        if(!list.isEmpty()) {
+            light[0] = list.at(0).toElement().elementsByTagName("x").at(0).toElement().text().toDouble();
+            light[1] = list.at(0).toElement().elementsByTagName("y").at(0).toElement().text().toDouble();
+            light[2] = list.at(0).toElement().elementsByTagName("z").at(0).toElement().text().toDouble();
+        }
+
+		list = elt.elementsByTagName("interpolation_on");
+        if(!list.isEmpty()) {
+            interpolationOn = list.at(0).toElement().text().toInt();
+            if(interpolationOn == INTERPOLATION_ON) {
+                mw()->renderModeInterpolationAct->setChecked(true);
+                mw()->VTKA()->setInterpolateOn(true);
+            } else {
+                mw()->renderModeInterpolationAct->setChecked(false);
+                mw()->VTKA()->setInterpolateOn(false);
+            }
+        }
+
+		mw()->mLightControlRTI->setLight(light, true);
+
+	} else if(filetype == MODEL3D) {
         list = elt.elementsByTagName("directional_light");
         if(!list.isEmpty()) {
             directionalLightOn = list.at(0).toElement().text().toInt();
@@ -796,8 +820,6 @@ bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item)
         if(!list5.isEmpty()) camera->SetClippingRange(clip);
         if(!list6.isEmpty()) camera->SetParallelScale(scale);
 
-    } else if(filetype == RTI2D) {
-
     } else {
         QMessageBox mb;
         mb.critical(this, tr("Bookmark Error"),
@@ -920,6 +942,9 @@ void BookmarkWidget::createBookmark()
 void BookmarkWidget::createBookmarkSubclass(QString caption, QDomDocument& doc, QDomElement& root)
 {
     vtkSmartPointer<vtkAssembly> assembly = mw()->mLightControl->GetAssembly();
+
+	vcg::Point3f light = mw()->mLightControlRTI->getLight(); /*!< Light vector. */
+
     QUuid uuid = QUuid::createUuid();
 
     switch(mode)
@@ -929,6 +954,14 @@ void BookmarkWidget::createBookmarkSubclass(QString caption, QDomDocument& doc, 
         BookmarkIMAGE2D bmk(caption, uuid, doc, camera, mode, interpOn);
         root.appendChild(bmk.getBookmark());
         break;
+    }
+
+	case RTI2D:
+    {
+		BookmarkRTI2D bmk(caption, uuid, doc, camera, mode, interpOn, light);
+        root.appendChild(bmk.getBookmark());
+
+        return;
     }
 
     case MODEL3D:
@@ -953,11 +986,6 @@ void BookmarkWidget::createBookmarkSubclass(QString caption, QDomDocument& doc, 
         BookmarkCTVOLUME bmk(caption, uuid, doc, camera, mode, assembly, vRenderMode, blend, resolution);
         root.appendChild(bmk.getBookmark());
         break;
-    }
-
-    case RTI2D:
-    {
-        return;
     }
 
     default:
