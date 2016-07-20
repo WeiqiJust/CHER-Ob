@@ -193,7 +193,7 @@ void ReportGenerator::generate()
 				if (mObjects[i]->mCategories.indexOf(type) == -1)
 					continue;
 				NoteMode mode;
-				if (mObjects[i]->mMode == IMAGE2D)
+				if (mObjects[i]->mMode == IMAGE2D || mObjects[i]->mMode == RTI2D)
 				{
 					QStringList lines = note.split("\n");
 					QString firstLine = lines[0];
@@ -353,6 +353,7 @@ void ReportGenerator::generate()
 		QVector<QPair<double, double> > surfaceNote3DFront, surfaceNote3DLeft, surfaceNote3DRight, surfaceNote3DTop, surfaceNote3DBottom, surfaceNote3DBack;
 		QVector<QPair<double, double> > frustumNote3DFront, frustumNote3DLeft, frustumNote3DRight, frustumNote3DTop, frustumNote3DBottom, frustumNote3DBack;
 		WidgetInfo3D info;
+		QPixmap RTIScreenShot;
 		switch(mObjects[i]->mMode)
 		{
 			case EMPTYWIDGET:
@@ -418,6 +419,13 @@ void ReportGenerator::generate()
 			case CTVOLUME:      
 				break;
 			case RTI2D:
+				RTIScreenShot = mObjects[i]->mGla->getRTIScreenShot();
+				if (!RTIScreenShot.isNull())
+				{
+					screenshot.append(".png");
+					RTIScreenShot.save(screenshot);
+					mObjects[i]->mPictures.push_back(screenshot);
+				}
 				break;
 			default: break;
 		}
@@ -588,7 +596,7 @@ void ReportGenerator::generate()
 			painter.end(); 
 		    mDoc->addResource(QTextDocument::ImageResource, QUrl(url), img);
 			
-			if (mObjects[i]->mMode == IMAGE2D)
+			if (mObjects[i]->mMode == IMAGE2D || mObjects[i]->mMode == RTI2D)
 			{
 				double height = 200, width = 300;
 				height = (double)width * imgHeight / imgWidth;

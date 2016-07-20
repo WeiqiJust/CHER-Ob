@@ -152,9 +152,6 @@ public:
   void displayFileInfo();
 
   void closeFileInfo();
-  /****** Modified by Weiqi Shi 1/26/2016 *******/
-  //void displayProjectInfo();
-  /****** Modified by Weiqi Shi 1/26/2016 *******/
 
   void setMeasureDistance(bool useRubberband);
   void setVisibilityDistance(bool removeRubberband);
@@ -219,14 +216,13 @@ public:
 
   double get2DImageHeight();
   double get2DImageWidth();
+  QPixmap getRTIScreenShot()	{return mRTIScreenShot;}
 
   friend void BookmarkTreeWidget::dropEvent(QDropEvent *event);
   friend bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item);
   friend void BookmarkWidget::refreshCurrentFileInfo();
   friend Metadata::Metadata(QString path, VtkWidget* gla, bool file);
-  /****** Modified by Weiqi Shi 1/27/2016 *******/
   friend FileInfoDialog::FileInfoDialog(VtkWidget* gla);
-  /****** Modified by Weiqi Shi 1/27/2016 *******/
 
 signals:
   void currentViewerChanged(int currentId);
@@ -486,9 +482,8 @@ private:
   InputImageSet *inputImageSet;
   NoteMode mNoteMode;
   ColorType mAnnotationColor;
-  /****** Modified by Weiqi Shi 1/27/2016 *******/
   FileInfoDialog *mFileInfoDialog;
-  /****** Modified by Weiqi Shi 1/27/2016 *******/
+  QPixmap mRTIScreenShot;
 
   QDomDocument annotationsXml;
 

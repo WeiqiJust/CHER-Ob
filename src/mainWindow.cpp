@@ -4510,8 +4510,6 @@ void MainWindow::generateReport()
 
 		WidgetMode wm = gla->getWidgetMode();
 		object->mMode = wm;
-
-		//qDebug()<<"in report generate";
 	}
 	report->generate();
 }

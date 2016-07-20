@@ -270,6 +270,7 @@ void SearchWidget::search()
 			list.append(fileList[i]);
 			QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
 			mItems.append(item);
+			delete file;
 		}
 		file->close();
 	}

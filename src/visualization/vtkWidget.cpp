@@ -3201,8 +3201,7 @@ void VtkWidget::ConvertUnsignedCharVecToVTKImageData(int iwidth, int iheight, st
 		}
 	}
 	QPixmap pixmap( QPixmap::fromImage(qImage) );
-
-	bool success = pixmap.save("RTI.jpg", "JPG");
+	mRTIScreenShot.convertFromImage(qImage);
 
 	delete []rPtr;
 	delete []gPtr;
