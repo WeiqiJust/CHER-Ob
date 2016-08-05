@@ -142,7 +142,6 @@ private:
   RenderMode3D renderMode; // 3D render mode
   RenderingRTI renderModeRTI; // RTI render mode
   RenderingMode* renderingMode;
-  float rtiP1, rtiP2, rtiP3; // RTI parameters
 
   bool textureOn; // Texture on
   QString tfn; // Texture filename

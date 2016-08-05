@@ -364,7 +364,6 @@ void BookmarkWidget::refreshCurrentFileInfo()
         if(mw()->VTKA()->mRenderer)
             camera = mw()->VTKA()->mRenderer->GetActiveCamera();
 
-		rtiP1 = -1.0; rtiP2 = -1.0; rtiP3 = -1.0; // invalid values indicate invalid fields
 		if (mw()->VTKA()->mRTIbrowser) { 
 			renderModeRTI = mw()->VTKA()->mRTIbrowser->getRenderingMode();
 			QMap<int, RenderingMode*>* list = mw()->VTKA()->mRTIbrowser->getRenderingModes();
