@@ -23,6 +23,8 @@
 
 #include "diffusegain.h"
 #include <omp.h>
+#include <QString>
+#include <QMessageBox>
 
 const float d256 = 1.0f/256.0f;
 
@@ -66,7 +68,10 @@ QWidget* DiffuseGain::getControl(QWidget* parent)
 {
     int initValue = roundParam((gain - minGain)*100/(maxGain - minGain));
 	DiffuseGControl* control = new DiffuseGControl(initValue, parent);
+
+	control = new DiffuseGControl(initValue, parent);
     connect(control, SIGNAL(gainChanged(int)), this, SLOT(setGain(int)));
+
     disconnect(this, SIGNAL(refreshImage()), 0, 0);
 	connect(this, SIGNAL(refreshImage()), parent, SIGNAL(updateImage()));
 	return control;

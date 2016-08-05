@@ -32,6 +32,8 @@
 #include "bookmarkXMLReader.h"
 #include "../function/CTControl.h"
 #include "../function/lightControl.h"
+#include "../function/lightControlRTI.h"
+#include "../function/renderingdialog.h"
 #include "../mainWindow.h"
 
 BookmarkWidget::BookmarkWidget(QWidget *parent)
@@ -74,6 +76,8 @@ BookmarkWidget::BookmarkWidget(QWidget *parent)
 
   setLayout(vbox);
   show();
+
+  renderingMode = NULL;
 }
 
 BookmarkWidget::~BookmarkWidget()
@@ -359,6 +363,14 @@ void BookmarkWidget::refreshCurrentFileInfo()
         resolution = mw()->VTKA()->mReductionFactor;
         if(mw()->VTKA()->mRenderer)
             camera = mw()->VTKA()->mRenderer->GetActiveCamera();
+
+		rtiP1 = -1.0; rtiP2 = -1.0; rtiP3 = -1.0; // invalid values indicate invalid fields
+		if (mw()->VTKA()->mRTIbrowser) { 
+			renderModeRTI = mw()->VTKA()->mRTIbrowser->getRenderingMode();
+			QMap<int, RenderingMode*>* list = mw()->VTKA()->mRTIbrowser->getRenderingModes();
+			renderingMode = list->value(static_cast<int>(renderModeRTI));
+		}
+		else { renderModeRTI = RenderingRTI::DEFAULT; }
     }
     if(mw()->mCtControl) {
         slice = mw()->mCtControl->GetSliceCurrent();
@@ -493,6 +505,7 @@ bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item)
     int directionalLightOn;
     int interpolationOn;
     int mode3D;
+	int modeRTI;
     int textureOn;
     int ctSlice = 0;
     int ctOrientation = 0;
@@ -637,7 +650,189 @@ bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item)
                 mw()->VTKA()->setInterpolateOn(false);
             }
         }
-    } else if(filetype == MODEL3D) {
+	} else if(filetype == RTI2D) {
+		list = elt.elementsByTagName("light_vector");
+		vcg::Point3f light;
+        if(!list.isEmpty()) {
+            light[0] = list.at(0).toElement().elementsByTagName("x").at(0).toElement().text().toDouble();
+            light[1] = list.at(0).toElement().elementsByTagName("y").at(0).toElement().text().toDouble();
+            light[2] = list.at(0).toElement().elementsByTagName("z").at(0).toElement().text().toDouble();
+        }
+
+		list = elt.elementsByTagName("display_mode");
+        if(!list.isEmpty()) {
+            modeRTI = list.at(0).toElement().text().toInt();
+			mw()->rendDlg->setRenderingMode(modeRTI);
+		}
+
+		list = elt.elementsByTagName("rti_para"); 
+		if (!list.isEmpty()) {
+			RenderingMode* renderingMode = mw()->VTKA()->mRTIbrowser->getRenderingModes()->value(modeRTI);
+			switch (modeRTI)
+			{
+				case DIFFUSE_GAIN:
+				{
+					DiffuseGain* dg = static_cast<DiffuseGain*> (renderingMode);
+					int gain = list.at(0).toElement().elementsByTagName("gain").at(0).toElement().text().toInt();
+					dg->setGain(gain);
+
+					DiffuseGControl * dgc = (DiffuseGControl*)mw()->rendDlg->getRenderingControl();
+					dgc->groups.at(0)->spinBox->setValue(gain);
+
+					break;
+				}
+
+				case SPECULAR_ENHANCEMENT:
+				{
+					SpecularEnhancement* se = static_cast<SpecularEnhancement*> (renderingMode);
+					
+					int diffuseColor  = list.at(0).toElement().elementsByTagName("diffuseColor").at(0).toElement().text().toInt();
+					int specularity   = list.at(0).toElement().elementsByTagName("specularity").at(0).toElement().text().toInt();
+					int highlightSize = list.at(0).toElement().elementsByTagName("highlightSize").at(0).toElement().text().toInt();
+					se->setKd(diffuseColor);
+					se->setKs(specularity);
+					se->setExp(highlightSize);
+
+					SpecularEControl * sec = (SpecularEControl*)mw()->rendDlg->getRenderingControl();
+					sec->groups.at(0)->spinBox->setValue(diffuseColor);
+					sec->groups.at(1)->spinBox->setValue(specularity);
+					sec->groups.at(2)->spinBox->setValue(highlightSize);
+
+					break;
+				}
+
+				case NORMAL_ENHANCEMENT:
+				{
+					NormalEnhancement* ne = static_cast<NormalEnhancement*> (renderingMode);
+					
+					int gain  = list.at(0).toElement().elementsByTagName("gain").at(0).toElement().text().toInt();
+					int environment   = list.at(0).toElement().elementsByTagName("environment").at(0).toElement().text().toInt();
+					
+					ne->setGain(gain);
+					ne->setEnvIll(environment);
+
+					NormalEControl * nec = (NormalEControl*)mw()->rendDlg->getRenderingControl();
+					nec->groups.at(0)->spinBox->setValue(gain);
+					nec->groups.at(1)->spinBox->setValue(environment);
+
+					break;
+				}
+
+				case UNSHARP_MASKING_IMG:
+				{
+					UnsharpMasking* um_img = static_cast<UnsharpMasking*> (renderingMode);
+					int gain = list.at(0).toElement().elementsByTagName("gain").at(0).toElement().text().toInt();
+					um_img->setGain(gain);
+
+					UnsharpMControl * um_img_c = (UnsharpMControl*)mw()->rendDlg->getRenderingControl();
+					um_img_c->groups.at(0)->spinBox->setValue(gain);
+
+					break;
+				}
+
+				case UNSHARP_MASKING_LUM:
+				{
+					UnsharpMasking* um_lum = static_cast<UnsharpMasking*> (renderingMode);
+					int gain = list.at(0).toElement().elementsByTagName("gain").at(0).toElement().text().toInt();
+					um_lum->setGain(gain);
+
+					UnsharpMControl * um_lum_c = (UnsharpMControl*)mw()->rendDlg->getRenderingControl();
+					um_lum_c->groups.at(0)->spinBox->setValue(gain);
+
+					break;
+				}
+
+				case COEFF_ENHANCEMENT:
+				{
+					CoeffEnhancement* ce = static_cast<CoeffEnhancement*> (renderingMode);
+					int gain = list.at(0).toElement().elementsByTagName("gain").at(0).toElement().text().toInt();
+					ce->setGain(gain);
+
+					CoeffEnhancControl * cec = (CoeffEnhancControl*)mw()->rendDlg->getRenderingControl();
+					cec->groups.at(0)->spinBox->setValue(gain);
+
+					break;
+				}
+
+				case DETAIL_ENHANCEMENT:
+				{
+					DetailEnhancement* de = static_cast<DetailEnhancement*> (renderingMode);
+
+					OffsetNum o;
+					TileSize size;
+					int level;
+					SharpnessMeasures m;
+					SphereSampling ss;
+					float k1;
+					float k2;
+					float t;
+					SmoothingFilter f;
+					int nIter;
+
+					o = (OffsetNum)((int)list.at(0).toElement().elementsByTagName("localOffset").at(0).toElement().text().toInt());
+					size = (TileSize)((int)list.at(0).toElement().elementsByTagName("tileSize").at(0).toElement().text().toInt());
+					level = list.at(0).toElement().elementsByTagName("numberInitialTiles").at(0).toElement().text().toInt();
+					m = (SharpnessMeasures)((int)list.at(0).toElement().elementsByTagName("sharpnessOperator").at(0).toElement().text().toInt());
+					ss = (SphereSampling)((int)list.at(0).toElement().elementsByTagName("lightSampling").at(0).toElement().text().toInt());
+					k1 = list.at(0).toElement().elementsByTagName("k1Sharpness").at(0).toElement().text().toFloat();
+					k2 = list.at(0).toElement().elementsByTagName("k2Lightness").at(0).toElement().text().toFloat();
+					t = list.at(0).toElement().elementsByTagName("threshold").at(0).toElement().text().toFloat();
+					f = (SmoothingFilter)((int)list.at(0).toElement().elementsByTagName("smoothingFilter").at(0).toElement().text().toInt());
+					nIter = list.at(0).toElement().elementsByTagName("numberIterationSmoothing").at(0).toElement().text().toInt();
+					de->updateConfig(o, size, level, m, ss, k1, k2, t, f, nIter);
+
+					break;
+				}
+
+				case DYN_DETAIL_ENHANCEMENT: 
+				{
+					DynamicDetailEnh* dde = static_cast<DynamicDetailEnh*> (renderingMode);
+
+					int o;
+					int size;
+					SharpnessMeasuresDyn m;
+					SphereSamplingDyn ss;
+					float k1;
+					float k2;
+					float t;
+					SmoothingFilterDyn f;
+					int nIter;
+
+					o = (OffsetNum)((int)list.at(0).toElement().elementsByTagName("localOffset").at(0).toElement().text().toInt());
+					size = (TileSize)((int)list.at(0).toElement().elementsByTagName("tileSize").at(0).toElement().text().toInt());
+					m = (SharpnessMeasuresDyn)((int)list.at(0).toElement().elementsByTagName("sharpnessOperator").at(0).toElement().text().toInt());
+					ss = (SphereSamplingDyn)((int)list.at(0).toElement().elementsByTagName("lightSampling").at(0).toElement().text().toInt());
+					k1 = list.at(0).toElement().elementsByTagName("k1Sharpness").at(0).toElement().text().toFloat();
+					k2 = list.at(0).toElement().elementsByTagName("k2Lightness").at(0).toElement().text().toFloat();
+					t = list.at(0).toElement().elementsByTagName("threshold").at(0).toElement().text().toFloat();
+					f = (SmoothingFilterDyn)((int)list.at(0).toElement().elementsByTagName("smoothingFilter").at(0).toElement().text().toInt());
+					nIter = list.at(0).toElement().elementsByTagName("numberIterationSmoothing").at(0).toElement().text().toInt();
+					
+					dde->setOffset(o);
+					dde->setTileSize(size);
+					dde->updateConfig(m, ss, k1, k2, t,f, nIter);
+				}
+
+				default: { break; }
+			}
+		}
+
+		list = elt.elementsByTagName("interpolation_on");
+        if(!list.isEmpty()) {
+            interpolationOn = list.at(0).toElement().text().toInt();
+            if(interpolationOn == INTERPOLATION_ON) {
+                mw()->renderModeInterpolationAct->setChecked(true);
+                mw()->VTKA()->setInterpolateOn(true);
+            } else {
+                mw()->renderModeInterpolationAct->setChecked(false);
+                mw()->VTKA()->setInterpolateOn(false);
+            }
+        }
+
+		mw()->mLightControlRTI->setLight(light, true);
+		// mw()->rendDlg->setRTIPara(p1, p2, p3);
+
+	} else if(filetype == MODEL3D) {
         list = elt.elementsByTagName("directional_light");
         if(!list.isEmpty()) {
             directionalLightOn = list.at(0).toElement().text().toInt();
@@ -796,8 +991,6 @@ bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item)
         if(!list5.isEmpty()) camera->SetClippingRange(clip);
         if(!list6.isEmpty()) camera->SetParallelScale(scale);
 
-    } else if(filetype == RTI2D) {
-
     } else {
         QMessageBox mb;
         mb.critical(this, tr("Bookmark Error"),
@@ -920,6 +1113,9 @@ void BookmarkWidget::createBookmark()
 void BookmarkWidget::createBookmarkSubclass(QString caption, QDomDocument& doc, QDomElement& root)
 {
     vtkSmartPointer<vtkAssembly> assembly = mw()->mLightControl->GetAssembly();
+
+	vcg::Point3f light = mw()->mLightControlRTI->getLight(); /*!< Light vector. */
+
     QUuid uuid = QUuid::createUuid();
 
     switch(mode)
@@ -929,6 +1125,14 @@ void BookmarkWidget::createBookmarkSubclass(QString caption, QDomDocument& doc, 
         BookmarkIMAGE2D bmk(caption, uuid, doc, camera, mode, interpOn);
         root.appendChild(bmk.getBookmark());
         break;
+    }
+
+	case RTI2D:
+    {
+		BookmarkRTI2D bmk(caption, uuid, doc, camera, mode, interpOn, light, renderModeRTI, renderingMode);
+        root.appendChild(bmk.getBookmark());
+
+        return;
     }
 
     case MODEL3D:
@@ -953,11 +1157,6 @@ void BookmarkWidget::createBookmarkSubclass(QString caption, QDomDocument& doc, 
         BookmarkCTVOLUME bmk(caption, uuid, doc, camera, mode, assembly, vRenderMode, blend, resolution);
         root.appendChild(bmk.getBookmark());
         break;
-    }
-
-    case RTI2D:
-    {
-        return;
     }
 
     default:

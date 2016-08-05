@@ -73,6 +73,8 @@ private:
 	const float maxGain; /*!< Maximum gain value. */
 	static float gain; /*!< Current gain value. */
 
+	// DiffuseGControl* control;
+
 public:
 
 	//! Constructor.

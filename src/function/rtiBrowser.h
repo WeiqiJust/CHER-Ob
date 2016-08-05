@@ -53,7 +53,7 @@
 #include <QGLWidget>
 #include <QShortcut>
 #include <QTimer>
-
+#include "../vtkEnums.h"
 
 //! RTI browser class.
 /*!
@@ -93,6 +93,8 @@ public:
 	  Return the index of the rendering mode applied in the browser.
 	*/
 	int getCurrentRendering();
+
+	RenderingRTI getRenderingMode();
 	
 // private data member
 private:

@@ -158,6 +158,7 @@ float SpecularEnhancement::getExp()
 */
 }
 
+
 void SpecularEnhancement::setExp(int value)
 {
     exp = value;

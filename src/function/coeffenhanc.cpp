@@ -112,6 +112,7 @@ float CoeffEnhancement::getGain()
     return (gain - minGain)*100.0/(maxGain - minGain);
 }
 
+
 void CoeffEnhancement::setGain(int value)
 {
 	gain = minGain + value * (maxGain - minGain)/100;

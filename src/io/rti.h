@@ -35,7 +35,7 @@
 #include <QBuffer>
 #include <QMap>
 #include <QDomElement>
-
+#include "../vtkEnums.h"
 
 //! RTI image abstract class.
 /*!
@@ -301,6 +301,7 @@ public:
 /*!
   Rendering mode for RTI image.
 */
+/*
 enum RenderingRTI
 {
 	DEFAULT,
@@ -314,6 +315,6 @@ enum RenderingRTI
 	DYN_DETAIL_ENHANCEMENT,
     NORMALS,
 };
-
+*/
 
 #endif  /* RTI_H */

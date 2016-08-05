@@ -36,8 +36,12 @@
 #include "vtkAssembly.h"
 #include "vtkCamera.h"
 #include "vtkSmartPointer.h"
+#include "../function/renderingmode.h"
 
 #include "../vtkEnums.h"
+
+#include <vcg/space/point3.h>
+
 
 /**
  * Base Bookmark class.
@@ -150,6 +154,21 @@ public:
     BookmarkIMAGE2D(QString caption, QUuid uuid, QDomDocument& d, vtkSmartPointer<vtkCamera> camera, WidgetMode mode, bool interpOn);
 
     void loadBookmark() { }
+};
+
+/**
+ * Class for 2D RTI images (rti and ptm).
+ */
+class BookmarkRTI2D : public Bookmark
+{
+public:
+    BookmarkRTI2D(QString caption, QUuid uuid, QDomDocument& d, vtkSmartPointer<vtkCamera> camera, WidgetMode mode, bool interpOn, vcg::Point3f light, RenderingRTI renderMode, RenderingMode* renderingMode);
+
+    void loadBookmark() { }
+
+private:
+	void saveDisplayRTIMode(RenderingRTI mode);
+	void saveDisplayRTIPara(RenderingRTI renderMode, RenderingMode* renderingMode);
 };
 
 /**

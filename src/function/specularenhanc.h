@@ -118,7 +118,7 @@ public:
     float getKd();
     float getKs();
     float getExp();
-
+	
 public slots:
 	
 	/*!

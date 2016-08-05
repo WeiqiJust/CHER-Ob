@@ -43,6 +43,7 @@
 
 #include "bookmarkTreeWidget.h"
 #include "../vtkEnums.h"
+#include "../function/renderingmode.h"
 
 // Enum to keep track of whether a QTreeWidgetItem is a folder or bookmark.
 enum BTWItemType{FOLDER=1,BOOKMARK};
@@ -139,6 +140,10 @@ private:
   bool dirLightOn; // Directional light on
   bool interpOn; // Interpolation on
   RenderMode3D renderMode; // 3D render mode
+  RenderingRTI renderModeRTI; // RTI render mode
+  RenderingMode* renderingMode;
+  float rtiP1, rtiP2, rtiP3; // RTI parameters
+
   bool textureOn; // Texture on
   QString tfn; // Texture filename
   int slice; // Current CT slice

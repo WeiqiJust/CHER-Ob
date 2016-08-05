@@ -27,9 +27,20 @@
 
 #include <QDateTime>
 #include <QUuid>
-
+#include <QMessageBox>
 #include "bookmark.h"
 #include "bookmarkWidget.h"
+
+
+#include "../function/defaultrendering.h"
+#include "../function/diffusegain.h"
+#include "../function/specularenhanc.h"
+#include "../function/normalenhanc.h"
+#include "../function/unsharpmasking.h"
+#include "../function/coeffenhanc.h"
+#include "../function/detailenhanc.h"
+#include "../function/dyndetailenhanc.h"
+#include "../function/normalsrendering.h"
 
 // Camera perspective and filetype are common to all bookmarks.
 Bookmark::Bookmark(QString caption, QUuid uuid, QDomDocument& d, vtkSmartPointer<vtkCamera> camera, WidgetMode mode)
@@ -118,6 +129,199 @@ BookmarkIMAGE2D::BookmarkIMAGE2D(QString caption, QUuid uuid, QDomDocument& d, v
                                  bool interpOn) : Bookmark(caption, uuid, d, camera, mode)
 {
     save2DInterpolation(interpOn);
+}
+
+
+BookmarkRTI2D::BookmarkRTI2D(QString caption, QUuid uuid, QDomDocument& d, vtkSmartPointer<vtkCamera> camera, WidgetMode mode, 
+							 bool interpOn, vcg::Point3f light, RenderingRTI renderMode, RenderingMode* renderingMode) : Bookmark(caption, uuid, d, camera, mode)
+{
+	double orientation[3];
+	orientation[0] = light[0];
+	orientation[1] = light[1];
+	orientation[2] = light[2];
+	saveLightVector(orientation);
+	saveDisplayRTIMode(renderMode);
+	saveDisplayRTIPara(renderMode, renderingMode);
+
+	save2DInterpolation(interpOn);
+}
+
+void BookmarkRTI2D::saveDisplayRTIPara(RenderingRTI renderMode, RenderingMode* renderingMode)
+{
+	QDomElement ort = doc.createElement("rti_para");
+    bmk.appendChild(ort);
+
+	switch (renderMode)
+	{
+	case DIFFUSE_GAIN: 
+		{
+			DiffuseGain* dg = static_cast<DiffuseGain*>(renderingMode);
+			QDomElement p = doc.createElement("gain");
+			ort.appendChild(p);
+			p.appendChild( doc.createTextNode(QString::number(dg->getGain())));
+			break;
+		}
+	
+	case SPECULAR_ENHANCEMENT: 
+		{
+			SpecularEnhancement* se = static_cast<SpecularEnhancement*>(renderingMode);
+			QList<QDomElement> p;
+			p.append( doc.createElement("diffuseColor") );
+			p.append( doc.createElement("specularity") );
+			p.append( doc.createElement("highlightSize") );
+
+			for (int i = 0; i < 3; i++) { ort.appendChild(p[i]); }
+
+			p[0].appendChild( doc.createTextNode(QString::number(se->getKd())));
+			p[1].appendChild( doc.createTextNode(QString::number(se->getKs())));
+			p[2].appendChild( doc.createTextNode(QString::number(se->getExp())));
+
+			break;
+		}
+
+	case NORMAL_ENHANCEMENT: 
+		{
+			NormalEnhancement* ne = static_cast<NormalEnhancement*>(renderingMode);
+
+			QList<QDomElement> p;
+			p.append( doc.createElement("gain") );
+			p.append( doc.createElement("environment") );
+
+			for (int i = 0; i < 2; i++) { ort.appendChild(p[i]); }
+
+			p[0].appendChild( doc.createTextNode(QString::number(ne->getGain())));
+			p[1].appendChild( doc.createTextNode(QString::number(ne->getEnvIll())));
+
+			break;
+		}
+	
+	case UNSHARP_MASKING_IMG:
+		{
+			UnsharpMasking* um_img = static_cast<UnsharpMasking*>(renderingMode);
+
+			QDomElement p = doc.createElement("gain");
+			ort.appendChild(p);
+			p.appendChild( doc.createTextNode(QString::number(um_img->getGain())));
+
+			break;
+		}
+
+	case COEFF_ENHANCEMENT:
+        {
+            CoeffEnhancement* ce = static_cast<CoeffEnhancement*>(renderingMode);
+            
+			QDomElement p = doc.createElement("gain");
+			ort.appendChild(p);
+			p.appendChild( doc.createTextNode(QString::number(ce->getGain())));
+
+			break;
+        }
+
+	case DETAIL_ENHANCEMENT:
+        {
+            DetailEnhancement* de = static_cast<DetailEnhancement*>(renderingMode);
+
+			QList<QDomElement> p;
+			p.append( doc.createElement("localOffset") );
+			p.append( doc.createElement("tileSize") );
+			p.append( doc.createElement("numberInitialTiles") );
+
+			p.append( doc.createElement("sharpnessOperator") );
+			p.append( doc.createElement("lightSampling") );
+			p.append( doc.createElement("k1Sharpness") );
+
+			p.append( doc.createElement("k2Lightness") );
+			p.append( doc.createElement("threshold") );
+			p.append( doc.createElement("smoothingFilter") );
+			p.append( doc.createElement("numberIterationSmoothing") );
+
+			for (int i = 0; i < 10; i++) { ort.appendChild(p[i]); }
+
+			p[0].appendChild( doc.createTextNode(QString::number(de->getNOffset())));
+			p[1].appendChild( doc.createTextNode(QString::number(de->getMinTileSize())));
+			p[2].appendChild( doc.createTextNode(QString::number(de->getMinLevel())));
+
+			p[3].appendChild( doc.createTextNode(QString::number(de->getSharpnessOperator())));
+			p[4].appendChild( doc.createTextNode(QString::number(de->getSphereSampling())));
+			p[5].appendChild( doc.createTextNode(QString::number(de->getK1())));
+
+			p[6].appendChild( doc.createTextNode(QString::number(de->getK2())));
+			p[7].appendChild( doc.createTextNode(QString::number(de->getThreshold())));
+			p[8].appendChild( doc.createTextNode(QString::number(de->getFilter())));
+			p[9].appendChild( doc.createTextNode(QString::number(de->getNIterSmoothing())));
+
+			break;
+        }
+
+	case DYN_DETAIL_ENHANCEMENT:
+        {
+            DynamicDetailEnh* dde = static_cast<DynamicDetailEnh*>(renderingMode);
+
+			QList<QDomElement> p;
+			p.append( doc.createElement("degreeOffset") );
+			p.append( doc.createElement("tileSize") );
+			p.append( doc.createElement("sharpnessOperator") );
+			p.append( doc.createElement("lightSampling") );
+			p.append( doc.createElement("k1Sharpness") );
+			p.append( doc.createElement("k2Lightness") );
+			p.append( doc.createElement("threshold") );
+			p.append( doc.createElement("smoothingFilter") );
+			p.append( doc.createElement("numberIterationSmoothing") );
+
+			for (int i = 0; i < 9; i++) { ort.appendChild(p[i]); }
+
+			p[0].appendChild( doc.createTextNode(QString::number(dde->getDegreeOffset())));
+			p[1].appendChild( doc.createTextNode(QString::number(dde->getTileSize())));
+			p[2].appendChild( doc.createTextNode(QString::number(dde->getSharpnessOperator())));
+			p[3].appendChild( doc.createTextNode(QString::number(dde->getSphereSampling())));
+			p[4].appendChild( doc.createTextNode(QString::number(dde->getK1())));
+			p[5].appendChild( doc.createTextNode(QString::number(dde->getK2())));
+			p[6].appendChild( doc.createTextNode(QString::number(dde->getThreshold())));
+			p[7].appendChild( doc.createTextNode(QString::number(dde->getFilter())));
+			p[8].appendChild( doc.createTextNode(QString::number(dde->getNIterSmoothing())));
+
+			break;
+        }
+
+	default: { break; }
+
+	}
+}
+
+void BookmarkRTI2D::saveDisplayRTIMode(RenderingRTI renderMode)
+{
+	QDomElement display = doc.createElement("display_mode");
+    if(renderMode == DEFAULT) {
+        display.appendChild(doc.createTextNode(QString::number(DEFAULT)));
+        bmk.appendChild(display);
+    } else if(renderMode == DIFFUSE_GAIN) {
+        display.appendChild(doc.createTextNode(QString::number(DIFFUSE_GAIN)));
+        bmk.appendChild(display);
+    } else if(renderMode == SPECULAR_ENHANCEMENT) {
+        display.appendChild(doc.createTextNode(QString::number(SPECULAR_ENHANCEMENT)));
+        bmk.appendChild(display);
+    } else if(renderMode == NORMAL_ENHANCEMENT) {
+        display.appendChild(doc.createTextNode(QString::number(NORMAL_ENHANCEMENT)));
+        bmk.appendChild(display);
+    } else if(renderMode == UNSHARP_MASKING_IMG) {
+        display.appendChild(doc.createTextNode(QString::number(UNSHARP_MASKING_IMG)));
+        bmk.appendChild(display);
+    } else if(renderMode == UNSHARP_MASKING_LUM) {
+        display.appendChild(doc.createTextNode(QString::number(UNSHARP_MASKING_LUM)));
+        bmk.appendChild(display);
+    } else if(renderMode == COEFF_ENHANCEMENT) {
+        display.appendChild(doc.createTextNode(QString::number(COEFF_ENHANCEMENT)));
+        bmk.appendChild(display);
+    } else if(renderMode == DETAIL_ENHANCEMENT) {
+        display.appendChild(doc.createTextNode(QString::number(DETAIL_ENHANCEMENT)));
+        bmk.appendChild(display);
+    } else if(renderMode == DYN_DETAIL_ENHANCEMENT) {
+        display.appendChild(doc.createTextNode(QString::number(DYN_DETAIL_ENHANCEMENT)));
+        bmk.appendChild(display);
+	} else if (renderMode == NORMALS) {
+		display.appendChild(doc.createTextNode(QString::number(NORMALS)));
+        bmk.appendChild(display);
+	}
 }
 
 // 3D model bookmarks preserve directional light on/off, lighting position & key/fill lights, interpolation,

@@ -126,7 +126,7 @@ public:
     float getGain();
     float getKd();
     float getEnvIll();
-
+	
 private:
 
 	/*!
