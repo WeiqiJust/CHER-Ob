@@ -108,7 +108,19 @@ public:
 	 * @brief  Init the widget by loading existing notes and annotation.
 	 * @param  path  The absolute object path.
 	 */
-	void initAnnotation(const QString path);
+	void init(const QString path);
+
+	/**
+	 * @brief  Init the widget for CT 2d rendering mode by loading existing notes and annotation.
+	 * @param  path  The absolute object path.
+	 */
+	void initCT2DRendering(const QString path);
+
+	/**
+	 * @brief  Init the widget for CT volume rendering mode by loading existing notes and annotation.
+	 * @param  path  The absolute object path.
+	 */
+	void initVolumeRendering(const QString path);
 
 	/**
 	 * @brief  Enable annotation when annotation button in the main frame is checked.
@@ -347,6 +359,13 @@ private:
 	bool loadFrustumNote(const QString path);
 	bool loadPointNote2D(const QString path);
 	bool loadSurfaceNote2D(const QString path);
+
+	/**
+	 * @brief  Load Annotation from the absolute path.
+	 * @param  path    The absolute note path.
+	 * @return If annotation is correctly loaded return true, otherwise false.
+	 */
+	bool loadAnnotation(const QString notePath);
 
 	/**
 	 * @brief  Hide the note.

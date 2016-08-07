@@ -405,22 +405,22 @@ QGroupBox *CTControl::createRenderGroup()
 
 void CTControl::setCTStackView()
 {
-  mCTVisualization = STACK;
-
-  emit sendVisualizationChanged(mCTVisualization);
-
-  // update interface
-  updateCTControl();
+	if (mCTVisualization == STACK)
+		return;
+	mCTVisualization = STACK;
+	emit sendVisualizationChanged(mCTVisualization);
+	// update interface
+	updateCTControl();
 }
 
 void CTControl::setVTvolumeGPU()
 {
-  mCTVisualization = VOLUMEGPU;
-
-  emit sendVisualizationChanged(mCTVisualization);
-
-  // update interface
-  updateCTControl();
+	if (mCTVisualization == VOLUMEGPU)
+		return;
+	mCTVisualization = VOLUMEGPU;
+	emit sendVisualizationChanged(mCTVisualization);
+	// update interface
+	updateCTControl();
 }
 
 
@@ -486,10 +486,15 @@ void CTControl::updateImageData()
 void CTControl::updateCTControl()
 {
 
-    if (mw()->VTKA()){
-      WidgetMode wm = mw()->VTKA()->getWidgetMode();
-      updateCtControlWidgetMode(wm); // this part is buggy
+    if (mw()->VTKA())
+	{
+		WidgetMode wm = mw()->VTKA()->getWidgetMode();
+		updateCtControlWidgetMode(wm); // this part is buggy
     }
+	else
+	{
+		return;
+	}
 
     // update measuretoolbar
     if (mw()->VTKA()) {
@@ -534,6 +539,7 @@ void CTControl::updateCTControl()
     break;
   }
 
+  qDebug()<<"Update CT Control";
   // update interface
   switch (mCTVisualization)
   {

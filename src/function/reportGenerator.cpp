@@ -193,7 +193,7 @@ void ReportGenerator::generate()
 				if (mObjects[i]->mCategories.indexOf(type) == -1)
 					continue;
 				NoteMode mode;
-				if (mObjects[i]->mMode == IMAGE2D || mObjects[i]->mMode == RTI2D)
+				if (mObjects[i]->mMode == IMAGE2D || mObjects[i]->mMode == RTI2D || mObjects[i]->mMode == CTSTACK)
 				{
 					QStringList lines = note.split("\n");
 					QString firstLine = lines[0];

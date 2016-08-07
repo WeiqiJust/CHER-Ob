@@ -3293,9 +3293,11 @@ void VtkWidget::RenderingStack()
   default:
   case STACK:
     Rendering2D();
+	mw()->mInformation->initCT2DRendering(mProjectPath);
     break;
   case VOLUMEGPU:
     RenderingVolume(mBlendType, mReductionFactor, mVolumeRenderMode);
+	mw()->mInformation->initVolumeRendering(mProjectPath);
     break;
   }
 }

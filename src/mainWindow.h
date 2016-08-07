@@ -495,14 +495,15 @@ private:
 	 * @brief  Load the whole project/CHE from the .xml file.
 	 * @param  fileName    The aboslute path of the .xml file.
 	 * @param  objectList  The vector of <the full path of object, the full path of its original CHE>.
+	 * @param  objectType  The vector of object type. The objects are related to ObjectList.
 	 * @param  filterList  It only works when import a CHE/project. If the object name is in the filter list,
 	 *                     this object should not be imported.
 	 * @param  import      Whether the object is imported.
 	 * @param  readCHE     Whether the xml file is a CHE file.
 	 * @return True if correctly load the project/CHE.
 	 */
-	bool readXML(QString fileName, QVector<QPair<QString, QString> > &objectList, QVector<QString> filterList,
-		bool import, bool readCHE);	
+	bool readXML(QString fileName, QVector<QPair<QString, QString> > &objectList, QVector<int> &objectType,
+		QVector<QString> filterList, bool import, bool readCHE);	
 
 	/**
 	 * @brief  Export the project as a .xml file.

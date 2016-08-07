@@ -435,7 +435,7 @@ bool MainWindow::closeProject()
 
         w->setWindowTitle(fi.fileName());
     }
-
+	setWindowTitle(appName()+appBits());
     updateMenus();
 	if (rightTab->count() == 3)
 		rightTab->removeTab(2);
@@ -780,7 +780,7 @@ void MainWindow::updateXML()
 }
 
 
-bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &objectList, QVector<QString> filterList, bool import, bool readCHE)
+bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &objectList, QVector<int> &objectType, QVector<QString> filterList, bool import, bool readCHE)
 {
 	QFileInfo fi(fileName);
 	double pos[3]; // camera position
@@ -927,6 +927,7 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 		VTKA()->mCHEObject = cheObject;
 	}
 	objectList.push_back(qMakePair(fn, chePath));
+	objectType.push_back(filetype);
 	if(result == EXISTED) continue;	// when import, existed object will be updated
 
 	// DT: Assumes that windows are sorted from first created to last created (default behavior).
@@ -1523,7 +1524,10 @@ void MainWindow::saveProjectAs()
 				mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + fi.fileName() + QDir::separator() + fi.fileName();
 				mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + fi.fileName();
 				w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
-				this->mInformation->initAnnotation(mvc->currentView()->mProjectPath);
+				if (!mvc->currentView()->isDICOM())
+					this->mInformation->init(mvc->currentView()->mProjectPath);
+				else
+					this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
 			}
 			else if (!mvc->currentView()->mCHE.isEmpty() && !mvc->currentView()->mCHEObject.isEmpty())
 			{
@@ -1532,7 +1536,10 @@ void MainWindow::saveProjectAs()
 				mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName() + QDir::separator() + fi.fileName();
 				mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName();
 				w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
-				this->mInformation->initAnnotation(mvc->currentView()->mProjectPath);
+				if (!mvc->currentView()->isDICOM())
+					this->mInformation->init(mvc->currentView()->mProjectPath);
+				else
+					this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
 			}
 			else if (mvc->currentView()->mCHEObject.isEmpty())
 			{
@@ -1542,7 +1549,10 @@ void MainWindow::saveProjectAs()
 				mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName();
 				mvc->currentView()->mCHEObject = fi.fileName();
 				w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
-				this->mInformation->initAnnotation(mvc->currentView()->mProjectPath);
+				if (!mvc->currentView()->isDICOM())
+					this->mInformation->init(mvc->currentView()->mProjectPath);
+				else
+					this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
 			}
 			else	// If the CHE infomation is lost
 			{
@@ -1585,7 +1595,8 @@ void MainWindow::importProject()
 	qb->show();
 	QVector<QPair<QString, QString> > objectList;
 	QVector<QString> filterList;
-	if (!readXML(fileName, objectList, filterList, true, false))
+	QVector<int> objectType;
+	if (!readXML(fileName, objectList, objectType, filterList, true, false))
 	  return;
 
 	if (objectList.size() > 0)
@@ -1604,7 +1615,10 @@ void MainWindow::importProject()
 				if (currentDir.cd(objectDir.dirName()))
 				{
 					cpDir(objectDir.absolutePath(), currentDir.absolutePath());
-					this->mInformation->initAnnotation(currentDir.absolutePath());
+					if (objectType[i] == CTSTACK ||  objectType[i] == CTVOLUME)
+						this->mInformation->initCT2DRendering(currentDir.absolutePath());
+					else
+						this->mInformation->init(currentDir.absolutePath());
 					QString che;
 					if (objectList[i].second != QString())
 					{
@@ -1685,7 +1699,8 @@ void MainWindow::importCHE()
 
 	QVector<QString> filterList = dialog->getFilterList();
 	QVector<QPair<QString, QString> > importObjectList;
-	if (!readXML(fileName, importObjectList, filterList, true, true))
+	QVector<int> objectType;
+	if (!readXML(fileName, importObjectList, objectType, filterList, true, true))
 	{
 		return;
 	}
@@ -1762,7 +1777,10 @@ void MainWindow::importCHE()
 						file->remove();
 					}
 				}
-				this->mInformation->initAnnotation(currentDir.absolutePath());
+				if (objectType[i] == CTSTACK || objectType[i] ==  CTVOLUME)
+					this->mInformation->initCT2DRendering(currentDir.absolutePath());
+				else
+					this->mInformation->init(currentDir.absolutePath());
 				QString che;
 				if (importObjectList[i].second != QString())
 				{
@@ -1988,7 +2006,8 @@ bool MainWindow::openProject(QString fileName)
   currentProjectSave = QDir::toNativeSeparators(fileName);
   QVector<QPair<QString, QString> > objectList;
   QVector<QString> filterList;
-  if (!readXML(fileName, objectList, filterList, false, false))
+  QVector<int> objectType;
+  if (!readXML(fileName, objectList, objectType, filterList, false, false))
   {
 	  mNavigation->clear();
 	  return false;
@@ -2268,7 +2287,7 @@ OPENRESULT MainWindow::openDICOM(const QString& fileNameStart, const QString& CH
 		// if the object is imported from another project/CHE, note and navigation will be updated after the file is copied
 		if (!import)
 		{
-			this->mInformation->initAnnotation(VTKA()->mProjectPath);
+			this->mInformation->initCT2DRendering(VTKA()->mProjectPath);
 			mNavigation->addObject(currentWindowPath, CHEName);
 		}
 
@@ -2461,7 +2480,7 @@ OPENRESULT MainWindow::openImages(const QString& fileNameStart, const QString& C
 		// if the object is imported from another project/CHE, note and navigation will be updated after the file is copied
 		if (!import)
 		{
-			this->mInformation->initAnnotation(VTKA()->mProjectPath);
+			this->mInformation->init(VTKA()->mProjectPath);
 			mNavigation->addObject(currentWindowPath, CHEName);
 		}
 
@@ -2945,7 +2964,11 @@ void MainWindow::updateMenus()
 				break;
 			default: break;
 		}
-	}// end of if
+	}
+	else
+	{
+		emit currentWidgetModeChanged(EMPTYWIDGET);
+	}
 }
 
 
@@ -3152,9 +3175,10 @@ bool MainWindow::openCHE(QString fileName)
 	//qDebug()<<"Open CHE path"<<QDir::currentPath();
 	currentProjectSave = QDir::toNativeSeparators(fileName);
 	QVector<QPair<QString, QString> > objectList;
+	QVector<int> objectType;
 	isCHE = true;
 	QVector<QString> filterList;
-	if (!readXML(fileName, objectList, filterList, false, true))
+	if (!readXML(fileName, objectList, objectType, filterList, false, true))
 	{
 		isCHE = false;
 		mNavigation->clear();
@@ -3244,7 +3268,10 @@ void MainWindow::saveCHEAs()
 			mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + fi.fileName() + QDir::separator() + fi.fileName();
 			mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + fi.fileName();
 			w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
-			this->mInformation->initAnnotation(mvc->currentView()->mProjectPath);
+			if (!mvc->currentView()->isDICOM())
+				this->mInformation->init(mvc->currentView()->mProjectPath);
+			else
+				this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
 		}
 		setWindowTitle(appName()+appBits()+QString(" CHE ")+currentProjectName);
 		CHEInfoBasic* info = new CHEInfoBasic();
@@ -3303,7 +3330,7 @@ bool MainWindow::closeCHE()
 
         w->setWindowTitle(fi.fileName());
     }
-
+	setWindowTitle(appName()+appBits());
     updateMenus();
 	rightTab->removeTab(2);
     return true;

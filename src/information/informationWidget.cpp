@@ -214,7 +214,7 @@ void Information::refresh()
 	removedAnnotation.clear();
 }
 
-void Information::initAnnotation(const QString path)
+void Information::init(const QString path)
 {
 	QString objectPath = QDir::toNativeSeparators(path);
 	notePath = objectPath;
@@ -224,19 +224,28 @@ void Information::initAnnotation(const QString path)
 	loadFrustumNote(objectPath);
 	loadPointNote2D(objectPath);
 	loadSurfaceNote2D(objectPath);
-	
-	QString fileName = notePath;
-	fileName.append(QDir::separator() + QString("Annotation.txt"));
-	QFile file(fileName);
-	//qDebug()<<"Load Note"<<notePath;
-	hasNotesRemoved[notePath] = false;
-	content[notePath].second = true;
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
-	
-	QTextStream in(&file);
-	QString text = in.readAll();
-	content[notePath] = std::make_pair(text, true);
-	file.close();
+	loadAnnotation(notePath);
+}
+
+void Information::initCT2DRendering(const QString path)
+{
+	QString objectPath = QDir::toNativeSeparators(path);
+	notePath = objectPath;
+	notePath.append(QDir::separator() + QString("Note"));
+	loadPointNote2D(objectPath);
+	loadSurfaceNote2D(objectPath);
+	loadAnnotation(notePath);
+}
+
+void Information::initVolumeRendering(const QString path)
+{
+	QString objectPath = QDir::toNativeSeparators(path);
+	notePath = objectPath;
+	notePath.append(QDir::separator() + QString("Note"));
+	loadPointNote(objectPath);
+	loadSurfaceNote(objectPath);
+	loadFrustumNote(objectPath);
+	loadAnnotation(notePath);
 }
 
 void Information::annotationChanges()
@@ -265,6 +274,23 @@ void Information::finishAnnotation()
 	saveButton->setEnabled(false);
 	removeButton->setEnabled(false);
 	hideNotes();
+}
+
+bool Information::loadAnnotation(const QString notePath)
+{
+	QString fileName = notePath;
+	fileName.append(QDir::separator() + QString("Annotation.txt"));
+	QFile file(fileName);
+	//qDebug()<<"Load Note"<<notePath;
+	hasNotesRemoved[notePath] = false;
+	content[notePath].second = true;
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return false;
+	
+	QTextStream in(&file);
+	QString text = in.readAll();
+	content[notePath] = std::make_pair(text, true);
+	file.close();
+	return true;
 }
 
 void Information::reloadAnnotation()
