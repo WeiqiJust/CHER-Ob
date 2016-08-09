@@ -45,6 +45,7 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QPoint>
+#include <QXmlStreamReader>
 #include "htmlDelegate.h"
 #include "../vtkEnums.h" 
 
@@ -142,6 +143,30 @@ private slots:
 	 * @param  id    Note id.
 	 */
 	void removeNoteItem(const QString path, const NoteMode type, const int id);
+
+	/**
+	 * @brief  Add a bookmark item when a it is created.
+	 * @param  path          The full path of the bookmakr folder. It shoule be in the form of path/object/bookmark.
+	 * @param  bookmarkName  The name of the bookmark.
+	 * @param  uuid          The id of the bookmark.
+	 */
+	void addBookmarkItem(const QString path, const QString bookmarkName, const QString uuid);
+
+	/**
+	 * @brief  Remove a bookmark item when a it is deleted.
+	 * @param  path          The full path of the bookmakr folder. It shoule be in the form of path/object/bookmark.
+	 * @param  bookmarkName  The name of the bookmark.
+	 * @param  uuid          The id of the bookmark.
+	 */
+	void removeBookmarkItem(const QString path, const QString bookmarkName, const QString uuid);
+
+	/**
+	 * @brief  Edit a bookmark item when a it is modified.
+	 * @param  path             The full path of the bookmakr folder. It shoule be in the form of path/object/bookmark.
+	 * @param  newBookmarkName  The new name of the bookmark.
+	 * @param  uuid             The id of the bookmark.
+	 */
+	void editBookmarkItem(const QString path, const QString newBookmarkName, const QString uuid);
 
 	/**
 	 * @brief  Show the tab.

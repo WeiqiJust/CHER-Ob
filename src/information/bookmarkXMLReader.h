@@ -35,6 +35,9 @@ public:
   BookmarkXMLReader(BookmarkTreeWidget* w, QString filename);
   ~BookmarkXMLReader();
 
+  /**
+	* @brief  Reads entire XML file and displays it within our BookmarkTreeWidget.
+	*/
   void readXML();
 
 private:

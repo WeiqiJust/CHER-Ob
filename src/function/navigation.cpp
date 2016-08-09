@@ -39,8 +39,16 @@ Navigation::Navigation()
 	ColumnNames << "Navigation";
 	mTreeWidget->setHeaderLabels(ColumnNames);
 	mTreeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(mw()->mInformation, SIGNAL(addNavigationItem(const QString, const NoteMode)), this, SLOT(addNoteItem(const QString, const NoteMode)));
-	connect(mw()->mInformation, SIGNAL(removeNavigationItem(const QString, const NoteMode, const int)), this, SLOT(removeNoteItem(const QString, const NoteMode, const int)));
+	connect(mw()->mInformation, SIGNAL(addNavigationItem(const QString, const NoteMode)),
+		this, SLOT(addNoteItem(const QString, const NoteMode)));
+	connect(mw()->mInformation, SIGNAL(removeNavigationItem(const QString, const NoteMode, const int)),
+		this, SLOT(removeNoteItem(const QString, const NoteMode, const int)));
+	connect(mw()->mBookmark, SIGNAL(addNavigationItem(const QString, const QString, const QString)),
+		this, SLOT(addBookmarkItem(const QString, const QString, const QString)));
+	connect(mw()->mBookmark, SIGNAL(removeNavigationItem(const QString, const QString, const QString)),
+		this, SLOT(removeBookmarkItem(const QString, const QString, const QString)));
+	connect(mw()->mBookmark, SIGNAL(editNavigationItem(const QString, const QString, const QString)),
+		this, SLOT(editBookmarkItem(const QString, const QString, const QString)));
 	connect(mTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(showTreeWidgetItem(QTreeWidgetItem*, int)));
 	connect(mTreeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
 	mVBox = new QVBoxLayout();
@@ -186,6 +194,55 @@ void Navigation::loadObjectBookMark(QTreeWidgetItem *object, const QString path)
 	QFileIconProvider iconProvider;
 	bookmark->setIcon(0, iconProvider.icon(QFileIconProvider::Folder));
 	object->addChild(bookmark);
+
+	QString bookmarkPath = path;
+	bookmarkPath.append(QDir::separator() + QString("BookMark"));
+	QString fn = bookmarkPath;
+	fn.append(QDir::separator() + QString("bookmarks.xml"));
+	QFile f(fn);
+    if(!f.exists()) return;
+    if(!f.open(QIODevice::ReadOnly | QIODevice::Text)) 
+	{
+		f.close();
+		return;
+	}
+	QXmlStreamReader xml;
+    xml.setDevice(&f);
+	
+    if(xml.readNextStartElement()) 
+	{
+        if(xml.name() != BOOKMARK_XML_ROOT) 
+            return;
+    } else return;
+
+    Q_ASSERT(xml.isStartElement());
+
+	
+    while (xml.readNextStartElement()) 
+	{
+        if (xml.name() == "bookmark")    
+		{
+			Q_ASSERT(xml.isStartElement() && xml.name() == "bookmark");
+
+			if (xml.attributes().value("isHidden").toString() != QString("True"))	// this bookmark is temporarily removed.
+			{
+				QTreeWidgetItem *bookmarkItem = new QTreeWidgetItem();
+				bookmarkItem->setText(0, xml.attributes().value("title").toString());
+				bookmarkItem->setText(1, xml.attributes().value("uuid").toString());
+				bookmarkItem->setText(2, path);
+				bookmarkItem->setText(3, QString::number(1));
+				bookmarkItem->setIcon(0, iconProvider.icon(QFileIconProvider::File));
+				bookmark->addChild(bookmarkItem);
+			}
+			while (xml.readNextStartElement()) 
+			{
+				xml.skipCurrentElement();
+			}
+		}
+        else
+            xml.skipCurrentElement();
+    }
+	f.close();
 }
 
 void Navigation::removeObject(const QString path)
@@ -244,8 +301,10 @@ bool Navigation::findObjectItem(const QString fileName, QTreeWidgetItem* &object
 
 void Navigation::showTreeWidgetItem(QTreeWidgetItem* item, int column)
 {
-	if (item->columnCount() == 3)	// check the item is note or not
+	if (item->columnCount() == 3)	// check the item is note
 		mw()->mInformation->openNoteFromNavigation(item);
+	else if (item->columnCount() == 4)	// check the item is bookmark
+		mw()->mBookmark->viewBookmark(item);
 }
 
 void Navigation::addNoteItem(const QString path, const NoteMode type)
@@ -434,6 +493,86 @@ void Navigation::removeNoteItem(const QString path, const NoteMode type, const i
 	}
 }
 
+void Navigation::addBookmarkItem(const QString path, const QString bookmarkName, const QString uuid)
+{
+	// path shoule be in the form of path/object/BookMark
+	QStringList elements = path.split(QDir::separator());
+	QString fileName = elements[elements.size()-2];
+	QString objectPath = path;
+	objectPath.truncate(objectPath.lastIndexOf(QDir::separator()));
+	bool isFound = false;
+	QTreeWidgetItem* object;
+
+	isFound = findObjectItem(fileName, object);
+
+	if (isFound)
+	{
+		object = object->child(1);
+		QFileIconProvider iconProvider;
+		QTreeWidgetItem* newBookmark = new QTreeWidgetItem();
+		newBookmark->setIcon(0, iconProvider.icon(QFileIconProvider::File));
+		newBookmark->setText(0, bookmarkName);
+		object->addChild(newBookmark);
+		newBookmark->setText(1, uuid);
+		newBookmark->setText(2, objectPath);
+		newBookmark->setText(3, QString::number(1));	// bool value: 1 represent it is not removed
+	}
+}
+
+void Navigation::removeBookmarkItem(const QString path, const QString bookmarkName, const QString uuid)
+{
+	// path shoule be in the form of path/object/BookMark
+	QStringList elements = path.split(QDir::separator());
+	QString fileName = elements[elements.size()-2];
+	QString objectPath = path;
+	objectPath.truncate(objectPath.lastIndexOf(QDir::separator()));
+	bool isFound = false;
+	QTreeWidgetItem* object;
+	isFound = findObjectItem(fileName, object);
+	//qDebug()<<"remove bookmakr item"<<object->text(0)<<path;
+	
+	if (isFound)
+	{
+		object = object->child(1);
+		for (int i = 0; i < object->childCount(); i++)
+		{
+			//qDebug()<<"Delete item"<<object->child(i)->text(1)<<uuid;
+			if (object->child(i)->text(0) == bookmarkName && object->child(i)->text(1) == uuid)
+			{
+				QString text = object->child(i)->text(0);
+				text.append(QString("</font>"));
+				text.prepend(QString("<font color=\"gray\">"));
+				object->child(i)->setText(0, text);
+				object->child(i)->setText(3, QString::number(0));
+			}
+		}	
+	}
+}
+
+void Navigation::editBookmarkItem(const QString path, const QString newBookmarkName, const QString uuid)
+{
+	// path shoule be in the form of path/object/BookMark
+	QStringList elements = path.split(QDir::separator());
+	QString fileName = elements[elements.size()-2];
+	QString objectPath = path;
+	objectPath.truncate(objectPath.lastIndexOf(QDir::separator()));
+	bool isFound = false;
+	QTreeWidgetItem* object;
+	isFound = findObjectItem(fileName, object);
+
+	if (isFound)
+	{
+		object = object->child(1);
+		for (int i = 0; i < object->childCount(); i++)
+		{
+			if (object->child(i)->text(1) == uuid)
+			{
+				object->child(i)->setText(0, newBookmarkName);
+			}
+		}	
+	}
+}
+
 void Navigation::showContextMenu(const QPoint& pos)
 {
 	QMenu menu;
@@ -443,15 +582,19 @@ void Navigation::showContextMenu(const QPoint& pos)
 
 	QPoint globalPos = mTreeWidget->mapToGlobal(pos);
 	QTreeWidgetItem* item = mTreeWidget->itemAt(pos);
-	if(!item || item->columnCount() != 3 || item->text(2).toInt() == 1)	// if item does not exist or is not a note item or item is not removed, do nothing
-		return;
-	else 
+	if(item && ((item->columnCount() == 3 && item->text(2).toInt() == 0) // if item is a removed note
+		|| (item->columnCount() == 4 && item->text(3).toInt() == 0)))	 // if item is a removed bookmark
 		QAction* undoRemoveAct = menu.addAction("Undo Remove");
+	else
+		return;
 
 	QAction* act = menu.exec(globalPos);
 	if (act)
 	{
-		mw()->mInformation->undoRemoveNote(item);
+		if (item->columnCount() == 3)
+			mw()->mInformation->undoRemoveNote(item);
+		else
+			mw()->mBookmark->undoRemoveBookmark(item);
 	}
 }
 

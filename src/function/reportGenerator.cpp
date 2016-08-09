@@ -354,6 +354,7 @@ void ReportGenerator::generate()
 		QVector<QPair<double, double> > frustumNote3DFront, frustumNote3DLeft, frustumNote3DRight, frustumNote3DTop, frustumNote3DBottom, frustumNote3DBack;
 		WidgetInfo3D info;
 		QPixmap RTIScreenShot;
+		CTOrientation ctOrientation; //save current orientation if it is a ct object.
 		switch(mObjects[i]->mMode)
 		{
 			case EMPTYWIDGET:
@@ -415,6 +416,22 @@ void ReportGenerator::generate()
 				recoverWidget(mObjects[i]->mGla, info);
 				break;
 			case CTSTACK:
+				ctOrientation = mObjects[i]->mGla->getOrientationCurrent();
+				mObjects[i]->mGla->updateCurrentOrientation(FRONTCT);
+				screenshotDict = screenshot;
+				screenshotDict.append("_front");
+				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+
+				mObjects[i]->mGla->updateCurrentOrientation(TOPCT);
+				screenshotDict = screenshot;
+				screenshotDict.append("_top");
+				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+
+				mObjects[i]->mGla->updateCurrentOrientation(SIDECT);
+				screenshotDict = screenshot;
+				screenshotDict.append("_side");
+				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+				mObjects[i]->mGla->updateCurrentOrientation(ctOrientation); // recover previous orientation.
 				break;
 			case CTVOLUME:      
 				break;
@@ -455,6 +472,8 @@ void ReportGenerator::generate()
 			painter.setPen(QPen(Qt::black, 20, Qt::DashDotLine, Qt::RoundCap));
 			for (int k = 0; k < pointNote2D.size(); k++)
 			{
+				if (mObjects[i]->mMode == CTSTACK && j > 0)	//CT 2D Rendering only draw notes mark on the front screenshot.
+					break;
 				int x = pointNote2D[k].first, y = img.height() - pointNote2D[k].second;
 				int x1 = x - pointSize/2, y1 = y - pointSize/2;
 				if (x1 <= 0)
@@ -475,6 +494,8 @@ void ReportGenerator::generate()
 			
 			for (int k = 0; k < surfaceNote2D.size(); k++)
 			{
+				if (mObjects[i]->mMode == CTSTACK && j > 0)	//CT 2D Rendering only draw notes mark on the front screenshot.
+					break;
 				int x1 = surfaceNote2D[k][0];
 				int y1 = surfaceNote2D[k][1];
 				int x2 = surfaceNote2D[k][2];
@@ -610,7 +631,7 @@ void ReportGenerator::generate()
 					html = html + QString("<p><div align=\"center\"><img src=\"report/" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>\n");
 				}
 			}
-			else if (mObjects[i]->mMode == MODEL3D)
+			else if (mObjects[i]->mMode == MODEL3D || mObjects[i]->mMode == CTSTACK)
 			{
 				double height = 100, width = 150;
 				height = (double)width * imgHeight / imgWidth;

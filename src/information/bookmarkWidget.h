@@ -36,6 +36,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QXmlStreamReader>
+#include <QUuid>
 
 #include "vtkAssembly.h"
 #include "vtkCamera.h"
@@ -94,6 +95,10 @@ public:
 
   BookmarkTreeWidget* bTreeWidget;
 
+  void deletePermanetly(const QString path);
+
+  void undoRemoveBookmark(QTreeWidgetItem* item);
+
 public slots:
   void createBookmark();
   bool viewBookmark(QTreeWidgetItem* item);
@@ -101,6 +106,7 @@ public slots:
 private slots:
   void createFolder();
   void deleteItem(QTreeWidgetItem* item = 0);
+  void deleteItemPermanently(const QString xmlPath, QTreeWidgetItem* item = 0);
   void editItem(QTreeWidgetItem* item = 0);
   void handleDoubleClick(QTreeWidgetItem* item, int);
   void saveFolderState(QTreeWidgetItem* item);
@@ -108,18 +114,26 @@ private slots:
 
 private:
   void buildDOMDocument(QDomDocument& doc, QDomElement& root);
-  void createBookmarkSubclass(QString caption, QDomDocument& doc, QDomElement& root);
+  void createBookmarkSubclass(QString caption, QDomDocument& doc, QDomElement& root, QUuid uuid);
   void displayItemInfo(QTreeWidgetItem* item);
-  QDomElement findElementbyUUID(QDomDocument& doc, QString uuid, int type);
+  QDomElement findElementbyUUID(QDomDocument& doc, QString uuid, int type, const QString xmlPath = QString());
   QString getBookmarkFilepath();
   void keyPressEvent(QKeyEvent* event);
-  void saveDOMToFile(QDomDocument& doc);
+  void saveDOMToFile(QDomDocument& doc, const QString xmlPath = QString());
   void setupInfoDialogUI(const QDomElement& elt);
-  int verifyDelete(QTreeWidgetItem* item, int type);
+  int verifyDelete(const QString caption, int type);
 
   void showFileOpenError();
   void showInvalidFileError();
 
+signals:
+  void addNavigationItem(const QString path, const QString bookmarkName, const QString uuid);
+
+  void removeNavigationItem(const QString path, const QString bookmarkName, const QString uuid);
+
+  void editNavigationItem(const QString path, const QString newbookmarkName, const QString uuid);
+
+private:
   // Main bookmark widget layouts/buttons
   QHBoxLayout* hbox1, *hbox2;
   QVBoxLayout* vbox;

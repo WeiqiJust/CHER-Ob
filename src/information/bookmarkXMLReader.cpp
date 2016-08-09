@@ -136,19 +136,26 @@ void BookmarkXMLReader::readBookmark(QTreeWidgetItem *item)
     bookmark->setText(DATE_CREATED_COLUMN, xml.attributes().value("created").toString());
     bookmark->setText(DATE_MODIFIED_COLUMN, xml.attributes().value("modified").toString());
 
+	if (xml.attributes().value("isHidden").toString() == QString("True"))	// this bookmark is temporarily removed.
+	{
+		bookmark->setHidden(true);
+	}
+
     while (xml.readNextStartElement()) {
         xml.skipCurrentElement();
     }
 }
 
-/*
- * Reads entire XML file and displays it within our BookmarkTreeWidget.
- */
+
 void BookmarkXMLReader::readXML()
 {
     QFile f(fn);
     if(!f.exists()) return;
-    if(!f.open(QIODevice::ReadOnly | QIODevice::Text)) return;
+    if(!f.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		f.close();
+		return;
+	}
     xml.setDevice(&f);
     if(xml.readNextStartElement()) {
         if(xml.name() != BOOKMARK_XML_ROOT) {
@@ -170,3 +177,4 @@ void BookmarkXMLReader::readXML()
             xml.skipCurrentElement();
     }
 }
+

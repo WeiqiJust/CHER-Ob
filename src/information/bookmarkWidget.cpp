@@ -26,6 +26,7 @@
 *****************************************************************************/
 
 #include <QMouseEvent>
+#include <QTreeWidgetItemIterator>
 
 #include "bookmark.h"
 #include "bookmarkWidget.h"
@@ -168,11 +169,16 @@ void BookmarkWidget::showContextMenu(const QPoint &pos)
     }
 }
 
-QDomElement BookmarkWidget::findElementbyUUID(QDomDocument& doc, QString uuid, int type)
+QDomElement BookmarkWidget::findElementbyUUID(QDomDocument& doc, QString uuid, int type, const QString xmlPath)
 {
-    QString path = getBookmarkFilepath();
+    QString path;
+	if (xmlPath == QString())
+		path = getBookmarkFilepath();
+	else
+		path = xmlPath;
     QFile file(path);
     if(!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+		qDebug()<<"File cannot be opened.";
         showFileOpenError();
         file.close();
         return doc.createElement(QString());
@@ -196,18 +202,22 @@ QDomElement BookmarkWidget::findElementbyUUID(QDomDocument& doc, QString uuid, i
     for(int i = 0; i < nodes.length(); i++) {
         elt = nodes.at(i).toElement();
         value = elt.attribute(UUID_NAME);
+		
         if(value == uuid) break;
         value.clear();
     }
-
+	file.close();
     if(!value.isEmpty()) return elt;
     else return doc.createElement(QString());
-
 }
 
-void BookmarkWidget::saveDOMToFile(QDomDocument& doc)
+void BookmarkWidget::saveDOMToFile(QDomDocument& doc, const QString xmlPath)
 {
-    QString path = getBookmarkFilepath();
+	QString path;
+	if (xmlPath == QString())
+		path = getBookmarkFilepath();
+	else
+		path = xmlPath;
     QFile file(path);
     if(!file.open(QIODevice::WriteOnly)) {
         showFileOpenError();
@@ -377,6 +387,47 @@ void BookmarkWidget::refreshCurrentFileInfo()
     }
 }
 
+void BookmarkWidget::deletePermanetly(const QString path)
+{
+	bTreeWidget->clear();
+	QString objectPath = path;
+	objectPath.append(QDir::separator() + QString("BookMark"));
+    objectPath = objectPath + QDir::separator() + BOOKMARK_FN;
+    objectPath = QDir::toNativeSeparators(objectPath);
+	BookmarkXMLReader reader(bTreeWidget, objectPath);
+    reader.readXML();
+
+	QTreeWidgetItemIterator it(bTreeWidget, QTreeWidgetItemIterator::Hidden);
+    while (*it) 
+	{
+        QTreeWidgetItem* item = new QTreeWidgetItem(*it);
+		item->setText(0, (*it)->text(0));
+		item->setText(1, (*it)->text(1));
+		deleteItemPermanently(objectPath, item);
+        ++it;
+    }
+}
+
+void BookmarkWidget::undoRemoveBookmark(QTreeWidgetItem* item)
+{
+	QString caption = item->text(TITLE_COLUMN);
+	QString uuid = item->text(UUID_COLUMN);
+	QString path = item->text(2);
+	path.append(QDir::separator() + QString("BookMark") + QDir::separator() + QString("bookmarks.xml"));
+
+	caption = caption.split("</font>")[0].split("<font color=\"gray\">")[1];
+	item->setText(TITLE_COLUMN, caption);
+	item->setText(3, QString::number(1));
+
+	QDomDocument doc;
+	qDebug()<<"in undo"<<path;
+    QDomElement elt = findElementbyUUID(doc, uuid, BOOKMARK, path);
+	if(elt.isNull() || elt.attribute("isHidden") != QString("True")) return;
+    elt.removeAttribute("isHidden");
+    saveDOMToFile(doc, path);
+	refreshBookmarkList();
+}
+
 /*
  * Returns the filename where the bookmarks for the current object are stored.
  */
@@ -446,7 +497,6 @@ void BookmarkWidget::saveFolderState(QTreeWidgetItem* item)
 
     saveDOMToFile(doc);
 }
-
 
 void BookmarkWidget::refreshBookmarkList()
 {
@@ -1007,7 +1057,6 @@ bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item)
     return true;
 }
 
-
 void BookmarkWidget::createFolder()
 {
     if(!mw()->VTKA() ) return;
@@ -1101,21 +1150,23 @@ void BookmarkWidget::createBookmark()
 
     if(!ok) return;
 
-    createBookmarkSubclass(caption, doc, root);
+	QUuid uuid = QUuid::createUuid();
+    createBookmarkSubclass(caption, doc, root, uuid);
 
     root.setAttribute(DATE_MODIFIED, QDateTime::currentDateTimeUtc().toString());
     saveDOMToFile(doc);
     if(mw()->VTKA()->mQVTKWidget) mw()->VTKA()->mQVTKWidget->update();
     refreshBookmarkList();
+	QString bookmarkFolder = mw()->VTKA()->mProjectPath;
+	bookmarkFolder.append(QDir::separator() + QString("BookMark"));
+	emit addNavigationItem(bookmarkFolder, caption, uuid.toString());
 }
 
-void BookmarkWidget::createBookmarkSubclass(QString caption, QDomDocument& doc, QDomElement& root)
+void BookmarkWidget::createBookmarkSubclass(QString caption, QDomDocument& doc, QDomElement& root, QUuid uuid)
 {
     vtkSmartPointer<vtkAssembly> assembly = mw()->mLightControl->GetAssembly();
 
 	vcg::Point3f light = mw()->mLightControlRTI->getLight(); /*!< Light vector. */
-
-    QUuid uuid = QUuid::createUuid();
 
     switch(mode)
     {
@@ -1202,11 +1253,40 @@ void BookmarkWidget::editItem(QTreeWidgetItem* item)
     if(elt.isNull()) return;
     elt.setAttribute(TITLE, title);
     elt.setAttribute(DATE_MODIFIED, QDateTime::currentDateTimeUtc().toString());
+	QString bookmarkFolder = mw()->VTKA()->mProjectPath;
+	bookmarkFolder.append(QDir::separator() + QString("BookMark"));
+	emit editNavigationItem(bookmarkFolder, title, uuid);
     saveDOMToFile(doc);
     refreshBookmarkList();
 }
 
 void BookmarkWidget::deleteItem(QTreeWidgetItem* item)
+{
+	if(!item) 
+	{
+        QList<QTreeWidgetItem*> list = bTreeWidget->selectedItems();
+        if(list.isEmpty()) return;
+        item = list.at(0);
+        if(!item) return;
+    }
+	int type = item->data(TITLE_COLUMN, Qt::UserRole).toInt();
+	QString caption = item->text(TITLE_COLUMN);
+	QString uuid = item->text(UUID_COLUMN);
+	//if(verifyDelete(caption, type) == QMessageBox::Cancel) return;
+	
+	item->setHidden(true);
+	QDomDocument doc;
+    QDomElement elt = findElementbyUUID(doc, uuid, type);
+    if(elt.isNull()) return;
+    elt.setAttribute("isHidden", QString("True"));
+    saveDOMToFile(doc);
+
+	QString bookmarkFolder = mw()->VTKA()->mProjectPath;
+	bookmarkFolder.append(QDir::separator() + QString("BookMark"));
+	emit removeNavigationItem(bookmarkFolder, caption, uuid);
+}
+
+void BookmarkWidget::deleteItemPermanently(const QString xmlPath, QTreeWidgetItem* item)
 {
     if(!item) {
         QList<QTreeWidgetItem*> list = bTreeWidget->selectedItems();
@@ -1214,15 +1294,11 @@ void BookmarkWidget::deleteItem(QTreeWidgetItem* item)
         item = list.at(0);
         if(!item) return;
     }
-
     // DT: don't move this!
-    int type = item->data(TITLE_COLUMN, Qt::UserRole).toInt();
     QString uuid = item->text(UUID_COLUMN);
 
-    if(verifyDelete(item, type) == QMessageBox::Cancel) return;
-
     QDomDocument doc;
-    QDomElement elt = findElementbyUUID(doc, uuid, type);
+    QDomElement elt = findElementbyUUID(doc, uuid, BOOKMARK, xmlPath);
 
     QList<QTreeWidgetItem *> items = bTreeWidget->findItems(uuid, Qt::MatchExactly, UUID_COLUMN);
     item = items.at(0);
@@ -1232,17 +1308,15 @@ void BookmarkWidget::deleteItem(QTreeWidgetItem* item)
 
     QDomNode parent = elt.parentNode();
     parent.removeChild(elt);
-
-    saveDOMToFile(doc);
-    refreshBookmarkList();
+    saveDOMToFile(doc, xmlPath);
+    //refreshBookmarkList();
 }
 
 /*
  * Checks that the user really wants to delete this item.
  */
-int BookmarkWidget::verifyDelete(QTreeWidgetItem* item, int type)
+int BookmarkWidget::verifyDelete(const QString caption, int type)
 {
-    QString caption = item->text(TITLE_COLUMN);
     QString message;
     if(type == BOOKMARK)
         message = tr("Are you sure that you want to delete the bookmark \"") + caption + tr("\"?");

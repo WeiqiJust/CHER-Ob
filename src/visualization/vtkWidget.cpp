@@ -398,18 +398,24 @@ void VtkWidget::updateCurrentOrientation(CTOrientation ort)
       mSliceMax = Size[0];
       break;
     }
-    // reset the current slide number -> Safer!!! -> fixed
-//    mSliceCurrent = 0;
-//    mVtkImageViewer->SetSlice(mSliceCurrent);
+    //reset the current slide number -> Safer!!! -> fixed
+	//mSliceCurrent = 0;
+	//mVtkImageViewer->SetSlice(mSliceCurrent);
 
     updateSlideMaxOnDocks(); // since slicemax is changed by the orientation.
 
-    if(mVtkImageViewer) mVtkImageViewer->UpdateDisplayExtent(); // update ImageViewer2 for new orientation.
+    if (mVtkImageViewer) 
+	{
+		mVtkImageViewer->UpdateDisplayExtent(); // update ImageViewer2 for new orientation.
+		mVtkImageViewer->Render();
+	}
 
-    if (mVtkImageViewer) mVtkImageViewer->Render();
     // show the rendering window
-    if(mQVTKWidget)  mQVTKWidget->show();
-    if(mQVTKWidget)  mQVTKWidget->update(); //MK: this is important!
+    if (mQVTKWidget)
+	{
+		mQVTKWidget->show();
+		mQVTKWidget->update(); //MK: this is important!
+	}
   }
 }
 

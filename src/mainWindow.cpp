@@ -153,11 +153,11 @@ void MainWindow::updateAllViews()
   if (mdiArea->subWindowList().size() > 0)
   {
 	  if (!mdiArea->currentSubWindow()->isHidden())
-		mInformation->reloadAnnotation();
+		  mInformation->reloadAnnotation();
 	  else
 	  {
 		  qDebug()<<"in clear annotation";
-		mInformation->clearAnnotation();
+		  mInformation->clearAnnotation();
 	  }
   }
   // having this here is important!
@@ -431,8 +431,8 @@ bool MainWindow::closeProject()
         QString file = mvc->currentView()->mFilename;
         QFileInfo fi(file);
 		VtkWidget* gla = mvc->currentView();
+		mBookmark->deletePermanetly(gla->mProjectPath);
 		gla->closeFileInfo();
-
         w->setWindowTitle(fi.fileName());
     }
 	setWindowTitle(appName()+appBits());
@@ -3326,6 +3326,7 @@ bool MainWindow::closeCHE()
         QString file = mvc->currentView()->mFilename;
         QFileInfo fi(file);
 		VtkWidget* gla = mvc->currentView();
+		mBookmark->deletePermanetly(gla->mProjectPath);
 		gla->closeFileInfo();
 
         w->setWindowTitle(fi.fileName());
