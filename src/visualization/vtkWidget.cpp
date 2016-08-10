@@ -1979,7 +1979,7 @@ void VtkWidget::Rendering2D()
   mVtkImageData->GetDimensions(dimss);
   if (dimss[2] > 1){
       mWidgetMode = CTSTACK;
-      flipITKtoVTKxy(mVtkImageData); // left-right flip bug fix (2013-07-14)
+      //flipITKtoVTKxy(mVtkImageData); // left-right flip bug fix (2013-07-14)
   }
   else {
       mWidgetMode = IMAGE2D;
