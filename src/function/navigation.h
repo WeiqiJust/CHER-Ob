@@ -133,16 +133,18 @@ private slots:
 	 * @brief  Add a note item when a note is created.
 	 * @param  path  The full path of the note folder. It shoule be in the form of path/object/Note.
 	 * @param  type  Note type.
+	 * @param  dim   Whether the note belongs to 2D or 3D object. NONE is for annotation.
 	 */
-	void addNoteItem(const QString path, const NoteMode type);
+	void addNoteItem(const QString path, const NoteMode type, const NoteType dim = NONE);
 
 	/**
 	 * @brief  Remove the note item when a note is removed.
 	 * @param  path  The full path of the note folder. It shoule be in the form of path/object/Note.
 	 * @param  type  Note type.
 	 * @param  id    Note id.
+	 * @param  dim   Whether the note belongs to 2D or 3D object. NONE is for annotation.
 	 */
-	void removeNoteItem(const QString path, const NoteMode type, const int id);
+	void removeNoteItem(const QString path, const NoteMode type, const int id, const NoteType dim = NONE);
 
 	/**
 	 * @brief  Add a bookmark item when a it is created.

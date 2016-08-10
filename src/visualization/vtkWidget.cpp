@@ -541,9 +541,9 @@ void VtkWidget::openFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartP
 	mCallback3D->openFrustumNoteMark(points, normals);
 }
 
-void VtkWidget::loadPointNoteMark(const int cellId, const ColorType color)
+void VtkWidget::loadPointNoteMark(const int cellId, const ColorType color, const double* position)
 {
-	mCallback3D->displayLoadPointNote(cellId, color);
+	mCallback3D->displayLoadPointNote(cellId, color, position);
 }
 
 void VtkWidget::loadSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, const ColorType color)
@@ -585,7 +585,6 @@ void VtkWidget::loadSurfaceNote2DMark(double* point, const ColorType color)
 {
 	mCallback2D->displayLoadSurfaceNote(point, color);
 }
-
 
 void VtkWidget::setMeasureDistance(bool status)
 {
@@ -1987,7 +1986,6 @@ void VtkWidget::Rendering2D()
       flipITKtoVTKy(mVtkImageData); // left-right flip bug fix (2013-07-14)
   }
   emit currentWidgetModeChanged(mWidgetMode);
-
 //  mkDebug md; md.qDebugImageData(mVtkImageData); // fine
 //    imagedata1:  626   832   1 :  3
 //    imagedata2:  626   832   1 :  8
@@ -2140,7 +2138,6 @@ void VtkWidget::Rendering2D()
   //------------------------------------------------------------------------------------------
   // Create rendering for a single image
   mVtkImageViewer->Render();
-
   mQVTKWidget->show(); // no Render() is required for 3D
   mQVTKWidget->update(); //MK: this is important!
 }
@@ -2541,6 +2538,12 @@ void VtkWidget::RenderingVolume(int blendType, float reductionFactor, CTVolumeRe
   QString simplefn = fi.fileName();
   mCallback3D->SetFilename(simplefn);
   mCallback3D->SetTextureFilename(mRgbTextureFilename);
+  mCallback3D->mViewStyle = style;
+  mCallback3D->SetCTVolume(true);
+
+  int dimss[3];
+  mVtkImageData->GetDimensions(dimss);
+  mCallback3D->SetDimensions(dimss);
 
   // connect the renderer to the rendering window
   mRenderer->AddVolume(volume);// Add interActor to renderer
@@ -2715,6 +2718,7 @@ bool VtkWidget::ReadData(QString filename)
   //[DICOM]===============================================================
   else if (fi.isDir()==true) {
     if (!ReadDICOMDir(filename)) return false;
+	
   }
   else {
     if (!ReadDICOM(filename)) return false;
@@ -2756,9 +2760,7 @@ bool VtkWidget::ReadData(QString filename)
 // this messed up volume rendering tonality => Don't use this
 //  if (mVtkImageData)
 //    ImageShifter(mVtkImageData);
-
   resetStackControlOnDocks();
-
   return true;
 }
 
@@ -2843,7 +2845,6 @@ bool VtkWidget::ReadDICOMDir(QString filename)
 
 
   flipITKtoVTKxy(mVtkImageData);
-
   RenderingStack();
   return true;
 }
@@ -3293,17 +3294,16 @@ void VtkWidget::RenderingStack()
 
   // MK: when we come back from the volume rendering to 2D stack view,
   //     it becomes slower
-
   switch(mCTVisualization)
   {
   default:
   case STACK:
     Rendering2D();
-	mw()->mInformation->initCT2DRendering(mProjectPath);
+	mw()->mInformation->draw2DNoteMark(mProjectPath);
     break;
   case VOLUMEGPU:
     RenderingVolume(mBlendType, mReductionFactor, mVolumeRenderMode);
-	mw()->mInformation->initVolumeRendering(mProjectPath);
+	mw()->mInformation->draw3DNoteMark(mProjectPath);
     break;
   }
 }

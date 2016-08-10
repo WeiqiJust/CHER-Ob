@@ -723,9 +723,7 @@ public:
   {
 	  vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
 	  vtkSmartPointer<vtkRenderer> renderer = interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
-
 	  vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-
       vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
 	  actor->SetMapper(mapper);
 	  actor->PickableOff();
@@ -735,7 +733,6 @@ public:
       actor->VisibilityOff();
 
       renderer->AddActor(actor);
-
 	  mSelectedPoint.push_back(std::make_pair(point, actor));
 
 	  displayPointNote(mapper, point);

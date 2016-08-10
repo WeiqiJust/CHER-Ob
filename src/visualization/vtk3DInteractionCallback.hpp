@@ -82,6 +82,8 @@
 #include <vtkTextActor.h>
 #include <vtkTextProperty.h>
 
+#include <algorithm> 
+
 #include "../information/informationWidget.h"
 #include "../mainWindow.h"
 #include "../function/mkTools.hpp"
@@ -109,6 +111,12 @@ vtkSmartPointer<vtkPolyData> emptyPD;
 #define MY_CREATE_NEW(class, variable)\
   vtkSmartPointer<class> variable = vtkSmartPointer<class>::New();
 
+struct PointMark
+{
+	vtkSmartPointer<vtkIdTypeArray> cellIds;
+	double positions[3];
+	vtkSmartPointer<vtkActor> actor;
+};
 
 // for 3D interaction callback.
 class vtk3DInteractionCallback : public vtkCommand
@@ -157,6 +165,7 @@ public:
     mUseRubberband = false;
 	mUserIsAnnotating = false;
     mWasReadyRubberband = false; // this is one start point clicked.
+	isCTVolume = false;
     mRubberband = vtkSmartPointer<vtkLineSource>::New();
 
     // for selection
@@ -214,6 +223,20 @@ public:
 
   void SetTransform (vtkTransform *transform) {
       this->mTransform = transform;
+  }
+
+  void SetCTVolume(bool isVolume) {
+	  this->isCTVolume = isVolume;
+  }
+
+  void SetDimensions(int* diss)
+  {
+	  if (isCTVolume)
+	  {
+		  mDimensions[0] = diss[0];
+		  mDimensions[1] = diss[1];
+		  mDimensions[2] = diss[2];
+	  }
   }
 
   void LoadNewBestImage(int k)
@@ -450,7 +473,7 @@ public:
 			 }
 			 for (int i = 0; i < mSelectedPoints.size(); i++)
 			 {
-				 mSelectedPoints[i].second->VisibilityOn();
+				 mSelectedPoints[i].actor->VisibilityOn();
 			 }
 			 for (int i = 0; i < mSelectedSurface.size(); i++)
 			 {
@@ -469,7 +492,7 @@ public:
 		  mSurfaceSelector->VisibilityOff();
 		  for (int i = 0; i < mSelectedPoints.size(); i++)
 		  {
-			 mSelectedPoints[i].second->VisibilityOff();
+			 mSelectedPoints[i].actor->VisibilityOff();
 		  }
 		  for (int i = 0; i < mSelectedFrustum.size(); i++)
 		  {
@@ -638,7 +661,6 @@ public:
 
     // X vector for camera (cross-product of Z and Y)
     vtkMath::Cross(camY, camZ, camX);
-
     // make a transform matrix for camera normal rotate the camera at the focal point
     vtkSmartPointer<vtkMatrix4x4> cmatrix = vtkSmartPointer<vtkMatrix4x4>::New();
     cmatrix->SetElement(0,0,camX[0]);
@@ -657,22 +679,19 @@ public:
     cmatrix->SetElement(1,3,cfocal[1]);
     cmatrix->SetElement(2,3,cfocal[2]);
     cmatrix->SetElement(3,3,1);
-
     // get the light transform matrix
     vtkSmartPointer<vtkLightCollection> lights = renderer->GetLights();
     lights->InitTraversal();
     vtkSmartPointer<vtkLight> light1 = lights->GetNextItem();
-
     vtkSmartPointer<vtkMatrix4x4> lmatrix = mLightTransform->GetMatrix();
-
     vtkSmartPointer<vtkTransform> trans = vtkSmartPointer<vtkTransform>::New();
     //================================================================
     // apply the camera transform T_c and the light transform T_l (T = T_c * T_l) in order to update the camera up vector transform
     trans->SetMatrix(cmatrix); // apply camera vector transform
+
     trans->Concatenate(lmatrix); // apply light vector transform
     //================================================================
     light1->SetTransformMatrix(trans->GetMatrix());
-
 //    vtkSmartPointer<vtkLight> light2 = lights->GetNextItem();
 //    light2->SetPosition(camera->GetPosition()); // correct
 
@@ -1081,30 +1100,72 @@ public:
 	  }
   }	  
 
-  void displayPointNote(vtkSmartPointer<vtkDataSetMapper> mapper, vtkSmartPointer<vtkIdTypeArray> point)
+  void displayPointNote(vtkSmartPointer<vtkDataSetMapper> mapper, vtkSmartPointer<vtkIdTypeArray> point, const double* position)
   {
-	  vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
-      vtkSmartPointer<vtkRenderer> renderer = interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
-   
-      vtkSmartPointer<vtkSelectionNode> selectionNode = vtkSmartPointer<vtkSelectionNode>::New();
-      selectionNode->SetFieldType(vtkSelectionNode::CELL);
-      selectionNode->SetContentType(vtkSelectionNode::INDICES);
-      selectionNode->SetSelectionList(point);
+	  if (!isCTVolume)
+	  {
+		  vtkSmartPointer<vtkSelectionNode> selectionNode = vtkSmartPointer<vtkSelectionNode>::New();
+		  selectionNode->SetFieldType(vtkSelectionNode::CELL);
+		  selectionNode->SetContentType(vtkSelectionNode::INDICES);
+		  selectionNode->SetSelectionList(point);
 
-      vtkSmartPointer<vtkSelection> selection = vtkSmartPointer<vtkSelection>::New();
-      selection->AddNode(selectionNode);
+		  vtkSmartPointer<vtkSelection> selection = vtkSmartPointer<vtkSelection>::New();
+		  selection->AddNode(selectionNode);
 
-      vtkSmartPointer<vtkExtractSelection> extractSelection = vtkSmartPointer<vtkExtractSelection>::New();
-      extractSelection->SetInput(0, this->mPolyData);
-      extractSelection->SetInput(1, selection);
+		  vtkSmartPointer<vtkExtractSelection> extractSelection = vtkSmartPointer<vtkExtractSelection>::New();
+		  extractSelection->SetInput(0, this->mPolyData);
+		  extractSelection->SetInput(1, selection);
 
-      extractSelection->Update();
+		  extractSelection->Update();
 
-      // In selection
-      vtkSmartPointer<vtkUnstructuredGrid> selected = vtkSmartPointer<vtkUnstructuredGrid>::New();
-      selected->ShallowCopy(extractSelection->GetOutput());
+		  // In selection
+		  vtkSmartPointer<vtkUnstructuredGrid> selected = vtkSmartPointer<vtkUnstructuredGrid>::New();
+		  selected->ShallowCopy(extractSelection->GetOutput());
+		  mapper->SetInputConnection(selected->GetProducerPort());
+	  }
+	  else
+	  {
+		  double p0[3] = {position[0], position[1], position[2]};
+		  double p1[3] = {position[0], position[1] - mDimensions[1]/50, position[2]};
+		  double p2[3] = {position[0], position[1] + mDimensions[1]/50, position[2]};
+		  double p3[3] = {position[0] - mDimensions[0]/50, position[1], position[2]};
+		  double p4[3] = {position[0] + mDimensions[0]/50, position[1], position[2]};
+		  double p5[3] = {position[0], position[1], position[2] - mDimensions[2]/50};
+		  double p6[3] = {position[0], position[1], position[2] + mDimensions[2]/50};
+		  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
-      mapper->SetInputConnection(selected->GetProducerPort());
+		  points->InsertNextPoint(p0);
+		  points->InsertNextPoint(p1);
+		  points->InsertNextPoint(p2);
+		  points->InsertNextPoint(p3);
+		  points->InsertNextPoint(p4);
+		  points->InsertNextPoint(p5);
+		  points->InsertNextPoint(p6);
+
+		  vtkSmartPointer<vtkPolyLine> polyLine = vtkSmartPointer<vtkPolyLine>::New();
+		  polyLine->GetPointIds()->SetNumberOfIds(12);
+		  polyLine->GetPointIds()->SetId(0,0);
+		  polyLine->GetPointIds()->SetId(1,1);
+		  polyLine->GetPointIds()->SetId(2,0);
+		  polyLine->GetPointIds()->SetId(3,2);
+		  polyLine->GetPointIds()->SetId(4,0);
+		  polyLine->GetPointIds()->SetId(5,3);
+		  polyLine->GetPointIds()->SetId(6,0);
+		  polyLine->GetPointIds()->SetId(7,4);
+		  polyLine->GetPointIds()->SetId(8,0);
+		  polyLine->GetPointIds()->SetId(9,5);
+		  polyLine->GetPointIds()->SetId(10,0);
+		  polyLine->GetPointIds()->SetId(11,6);
+
+
+		  vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
+		  cells->InsertNextCell(polyLine);
+
+		  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+		  polyData->SetPoints(points);
+		  polyData->SetLines(cells);
+		  mapper->SetInput(polyData);
+	  }
   }
   
   void displaySurfaceNote(vtkSmartPointer<vtkDataSetMapper> mapper, vtkSmartPointer<vtkSelectionNode> points)
@@ -1179,8 +1240,8 @@ public:
 		  //turnoffHighlight();
 	  }
 	  mPointNoteHighlight = id;
-	  mSelectedPoints[mPointNoteHighlight].second->GetProperty()->GetEdgeColor(color);
-	  mSelectedPoints[mPointNoteHighlight].second->GetProperty()->SetEdgeColor(1-color[0], 1-color[1], 1-color[2]);
+	  mSelectedPoints[mPointNoteHighlight].actor->GetProperty()->GetEdgeColor(color);
+	  mSelectedPoints[mPointNoteHighlight].actor->GetProperty()->SetEdgeColor(1-color[0], 1-color[1], 1-color[2]);
   }
 
   void highlightSurfaceNote(int id)
@@ -1212,8 +1273,8 @@ public:
 	   double* color = new double[3];
 	   if (mPointNoteHighlight != -1 && mPointNoteHighlight < mSelectedPoints.size())
 	   {
-		   mSelectedPoints[mPointNoteHighlight].second->GetProperty()->GetEdgeColor(color);
-		   mSelectedPoints[mPointNoteHighlight].second->GetProperty()->SetEdgeColor(1-color[0], 1-color[1], 1-color[2]);
+		   mSelectedPoints[mPointNoteHighlight].actor->GetProperty()->GetEdgeColor(color);
+		   mSelectedPoints[mPointNoteHighlight].actor->GetProperty()->SetEdgeColor(1-color[0], 1-color[1], 1-color[2]);
 		   mPointNoteHighlight = -1;
 	   }
 	   if (mSurfaceNoteHighlight != -1 && mSurfaceNoteHighlight < mSelectedSurface.size()) 
@@ -1247,14 +1308,27 @@ public:
 	  {
 		  for (int i = 0; i < mSelectedPoints.size(); i++)
 		  {
-			  if (!mSelectedPoints[i].second->GetVisibility())
+			  if (!mSelectedPoints[i].actor->GetVisibility())
 				  continue;
-			  if (mSelectedPoints[i].first->LookupValue(picker->GetCellId()) != -1)
+			  if (!isCTVolume && mSelectedPoints[i].cellIds->LookupValue(picker->GetCellId()) != -1)
 			  {
 				  //highlightPointNote(i);
 				  mw()->mInformation->openPointNote(picker->GetCellId());
 				  displayPointNoteInfo(picker->GetCellId(), worldPosition);
 				  return true;
+			  }
+			  else if (isCTVolume)
+			  {
+				  double dis = sqrt(pow(mSelectedPoints[i].positions[0] - worldPosition[0], 2) 
+					  + pow(mSelectedPoints[i].positions[1] - worldPosition[1], 2)
+					  + pow(mSelectedPoints[i].positions[2] - worldPosition[2], 2));
+				  if (dis <= double(std::max(std::max(mDimensions[0], mDimensions[1]), mDimensions[2]))/50)
+				  {
+					  mw()->mInformation->openPointNote(mSelectedPoints[i].cellIds->GetValue(0));
+					  displayPointNoteInfo(mSelectedPoints[i].cellIds->GetValue(0), worldPosition);
+				      return true;
+
+				  }
 			  }
 		  }
 	    
@@ -1323,7 +1397,7 @@ public:
 	  return false;
   }
 
-  void displayLoadPointNote(const int cellId, const ColorType color)
+  void displayLoadPointNote(const int cellId, const ColorType color, const double* position)
   {
       vtkSmartPointer<vtkRenderer> renderer = this->GetInteractor()->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
 	  vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New();
@@ -1336,9 +1410,15 @@ public:
       renderer->AddActor(actor);
 	  vtkSmartPointer<vtkIdTypeArray> cell = vtkSmartPointer<vtkIdTypeArray>::New();
 	  cell->InsertNextValue(cellId);
-      mSelectedPoints.push_back(std::make_pair(cell, actor));
+	  PointMark pointNote;
+	  pointNote.cellIds = cell;
+	  pointNote.actor = actor;
+	  pointNote.positions[0] = position[0];
+	  pointNote.positions[1] = position[1];
+	  pointNote.positions[2] = position[2];
+      mSelectedPoints.push_back(pointNote);
       qDebug()<<"load point note" << cellId;
-	  displayPointNote(mapper, cell);  
+	  displayPointNote(mapper, cell, position);  
   }
 
   void displayLoadSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, const ColorType color)
@@ -1417,14 +1497,14 @@ public:
       if (picker->GetCellId() != -1)
       {
           picker->GetPickPosition(mAnnotationSpot);
-		  qDebug() << "annotation world spot:" << worldPosition[0] << worldPosition[1] << worldPosition[2];
+		  //qDebug() << "annotation world spot:" << worldPosition[0] << worldPosition[1] << worldPosition[2];
 
-          qDebug() << "annotation spot:" << mAnnotationSpot[0] << mAnnotationSpot[1] << mAnnotationSpot[2];
+          //qDebug() << "annotation spot:" << mAnnotationSpot[0] << mAnnotationSpot[1] << mAnnotationSpot[2];
 
 		  if(!mw()->mInformation) return;
 		  for (int i = 0; i < mSelectedPoints.size(); i++)
 		  {
-			  if (mSelectedPoints[i].first->LookupValue(picker->GetCellId()) != -1)
+			  if (mSelectedPoints[i].cellIds->LookupValue(picker->GetCellId()) != -1)
 				  return;
 		  }
 
@@ -1441,8 +1521,17 @@ public:
 
 		  vtkSmartPointer<vtkIdTypeArray> cellId = vtkSmartPointer<vtkIdTypeArray>::New();
 		  cellId->InsertNextValue(picker->GetCellId());
-          mSelectedPoints.push_back(std::make_pair(cellId, actor));
-          displayPointNote(mapper, cellId);
+
+		  PointMark pointNote;
+		  pointNote.cellIds = cellId;
+		  pointNote.actor = actor;
+		  pointNote.positions[0] = worldPosition[0];
+		  pointNote.positions[1] = worldPosition[1];
+		  pointNote.positions[2] = worldPosition[2];
+		  mSelectedPoints.push_back(pointNote);
+          //mSelectedPoints.push_back(std::make_pair(cellId, actor));
+
+          displayPointNote(mapper, cellId, worldPosition);
 		  displayPointNoteInfo(picker->GetCellId(), worldPosition);
       }
 	  else 
@@ -1519,9 +1608,9 @@ public:
   {
 	  for (int i = 0; i < mSelectedPoints.size(); i++)
 	  {
-		  if (mSelectedPoints[i].first->LookupValue(cellId) != -1)
+		  if (mSelectedPoints[i].cellIds->LookupValue(cellId) != -1)
 		  {
-			  mSelectedPoints[i].second->VisibilityOff();
+			  mSelectedPoints[i].actor->VisibilityOff();
 			  mSelectedPoints.erase(mSelectedPoints.begin() + i);
 		  }
 	  }
@@ -1610,9 +1699,9 @@ public:
   {
 	  for (int i = 0; i < mSelectedPoints.size(); i++)
 	  {
-		  if (mSelectedPoints[i].first->LookupValue(cellId) != -1)
+		  if (mSelectedPoints[i].cellIds->LookupValue(cellId) != -1)
 		  {
-			  mSelectedPoints[i].second->VisibilityOn();
+			  mSelectedPoints[i].actor->VisibilityOn();
 			  break;
 		  }
 	  }
@@ -2063,7 +2152,7 @@ private:
   double mAnnotationSpot[3];
 
   std::vector<float> mHyperPixels;
-  std::vector<std::pair<vtkSmartPointer<vtkIdTypeArray>, vtkSmartPointer<vtkActor> > > mSelectedPoints;  //used for point note
+  std::vector<PointMark> mSelectedPoints;  //used for point note
   std::vector<std::pair<vtkSmartPointer<vtkPlanes>, vtkSmartPointer<vtkActor> > > mSelectedFrustum;   //used for frustum note
   std::vector<std::pair<vtkSmartPointer<vtkSelectionNode>, vtkSmartPointer<vtkActor> > > mSelectedSurface;  //used for surface note
   int mPointNoteHighlight;
@@ -2074,12 +2163,14 @@ private:
   bool mIsRubberbandVisible;
   bool mDisplayPolyIndicateOn;
   bool mUserIsAnnotating;
+  bool isCTVolume;
 
   double mCurrCamY[3]; // camera up vector change detection for speed up
   double mLastCamY[3];
 
   double mLastViewVec[3];
   double mCurrViewVec[3];
+  int mDimensions[3];
 
   // for image overlays
   vtkSmartPointer<vtkActor> mBestImageActor;

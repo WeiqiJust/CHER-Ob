@@ -377,7 +377,7 @@ PointNote::PointNote(QString path, QString fileName, const int noteId, bool& isS
 	QDir dir(*mPath);
 	for (int i = 0; i < imagePathList.size(); i++)
 	{
-		qDebug()<<"Image Path"<<imagePathList[i];
+		//qDebug()<<"Image Path"<<imagePathList[i];
 		QFileInfo finfo(dir.absoluteFilePath(imagePathList[i]));
 		if (!finfo.exists())
 			continue;

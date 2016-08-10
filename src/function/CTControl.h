@@ -58,6 +58,8 @@ public:
   void restoreBookmarkCTStack(int currentSlice, int view);
   void restoreBookmarkCTVolume(int ctMode, int ctBlendType, double ctResolution);
 
+  void setVisualizationChanged(CTVisualization type) {mCTVisualization = type;}
+
 signals:
   /**
    * @brief  Add 1 to the current slide before displaying it (because count starts at 0).
@@ -112,6 +114,9 @@ public slots:
   void updateReductionFactor(float reductionFactor);
   void updateCtControlWidgetMode(WidgetMode widgetmode);
 
+  void setCTStackView();
+  void setVTvolumeGPU();
+
 private slots:
   void sendUpdateSlideCurrent(int currentSlide);
   void clickFrontButton();
@@ -120,8 +125,7 @@ private slots:
   void clickUpDownButton();
   void addonelcd(int value);
 
-  void setCTStackView();
-  void setVTvolumeGPU();
+
   void sendReductionFactor(int sliderInput);
   void sendVolumeRenderMode(int comboInput);
 

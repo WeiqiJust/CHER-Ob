@@ -610,7 +610,6 @@ void LightControl::setDirectionalLight(bool isDirectionalLight)
     mLitControl1dial->setEnabled(false);
     mLitControl2dial->setEnabled(false);
   }
-
   updateLightingVector();// update main window
 }
 

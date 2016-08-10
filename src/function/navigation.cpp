@@ -39,10 +39,10 @@ Navigation::Navigation()
 	ColumnNames << "Navigation";
 	mTreeWidget->setHeaderLabels(ColumnNames);
 	mTreeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(mw()->mInformation, SIGNAL(addNavigationItem(const QString, const NoteMode)),
-		this, SLOT(addNoteItem(const QString, const NoteMode)));
-	connect(mw()->mInformation, SIGNAL(removeNavigationItem(const QString, const NoteMode, const int)),
-		this, SLOT(removeNoteItem(const QString, const NoteMode, const int)));
+	connect(mw()->mInformation, SIGNAL(addNavigationItem(const QString, const NoteMode, const NoteType)),
+		this, SLOT(addNoteItem(const QString, const NoteMode, const NoteType)));
+	connect(mw()->mInformation, SIGNAL(removeNavigationItem(const QString, const NoteMode, const int, const NoteType)),
+		this, SLOT(removeNoteItem(const QString, const NoteMode, const int, const NoteType)));
 	connect(mw()->mBookmark, SIGNAL(addNavigationItem(const QString, const QString, const QString)),
 		this, SLOT(addBookmarkItem(const QString, const QString, const QString)));
 	connect(mw()->mBookmark, SIGNAL(removeNavigationItem(const QString, const QString, const QString)),
@@ -156,8 +156,8 @@ void Navigation::loadObjectNote(QTreeWidgetItem *object, const QString path)
 				case 1: label = QString("PointNote_"); break;
 				case 2: label = QString("SurfaceNote_"); break;
 				case 3: label = QString("FrusumNote_"); break;
-				case 4: label = QString("PointNote_"); break;
-				case 5: label = QString("SurfaceNote_"); break;
+				case 4: label = QString("PointNote2D_"); break;
+				case 5: label = QString("SurfaceNote2D_"); break;
 			}
 			if (i == 0)
 			{
@@ -307,7 +307,7 @@ void Navigation::showTreeWidgetItem(QTreeWidgetItem* item, int column)
 		mw()->mBookmark->viewBookmark(item);
 }
 
-void Navigation::addNoteItem(const QString path, const NoteMode type)
+void Navigation::addNoteItem(const QString path, const NoteMode type, const NoteType dim)
 {
 	// path shoule be in the form of path/object/Note
 	QStringList elements = path.split(QDir::separator());
@@ -322,7 +322,7 @@ void Navigation::addNoteItem(const QString path, const NoteMode type)
 	if (isFound)
 	{
 		object = object->child(0);
-		int point = 0, surface = 0, frustum = 0;
+		int point = 0, surface = 0, frustum = 0, point2D = 0, surface2D = 0;
 		for (int k = 0; k < object->childCount(); k++)
 		{
 			QString text = object->child(k)->text(0).split("_")[0];
@@ -332,6 +332,10 @@ void Navigation::addNoteItem(const QString path, const NoteMode type)
 				surface++;
 			else if (text == QString("FrustumNote") || text == QString("<font color=\"gray\">FrustumNote"))
 				frustum++;
+			else if (text == QString("PointNote2D") || text == QString("<font color=\"gray\">PointNote2D"))
+				point2D++;
+			else if (text == QString("SurfaceNote2D") || text == QString("<font color=\"gray\">SurfaceNote2D"))
+				surface2D++;
 		}
 		QFileIconProvider iconProvider;
 		QTreeWidgetItem* newNote = new QTreeWidgetItem();
@@ -352,23 +356,49 @@ void Navigation::addNoteItem(const QString path, const NoteMode type)
 		}
 		if (type ==	POINTNOTE)
 		{
-			newNote->setText(0, QString("PointNote_").append(QString::number(point+1)));
-			if (object->childCount() == 0)
-				object->addChild(newNote);
-			else if (object->child(0)->text(0) == QString("Annotation"))
-				object->insertChild(point+1, newNote);
-			else
-				object->insertChild(point, newNote);
+			if (dim == NOTE3D)
+			{
+				newNote->setText(0, QString("PointNote_").append(QString::number(point+1)));
+				if (object->childCount() == 0)
+					object->addChild(newNote);
+				else if (object->child(0)->text(0) == QString("Annotation"))
+					object->insertChild(point+1, newNote);
+				else
+					object->insertChild(point, newNote);
+			}
+			else if (dim == NOTE2D)
+			{
+				newNote->setText(0, QString("PointNote2D_").append(QString::number(point2D+1)));
+				if (object->childCount() == 0)
+					object->addChild(newNote);
+				else if (object->child(0)->text(0) == QString("Annotation"))
+					object->insertChild(point+surface+frustum+point2D+1, newNote);
+				else
+					object->insertChild(point+surface+frustum+point2D, newNote);
+			}
 		}
 		else if (type == SURFACENOTE)
 		{
-			newNote->setText(0, QString("SurfaceNote_").append(QString::number(surface+1)));
-			if (object->childCount() == 0)
-				object->addChild(newNote);
-			else if (object->child(0)->text(0) == QString("Annotation"))
-				object->insertChild(point+surface+1, newNote);
-			else
-				object->insertChild(point+surface, newNote);
+			if (dim == NOTE3D)
+			{
+				newNote->setText(0, QString("SurfaceNote_").append(QString::number(surface+1)));
+				if (object->childCount() == 0)
+					object->addChild(newNote);
+				else if (object->child(0)->text(0) == QString("Annotation"))
+					object->insertChild(point+surface+1, newNote);
+				else
+					object->insertChild(point+surface, newNote);
+			}
+			else if (dim == NOTE2D)
+			{
+				newNote->setText(0, QString("SurfaceNote2D_").append(QString::number(surface2D+1)));
+				if (object->childCount() == 0)
+					object->addChild(newNote);
+				else if (object->child(0)->text(0) == QString("Annotation"))
+					object->insertChild(point+surface+frustum+point2D+surface2D+1, newNote);
+				else
+					object->insertChild(point+surface+frustum+point2D+surface2D, newNote);
+			}
 		}
 		else if (type == FRUSTUMNOTE)
 		{
@@ -385,7 +415,7 @@ void Navigation::addNoteItem(const QString path, const NoteMode type)
 	}
 }
 
-void Navigation::removeNoteItem(const QString path, const NoteMode type, const int id)
+void Navigation::removeNoteItem(const QString path, const NoteMode type, const int id, const NoteType dim)
 {
 	// path shoule be in the form of path/object/Note
 	QStringList elements = path.split(QDir::separator());
@@ -400,7 +430,7 @@ void Navigation::removeNoteItem(const QString path, const NoteMode type, const i
 	if (isFound)
 	{
 		object = object->child(0);
-		int point = 0, surface = 0, frustum = 0;
+		int point = 0, surface = 0, frustum = 0, point2D = 0, surface2D = 0;
 		for (int k = 0; k < object->childCount(); k++)
 		{
 			QString text = object->child(k)->text(0).split("_")[0];
@@ -410,6 +440,10 @@ void Navigation::removeNoteItem(const QString path, const NoteMode type, const i
 				surface++;
 			else if (text == QString("FrustumNote") || text == QString("<font color=\"gray\">FrustumNote"))
 				frustum++;
+			if (text == QString("PointNote2D") || text == QString("<font color=\"gray\">PointNote2D"))
+				point2D++;
+			else if (text == QString("SurfaceNote2D") || text == QString("<font color=\"gray\">SurfaceNote2D"))
+				surface2D++;
 		}
 		if (type == ANNOTATION)
 		{
@@ -425,45 +459,55 @@ void Navigation::removeNoteItem(const QString path, const NoteMode type, const i
 		}
 		if (type == POINTNOTE)
 		{
+			int itemNum;
+			if (dim == NOTE3D)
+				itemNum = id;
+			else if (dim == NOTE2D)
+				itemNum = id + point + surface + frustum;
 			if (object->childCount() != 0)
 			{
 				if (object->child(0)->text(0) == QString("Annotation"))
 				{
-					QString text = object->child(id+1)->text(0);
+					QString text = object->child(itemNum+1)->text(0);
 					text.append(QString("</font>"));
 					text.prepend(QString("<font color=\"gray\">"));
-					object->child(id+1)->setText(0, text);
-					object->child(id+1)->setText(2, QString::number(0));
+					object->child(itemNum+1)->setText(0, text);
+					object->child(itemNum+1)->setText(2, QString::number(0));
 				}
 				else
 				{
-					QString text = object->child(id)->text(0);
+					QString text = object->child(itemNum)->text(0);
 					text.append(QString("</font>"));
 					text.prepend(QString("<font color=\"gray\">"));
-					object->child(id)->setText(0, text);
-					object->child(id)->setText(2, QString::number(0));
+					object->child(itemNum)->setText(0, text);
+					object->child(itemNum)->setText(2, QString::number(0));
 				}
 			}
 		}
 		else if (type == SURFACENOTE)
 		{
+			int itemNum;
+			if (dim == NOTE3D)
+				itemNum = id + point;
+			else if (dim == NOTE2D)
+				itemNum = id + point + surface + frustum + point2D;
 			if (object->childCount() != 0)
 			{
 				if (object->child(0)->text(0) == QString("Annotation"))
 				{
-					QString text = object->child(id+point+1)->text(0);
+					QString text = object->child(itemNum+1)->text(0);
 					text.append(QString("</font>"));
 					text.prepend(QString("<font color=\"gray\">"));
-					object->child(id+point+1)->setText(0, text);
-					object->child(id+point+1)->setText(2, QString::number(0));
+					object->child(itemNum+1)->setText(0, text);
+					object->child(itemNum+1)->setText(2, QString::number(0));
 				}
 				else
 				{
-					QString text = object->child(id+point)->text(0);
+					QString text = object->child(itemNum)->text(0);
 					text.append(QString("</font>"));
 					text.prepend(QString("<font color=\"gray\">"));
-					object->child(id+point)->setText(0, text);
-					object->child(id+point)->setText(2, QString::number(0));
+					object->child(itemNum)->setText(0, text);
+					object->child(itemNum)->setText(2, QString::number(0));
 				}
 			}
 		}

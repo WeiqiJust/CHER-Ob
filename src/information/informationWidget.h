@@ -111,7 +111,7 @@ public:
 	void init(const QString path);
 
 	/**
-	 * @brief  Init the widget for CT 2d rendering mode by loading existing notes and annotation.
+	 * @brief  Init the widget for CT 2d rendering mode (default open mode) by loading existing notes and annotation.
 	 * @param  path  The absolute object path.
 	 */
 	void initCT2DRendering(const QString path);
@@ -120,7 +120,7 @@ public:
 	 * @brief  Init the widget for CT volume rendering mode by loading existing notes and annotation.
 	 * @param  path  The absolute object path.
 	 */
-	void initVolumeRendering(const QString path);
+	void initCTVolumeRendering(const QString path);
 
 	/**
 	 * @brief  Enable annotation when annotation button in the main frame is checked.
@@ -266,6 +266,18 @@ public:
 	void openNotesByUsers(const QVector<QString> users);
 
 	/**
+	 * @brief  Draw 2D Note marks on the 2D images. This function is used to display CT 2D rendering note marks.
+	 * @param  path  The absolute object path.
+	 */
+	void draw2DNoteMark(const QString path);
+
+	/**
+	 * @brief  Draw 3D Note marks on the 3D objects. This function is used to display CT Volume rendering note marks.
+	 * @param  path  The absolute object path.
+	 */
+	void draw3DNoteMark(const QString path);
+
+	/**
 	 * @brief  Undo the remove operation from navigation tab.
 	 * @param  item  The note that should be undo for removal.
 	 */
@@ -323,16 +335,18 @@ signals:
 	 * @brief  Add an item in navigation tab when a note is created.
 	 * @param  Path  The object absolute path.
 	 * @param  type  The note mode.
+	 * @param  dim   Whether the note belongs to 2D or 3D object. NONE is for annotation.
 	 */
-	void addNavigationItem(const QString path, const NoteMode type);
+	void addNavigationItem(const QString path, const NoteMode type, const NoteType dim = NONE);
 
 	/**
 	 * @brief  Remove the corresponding item in navigation tab when a note is removed.
 	 * @param  Path  The object absolute path.
 	 * @param  Type  The note mode.
 	 * @param  Id    The note id.
+	 * @param  dim   Whether the note belongs to 2D or 3D object. NONE is for annotation.
 	 */
-	void removeNavigationItem(const QString path, const NoteMode type, const int id);
+	void removeNavigationItem(const QString path, const NoteMode type, const int id, const NoteType dim = NONE);
 
 	public slots:
 
@@ -351,14 +365,15 @@ private:
 
 	/**
 	 * @brief  Load the 3D/2D note from the absolute path.
-	 * @param  path    The absolute note path.
+	 * @param  path       The absolute note path.
+	 * @param  isDisplay  Whether or not to draw the note mark.
 	 * @return If note is correctly loaded return true, otherwise false.
 	 */
-	bool loadPointNote(const QString path);
-	bool loadSurfaceNote(const QString path);
-	bool loadFrustumNote(const QString path);
-	bool loadPointNote2D(const QString path);
-	bool loadSurfaceNote2D(const QString path);
+	bool loadPointNote(const QString path, bool isDisplay = true);
+	bool loadSurfaceNote(const QString path, bool isDisplay = true);
+	bool loadFrustumNote(const QString path, bool isDisplay = true);
+	bool loadPointNote2D(const QString path, bool isDisplay = true);
+	bool loadSurfaceNote2D(const QString path, bool isDisplay = true);
 
 	/**
 	 * @brief  Load Annotation from the absolute path.

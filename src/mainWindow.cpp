@@ -436,6 +436,7 @@ bool MainWindow::closeProject()
         w->setWindowTitle(fi.fileName());
     }
 	setWindowTitle(appName()+appBits());
+	
     updateMenus();
 	if (rightTab->count() == 3)
 		rightTab->removeTab(2);
@@ -513,6 +514,7 @@ void MainWindow::updateXML()
 		CHEInfo.appendChild(other);
 	}
 	
+	bool isCTModeSwitched = false;
     QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
     foreach(QMdiSubWindow *w, windows)
 	{
@@ -523,6 +525,13 @@ void MainWindow::updateXML()
         QDomElement item = doc.createElement("item");
 		file = projectDir.relativeFilePath(file);
         item.setAttribute("filename", file);
+
+		//If current object is CT and in volume rendering mode, switch to Stack mode to save.
+		if (gla->getWidgetMode() == CTVOLUME)
+		{
+			mCtControl->setCTStackView();
+			isCTModeSwitched = true;
+		}
 
         vtkSmartPointer<vtkCamera> camera = gla->mRenderer->GetActiveCamera();
         double pos[3]; // camera position
@@ -605,157 +614,158 @@ void MainWindow::updateXML()
         item.appendChild(filetype);
         filetype.appendChild(doc.createTextNode(QString::number(gla->getWidgetMode())));
 
-        // Filetype-specific information
+		// Filetype-specific information
         switch(gla->getWidgetMode())
         {
-        case IMAGE2D:
-        {
-            QDomElement interp = doc.createElement("interpolation_on");
-            item.appendChild(interp);
-            if (gla->getIsInterpolationOn()) {
-                interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_ON)));
-            } else {
-                interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_OFF)));
-            }
-            break;
-        }
+			case IMAGE2D:
+			{
+				QDomElement interp = doc.createElement("interpolation_on");
+				item.appendChild(interp);
+				if (gla->getIsInterpolationOn()) {
+					interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_ON)));
+				} else {
+					interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_OFF)));
+				}
+				break;
+			}
 
-        case MODEL3D:
-        {
-            QDomElement dir = doc.createElement("directional_light");
-            item.appendChild(dir);
-            dir.appendChild(doc.createTextNode(QString::number(gla->getIsDirectionalLight())));
+			case MODEL3D:
+			{
+				QDomElement dir = doc.createElement("directional_light");
+				item.appendChild(dir);
+				dir.appendChild(doc.createTextNode(QString::number(gla->getIsDirectionalLight())));
 
-            vtkSmartPointer<vtkAssembly> assembly = this->mLightControl->GetAssembly();
-            double orientation[3];
-            assembly->GetOrientation(orientation);
+				vtkSmartPointer<vtkAssembly> assembly = this->mLightControl->GetAssembly();
+				double orientation[3];
+				assembly->GetOrientation(orientation);
 
-            QDomElement ort = doc.createElement("light_vector");
-            item.appendChild(ort);
-            QDomElement ort_x = doc.createElement("x");
-            QDomElement ort_y = doc.createElement("y");
-            QDomElement ort_z = doc.createElement("z");
-            ort.appendChild(ort_x);
-            ort.appendChild(ort_y);
-            ort.appendChild(ort_z);
-            ort_x.appendChild(doc.createTextNode(QString::number(orientation[0])));
-            ort_y.appendChild(doc.createTextNode(QString::number(orientation[1])));
-            ort_z.appendChild(doc.createTextNode(QString::number(orientation[2])));
+				QDomElement ort = doc.createElement("light_vector");
+				item.appendChild(ort);
+				QDomElement ort_x = doc.createElement("x");
+				QDomElement ort_y = doc.createElement("y");
+				QDomElement ort_z = doc.createElement("z");
+				ort.appendChild(ort_x);
+				ort.appendChild(ort_y);
+				ort.appendChild(ort_z);
+				ort_x.appendChild(doc.createTextNode(QString::number(orientation[0])));
+				ort_y.appendChild(doc.createTextNode(QString::number(orientation[1])));
+				ort_z.appendChild(doc.createTextNode(QString::number(orientation[2])));
 
-            QDomElement brtns = doc.createElement("brightness");
-            item.appendChild(brtns);
-            brtns.appendChild(doc.createTextNode(QString::number(this->mLightControl->GetIntensityL1())));
+				QDomElement brtns = doc.createElement("brightness");
+				item.appendChild(brtns);
+				brtns.appendChild(doc.createTextNode(QString::number(this->mLightControl->GetIntensityL1())));
 
-            QDomElement ctrst = doc.createElement("contrast");
-            item.appendChild(ctrst);
-            ctrst.appendChild(doc.createTextNode(QString::number(this->mLightControl->GetIntensityL2())));
+				QDomElement ctrst = doc.createElement("contrast");
+				item.appendChild(ctrst);
+				ctrst.appendChild(doc.createTextNode(QString::number(this->mLightControl->GetIntensityL2())));
 
-            if (gla->getIsInterpolationOn()) {
-                QDomElement interp = doc.createElement("interpolation_on");
-                item.appendChild(interp);
-                interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_ON)));
-            } else if(!gla->getmRgbTextureFilename().isEmpty()){
-                QDomElement interp = doc.createElement("interpolation_on");
-                item.appendChild(interp);
-                interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_OFF)));
-            }
+				if (gla->getIsInterpolationOn()) {
+					QDomElement interp = doc.createElement("interpolation_on");
+					item.appendChild(interp);
+					interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_ON)));
+				} else if(!gla->getmRgbTextureFilename().isEmpty()){
+					QDomElement interp = doc.createElement("interpolation_on");
+					item.appendChild(interp);
+					interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_OFF)));
+				}
 
-            QDomElement display = doc.createElement("display_mode");
-            item.appendChild(display);
-            if(gla->getRenderMode3D() == POINTS3D) {
-                display.appendChild(doc.createTextNode(QString::number(POINTS3D)));
-            } else if(gla->getRenderMode3D() == WIREFRAME3D) {
-                display.appendChild(doc.createTextNode(QString::number(WIREFRAME3D)));
-            } else {
-                display.appendChild(doc.createTextNode(QString::number(SURFACE3D)));
-            }
+				QDomElement display = doc.createElement("display_mode");
+				item.appendChild(display);
+				if(gla->getRenderMode3D() == POINTS3D) {
+					display.appendChild(doc.createTextNode(QString::number(POINTS3D)));
+				} else if(gla->getRenderMode3D() == WIREFRAME3D) {
+					display.appendChild(doc.createTextNode(QString::number(WIREFRAME3D)));
+				} else {
+					display.appendChild(doc.createTextNode(QString::number(SURFACE3D)));
+				}
 
-            if(gla->getIsTextureOn()) {
-                QDomElement texture = doc.createElement("texture_on");
-                item.appendChild(texture);
-                texture.appendChild(doc.createTextNode(QString::number(TEXTURE_ON)));
-				qDebug() << "texture on";
-            } else if (!gla->getmRgbTextureFilename().isEmpty()){
-                QDomElement texture = doc.createElement("texture_on");
-                item.appendChild(texture);
-                texture.appendChild(doc.createTextNode(QString::number(TEXTURE_OFF)));
-				qDebug() << "texture off";
-            }
-            break;
-        }
+				if(gla->getIsTextureOn()) {
+					QDomElement texture = doc.createElement("texture_on");
+					item.appendChild(texture);
+					texture.appendChild(doc.createTextNode(QString::number(TEXTURE_ON)));
+					qDebug() << "texture on";
+				} else if (!gla->getmRgbTextureFilename().isEmpty()){
+					QDomElement texture = doc.createElement("texture_on");
+					item.appendChild(texture);
+					texture.appendChild(doc.createTextNode(QString::number(TEXTURE_OFF)));
+					qDebug() << "texture off";
+				}
+				break;
+			}
 
-        case CTSTACK:
-        {
-            QDomElement brtns = doc.createElement("brightness");
-            item.appendChild(brtns);
-            brtns.appendChild(doc.createTextNode(QString::number(this->mLightControl->GetIntensityL1())));
+			case CTSTACK:
+			{
+				QDomElement brtns = doc.createElement("brightness");
+				item.appendChild(brtns);
+				brtns.appendChild(doc.createTextNode(QString::number(this->mLightControl->GetIntensityL1())));
 
-            QDomElement ctrst = doc.createElement("contrast");
-            item.appendChild(ctrst);
-            ctrst.appendChild(doc.createTextNode(QString::number(this->mLightControl->GetIntensityL2())));
+				QDomElement ctrst = doc.createElement("contrast");
+				item.appendChild(ctrst);
+				ctrst.appendChild(doc.createTextNode(QString::number(this->mLightControl->GetIntensityL2())));
 
-            QDomElement interp = doc.createElement("interpolation_on");
-            item.appendChild(interp);
-            if (gla->getIsInterpolationOn()) {
-                interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_ON)));
-            } else {
-                interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_OFF)));
-            }
+				QDomElement interp = doc.createElement("interpolation_on");
+				item.appendChild(interp);
+				if (gla->getIsInterpolationOn()) {
+					interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_ON)));
+				} else {
+					interp.appendChild(doc.createTextNode(QString::number(INTERPOLATION_OFF)));
+				}
 
-            QDomElement slice = doc.createElement("current_slice");
-            item.appendChild(slice);
-            slice.appendChild(doc.createTextNode(QString::number(this->mCtControl->GetSliceCurrent())));
+				QDomElement slice = doc.createElement("current_slice");
+				item.appendChild(slice);
+				slice.appendChild(doc.createTextNode(QString::number(this->mCtControl->GetSliceCurrent())));
 
-            QDomElement ort = doc.createElement("current_orientation");
-            item.appendChild(ort);
-            ort.appendChild(doc.createTextNode(QString::number(this->mCtControl->GetOrientationCurrent())));
-            break;
-        }
+				QDomElement ort = doc.createElement("current_orientation");
+				item.appendChild(ort);
+				ort.appendChild(doc.createTextNode(QString::number(this->mCtControl->GetOrientationCurrent())));
+				break;
+			}
 
-        case CTVOLUME:
-        {
-            vtkSmartPointer<vtkAssembly> assembly = this->mLightControl->GetAssembly();
-            double orientation[3];
-            assembly->GetOrientation(orientation);
+			case CTVOLUME:
+			{/*
+				vtkSmartPointer<vtkAssembly> assembly = this->mLightControl->GetAssembly();
+				double orientation[3];
+				assembly->GetOrientation(orientation);
 
-            QDomElement ort = doc.createElement("light_vector");
-            item.appendChild(ort);
-            QDomElement ort_x = doc.createElement("x");
-            QDomElement ort_y = doc.createElement("y");
-            QDomElement ort_z = doc.createElement("z");
-            ort.appendChild(ort_x);
-            ort.appendChild(ort_y);
-            ort.appendChild(ort_z);
-            ort_x.appendChild(doc.createTextNode(QString::number(orientation[0])));
-            ort_y.appendChild(doc.createTextNode(QString::number(orientation[1])));
-            ort_z.appendChild(doc.createTextNode(QString::number(orientation[2])));
+				QDomElement ort = doc.createElement("light_vector");
+				item.appendChild(ort);
+				QDomElement ort_x = doc.createElement("x");
+				QDomElement ort_y = doc.createElement("y");
+				QDomElement ort_z = doc.createElement("z");
+				ort.appendChild(ort_x);
+				ort.appendChild(ort_y);
+				ort.appendChild(ort_z);
+				ort_x.appendChild(doc.createTextNode(QString::number(orientation[0])));
+				ort_y.appendChild(doc.createTextNode(QString::number(orientation[1])));
+				ort_z.appendChild(doc.createTextNode(QString::number(orientation[2])));
 
-            QDomElement mode = doc.createElement("render_mode");
-            item.appendChild(mode);
-            mode.appendChild(doc.createTextNode(QString::number(gla->getVolumeRenderMode())));
+				QDomElement mode = doc.createElement("render_mode");
+				item.appendChild(mode);
+				mode.appendChild(doc.createTextNode(QString::number(gla->getVolumeRenderMode())));
 
-            QDomElement blend = doc.createElement("blend_type");
-            item.appendChild(blend);
-            blend.appendChild(doc.createTextNode(QString::number(gla->getBlendType())));
+				QDomElement blend = doc.createElement("blend_type");
+				item.appendChild(blend);
+				blend.appendChild(doc.createTextNode(QString::number(gla->getBlendType())));
 
-            QDomElement resolution = doc.createElement("resolution");
-            item.appendChild(resolution);
-            resolution.appendChild(doc.createTextNode(QString::number(gla->getReductionFactor())));
-            break;
-        }
+				QDomElement resolution = doc.createElement("resolution");
+				item.appendChild(resolution);
+				resolution.appendChild(doc.createTextNode(QString::number(gla->getReductionFactor())));*/
+				break;
+			}
 
-        case RTI2D:
-        {
-            break;
-        }
+			case RTI2D:
+			{
+				break;
+			}
 
-        default:
-            break;
-        }
+			default:
+				break;
+			}
 
         root.appendChild(item);
     }
-
+	if (isCTModeSwitched)
+		mCtControl->setVTvolumeGPU();
     info = doc.createElement("info");
     info.setAttribute("date", QDateTime::currentDateTimeUtc().toString());
     root.appendChild(info);
@@ -878,74 +888,78 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 	QList<QDomElement> eltList;
 	QList<QMdiSubWindow*> windowList;
 
-	for(int i = 0; i < items.length(); i++) {
-	QDomElement elt = items.at(i).toElement();
-	QString fn = elt.attribute("filename");
-	QFileInfo file(fn);
-	if (import)	// if import the object absolute path is xml path + relative path
+	for(int i = 0; i < items.length(); i++) 
 	{
-		QString absolutePath = fileName;
-		absolutePath.truncate(absolutePath.lastIndexOf(QDir::separator()));
-		fn = absolutePath.append(QDir::separator() + fn);
-		fn = QDir::toNativeSeparators(fn);
-	}
-	else
-	{
-		fn = QDir::toNativeSeparators(file.absoluteFilePath());
-	}
-	QStringList nameElement = fn.split(QDir::separator());
-	QString fileNameElement = nameElement[nameElement.size() - 1];
-	// if the object name is in the filter list, this object should not be imported
-	// when readXML is called by "open" functions, filterList will be empty to let all pass 
-	if (filterList.indexOf(fileNameElement) != -1)
-		continue;
-	QDomNodeList che = elt.elementsByTagName("cultural_heritage_entity");
-	QString chePath = che.at(0).toElement().elementsByTagName("cultural_heritage_entity_path").at(0).toElement().text();
-	QString cheObject = che.at(0).toElement().elementsByTagName("cultural_heritage_entity_object").at(0).toElement().text();
-	QStringList cheNameElements = chePath.split(QDir::separator());
-	QString cheName = cheNameElements[cheNameElements.size() - 1];
-	QFileInfo finfo(fn);
-	QDomNodeList ftlist = elt.elementsByTagName("filetype");
-	filetype = ftlist.at(0).toElement().text().toInt();
-	OPENRESULT result;
-	if (fn != QString())
-	{
-		if(filetype == CTSTACK || filetype == CTVOLUME) 
+		QDomElement elt = items.at(i).toElement();
+		QString fn = elt.attribute("filename");
+		QFileInfo file(fn);
+		if (import)	// if import the object absolute path is xml path + relative path
 		{
-			result = openDICOM(fn, cheName, false, false, import);
-		} 
-		else 
-		{
-			result = openImages(fn, cheName, false, false, import);
+			QString absolutePath = fileName;
+			absolutePath.truncate(absolutePath.lastIndexOf(QDir::separator()));
+			fn = absolutePath.append(QDir::separator() + fn);
+			fn = QDir::toNativeSeparators(fn);
 		}
+		else
+		{
+			fn = QDir::toNativeSeparators(file.absoluteFilePath());
+		}
+		QStringList nameElement = fn.split(QDir::separator());
+		QString fileNameElement = nameElement[nameElement.size() - 1];
+		// if the object name is in the filter list, this object should not be imported
+		// when readXML is called by "open" functions, filterList will be empty to let all pass 
+		if (filterList.indexOf(fileNameElement) != -1)
+			continue;
+		QDomNodeList che = elt.elementsByTagName("cultural_heritage_entity");
+		QString chePath = che.at(0).toElement().elementsByTagName("cultural_heritage_entity_path").at(0).toElement().text();
+		QString cheObject = che.at(0).toElement().elementsByTagName("cultural_heritage_entity_object").at(0).toElement().text();
+		QStringList cheNameElements = chePath.split(QDir::separator());
+		QString cheName = cheNameElements[cheNameElements.size() - 1];
+		QFileInfo finfo(fn);
+		QDomNodeList ftlist = elt.elementsByTagName("filetype");
+		filetype = ftlist.at(0).toElement().text().toInt();
+		OPENRESULT result;
+		if (fn != QString())
+		{
+			if(filetype == CTSTACK) 
+			{
+				result = openDICOM(fn, cheName, false, false, import, "STACK");
+			}
+			else if (filetype == CTVOLUME)
+			{
+				result = openDICOM(fn, cheName, false, false, import, "VOLUME");
+			}
+			else 
+			{
+				result = openImages(fn, cheName, false, false, import);
+			}
+		}
+		if(result == FAILED) continue;
+
+		if(!che.isEmpty()) 
+		{
+			VTKA()->mCHE = chePath;
+			VTKA()->mCHEObject = cheObject;
+		}
+		objectList.push_back(qMakePair(fn, chePath));
+		objectType.push_back(filetype);
+		if(result == EXISTED) continue;	// when import, existed object will be updated
+
+		// DT: Assumes that windows are sorted from first created to last created (default behavior).
+		QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+		QMdiSubWindow* w = windows.at(windows.length()-1);
+
+		windowList.append(w);
+		eltList.append(elt);
 	}
-	if(result == FAILED) continue;
-
-	if(!che.isEmpty()) 
-	{
-		VTKA()->mCHE = chePath;
-		VTKA()->mCHEObject = cheObject;
-	}
-	objectList.push_back(qMakePair(fn, chePath));
-	objectType.push_back(filetype);
-	if(result == EXISTED) continue;	// when import, existed object will be updated
-
-	// DT: Assumes that windows are sorted from first created to last created (default behavior).
-	QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
-	QMdiSubWindow* w = windows.at(windows.length()-1);
-
-	windowList.append(w);
-	eltList.append(elt);
-	}
-
+	
 	mdiArea->tileSubWindows();
-
 	for(int i = 0; i < windowList.length(); i++) {
+
 	  QMdiSubWindow* w = windowList.at(i);
 	  QDomElement elt = eltList.at(i);
 	  QDomNodeList ftlist = elt.elementsByTagName("filetype");
 	  filetype = ftlist.at(0).toElement().text().toInt();
-
 	  if(!w) continue;
 
 	  mdiArea->setActiveSubWindow(w);
@@ -1104,7 +1118,6 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 				  gla->setInterpolateOn(false);
 			  }
 		  }
-
 		  list = elt.elementsByTagName("current_slice");
 		  if(!list.isEmpty()) {
 			  ctSlice = list.at(0).toElement().text().toInt();
@@ -1527,7 +1540,12 @@ void MainWindow::saveProjectAs()
 				if (!mvc->currentView()->isDICOM())
 					this->mInformation->init(mvc->currentView()->mProjectPath);
 				else
-					this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
+				{
+					if (mvc->currentView()->getCTVisualization() == STACK)
+						this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
+					else
+						this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath);
+				}
 			}
 			else if (!mvc->currentView()->mCHE.isEmpty() && !mvc->currentView()->mCHEObject.isEmpty())
 			{
@@ -1539,7 +1557,12 @@ void MainWindow::saveProjectAs()
 				if (!mvc->currentView()->isDICOM())
 					this->mInformation->init(mvc->currentView()->mProjectPath);
 				else
-					this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
+				{
+					if (mvc->currentView()->getCTVisualization() == STACK)
+						this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
+					else
+						this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath);
+				}
 			}
 			else if (mvc->currentView()->mCHEObject.isEmpty())
 			{
@@ -1552,7 +1575,12 @@ void MainWindow::saveProjectAs()
 				if (!mvc->currentView()->isDICOM())
 					this->mInformation->init(mvc->currentView()->mProjectPath);
 				else
-					this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
+				{
+					if (mvc->currentView()->getCTVisualization() == STACK)
+						this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
+					else
+						this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath);
+				}
 			}
 			else	// If the CHE infomation is lost
 			{
@@ -1615,8 +1643,10 @@ void MainWindow::importProject()
 				if (currentDir.cd(objectDir.dirName()))
 				{
 					cpDir(objectDir.absolutePath(), currentDir.absolutePath());
-					if (objectType[i] == CTSTACK ||  objectType[i] == CTVOLUME)
+					if (objectType[i] == CTSTACK)
 						this->mInformation->initCT2DRendering(currentDir.absolutePath());
+					else if (objectType[i] == CTVOLUME)
+						 this->mInformation->initCTVolumeRendering(currentDir.absolutePath());
 					else
 						this->mInformation->init(currentDir.absolutePath());
 					QString che;
@@ -1777,8 +1807,10 @@ void MainWindow::importCHE()
 						file->remove();
 					}
 				}
-				if (objectType[i] == CTSTACK || objectType[i] ==  CTVOLUME)
+				if (objectType[i] == CTSTACK)
 					this->mInformation->initCT2DRendering(currentDir.absolutePath());
+				else if (objectType[i] ==  CTVOLUME)
+					this->mInformation->initCTVolumeRendering(currentDir.absolutePath());
 				else
 					this->mInformation->init(currentDir.absolutePath());
 				QString che;
@@ -1979,7 +2011,7 @@ void MainWindow::createCTFolder(QString path)
 
 bool MainWindow::openProject(QString fileName)
 {
-  if (currentProjectFullName != NULL && !this->closeAll())
+  if (!this->closeAll() && currentProjectFullName != NULL)
 	  return false;
 
   if (fileName.isEmpty())
@@ -2033,10 +2065,8 @@ VtkWidget* MainWindow::newImage()
     VtkWidget *gla = new VtkWidget(mvcont);
     mvcont->addView(gla, Qt::Horizontal);// this fuction may destroy the renderer on mdiArea
     connect(mvcont,SIGNAL(updateMainWindowMenus()),this,SLOT(updateAllViews()));
-
     gla->mvc()->showMaximized(); // make the mdi window a full screen view
     updateAllViews();
-
     //if(!currentProjectName.isEmpty())
     //    isSaved = true;
 
@@ -2191,7 +2221,7 @@ void MainWindow::createNewVtkProject(const QString fullName, const QString name,
 
 
 //MK: DICOM input should be directory.
-OPENRESULT MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import)
+OPENRESULT MainWindow::openDICOM(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import, QString type)
 {
 	QString dirName;
 	if (fileNameStart.isEmpty())
@@ -2204,13 +2234,11 @@ OPENRESULT MainWindow::openDICOM(const QString& fileNameStart, const QString& CH
 	{
 		dirName = fileNameStart;
 	}
-
 	//  QTime allFileTime;
 	//  allFileTime.start();
 	if (!dirName.isEmpty())
 	{
 		QStringList nameElement = dirName.split(QDir::separator());
-		qDebug()<<"open CT dire name"<<dirName;
 		QString fileName = nameElement[nameElement.size() - 1];
 		QString currentWindowPath = currentProjectFullName;
 		currentWindowPath.append(QDir::separator() + fileName);
@@ -2233,8 +2261,18 @@ OPENRESULT MainWindow::openDICOM(const QString& fileNameStart, const QString& CH
 		}
 		// DT: create new VtkWidget
 		newImage();
+		if (type == QString("STACK"))
+		{
+			VTKA()->setCTVisualization(STACK);
+		}
+		else if (type == QString("VOLUME"))
+		{
+			VTKA()->setCTVisualization(VOLUMEGPU);
+			mCtControl->setVisualizationChanged(VOLUMEGPU);
+		}
 
 		qb->show();
+
 		QTime t;t.start();
 
 		dirName = QDir::toNativeSeparators(dirName);
@@ -2266,7 +2304,6 @@ OPENRESULT MainWindow::openDICOM(const QString& fileNameStart, const QString& CH
 		  updateAllViews();
 		  return FAILED;
 		}
-
 		QDir dir = fi.absoluteDir();
 		bool ok = dir.cdUp();
 		QDir currentFolder(currentProjectFullName);
@@ -2287,7 +2324,10 @@ OPENRESULT MainWindow::openDICOM(const QString& fileNameStart, const QString& CH
 		// if the object is imported from another project/CHE, note and navigation will be updated after the file is copied
 		if (!import)
 		{
-			this->mInformation->initCT2DRendering(VTKA()->mProjectPath);
+			if (VTKA()->getCTVisualization() == STACK)
+				this->mInformation->initCT2DRendering(VTKA()->mProjectPath);
+			else
+				this->mInformation->initCTVolumeRendering(VTKA()->mProjectPath);
 			mNavigation->addObject(currentWindowPath, CHEName);
 		}
 
@@ -2433,6 +2473,7 @@ OPENRESULT MainWindow::openImages(const QString& fileNameStart, const QString& C
 		newImage();
 		qDebug()<<fileName;
 		bool open = VTKA()->ReadData(fileName);
+		
 		if(open && saveRecent)
 		{
 			saveRecentFileList(fileName);
@@ -3271,7 +3312,12 @@ void MainWindow::saveCHEAs()
 			if (!mvc->currentView()->isDICOM())
 				this->mInformation->init(mvc->currentView()->mProjectPath);
 			else
-				this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
+			{
+				if (mvc->currentView()->getCTVisualization() == STACK)
+					this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
+				else
+					this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath);
+			}
 		}
 		setWindowTitle(appName()+appBits()+QString(" CHE ")+currentProjectName);
 		CHEInfoBasic* info = new CHEInfoBasic();

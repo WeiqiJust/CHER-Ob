@@ -337,11 +337,12 @@ public slots:
 	 * @param  createFolder   Whether to create a new folder for this CT data. If it is opened or imported, then new folder
 	 *                        should be created. If it is loaded, then not.
 	 * @param  import         Whether the CT is imported.
+	 * @param  type           Open DICOM as 2d stack ("STACK") or volume ("VOLUME").
 	 * @return The code of open result. SCCUEED means the CT is correctly opend. FAILED means it is not opened. EXISTED means
 	 *         the CT already exists and is opened.
 	 */
 	OPENRESULT openDICOM(const QString& fileNameStart = QString(), const QString& CHEName = QString(),
-	  bool saveRecent = true, bool createFolder = true, bool import = false);
+	  bool saveRecent = true, bool createFolder = true, bool import = false, QString type = QString());
 
 	/**
 	 * @brief  Update toolbars.

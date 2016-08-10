@@ -284,7 +284,7 @@ public slots:
   void openSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds);
   void openFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals);
  
-  void loadPointNoteMark(const int cellId, const ColorType color);
+  void loadPointNoteMark(const int cellId, const ColorType color, const double* position);
   void loadSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, const ColorType color);
   void loadFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const ColorType color);
 
