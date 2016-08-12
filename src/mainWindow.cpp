@@ -156,7 +156,6 @@ void MainWindow::updateAllViews()
 		  mInformation->reloadAnnotation();
 	  else
 	  {
-		  qDebug()<<"in clear annotation";
 		  mInformation->clearAnnotation();
 	  }
   }
@@ -2971,6 +2970,7 @@ void MainWindow::updateMenus()
 				measureDistanceAct->setEnabled(false);
 				removeDistanceAct->setEnabled(false);
 				viewToolBar->setEnabled(false);
+				frustumNote->setEnabled(false);
 				break;
 			case CTVOLUME:
 			//        qDebug() << "this is the ct volume mode";
@@ -2982,6 +2982,7 @@ void MainWindow::updateMenus()
 				annotationModeMenu->setEnabled(true);
 				toolsMenu->setEnabled(true);
 				viewToolBar->setEnabled(false);
+				frustumNote->setEnabled(false);
 
 				// DT: preventing crash when these buttons are clicked w/ no texture
 				if(tfn.isEmpty()) {

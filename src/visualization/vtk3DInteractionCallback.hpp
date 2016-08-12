@@ -1434,7 +1434,6 @@ public:
 					  mw()->mInformation->openSurfaceNote(mSelectedSurface[i].cellIds, mSelectedSurface[i].cornerPoints, true);
 					  return true;
 				  }
-
 			  }
 		  }
 	  }

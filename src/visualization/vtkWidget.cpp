@@ -509,6 +509,8 @@ void VtkWidget::annotate(bool status, NoteMode noteMode, bool visibilityOn)
 	}
 	mQVTKWidget->update();
     update();
+	if (mWidgetMode == CTSTACK) // In order to show notes correctly.
+		updateCurrentOrientation(mOrientationCurrent);
 }
 
 void VtkWidget::removePointNoteMark(const int cellId)
@@ -3300,10 +3302,18 @@ void VtkWidget::RenderingStack()
   case STACK:
     Rendering2D();
 	mw()->mInformation->draw2DNoteMark(mProjectPath);
+	if (getUserAnnotationOn())
+	{
+		annotate(true, mNoteMode, true);
+	}
     break;
   case VOLUMEGPU:
     RenderingVolume(mBlendType, mReductionFactor, mVolumeRenderMode);
 	mw()->mInformation->draw3DNoteMark(mProjectPath);
+	if (getUserAnnotationOn())
+	{
+		annotate(true, mNoteMode, true);
+	}
     break;
   }
 }

@@ -213,11 +213,11 @@ public:
 		  initNote();
 		  if (visibilityOn)
 		  {
-			  for (int i = 0; i <  mSelectedPoint.size(); i++)
+			  for (int i = 0; i < mSelectedPoint.size(); i++)
 			  {
 				 mSelectedPoint[i].second->VisibilityOn();
 			  }
-			  for (int i = 0; i <  mSelectedSurface.size(); i++)
+			  for (int i = 0; i < mSelectedSurface.size(); i++)
 			  {
 				 mSelectedSurface[i].second->VisibilityOn();
 			  }
@@ -265,7 +265,7 @@ public:
 	  }
 	  else
 	  {
-		  vtkSmartPointer<myVTKInteractorStyle> style =  vtkSmartPointer<myVTKInteractorStyle>::New();
+		  vtkSmartPointer<myVTKInteractorStyle> style = vtkSmartPointer<myVTKInteractorStyle>::New();
 		  interactor->SetInteractorStyle(style);
 		  style->SetCurrentRenderer(renderer);
 	  }

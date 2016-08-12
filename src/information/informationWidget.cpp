@@ -1042,7 +1042,7 @@ void Information::openNoteFromNavigation(QTreeWidgetItem* item)
 	if (type != QString("Annotation"))
 		number = file.split("_")[1].toInt();
 	QStringList options;
-	options << "Annotation" << "PointNote" << "SurfaceNote" << "FrustumNote";
+	options << "Annotation" << "PointNote" << "SurfaceNote" << "FrustumNote" << "PointNote2D" << "SurfaceNote2D";
 	QTabWidget* rightTab = new QTabWidget();
 	QTabWidget* functionTab = new QTabWidget();
 
@@ -1064,17 +1064,6 @@ void Information::openNoteFromNavigation(QTreeWidgetItem* item)
 					emit updateMenu();
 					mPointNotes[path][number-1]->hideNote();
 					mPointNotes[path][number-1]->showNote();
-				}
-			}
-			else if (mPointNotes2D[path].size() >= number)
-			{
-				if (!mPointNotes2D[path][number-1]->checkRemoved())
-				{
-					if (mw()->VTKA())
-						mw()->VTKA()->annotate(true);
-					emit updateMenu();
-					mPointNotes2D[path][number-1]->hideNote();
-					mPointNotes2D[path][number-1]->showNote();
 				}
 			}
 			else
@@ -1120,6 +1109,40 @@ void Information::openNoteFromNavigation(QTreeWidgetItem* item)
 					emit updateMenu();
 					mFrustumNotes[path][number-1]->hideNote();
 					mFrustumNotes[path][number-1]->showNote();
+				}
+			}
+			else
+			{
+				qDebug()<<"Incorrect Notes!";
+			}
+			break;
+		case 4:
+			if (mPointNotes2D[path].size() >= number)
+			{
+				if (!mPointNotes2D[path][number-1]->checkRemoved())
+				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
+					mPointNotes2D[path][number-1]->hideNote();
+					mPointNotes2D[path][number-1]->showNote();
+				}
+			}
+			else
+			{
+				qDebug()<<"Incorrect Notes!";
+			}
+			break;
+		case 5:
+			if (mSurfaceNotes2D[path].size() >= number)
+			{
+				if (!mSurfaceNotes2D[path][number-1]->checkRemoved())
+				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
+					mSurfaceNotes2D[path][number-1]->hideNote();
+					mSurfaceNotes2D[path][number-1]->showNote();
 				}
 			}
 			else
@@ -1290,7 +1313,7 @@ void Information::undoRemoveNote(QTreeWidgetItem* item)
 					mPointNotes[path][number-1]->setRemoved(false);
 					mPointNotes[path][number-1]->setSaved(false);  // To process save() correctly;
 					mPointNotes[path][number-1]->save();
-					if (mw()->VTKA(projectPath))
+					if (mw()->VTKA(projectPath) && mw()->VTKA(projectPath)->getWidgetMode() != CTSTACK) // 2D CTSACK cannot display 3D notes
 						mw()->VTKA(projectPath)->loadPointNoteMark(mPointNotes[path][number-1]->getCellId(),
 							mPointNotes[path][number-1]->getColorType(), mPointNotes[path][number-1]->getPosition());
 					if (mw()->VTKA())
@@ -1311,7 +1334,7 @@ void Information::undoRemoveNote(QTreeWidgetItem* item)
 					mSurfaceNotes[path][number-1]->setRemoved(false);
 					mSurfaceNotes[path][number-1]->setSaved(false);  // To process save() correctly;
 					mSurfaceNotes[path][number-1]->save();
-					if (mw()->VTKA(projectPath))
+					if (mw()->VTKA(projectPath) && mw()->VTKA(projectPath)->getWidgetMode() != CTSTACK) // 2D CTSACK cannot display 3D notes
 						mw()->VTKA(projectPath)->loadSurfaceNoteMark(mSurfaceNotes[path][number-1]->getCellIds(),
 							mSurfaceNotes[path][number-1]->getCornerPoints(), mSurfaceNotes[path][number-1]->getColorType());
 					if (mw()->VTKA())
@@ -1332,7 +1355,7 @@ void Information::undoRemoveNote(QTreeWidgetItem* item)
 					mFrustumNotes[path][number-1]->setRemoved(false);
 					mFrustumNotes[path][number-1]->setSaved(false);  // To process save() correctly;
 					mFrustumNotes[path][number-1]->save();
-					if (mw()->VTKA(projectPath))
+					if (mw()->VTKA(projectPath) && mw()->VTKA(projectPath)->getWidgetMode() != CTSTACK) // 2D CTSACK cannot display 3D notes
 						mw()->VTKA(projectPath)->loadFrustumNoteMark(mFrustumNotes[path][number-1]->getPoints(),
 							mFrustumNotes[path][number-1]->getNormals(), mFrustumNotes[path][number-1]->getColorType());
 					if (mw()->VTKA())
@@ -1353,7 +1376,7 @@ void Information::undoRemoveNote(QTreeWidgetItem* item)
 					mPointNotes2D[path][number-1]->setRemoved(false);
 					mPointNotes2D[path][number-1]->setSaved(false);  // To process save() correctly;
 					mPointNotes2D[path][number-1]->save();
-					if (mw()->VTKA(projectPath))
+					if (mw()->VTKA(projectPath) && mw()->VTKA(projectPath)->getWidgetMode() != CTVOLUME) // 3D CTVOLUME cannot display 2D notes
 						mw()->VTKA(projectPath)->loadPointNote2DMark(mPointNotes2D[path][number-1]->getPoint(),
 							mPointNotes2D[path][number-1]->getColorType());
 					if (mw()->VTKA())
@@ -1374,7 +1397,7 @@ void Information::undoRemoveNote(QTreeWidgetItem* item)
 					mSurfaceNotes2D[path][number-1]->setRemoved(false);
 					mSurfaceNotes2D[path][number-1]->setSaved(false);  // To process save() correctly;
 					mSurfaceNotes2D[path][number-1]->save();
-					if (mw()->VTKA(projectPath))
+					if (mw()->VTKA(projectPath) && mw()->VTKA(projectPath)->getWidgetMode() != CTVOLUME) // 3D CTVOLUME cannot display 2D notes
 						mw()->VTKA(projectPath)->loadSurfaceNote2DMark(mSurfaceNotes2D[path][number-1]->getPoint(),
 							mSurfaceNotes2D[path][number-1]->getColorType());
 					if (mw()->VTKA())
@@ -1468,7 +1491,9 @@ void Information::removeAllNotes()
 	hasNotesRemoved[notePath] = true;
 	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
 	{
-		mw()->VTKA()->removePointNoteMark(mPointNotes[notePath][i]->getCellId());
+		// If current widget mode is in CTSTACK, no point note mark are drawn.
+		if (mw()->VTKA()->getWidgetMode() != CTSTACK)
+			mw()->VTKA()->removePointNoteMark(mPointNotes[notePath][i]->getCellId());
 		mPointNotes[notePath][i]->removePointNote();
 		mPointNotes[notePath][i]->setRemoved(true);
 		emit removeNavigationItem(notePath, POINTNOTE, i, NOTE3D);
@@ -1476,8 +1501,10 @@ void Information::removeAllNotes()
 	//mPointNotes.remove(notePath);
 	for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
 	{
-		mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds(),
-			mSurfaceNotes[notePath][i]->getCornerPoints(), mSurfaceNotes[notePath][i]->checkCTVolume());
+		// If current widget mode is in CTSTACK, no surface note mark are drawn.
+		if (mw()->VTKA()->getWidgetMode() != CTSTACK)
+			mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds(),
+				mSurfaceNotes[notePath][i]->getCornerPoints(), mSurfaceNotes[notePath][i]->checkCTVolume());
 		mSurfaceNotes[notePath][i]->removeSurfaceNote();
 		mSurfaceNotes[notePath][i]->setRemoved(true);
 		emit removeNavigationItem(notePath, SURFACENOTE, i, NOTE3D);
@@ -1485,7 +1512,9 @@ void Information::removeAllNotes()
 	//mSurfaceNotes.remove(notePath);
 	for (int i = 0; i < mFrustumNotes[notePath].size(); ++i) 
 	{
-		mw()->VTKA()->removeFrustumNoteMark(mFrustumNotes[notePath][i]->getPoints(), mFrustumNotes[notePath][i]->getNormals());
+		// If current widget mode is in CTSTACK, no frustm note mark are drawn. Frustum note should be deleted and it should not run into here.
+		if (mw()->VTKA()->getWidgetMode() != CTSTACK)
+			mw()->VTKA()->removeFrustumNoteMark(mFrustumNotes[notePath][i]->getPoints(), mFrustumNotes[notePath][i]->getNormals());
 		mFrustumNotes[notePath][i]->removeFrustumNote();
 		mFrustumNotes[notePath][i]->setRemoved(true);
 		emit removeNavigationItem(notePath, FRUSTUMNOTE, i, NOTE3D);
@@ -1493,7 +1522,9 @@ void Information::removeAllNotes()
 	//mFrustumNotes.remove(notePath);
 	for (int i = 0; i < mPointNotes2D[notePath].size(); ++i) 
 	{
-		mw()->VTKA()->removePointNote2DMark(mPointNotes2D[notePath][i]->getPoint());
+		// If current widget mode is in CTVOLUME, no point 2D note mark are drawn.
+		if (mw()->VTKA()->getWidgetMode() != CTVOLUME)
+			mw()->VTKA()->removePointNote2DMark(mPointNotes2D[notePath][i]->getPoint());
 		mPointNotes2D[notePath][i]->removePointNote2D();
 		mPointNotes2D[notePath][i]->setRemoved(true);
 		emit removeNavigationItem(notePath, POINTNOTE, i, NOTE2D);
@@ -1501,7 +1532,9 @@ void Information::removeAllNotes()
 	//mPointNotes2D.remove(notePath);
 	for (int i = 0; i < mSurfaceNotes2D[notePath].size(); ++i) 
 	{
-		mw()->VTKA()->removeSurfaceNote2DMark(mSurfaceNotes2D[notePath][i]->getPoint());
+		// If current widget mode is in CTVOLUME, no surface 2D note mark are drawn.
+		if (mw()->VTKA()->getWidgetMode() != CTVOLUME)
+			mw()->VTKA()->removeSurfaceNote2DMark(mSurfaceNotes2D[notePath][i]->getPoint());
 		mSurfaceNotes2D[notePath][i]->removeSurfaceNote2D();
 		mSurfaceNotes2D[notePath][i]->setRemoved(true);
 		emit removeNavigationItem(notePath, SURFACENOTE, i, NOTE2D);
@@ -1517,7 +1550,9 @@ void Information::removeAllNotes(QString path)
 	hasNotesRemoved[removePath] = true;
 	for (int i = 0; i < mPointNotes[removePath].size(); ++i) 
 	{
-		mw()->VTKA()->removePointNoteMark(mPointNotes[removePath][i]->getCellId());
+		// If current widget mode is in CTSTACK, no point note mark are drawn.
+		if (mw()->VTKA()->getWidgetMode() != CTSTACK)
+			mw()->VTKA()->removePointNoteMark(mPointNotes[removePath][i]->getCellId());
 		mPointNotes[removePath][i]->removePointNote();
 		mPointNotes[removePath][i]->setRemoved(true);
 		emit removeNavigationItem(removePath, POINTNOTE, i, NOTE3D);
@@ -1525,8 +1560,10 @@ void Information::removeAllNotes(QString path)
 	//mPointNotes.remove(removePath);
 	for (int i = 0; i < mSurfaceNotes[removePath].size(); ++i) 
 	{
-		mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[removePath][i]->getCellIds(),
-			mSurfaceNotes[removePath][i]->getCornerPoints(), mSurfaceNotes[removePath][i]->checkCTVolume());
+		// If current widget mode is in CTSTACK, no surface note mark are drawn.
+		if (mw()->VTKA()->getWidgetMode() != CTSTACK)
+			mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[removePath][i]->getCellIds(),
+				mSurfaceNotes[removePath][i]->getCornerPoints(), mSurfaceNotes[removePath][i]->checkCTVolume());
 		mSurfaceNotes[removePath][i]->removeSurfaceNote();
 		mSurfaceNotes[removePath][i]->setRemoved(true);
 		emit removeNavigationItem(removePath, SURFACENOTE, i, NOTE3D);
@@ -1534,7 +1571,9 @@ void Information::removeAllNotes(QString path)
 	//mSurfaceNotes.remove(removePath);
 	for (int i = 0; i < mFrustumNotes[removePath].size(); ++i) 
 	{
-		mw()->VTKA()->removeFrustumNoteMark(mFrustumNotes[removePath][i]->getPoints(), mFrustumNotes[removePath][i]->getNormals());
+		// If current widget mode is in CTSTACK, no frustm note mark are drawn. Frustum note should be deleted and it should not run into here.
+		if (mw()->VTKA()->getWidgetMode() != CTSTACK)
+			mw()->VTKA()->removeFrustumNoteMark(mFrustumNotes[removePath][i]->getPoints(), mFrustumNotes[removePath][i]->getNormals());
 		mFrustumNotes[removePath][i]->removeFrustumNote();
 		mFrustumNotes[removePath][i]->setRemoved(true);
 		emit removeNavigationItem(removePath, FRUSTUMNOTE, i, NOTE3D);
@@ -1542,7 +1581,9 @@ void Information::removeAllNotes(QString path)
 	//mFrustumNotes.remove(removePath);
 	for (int i = 0; i < mPointNotes2D[removePath].size(); ++i) 
 	{
-		mw()->VTKA()->removePointNote2DMark(mPointNotes2D[removePath][i]->getPoint());
+		// If current widget mode is in CTVOLUME, no point 2D note mark are drawn.
+		if (mw()->VTKA()->getWidgetMode() != CTVOLUME)
+			mw()->VTKA()->removePointNote2DMark(mPointNotes2D[removePath][i]->getPoint());
 		mPointNotes2D[removePath][i]->removePointNote2D();
 		mPointNotes2D[removePath][i]->setRemoved(true);
 		emit removeNavigationItem(removePath, POINTNOTE, i, NOTE2D);
@@ -1550,7 +1591,9 @@ void Information::removeAllNotes(QString path)
 	//mPointNotes2D.remove(removePath);
 	for (int i = 0; i < mSurfaceNotes2D[removePath].size(); ++i) 
 	{
-		mw()->VTKA()->removeSurfaceNote2DMark(mSurfaceNotes2D[removePath][i]->getPoint());
+		// If current widget mode is in CTVOLUME, no surface 2D note mark are drawn.
+		if (mw()->VTKA()->getWidgetMode() != CTVOLUME)
+			mw()->VTKA()->removeSurfaceNote2DMark(mSurfaceNotes2D[removePath][i]->getPoint());
 		mSurfaceNotes2D[removePath][i]->removeSurfaceNote2D();
 		mSurfaceNotes2D[removePath][i]->setRemoved(true);
 		emit removeNavigationItem(removePath, SURFACENOTE, i, NOTE2D);
@@ -1565,7 +1608,9 @@ void Information::removeUnSavedNotes()
 	{
 		if (!mPointNotes[notePath][i]->checkSaved())
 		{
-			mw()->VTKA()->removePointNoteMark(mPointNotes[notePath][i]->getCellId());
+			// If current widget mode is in CTSTACK, no point note mark are drawn.
+			if (mw()->VTKA()->getWidgetMode() != CTSTACK)
+				mw()->VTKA()->removePointNoteMark(mPointNotes[notePath][i]->getCellId());
 			mPointNotes[notePath][i]->removePointNote();
 			mPointNotes[notePath][i]->setRemoved(true);
 			emit removeNavigationItem(notePath, POINTNOTE, i, NOTE3D);
@@ -1576,8 +1621,10 @@ void Information::removeUnSavedNotes()
 	{
 		if (!mSurfaceNotes[notePath][i]->checkSaved())
 		{
-			mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds(),
-				mSurfaceNotes[notePath][i]->getCornerPoints(), mSurfaceNotes[notePath][i]->checkCTVolume());
+			// If current widget mode is in CTSTACK, no surface note mark are drawn.
+			if (mw()->VTKA()->getWidgetMode() != CTSTACK)
+				mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds(),
+					mSurfaceNotes[notePath][i]->getCornerPoints(), mSurfaceNotes[notePath][i]->checkCTVolume());
 			mSurfaceNotes[notePath][i]->removeSurfaceNote();
 			mSurfaceNotes[notePath][i]->setRemoved(true);
 			emit removeNavigationItem(notePath, SURFACENOTE, i, NOTE3D);
@@ -1588,7 +1635,9 @@ void Information::removeUnSavedNotes()
 	{
 		if (!mFrustumNotes[notePath][i]->checkSaved())
 		{
-			mw()->VTKA()->removeFrustumNoteMark(mFrustumNotes[notePath][i]->getPoints(), mFrustumNotes[notePath][i]->getNormals());
+			// If current widget mode is in CTSTACK, no frustm note mark are drawn. Frustum note should be deleted and it should not run into here.
+			if (mw()->VTKA()->getWidgetMode() != CTSTACK)
+				mw()->VTKA()->removeFrustumNoteMark(mFrustumNotes[notePath][i]->getPoints(), mFrustumNotes[notePath][i]->getNormals());
 			mFrustumNotes[notePath][i]->removeFrustumNote();
 			mFrustumNotes[notePath][i]->setRemoved(true);
 			emit removeNavigationItem(notePath, FRUSTUMNOTE, i, NOTE3D);
@@ -1599,7 +1648,9 @@ void Information::removeUnSavedNotes()
 	{
 		if (!mPointNotes2D[notePath][i]->checkSaved())
 		{
-			mw()->VTKA()->removePointNote2DMark(mPointNotes2D[notePath][i]->getPoint());
+			// If current widget mode is in CTVOLUME, no point 2D note mark are drawn.
+			if (mw()->VTKA()->getWidgetMode() != CTVOLUME)
+				mw()->VTKA()->removePointNote2DMark(mPointNotes2D[notePath][i]->getPoint());
 			mPointNotes2D[notePath][i]->removePointNote2D();
 			mPointNotes2D[notePath][i]->setRemoved(true);
 			emit removeNavigationItem(notePath, POINTNOTE, i, NOTE2D);
@@ -1610,7 +1661,9 @@ void Information::removeUnSavedNotes()
 	{
 		if (!mSurfaceNotes2D[notePath][i]->checkSaved())
 		{
-			mw()->VTKA()->removeSurfaceNote2DMark(mSurfaceNotes2D[notePath][i]->getPoint());
+			// If current widget mode is in CTVOLUME, no surface 2D note mark are drawn.
+			if (mw()->VTKA()->getWidgetMode() != CTVOLUME)
+				mw()->VTKA()->removeSurfaceNote2DMark(mSurfaceNotes2D[notePath][i]->getPoint());
 			mSurfaceNotes2D[notePath][i]->removeSurfaceNote2D();
 			mSurfaceNotes2D[notePath][i]->setRemoved(true);
 			emit removeNavigationItem(notePath, SURFACENOTE, i, NOTE2D);
