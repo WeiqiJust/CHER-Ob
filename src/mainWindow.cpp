@@ -407,6 +407,7 @@ bool MainWindow::closeProject()
     }
 
     isSaved = true;
+
     currentProjectName = QString();
     currentProjectSave = QString();
 	currentProjectFullName = QString();
@@ -526,7 +527,8 @@ void MainWindow::updateXML()
 		file = projectDir.relativeFilePath(file);
         item.setAttribute("filename", file);
 
-		//If current object is CT and in volume rendering mode, switch to Stack mode to save.
+		//If current object is CT and in volume rendering mode, switch to Stack mode to save,
+		//in order to avoid light control conflicts with other object when loaded.
 		if (gla->getWidgetMode() == CTVOLUME)
 		{
 			mCtControl->setCTStackView();

@@ -118,6 +118,13 @@ struct PointMark
 	vtkSmartPointer<vtkActor> actor;
 };
 
+struct SurfaceMark
+{
+	vtkSmartPointer<vtkSelectionNode> cellIds;
+	std::vector<double*> cornerPoints;
+	vtkSmartPointer<vtkActor> actor;
+};
+
 // for 3D interaction callback.
 class vtk3DInteractionCallback : public vtkCommand
 {
@@ -477,7 +484,7 @@ public:
 			 }
 			 for (int i = 0; i < mSelectedSurface.size(); i++)
 			 {
-				 mSelectedSurface[i].second->VisibilityOn();
+				 mSelectedSurface[i].actor->VisibilityOn();
 			 }
 		 }
          mSelectedActor2->VisibilityOn();
@@ -500,7 +507,7 @@ public:
 		  }
 		  for (int i = 0; i < mSelectedSurface.size(); i++)
 		 {
-			 mSelectedSurface[i].second->VisibilityOff();
+			 mSelectedSurface[i].actor->VisibilityOff();
 		 }
 	  }
   }
@@ -1168,20 +1175,51 @@ public:
 	  }
   }
   
-  void displaySurfaceNote(vtkSmartPointer<vtkDataSetMapper> mapper, vtkSmartPointer<vtkSelectionNode> points)
+  void displaySurfaceNote(vtkSmartPointer<vtkDataSetMapper> mapper, vtkSmartPointer<vtkSelectionNode> points, QVector<double*> conrnerPoints)
   {
-	  vtkSmartPointer<vtkSelectionNode> selectedNodes = vtkSmartPointer<vtkSelectionNode>::New();
-	  selectedNodes->DeepCopy(points);
-
-	  vtkSmartPointer<vtkExtractSelectedPolyDataIds> extr = vtkSmartPointer<vtkExtractSelectedPolyDataIds>::New();
-	  if (selectedNodes)
+	  if (!isCTVolume)
 	  {
-		  extr->SetInput(0, this->mPolyData);
-		  vtkSmartPointer<vtkSelection> selection = vtkSmartPointer<vtkSelection>::New();
-		  selection->AddNode(selectedNodes);
-		  extr->SetInput(1, selection);
-		  extr->Update();
-		  mapper->SetInput(extr->GetOutput());
+		  vtkSmartPointer<vtkSelectionNode> selectedNodes = vtkSmartPointer<vtkSelectionNode>::New();
+		  selectedNodes->DeepCopy(points);
+
+		  vtkSmartPointer<vtkExtractSelectedPolyDataIds> extr = vtkSmartPointer<vtkExtractSelectedPolyDataIds>::New();
+		  if (selectedNodes)
+		  {
+			  extr->SetInput(0, this->mPolyData);
+			  vtkSmartPointer<vtkSelection> selection = vtkSmartPointer<vtkSelection>::New();
+			  selection->AddNode(selectedNodes);
+			  extr->SetInput(1, selection);
+			  extr->Update();
+			  mapper->SetInput(extr->GetOutput());
+		  }
+	  }
+	  else
+	  {
+		  vtkSmartPointer<vtkPoints> corners = vtkSmartPointer<vtkPoints>::New();
+
+		  corners->InsertNextPoint(conrnerPoints[0]);
+		  corners->InsertNextPoint(conrnerPoints[1]);
+		  corners->InsertNextPoint(conrnerPoints[2]);
+		  corners->InsertNextPoint(conrnerPoints[3]);
+
+		  vtkSmartPointer<vtkPolyLine> polyLine = vtkSmartPointer<vtkPolyLine>::New();
+		  polyLine->GetPointIds()->SetNumberOfIds(8);
+		  polyLine->GetPointIds()->SetId(0,0);
+		  polyLine->GetPointIds()->SetId(1,1);
+		  polyLine->GetPointIds()->SetId(2,1);
+		  polyLine->GetPointIds()->SetId(3,2);
+		  polyLine->GetPointIds()->SetId(4,2);
+		  polyLine->GetPointIds()->SetId(5,3);
+		  polyLine->GetPointIds()->SetId(6,3);
+		  polyLine->GetPointIds()->SetId(7,0);
+
+		  vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
+		  cells->InsertNextCell(polyLine);
+
+		  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+		  polyData->SetPoints(corners);
+		  polyData->SetLines(cells);
+		  mapper->SetInput(polyData);
 	  }
   }
 
@@ -1252,8 +1290,8 @@ public:
 		  //turnoffHighlight();
 	  }
 	  mSurfaceNoteHighlight = id;
-	  mSelectedSurface[mSurfaceNoteHighlight].second->GetProperty()->GetColor(color);
-	  mSelectedSurface[mSurfaceNoteHighlight].second->GetProperty()->SetColor(1-color[0], 1-color[1], 1-color[2]);
+	  mSelectedSurface[mSurfaceNoteHighlight].actor->GetProperty()->GetColor(color);
+	  mSelectedSurface[mSurfaceNoteHighlight].actor->GetProperty()->SetColor(1-color[0], 1-color[1], 1-color[2]);
   }
 
   void highlightFrustumNote(int id)
@@ -1279,8 +1317,8 @@ public:
 	   }
 	   if (mSurfaceNoteHighlight != -1 && mSurfaceNoteHighlight < mSelectedSurface.size()) 
 	   {
-		   mSelectedSurface[mSurfaceNoteHighlight].second->GetProperty()->GetColor(color);		 
-		   mSelectedSurface[mSurfaceNoteHighlight].second->GetProperty()->SetColor(1-color[0], 1-color[1], 1-color[2]);		  
+		   mSelectedSurface[mSurfaceNoteHighlight].actor->GetProperty()->GetColor(color);		 
+		   mSelectedSurface[mSurfaceNoteHighlight].actor->GetProperty()->SetColor(1-color[0], 1-color[1], 1-color[2]);		  
 		   mSurfaceNoteHighlight = -1;		  
 	   }
 	   if (mFrustumNoteHighlight != -1 && mFrustumNoteHighlight < mSelectedFrustum.size())
@@ -1348,14 +1386,55 @@ public:
 	  {
 		  for (int i = 0; i < mSelectedSurface.size(); i++)
 		  {
-			  if (!mSelectedSurface[i].second->GetVisibility())
+			  if (!mSelectedSurface[i].actor->GetVisibility())
 				  continue;
-			  if (mSelectedSurface[i].first->GetSelectionList()->LookupValue(picker->GetCellId()) != -1)
+			  if (!isCTVolume && mSelectedSurface[i].cellIds->GetSelectionList()->LookupValue(picker->GetCellId()) != -1)
 			  {
 				  //highlightSurfaceNote(i);
 				  //qDebug()<<"Selected surface "<<i<<endl;
-				  mw()->mInformation->openSurfaceNote(mSelectedSurface[i].first);
+				  mw()->mInformation->openSurfaceNote(mSelectedSurface[i].cellIds, mSelectedSurface[i].cornerPoints, false);
 				  return true;
+			  }
+			  else if (isCTVolume)
+			  {
+				  double* worldPosition = picker->GetPickPosition();
+				  vtkSmartPointer<vtkCamera> camera = renderer->GetActiveCamera();
+				  double* cameraPos = camera->GetPosition();
+
+				  double direction[3] = {worldPosition[0] - cameraPos[0], worldPosition[1] - cameraPos[1], worldPosition[2] - cameraPos[2]};
+
+				  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+				  for (int j = 0; j < 4; j++)
+				  {
+					  points->InsertNextPoint(mSelectedSurface[i].cornerPoints[j][0],
+						  mSelectedSurface[i].cornerPoints[j][1], mSelectedSurface[i].cornerPoints[j][2]);
+				  }
+ 
+				  // Create the polygon
+				  vtkSmartPointer<vtkPolygon> polygon = vtkSmartPointer<vtkPolygon>::New();
+				  polygon->GetPoints()->DeepCopy(points);
+				  polygon->GetPointIds()->SetNumberOfIds(4); // 4 corners of the square
+				  polygon->GetPointIds()->SetId(0, 0);
+				  polygon->GetPointIds()->SetId(1, 1);
+				  polygon->GetPointIds()->SetId(2, 2);
+				  polygon->GetPointIds()->SetId(3, 3);
+ 
+				  double end[3] = {cameraPos[0] + direction[0]*1000, cameraPos[1] + direction[1]*1000,
+					  cameraPos[2] + direction[2]*1000};
+				  double tolerance = 1;
+				  // Outputs
+				  double t; // Parametric coordinate of intersection (0 (corresponding to world) to 1 (corresponding to end))
+				  double x[3]; // The coordinate of the intersection
+				  double pcoords[3];
+				  int subId;
+ 
+				  vtkIdType iD = polygon->IntersectWithLine(cameraPos, end, tolerance, t, x, pcoords, subId);
+				  if (iD)
+				  {
+					  mw()->mInformation->openSurfaceNote(mSelectedSurface[i].cellIds, mSelectedSurface[i].cornerPoints, true);
+					  return true;
+				  }
+
 			  }
 		  }
 	  }
@@ -1421,7 +1500,7 @@ public:
 	  displayPointNote(mapper, cell, position);  
   }
 
-  void displayLoadSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, const ColorType color)
+  void displayLoadSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, const ColorType color)
   {
 	  vtkSmartPointer<vtkRenderer> renderer = this->GetInteractor()->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
 	  vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New();
@@ -1435,8 +1514,12 @@ public:
       renderer->AddActor(actor);
 	  vtkSmartPointer<vtkSelectionNode> newCellIds = vtkSmartPointer<vtkSelectionNode>::New();
 	  newCellIds->DeepCopy(cellIds);
-	  mSelectedSurface.push_back(std::make_pair(newCellIds, actor));
-	  displaySurfaceNote(mapper, newCellIds);
+	  SurfaceMark surfaceNote;
+	  surfaceNote.cellIds = newCellIds;
+	  surfaceNote.cornerPoints = points.toStdVector();
+	  surfaceNote.actor = actor;
+	  mSelectedSurface.push_back(surfaceNote);
+	  displaySurfaceNote(mapper, newCellIds, points);
 	  qDebug()<<"load Surface note" << mSelectedSurface.size();
   }
 
@@ -1552,7 +1635,42 @@ public:
 	  double y0 = renderer->GetPickY1();
 	  double x1 = renderer->GetPickX2();
 	  double y1 = renderer->GetPickY2();
+	  QVector<double*> points;
+
+	  vtkSmartPointer<vtkCellPicker> picker = vtkSmartPointer<vtkCellPicker>::New();
+      picker->SetTolerance(0.0005);
+      picker->Pick(x0, y0, 0, interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
+	  if (picker->GetCellId() == -1)
+		  return;
+	  double* worldPosition1 = picker->GetPickPosition();
+	  points.push_back(worldPosition1);
+
+	  vtkSmartPointer<vtkCellPicker> picker1 = vtkSmartPointer<vtkCellPicker>::New();
+      picker1->SetTolerance(0.0005);
+	  picker1->Pick(x0, y1, 0, interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
+	  if (picker1->GetCellId() == -1)
+		  return;
+	  double* worldPosition2 = picker1->GetPickPosition();
+	  points.push_back(worldPosition2);
+
+	  vtkSmartPointer<vtkCellPicker> picker2 = vtkSmartPointer<vtkCellPicker>::New();
+      picker2->SetTolerance(0.0005);
+	  picker2->Pick(x1, y1, 0, interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
+	  if (picker2->GetCellId() == -1)
+		  return;
+	  double* worldPosition3 = picker2->GetPickPosition();
+	  points.push_back(worldPosition3);
+
+	  vtkSmartPointer<vtkCellPicker> picker3 = vtkSmartPointer<vtkCellPicker>::New();
+      picker3->SetTolerance(0.0005);
+	  picker3->Pick(x1, y0, 0, interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
+	  if (picker3->GetCellId() == -1)
+		  return;
+	  double* worldPosition4 = picker3->GetPickPosition();
+	  points.push_back(worldPosition4);
+
 	  //qDebug()<<"selected points : "<< x0 <<" " <<y0<<" "<<x1 <<" " <<y1;
+	  
 	  sel->SetArea(static_cast<int>(x0),static_cast<int>(y0),static_cast<int>(x1), static_cast<int>(y1));
 	  vtkSmartPointer<vtkSelection> res;
 
@@ -1571,12 +1689,32 @@ public:
       actor->GetProperty()->SetLineWidth(5);
       actor->VisibilityOn();
       renderer->AddActor(actor);
-	  if (!res->GetNode(0))
+	  if (!res->GetNode(0) && !isCTVolume)
 		  return;
 
-	  mSelectedSurface.push_back(std::make_pair(res->GetNode(0), actor));
-      displaySurfaceNote(mapper, res->GetNode(0));
-	  mw()->mInformation->createSurfaceNote(res->GetNode(0), mColor);
+	  SurfaceMark surfaceNote;
+	  surfaceNote.cellIds = res->GetNode(0);
+	  // Deep copy four worldPoints since they will be disconstructed with picker
+	  double* conerPoint1 = new double[3];
+	  double* conerPoint2 = new double[3];
+	  double* conerPoint3 = new double[3];
+	  double* conerPoint4 = new double[3];
+	  for(int i = 0; i < 3; i++)
+	  {
+		 conerPoint1[i] = worldPosition1[i];
+		 conerPoint2[i] = worldPosition2[i];
+		 conerPoint3[i] = worldPosition3[i];
+		 conerPoint4[i] = worldPosition4[i];
+	  }
+	  surfaceNote.cornerPoints.push_back(conerPoint1);
+	  surfaceNote.cornerPoints.push_back(conerPoint2);
+	  surfaceNote.cornerPoints.push_back(conerPoint3);
+	  surfaceNote.cornerPoints.push_back(conerPoint4);
+
+	  surfaceNote.actor = actor;
+	  mSelectedSurface.push_back(surfaceNote);
+      displaySurfaceNote(mapper, res->GetNode(0), points);
+	  mw()->mInformation->createSurfaceNote(res->GetNode(0), points, mColor, isCTVolume);
   }
 
   void drawFrustumNote()
@@ -1617,30 +1755,57 @@ public:
 	  mFollower->VisibilityOff();
   }
 
-  void removeSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds)
+  void removeSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, std::vector<double*> cornerPoints, bool isCTVolume)
   {
-	  if (!cellIds->GetSelectionList())
-	  {
-		  qDebug() << "Cannot Remove Empty Surface Note!" << endl;
-		  return;
-	  }
 	  bool erase = false;
-	  for (int i = 0; i < mSelectedSurface.size(); i++)
+	  if (!isCTVolume)
 	  {
-		  if (cellIds->GetSelectionList()->GetSize() != mSelectedSurface[i].first->GetSelectionList()->GetSize())
-			  continue;
-		  bool elementExist = true;
-		  for (int j = 0; j < mSelectedSurface[i].first->GetSelectionList()->GetSize(); j++)
+		  if (!cellIds->GetSelectionList())
 		  {
-			  if (cellIds->GetSelectionList()->LookupValue(mSelectedSurface[i].first->GetSelectionList()->GetVariantValue(j)) == -1)
+			  qDebug() << "Cannot Remove Empty Surface Note!" << endl;
+			  return;
+		  }
+		  
+		  for (int i = 0; i < mSelectedSurface.size(); i++)
+		  {
+			  if (cellIds->GetSelectionList()->GetSize() != mSelectedSurface[i].cellIds->GetSelectionList()->GetSize())
+				  continue;
+			  bool elementExist = true;
+			  for (int j = 0; j < mSelectedSurface[i].cellIds->GetSelectionList()->GetSize(); j++)
 			  {
-				  elementExist = false;
+				  if (cellIds->GetSelectionList()->LookupValue(mSelectedSurface[i].cellIds->GetSelectionList()->GetVariantValue(j)) == -1)
+				  {
+					  elementExist = false;
+					  break;
+				  }
+			  }
+			  if (elementExist)
+			  {
+				  mSelectedSurface[i].actor->VisibilityOff();
+				  mSelectedSurface.erase(mSelectedSurface.begin() + i);
+				  erase = true;
 				  break;
 			  }
 		  }
-		  if (elementExist)
+	  }
+	  else
+	  {
+		  for (int i = 0; i < mSelectedSurface.size(); i++)
 		  {
-			  mSelectedSurface[i].second->VisibilityOff();
+			  bool isSame = true;
+			  for (int j = 0; j < 4; j++)
+			  {
+				  if (cornerPoints[j][0] != mSelectedSurface[i].cornerPoints[j][0] || cornerPoints[j][1] != mSelectedSurface[i].cornerPoints[j][1]
+				  || cornerPoints[j][2] != mSelectedSurface[i].cornerPoints[j][2])
+				  {
+					  isSame = false;
+					  break;
+				  }
+			  }
+			  if (!isSame)
+				  continue;
+			  
+			  mSelectedSurface[i].actor->VisibilityOff();
 			  mSelectedSurface.erase(mSelectedSurface.begin() + i);
 			  erase = true;
 			  break;
@@ -1707,32 +1872,58 @@ public:
 	  }
   }
 
-  void openSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds)
+  void openSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, std::vector<double*> cornerPoints, bool isCTVolume)
   {
-	  if (!cellIds->GetSelectionList())
-	  {
-		  qDebug() << "Cannot open Empty Surface Note!" << endl;
-		  return;
-	  }
 	  bool open = false;
-	  for (int i = 0; i < mSelectedSurface.size(); i++)
+	  if (!isCTVolume)
 	  {
-		  if (cellIds->GetSelectionList()->GetSize() != mSelectedSurface[i].first->GetSelectionList()->GetSize())
-			  continue;
-		  bool elementExist = true;
-		  for (int j = 0; j < mSelectedSurface[i].first->GetSelectionList()->GetSize(); j++)
+		  if (!cellIds->GetSelectionList())
 		  {
-			  if (cellIds->GetSelectionList()->LookupValue(mSelectedSurface[i].first->GetSelectionList()->GetVariantValue(j)) == -1)
+			  qDebug() << "Cannot open Empty Surface Note!" << endl;
+			  return;
+		  }
+		 
+		  for (int i = 0; i < mSelectedSurface.size(); i++)
+		  {
+			  if (cellIds->GetSelectionList()->GetSize() != mSelectedSurface[i].cellIds->GetSelectionList()->GetSize())
+				  continue;
+			  bool elementExist = true;
+			  for (int j = 0; j < mSelectedSurface[i].cellIds->GetSelectionList()->GetSize(); j++)
 			  {
-				  elementExist = false;
+				  if (cellIds->GetSelectionList()->LookupValue(mSelectedSurface[i].cellIds->GetSelectionList()->GetVariantValue(j)) == -1)
+				  {
+					  elementExist = false;
+					  break;
+				  }
+			  }
+			  if (elementExist)
+			  {
+				  mSelectedSurface[i].actor->VisibilityOn();
+				  open = true;
 				  break;
 			  }
 		  }
-		  if (elementExist)
+	  }
+	  else
+	  {
+		  for (int i = 0; i < mSelectedSurface.size(); i++)
 		  {
-			  mSelectedSurface[i].second->VisibilityOn();
-			  open = true;
-			  break;
+			  bool isSame = true;
+			  for (int j = 0; j < 4; j++)
+			  {
+				  if (cornerPoints[j][0] != mSelectedSurface[i].cornerPoints[j][0] || cornerPoints[j][1] != mSelectedSurface[i].cornerPoints[j][1]
+				  || cornerPoints[j][2] != mSelectedSurface[i].cornerPoints[j][2])
+				  {
+					  isSame = false;
+					  break;
+				  }
+			  }
+			  if (!isSame)
+				  continue;
+			  
+			 mSelectedSurface[i].actor->VisibilityOn();
+			 open = true;
+			 break;
 		  }
 	  }
   }
@@ -2154,7 +2345,7 @@ private:
   std::vector<float> mHyperPixels;
   std::vector<PointMark> mSelectedPoints;  //used for point note
   std::vector<std::pair<vtkSmartPointer<vtkPlanes>, vtkSmartPointer<vtkActor> > > mSelectedFrustum;   //used for frustum note
-  std::vector<std::pair<vtkSmartPointer<vtkSelectionNode>, vtkSmartPointer<vtkActor> > > mSelectedSurface;  //used for surface note
+  std::vector<SurfaceMark> mSelectedSurface;  //used for surface note
   int mPointNoteHighlight;
   int mSurfaceNoteHighlight;
   int mFrustumNoteHighlight;

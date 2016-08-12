@@ -423,7 +423,8 @@ void PointNote::removePointNote()
 	this->hideNote(); 
 }
 
-SurfaceNote::SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds, const int noteId, const ColorType type, const QString user)
+SurfaceNote::SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points,
+						 const int noteId, const ColorType type, bool CTVolume, const QString user)
 	: Note(noteId, type)
 {
 	mPath = new QString(path);
@@ -431,8 +432,11 @@ SurfaceNote::SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds
 	mCellIds->SetFieldType(vtkSelectionNode::CELL);
     mCellIds->SetContentType(vtkSelectionNode::INDICES);
 	mFileName = new QString(path);
-	//mFileName->append(QDir::separator() + QString("Note") + WORD_SEPARATOR + QString::number(qHash(QString::number(number))) + QString(".txt"));
-	qsrand(time(NULL) * cellIds->GetSelectionList()->GetSize());
+	isCTVolume = CTVolume;
+	if (!isCTVolume)
+		qsrand(time(NULL) * cellIds->GetSelectionList()->GetSize());
+	else
+		qsrand(time(NULL));
 	int number = qrand();
 	mFileName->append(QDir::separator() + QString("SurfaceNote") + WORD_SEPARATOR + QString::number(qHash(QString::number(number))) + QString(".txt"));
 	QString mUser = user;
@@ -451,19 +455,40 @@ SurfaceNote::SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds
 	qDebug(mFileName->toLatin1());
 	mFile = new QFile(*mFileName);
 
-	mCellIds->DeepCopy(cellIds);
+	if (!isCTVolume)
+		mCellIds->DeepCopy(cellIds);
+	for (int i = 0; i < points.size(); i++)
+	{
+		double* point = new double[3];
+		point[0] = points[i][0];
+		point[1] = points[i][1];
+		point[2] = points[i][2];
+		mPoints.push_back(point);
+	}
 
 	QString label;
-	label.append(QString("Surface Note: Number of Selected Polygon ( ") + QString::number(mCellIds->GetSelectionList()->GetSize()) + QString(" )"));
+	if (!isCTVolume)
+		label.append(QString("Surface Note: Number of Selected Polygon ( ") + QString::number(mCellIds->GetSelectionList()->GetSize()) + QString(" )"));
+	else
+		label.append(QString("Surface Note: Number of Selected Polygon ( 0 )"));
 	QString info(label);
-	info.append(QString("\nPolygon Ids:\n"));
-	for (int i = 0; i < mCellIds->GetSelectionList()->GetSize(); i++)
+
+	info.append(QString("\nCorner Points:\n"));
+	for (int i = 0; i < 4; i++)
 	{
-		info.append(QString::number(mCellIds->GetSelectionList()->GetVariantValue(i).ToInt()));
-		if (i != mCellIds->GetSelectionList()->GetSize() - 1)
-			info.append(QString(' '));
-		else
-			info.append(QString("\n"));
+		info = info + "(" + QString::number(mPoints[i][0]) + ", " + QString::number(mPoints[i][1]) + ", " + QString::number(mPoints[i][2]) + ")\n";
+	}
+	info.append(QString("Polygon Ids:\n"));
+	if (!isCTVolume)
+	{
+		for (int i = 0; i < mCellIds->GetSelectionList()->GetSize(); i++)
+		{
+			info.append(QString::number(mCellIds->GetSelectionList()->GetVariantValue(i).ToInt()));
+			if (i != mCellIds->GetSelectionList()->GetSize() - 1)
+				info.append(QString(' '));
+			else
+				info.append(QString("\n"));
+		}
 	}
 	QString userLabel= QString("User: ");
 	QString userInfo;
@@ -492,7 +517,7 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId, bool&
 	mCellIds->SetFieldType(vtkSelectionNode::CELL);
     mCellIds->SetContentType(vtkSelectionNode::INDICES);
 	vtkSmartPointer<vtkIdTypeArray> ids = vtkSmartPointer<vtkIdTypeArray>::New();
-	
+	isCTVolume = false;
 	mFileName = new QString(path);
 	mFileName->append(QDir::separator() + fileName);
 
@@ -513,6 +538,7 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId, bool&
 		isSucceed = false;
 		return;
 	}
+		
 	bool ok0;
 	int cellNum;
 	cellNum = firstLine.split(" ")[7].toInt(&ok0);
@@ -522,6 +548,37 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId, bool&
 		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
 		isSucceed = false;
 		return;
+	}
+
+	if (cellNum == 0)
+		isCTVolume = true;
+
+	while(!in.atEnd())
+	{
+		QString signal = in.readLine();
+		if (signal == QString("Corner Points:"))
+			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
+	bool ok1, ok2;
+	for (int i = 0; i < 4; i++)
+	{
+		QString pointLine = in.readLine();
+		double* cornerPoint = new double[3];
+		cornerPoint[0] = pointLine.split(" ")[0].split(",")[0].split("(")[1].toDouble(&ok0);
+		cornerPoint[1] = pointLine.split(" ")[1].split(",")[0].toDouble(&ok1);
+		cornerPoint[2] = pointLine.split(" ")[2].split(")")[0].toDouble(&ok2);
+		if (!ok0 || !ok1 || !ok2)
+		{
+			qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+			isSucceed = false;
+			return;
+		}
+		mPoints.push_back(cornerPoint);
 	}
 
     while(!in.atEnd())
@@ -608,6 +665,11 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId, bool&
 	QString label;
 	label.append(QString("Surface Note: Number of Selected Polygon ( ") + QString::number(cellNum) + QString(" )"));
 	QString info(label);
+	info.append(QString("\nCorner Points:\n"));
+	for (int i = 0; i < 4; i++)
+	{
+		info = info + "(" + QString::number(mPoints[i][0]) + ", " + QString::number(mPoints[0][1]) + ", " + QString::number(mPoints[0][2]) + ")\n";
+	}
 	info.append(QString("\nPolygon Ids:\n"));
 
 	for (int i = 0; i < cellNum; i++)
@@ -637,6 +699,14 @@ SurfaceNote::SurfaceNote(QString path, QString fileName, const int noteId, bool&
 	mFile->close();
 	qDebug() << "finish Surface instructor";
 	isSucceed = true;
+}
+
+SurfaceNote::~SurfaceNote()
+{
+	for (int i = 0; i < mPoints.size(); i++)
+	{
+		delete mPoints[i];
+	}
 }
 
 void SurfaceNote::removeSurfaceNote()

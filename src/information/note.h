@@ -309,12 +309,15 @@ class SurfaceNote: public Note
 public:
 	/**
 	 * @brief  Constructor when create a new 3D surface notes with location info.
-	 * @param  path    The full note path.
-	 * @param  cellIds The vector of selected cell ids.
-	 * @param  type    The color of the note.
-	 * @param  user    The user who creates the note.
+	 * @param  path     The full note path.
+	 * @param  cellIds  The vector of selected cell ids.
+	 * @param  points   The vector of four corner points in world coordinate.
+	 * @param  type     The color of the note.
+	 * @param  user     The user who creates the note.
+	 * @param  CTVolum  If the note is appiled to CT Volume. If it is, then cellIds is NULL and should not be accessed.
 	 */
-	SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds, const int noteId, const ColorType type = YELLOW, const QString user = QString());
+	SurfaceNote(QString path, vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, const int noteId,
+		const ColorType type = YELLOW, bool CTVolume = false, const QString user = QString());
 
 	/**
 	 * @brief  Constructor when load a 3D surface notes from note file.
@@ -326,10 +329,21 @@ public:
 	SurfaceNote(QString path, QString fileName, const int noteId, bool& isSucceed);
 
 	/**
-	 * @brief  Get the cell ids of the point note.
+	 * @brief  Deconstructor.
+	 */
+	~SurfaceNote();
+
+	/**
+	 * @brief  Get the cell ids of the surface note.
 	 * @return The vector of selected cell ids.
 	 */
 	vtkSmartPointer<vtkSelectionNode> getCellIds() { return mCellIds; }
+
+	/**
+	 * @brief  Get the four corner points of the surface note.
+	 * @return The vector of corner points.
+	 */
+	QVector<double*> getCornerPoints() {return mPoints;}
 
 	/**
 	 * @brief  Get the note id of the point note.
@@ -341,8 +355,16 @@ public:
 	 */
 	void removeSurfaceNote();
 
+	/**
+	 * @brief  Check if the note is appiled to CT volume.
+	 * @return true if it is CT Volume.
+	 */
+	bool checkCTVolume() {return isCTVolume;}
+
 private:
 	vtkSmartPointer<vtkSelectionNode> mCellIds;
+	QVector<double*> mPoints; // The four corner points that define the selected area. All points are in world coordinates with 3 elements (x, y, z)
+	bool isCTVolume; // If the surface note is appiled to CT Volume. If it is then mCellIds should be NULL.
 };
 
 /**

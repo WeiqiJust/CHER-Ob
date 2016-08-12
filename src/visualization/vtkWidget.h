@@ -277,15 +277,15 @@ public slots:
       }
   }
   void removePointNoteMark(const int cellId); 
-  void removeSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds);
+  void removeSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> cornerPoints, bool isCTVolume);
   void removeFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals);
 
   void openPointNoteMark(const int cellId); 
-  void openSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds);
+  void openSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> cornerPoints, bool isCTVolume);
   void openFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals);
  
   void loadPointNoteMark(const int cellId, const ColorType color, const double* position);
-  void loadSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, const ColorType color);
+  void loadSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, const ColorType color);
   void loadFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const ColorType color);
 
   void removeSurfaceNote2DMark(double* point);

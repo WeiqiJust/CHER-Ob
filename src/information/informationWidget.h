@@ -188,10 +188,12 @@ public:
 
 	/**
 	 * @brief  Create 3D surface notes with location info.
-	 * @param  cellId  The vector of selected cell ids.
-	 * @param  color   The color of the note.
+	 * @param  cellId     The vector of selected cell ids.
+	 * @param  points     The vector of four corner points in world coordinate.
+	 * @param  color      The color of the note.
+	 * @param  isCTVolum  If the note is appiled to CT Volume. If it is, then cellIds is NULL and should not be accessed.
 	 */
-	void createSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, ColorType color);
+	void createSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, ColorType color, bool isCTVolume);
 
 	/**
 	 * @brief  Create 3D frustum notes with location info.
@@ -225,9 +227,11 @@ public:
 
 	/**
 	 * @brief  Open 3D surface notes with location info.
-	 * @param  cellIds  The vector of selected cell ids.
+	 * @param  cellIds       The vector of selected cell ids.
+	 * @param  cornerPoints  The vector of four corner points that define selected area.
+	 * @param  isCTVolume    If the note is appiled to CT Volume data.
 	 */
-	void openSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds);
+	void openSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, std::vector<double*> cornerPoints, bool isCTVolume = false);
 
 	/**
 	 * @brief  Open 3D frustum notes with location info.

@@ -516,9 +516,9 @@ void VtkWidget::removePointNoteMark(const int cellId)
 	mCallback3D->removePointNoteMark(cellId);
 }
 
-void VtkWidget::removeSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds)
+void VtkWidget::removeSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> cornerPoints, bool isCTVolume)
 {
-	mCallback3D->removeSurfaceNoteMark(cellIds);
+	mCallback3D->removeSurfaceNoteMark(cellIds, cornerPoints.toStdVector(), isCTVolume);
 }
 
 void VtkWidget::removeFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals)
@@ -531,9 +531,9 @@ void VtkWidget::openPointNoteMark(const int cellId)
 	mCallback3D->openPointNoteMark(cellId);
 }
 
-void VtkWidget::openSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds)
+void VtkWidget::openSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> cornerPoints, bool isCTVolume)
 {
-	mCallback3D->openSurfaceNoteMark(cellIds);
+	mCallback3D->openSurfaceNoteMark(cellIds, cornerPoints.toStdVector(), isCTVolume);
 }
 
 void VtkWidget::openFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals)
@@ -546,9 +546,9 @@ void VtkWidget::loadPointNoteMark(const int cellId, const ColorType color, const
 	mCallback3D->displayLoadPointNote(cellId, color, position);
 }
 
-void VtkWidget::loadSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, const ColorType color)
+void VtkWidget::loadSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, const ColorType color)
 {
-	mCallback3D->displayLoadSurfaceNote(cellIds, color);
+	mCallback3D->displayLoadSurfaceNote(cellIds, points, color);
 }
 
 void VtkWidget::loadFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const ColorType color)
@@ -1979,7 +1979,7 @@ void VtkWidget::Rendering2D()
   mVtkImageData->GetDimensions(dimss);
   if (dimss[2] > 1){
       mWidgetMode = CTSTACK;
-      flipITKtoVTKxy(mVtkImageData); // left-right flip bug fix (2013-07-14)
+      //flipITKtoVTKxy(mVtkImageData); // left-right flip bug fix (2013-07-14)
   }
   else {
       mWidgetMode = IMAGE2D;

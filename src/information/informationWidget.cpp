@@ -371,13 +371,13 @@ void Information::createPointNote(double *pos, int cellId, ColorType color)
 	emit addNavigationItem(notePath, POINTNOTE, NOTE3D);
 }
 
-void Information::createSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, ColorType color)
+void Information::createSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, ColorType color, bool isCTVolume)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
 	updateCurrentPath();
 	int size = mSurfaceNotes[notePath].size();
 	qDebug() << "Create Surface Note, current size = " << size;
-	SurfaceNote* newNote = new SurfaceNote(notePath, cellIds, size, color, mw()->mUserName);
+	SurfaceNote* newNote = new SurfaceNote(notePath, cellIds, points, size, color, isCTVolume, mw()->mUserName);
 	newNote->showNote();
 	mSurfaceNotes[notePath].push_back(newNote);
 	connect(mSurfaceNotes[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removeSurfaceNote(int, QString*)));
@@ -513,7 +513,7 @@ bool Information::loadSurfaceNote(const QString path, bool isDisplay)
 		connect(this, SIGNAL(closeAll()), mSurfaceNotes[notePath][i], SLOT(close()));
 		mSurfaceNotes[notePath][i]->setSaved(true);
 		if (mw()->VTKA(path) && isDisplay)
-			mw()->VTKA(path)->loadSurfaceNoteMark(newNote->getCellIds(), newNote->getColorType());
+			mw()->VTKA(path)->loadSurfaceNoteMark(newNote->getCellIds(), newNote->getCornerPoints(), newNote->getColorType());
 		//else
 		//	qDebug()<<"Cannot find the window!!!!";
 	}
@@ -672,35 +672,63 @@ void Information::openPointNote(int cellId)
 	}
 }
 
-void Information::openSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds)
+void Information::openSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, std::vector<double*> cornerPoints, bool isCTVolume)
 {
 	updateCurrentPath();
-	if (!cellIds->GetSelectionList())
-	{
-		qDebug() << "Cannot Find the Surface Note to Open!" << endl;
-		return;
-	}
 	bool isOpen = false;
-	for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
+	if (!isCTVolume)
 	{
-		if (cellIds->GetSelectionList()->GetSize() != mSurfaceNotes[notePath][i]->getCellIds()->GetSelectionList()->GetSize())
-			continue;
-		bool elementExist = true;
-	    for (int j = 0; j < mSurfaceNotes[notePath][i]->getCellIds()->GetSelectionList()->GetSize(); j++)
-	    {
-		    if (cellIds->GetSelectionList()->LookupValue(mSurfaceNotes[notePath][i]->getCellIds()->GetSelectionList()->GetVariantValue(j)) == -1)
-		    {
-			    elementExist = false;
-			    break;
-		    }
-	    }
-	    if (elementExist)
-	    {
-		    mSurfaceNotes[notePath][i]->hideNote();
+		if (!cellIds->GetSelectionList())
+		{
+			qDebug() << "Cannot Find the Surface Note to Open!" << endl;
+			return;
+		}
+		
+		for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
+		{
+			if (cellIds->GetSelectionList()->GetSize() != mSurfaceNotes[notePath][i]->getCellIds()->GetSelectionList()->GetSize())
+				continue;
+			bool elementExist = true;
+			for (int j = 0; j < mSurfaceNotes[notePath][i]->getCellIds()->GetSelectionList()->GetSize(); j++)
+			{
+				if (cellIds->GetSelectionList()->LookupValue(mSurfaceNotes[notePath][i]->getCellIds()->GetSelectionList()->GetVariantValue(j)) == -1)
+				{
+					elementExist = false;
+					break;
+				}
+			}
+			if (elementExist)
+			{
+				mSurfaceNotes[notePath][i]->hideNote();
+				mSurfaceNotes[notePath][i]->showNote();
+				isOpen = true;
+				break;
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < mSurfaceNotes[notePath].size(); i++)
+		{
+			bool isSame = true;
+			QVector<double*> points = mSurfaceNotes[notePath][i]->getCornerPoints();
+			for (int j = 0; j < 4; j++)
+			{
+				if (cornerPoints[j][0] != points[j][0] || cornerPoints[j][1] != points[j][1]
+					|| cornerPoints[j][2] != points[j][2])
+				{
+					isSame = false;
+					break;
+				}
+			}
+			if (!isSame)
+				continue;
+
+			mSurfaceNotes[notePath][i]->hideNote();
 			mSurfaceNotes[notePath][i]->showNote();
-		    isOpen = true;
-		    break;
-	    }
+			isOpen = true;
+			break;
+		}
 	}
 	if (!isOpen)	qDebug() << "Cannot Find the Exact SurfaceNote to open!"<<endl;
 }
@@ -828,7 +856,8 @@ void Information::removeSurfaceNote(int noteId, QString* path)
 	{
 		if (mSurfaceNotes[*path][i]->getNoteId() == noteId)
 		{
-			mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[*path][i]->getCellIds());
+			mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[*path][i]->getCellIds(), 
+				mSurfaceNotes[*path][i]->getCornerPoints(), mSurfaceNotes[*path][i]->checkCTVolume());
 			//mSurfaceNotes[*path].remove(i);
 			mSurfaceNotes[*path][i]->setRemoved(true);
 			hasNotesRemoved[notePath] = true;
@@ -1128,7 +1157,8 @@ void Information::openNotesByUsers(const QVector<QString> users)
 		{
 			if (mUsers.indexOf(users[j]) != -1)
 			{
-				mw()->VTKA()->openSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds());
+				mw()->VTKA()->openSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds(),
+					mSurfaceNotes[notePath][i]->getCornerPoints(), mSurfaceNotes[notePath][i]->checkCTVolume());
 				break;
 			}
 		}
@@ -1206,8 +1236,8 @@ void Information::draw3DNoteMark(const QString path)
 		}
 		for (int i = 0; i < mSurfaceNotes[noteFolder].size(); i++)
 		{
-			mw()->VTKA(objectPath)->loadSurfaceNoteMark(mSurfaceNotes[noteFolder][i]->getCellIds(), 
-				mSurfaceNotes[noteFolder][i]->getColorType());
+			mw()->VTKA(objectPath)->loadSurfaceNoteMark(mSurfaceNotes[noteFolder][i]->getCellIds(),
+				mSurfaceNotes[noteFolder][i]->getCornerPoints(), mSurfaceNotes[noteFolder][i]->getColorType());
 		}
 		for (int i = 0; i < mFrustumNotes[noteFolder].size(); i++)
 		{
@@ -1283,7 +1313,7 @@ void Information::undoRemoveNote(QTreeWidgetItem* item)
 					mSurfaceNotes[path][number-1]->save();
 					if (mw()->VTKA(projectPath))
 						mw()->VTKA(projectPath)->loadSurfaceNoteMark(mSurfaceNotes[path][number-1]->getCellIds(),
-							mSurfaceNotes[path][number-1]->getColorType());
+							mSurfaceNotes[path][number-1]->getCornerPoints(), mSurfaceNotes[path][number-1]->getColorType());
 					if (mw()->VTKA())
 						mw()->VTKA()->annotate(true);
 					emit updateMenu();
@@ -1446,7 +1476,8 @@ void Information::removeAllNotes()
 	//mPointNotes.remove(notePath);
 	for (int i = 0; i < mSurfaceNotes[notePath].size(); ++i) 
 	{
-		mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds());
+		mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds(),
+			mSurfaceNotes[notePath][i]->getCornerPoints(), mSurfaceNotes[notePath][i]->checkCTVolume());
 		mSurfaceNotes[notePath][i]->removeSurfaceNote();
 		mSurfaceNotes[notePath][i]->setRemoved(true);
 		emit removeNavigationItem(notePath, SURFACENOTE, i, NOTE3D);
@@ -1494,7 +1525,8 @@ void Information::removeAllNotes(QString path)
 	//mPointNotes.remove(removePath);
 	for (int i = 0; i < mSurfaceNotes[removePath].size(); ++i) 
 	{
-		mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[removePath][i]->getCellIds());
+		mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[removePath][i]->getCellIds(),
+			mSurfaceNotes[removePath][i]->getCornerPoints(), mSurfaceNotes[removePath][i]->checkCTVolume());
 		mSurfaceNotes[removePath][i]->removeSurfaceNote();
 		mSurfaceNotes[removePath][i]->setRemoved(true);
 		emit removeNavigationItem(removePath, SURFACENOTE, i, NOTE3D);
@@ -1544,7 +1576,8 @@ void Information::removeUnSavedNotes()
 	{
 		if (!mSurfaceNotes[notePath][i]->checkSaved())
 		{
-			mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds());
+			mw()->VTKA()->removeSurfaceNoteMark(mSurfaceNotes[notePath][i]->getCellIds(),
+				mSurfaceNotes[notePath][i]->getCornerPoints(), mSurfaceNotes[notePath][i]->checkCTVolume());
 			mSurfaceNotes[notePath][i]->removeSurfaceNote();
 			mSurfaceNotes[notePath][i]->setRemoved(true);
 			emit removeNavigationItem(notePath, SURFACENOTE, i, NOTE3D);
