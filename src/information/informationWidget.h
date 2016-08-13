@@ -302,9 +302,10 @@ public:
 	/**
 	 * @brief  Get the note data of specified object, including note info and content. Annotation is saved as the first element.
 	 * @param  objectPath  Object full path.
-	 * @return The vector of content of annotation and all notes file.
+	 * @return The vector of pair <content, note type> of annotation and all notes file. The note type implies whether the note is
+	 *         appiled to 2D or 3D object.
 	 */
-	QVector<QString> getAllNotes(const QString objectPath);
+	QVector<QPair<QString, NoteType> > getAllNotes(const QString objectPath);
 
 	/**
 	 * @brief  Get the number of notes for each note type (annotation, point, surface, frustm, point2d, surface2d)for navigation.

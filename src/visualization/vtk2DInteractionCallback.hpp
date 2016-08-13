@@ -209,7 +209,7 @@ public:
 	  this->mColor = color;
 	  if (mUserIsAnnotating)
 	  {
-		  qDebug()<<"Load surface size"<<mSelectedSurface.size() << " point size "<<mSelectedPoint.size();
+		  //qDebug()<<"Load surface 2D size"<<mSelectedSurface.size() << " point 2D size "<<mSelectedPoint.size();
 		  initNote();
 		  if (visibilityOn)
 		  {

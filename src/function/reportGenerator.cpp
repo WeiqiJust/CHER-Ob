@@ -47,6 +47,8 @@
 #include "lightControl.h"
 #include "../information/searchWidget.h"
 #include "../mainWindow.h"
+#include "CTControl.h"
+
 
 std::string color2categoryFullName(const std::string str)
 {
@@ -164,23 +166,31 @@ void ReportGenerator::generate()
 		htmlFolder.append(QDir::separator() + QString("report"));
 		QDir().mkdir(htmlFolder);
 	}
+	bool isCTModeSwitched = false;
 	for (int i = 0; i < mObjects.size(); i++)
 	{
 		//html = html + QString("<br></br>");
 		html += QString("<div style=\"page-break-after:always\"></div>");
-		html = html + QString("<p><font size=\"3\" color=\"#033F81\" face=\"Garamond\"><strong>\nObject " +  QString::number(i+1) + QString(": ") + mObjects[i]->mName + QString("\n</strong></font></p>\n"));
+		html = html + QString("<p><font size=\"3\" color=\"#033F81\" face=\"Garamond\"><strong>\nObject "
+			+ QString::number(i+1) + QString(": ") + mObjects[i]->mName + QString("\n</strong></font></p>\n"));
 		QString annotation;
 		QVector<QPair<QString, NoteMode> > contents;
 		QVector<QPair<int, int> > pointNote2D;
 		QVector<int*> surfaceNote2D;
 		QVector<double*> pointNote3D;
+		QVector<QPair<double*, CTSurfaceCornerPoint> > surfaceNote3D_CT;
 		QVector<double*> surfaceNote3D;
 		QVector<double*> frustumNote3D;
 		QVector<vtkSmartPointer<vtkDataSet> > dataset;
+		if (mObjects[i]->mMode == CTSTACK)
+		{
+			mw()->mCtControl->setVTvolumeGPU();
+			isCTModeSwitched = true;
+		}
 		//Parsing Notes
 		for (int j = 0; j < mObjects[i]->mNotes.size(); j++)
 		{
-			QString note = mObjects[i]->mNotes[j];
+			QString note = mObjects[i]->mNotes[j].first;
 			if (j == 0)
 				annotation = note;
 			else
@@ -193,7 +203,7 @@ void ReportGenerator::generate()
 				if (mObjects[i]->mCategories.indexOf(type) == -1)
 					continue;
 				NoteMode mode;
-				if (mObjects[i]->mMode == IMAGE2D || mObjects[i]->mMode == RTI2D || mObjects[i]->mMode == CTSTACK)
+				if ((mObjects[i]->mMode == IMAGE2D || mObjects[i]->mMode == RTI2D) && mObjects[i]->mNotes[j].second == NOTE2D)
 				{
 					QStringList lines = note.split("\n");
 					QString firstLine = lines[0];
@@ -232,8 +242,10 @@ void ReportGenerator::generate()
 						qDebug()<<"Parsing Error in report generation: Note Type Error!"<<firstLine;
 						continue;
 					}
+					//note.remove(0, index+13);	// Remove note header.
+					contents.push_back(qMakePair(note, mode));
 				}
-				else if (mObjects[i]->mMode == MODEL3D)
+				else if (mObjects[i]->mMode == MODEL3D && mObjects[i]->mNotes[j].second == NOTE3D)
 				{
 					QStringList lines = note.split("\n");
 					QString firstLine = lines[0];
@@ -248,7 +260,7 @@ void ReportGenerator::generate()
 						{
 							qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
 						}
-						qDebug()<<"report generation"<<worldPosition[0]<<worldPosition[1]<<worldPosition[2];
+						//qDebug()<<"report generation"<<worldPosition[0]<<worldPosition[1]<<worldPosition[2];
 						pointNote3D.push_back(worldPosition);
 						mode = POINTNOTE;
 					}
@@ -340,9 +352,71 @@ void ReportGenerator::generate()
 						qDebug()<<"Parsing Error in report generation: Note Type Error!"<<firstLine;
 						continue;
 					}
+					//note.remove(0, index+13);
+					contents.push_back(qMakePair(note, mode));
 				}
-				note.remove(0, index+13);
-				contents.push_back(qMakePair(note, mode));
+				else if ((mObjects[i]->mMode == CTSTACK || mObjects[i]->mMode == CTVOLUME) && mObjects[i]->mNotes[j].second == NOTE3D)
+				{
+					// CTSTACK will be switched to CTVOLUME and only 3D notes will be appiled.
+					QStringList lines = note.split("\n");
+					QString firstLine = lines[0];
+					if (firstLine.split(" ")[0] == QString("Point"))
+					{
+						bool ok0, ok1, ok2;
+						double *worldPosition = new double[3];
+						worldPosition[0] = firstLine.split(" ")[6].split(",")[0].split("(")[1].toDouble(&ok0);
+						worldPosition[1] = firstLine.split(" ")[7].split(",")[0].toDouble(&ok1);
+						worldPosition[2] = firstLine.split(" ")[8].split(")")[0].toDouble(&ok2);
+						if (!ok0 || !ok1 || !ok2)
+						{
+							qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+						}
+						//qDebug()<<"report generation"<<worldPosition[0]<<worldPosition[1]<<worldPosition[2];
+						pointNote3D.push_back(worldPosition);
+						mode = POINTNOTE;
+					}
+					else if (firstLine.split(" ")[0] == QString("Surface"))
+					{
+						bool ok0, ok1, ok2;
+						QTextStream in(&note);
+					    while(!in.atEnd())
+						{
+							QString signal = in.readLine();
+							if (signal == QString("Corner Points:"))
+								break;
+						}
+						bool isParsingSuccess = true;
+						CTSurfaceCornerPoint cornerPoints;
+						for (int i = 0; i < 4; i++)
+						{
+							QString pointLine = in.readLine();
+							cornerPoints.point[i][0] = pointLine.split(" ")[0].split(",")[0].split("(")[1].toDouble(&ok0);
+							cornerPoints.point[i][1] = pointLine.split(" ")[1].split(",")[0].toDouble(&ok1);
+							cornerPoints.point[i][2] = pointLine.split(" ")[2].split(")")[0].toDouble(&ok2);
+							if (!ok0 || !ok1 || !ok2)
+							{
+								qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+								isParsingSuccess = false;
+								break;
+							}
+						}
+						if (!isParsingSuccess)
+							continue;
+
+						double *center = new double[3];
+						computeCenter(cornerPoints, center);
+						surfaceNote3D_CT.push_back(qMakePair(center, cornerPoints));
+						mode = SURFACENOTE;
+					}
+					else
+					{
+						qDebug()<<"Parsing Error in report generation: Note Type Error!"<<firstLine;
+						continue;
+					}
+					//note.remove(0, index+13);
+					contents.push_back(qMakePair(note, mode));
+				}
+				
 			}
 		}
 		QString screenshot = tmp;
@@ -351,6 +425,8 @@ void ReportGenerator::generate()
 		// create images for report
 		QVector<QPair<double, double> > pointNote3DFront, pointNote3DLeft, pointNote3DRight, pointNote3DTop, pointNote3DBottom, pointNote3DBack;
 		QVector<QPair<double, double> > surfaceNote3DFront, surfaceNote3DLeft, surfaceNote3DRight, surfaceNote3DTop, surfaceNote3DBottom, surfaceNote3DBack;
+		QVector<QPair<double*, CTSurfaceCornerPoint> > surfaceNote3DFront_CT, surfaceNote3DLeft_CT, surfaceNote3DRight_CT,
+			surfaceNote3DTop_CT, surfaceNote3DBottom_CT, surfaceNote3DBack_CT;
 		QVector<QPair<double, double> > frustumNote3DFront, frustumNote3DLeft, frustumNote3DRight, frustumNote3DTop, frustumNote3DBottom, frustumNote3DBack;
 		WidgetInfo3D info;
 		QPixmap RTIScreenShot;
@@ -364,7 +440,7 @@ void ReportGenerator::generate()
 				break;
 			case MODEL3D:
 				saveWidgetinfo(mObjects[i]->mGla, info);
-				initWidget(mObjects[i]->mGla);
+				initWidget(mObjects[i]->mGla, false);
 				// generate front, left and top screenshot	
 				mObjects[i]->mGla->setOrthogonalView(FRONT3D);
 				screenshotDict = screenshot;
@@ -413,27 +489,56 @@ void ReportGenerator::generate()
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DBack);
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DBack);
 				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DBack, dataset, BACK3D);
-				recoverWidget(mObjects[i]->mGla, info);
+				recoverWidget(mObjects[i]->mGla, info, false);
 				break;
 			case CTSTACK:
-				ctOrientation = mObjects[i]->mGla->getOrientationCurrent();
-				mObjects[i]->mGla->updateCurrentOrientation(FRONTCT);
+			case CTVOLUME:
+				saveWidgetinfo(mObjects[i]->mGla, info);
+				initWidget(mObjects[i]->mGla, true);
+
+				mObjects[i]->mGla->setOrthogonalView(FRONT3D);
 				screenshotDict = screenshot;
 				screenshotDict.append("_front");
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DFront);
+				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DFront_CT);
 
-				mObjects[i]->mGla->updateCurrentOrientation(TOPCT);
+				mObjects[i]->mGla->setOrthogonalView(LEFT3D);
+				screenshotDict = screenshot;
+				screenshotDict.append("_left");
+				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DLeft);
+				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DLeft_CT);
+
+				mObjects[i]->mGla->setOrthogonalView(RIGHT3D);
+				screenshotDict = screenshot;
+				screenshotDict.append("_right");
+				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DRight);
+				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DRight_CT);
+
+				mObjects[i]->mGla->setOrthogonalView(TOP3D);
 				screenshotDict = screenshot;
 				screenshotDict.append("_top");
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DTop);
+				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DTop_CT);
 
-				mObjects[i]->mGla->updateCurrentOrientation(SIDECT);
+				mObjects[i]->mGla->setOrthogonalView(BOTTOM3D);
 				screenshotDict = screenshot;
-				screenshotDict.append("_side");
+				screenshotDict.append("_bottom");
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				mObjects[i]->mGla->updateCurrentOrientation(ctOrientation); // recover previous orientation.
-				break;
-			case CTVOLUME:      
+				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DBottom);
+				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DBottom_CT);
+
+				mObjects[i]->mGla->setOrthogonalView(BACK3D);
+				screenshotDict = screenshot;
+				screenshotDict.append("_back");
+				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DBack);
+				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DBack_CT);
+
+				recoverWidget(mObjects[i]->mGla, info, true);
 				break;
 			case RTI2D:
 				RTIScreenShot = mObjects[i]->mGla->getRTIScreenShot();
@@ -446,6 +551,10 @@ void ReportGenerator::generate()
 				break;
 			default: break;
 		}
+
+		// Switch back to origianl CT STACK mode.
+		if (isCTModeSwitched)
+			mw()->mCtControl->setCTStackView();
 
 		//Process and add image
 		for (int j = 0; j < mObjects[i]->mPictures.size(); j++)
@@ -472,8 +581,6 @@ void ReportGenerator::generate()
 			painter.setPen(QPen(Qt::black, 20, Qt::DashDotLine, Qt::RoundCap));
 			for (int k = 0; k < pointNote2D.size(); k++)
 			{
-				if (mObjects[i]->mMode == CTSTACK && j > 0)	//CT 2D Rendering only draw notes mark on the front screenshot.
-					break;
 				int x = pointNote2D[k].first, y = img.height() - pointNote2D[k].second;
 				int x1 = x - pointSize/2, y1 = y - pointSize/2;
 				if (x1 <= 0)
@@ -494,8 +601,6 @@ void ReportGenerator::generate()
 			
 			for (int k = 0; k < surfaceNote2D.size(); k++)
 			{
-				if (mObjects[i]->mMode == CTSTACK && j > 0)	//CT 2D Rendering only draw notes mark on the front screenshot.
-					break;
 				int x1 = surfaceNote2D[k][0];
 				int y1 = surfaceNote2D[k][1];
 				int x2 = surfaceNote2D[k][2];
@@ -515,47 +620,54 @@ void ReportGenerator::generate()
 			font.setPointSize(pointSize);
 			painter.setFont(font);
 			QVector<QPair<double, double> > pointNote3DSelected, surfaceNote3DSelected, frustumNote3DSelected;
+			QVector<QPair<double*, CTSurfaceCornerPoint> > surfaceNote3DSelected_CT;
 			switch(j)
 			{
 				case 0: 
 					pointNote3DSelected = pointNote3DFront;
 					surfaceNote3DSelected = surfaceNote3DFront;
 					frustumNote3DSelected = frustumNote3DFront;
+					surfaceNote3DSelected_CT = surfaceNote3DFront_CT;
 					break;
 				case 1: 
 					pointNote3DSelected = pointNote3DLeft;
 					surfaceNote3DSelected = surfaceNote3DLeft;
 					frustumNote3DSelected = frustumNote3DLeft;
+					surfaceNote3DSelected_CT = surfaceNote3DLeft_CT;
 					break;
 				case 2: 
 					pointNote3DSelected = pointNote3DRight;
 					surfaceNote3DSelected = surfaceNote3DRight;
 					frustumNote3DSelected = frustumNote3DRight;
+					surfaceNote3DSelected_CT = surfaceNote3DRight_CT;
 					break;
 				case 3: 
 					pointNote3DSelected = pointNote3DTop;
 					surfaceNote3DSelected = surfaceNote3DTop;
 					frustumNote3DSelected = frustumNote3DTop;
+					surfaceNote3DSelected_CT = surfaceNote3DTop_CT;
 					break;
 				case 4: 
 					pointNote3DSelected = pointNote3DBottom;
 					surfaceNote3DSelected = surfaceNote3DBottom;
 					frustumNote3DSelected = frustumNote3DBottom;
+					surfaceNote3DSelected_CT = surfaceNote3DBottom_CT;
 					break;
 				case 5: 
 					pointNote3DSelected = pointNote3DBack;
 					surfaceNote3DSelected = surfaceNote3DBack;
 					frustumNote3DSelected = frustumNote3DBack;
+					surfaceNote3DSelected_CT = surfaceNote3DBack_CT;
 					break;
 				default:break;
 			}
 
 			for (int k = 0; k < pointNote3DSelected.size(); k++)
 			{
-				int x = pointNote3DSelected[k].first, y = img.height() - pointNote3DSelected[k].second;
+				double x = pointNote3DSelected[k].first, y = img.height() - pointNote3DSelected[k].second;
 				if (x == -1 || y == -1)
 					continue;
-				int x1 = x - pointSize/2, y1 = y - pointSize/2;
+				double x1 = x - pointSize/2, y1 = y - pointSize/2;
 				if (x1 <= 0)
 					x1 = 1;
 				else if (x1 + pointSize >= imgWidth)
@@ -573,10 +685,10 @@ void ReportGenerator::generate()
 			}
 			for (int k = 0; k < surfaceNote3DSelected.size(); k++)
 			{
-				int x = surfaceNote3DSelected[k].first, y = img.height() - surfaceNote3DSelected[k].second;
+				double x = surfaceNote3DSelected[k].first, y = img.height() - surfaceNote3DSelected[k].second;
 				if (x == -1 || y == -1)
 					continue;
-				int x1 = x - pointSize/2, y1 = y - pointSize/2;
+				double x1 = x - pointSize/2, y1 = y - pointSize/2;
 				if (x1 <= 0)
 					x1 = 1;
 				else if (x1 + pointSize >= imgWidth)
@@ -594,10 +706,10 @@ void ReportGenerator::generate()
 			}
 			for (int k = 0; k < frustumNote3DSelected.size(); k++)
 			{
-				int x = frustumNote3DSelected[k].first, y = img.height() - frustumNote3DSelected[k].second;
+				double x = frustumNote3DSelected[k].first, y = img.height() - frustumNote3DSelected[k].second;
 				if (x == -1 || y == -1)
 					continue;
-				int x1 = x - pointSize/2, y1 = y - pointSize/2;
+				double x1 = x - pointSize/2, y1 = y - pointSize/2;
 				if (x1 <= 0)
 					x1 = 1;
 				else if (x1 + pointSize >= imgWidth)
@@ -612,6 +724,40 @@ void ReportGenerator::generate()
 				painter.drawRect(rectangle);
 				painter.setPen(QPen(Qt::black, 4));
 				painter.drawText(rectangle,  Qt::AlignCenter, QString::number(k+1+pointNote3DSelected.size()+surfaceNote3DSelected.size()));
+			}
+			for (int k = 0; k < surfaceNote3DSelected_CT.size(); k++)
+			{
+				double x = surfaceNote3DSelected_CT[k].first[0], y = img.height() - surfaceNote3DSelected_CT[k].first[1];
+				if (x == -1 || y == -1)
+					continue;
+				double x1 = x - pointSize/2, y1 = y - pointSize/2;
+				if (x1 <= 0)
+					x1 = 1;
+				else if (x1 + pointSize >= imgWidth)
+					x1 = imgWidth - pointSize - 1;
+				if (y1 <= 0)
+					y1 = 1;
+				else if (y1 + pointSize >= imgHeight)
+					y1 = imgHeight - pointSize - 1;
+
+
+				QPolygon polygon;
+				polygon << QPoint(surfaceNote3DSelected_CT[k].second.point[0][0], img.height() - surfaceNote3DSelected_CT[k].second.point[0][1])
+					<< QPoint(surfaceNote3DSelected_CT[k].second.point[1][0], img.height() - surfaceNote3DSelected_CT[k].second.point[1][1])
+					<< QPoint(surfaceNote3DSelected_CT[k].second.point[2][0], img.height() - surfaceNote3DSelected_CT[k].second.point[2][1])
+					<< QPoint(surfaceNote3DSelected_CT[k].second.point[3][0], img.height() - surfaceNote3DSelected_CT[k].second.point[3][1])
+					<< QPoint(surfaceNote3DSelected_CT[k].second.point[0][0], img.height() - surfaceNote3DSelected_CT[k].second.point[0][1]);
+
+				qDebug()<<"point 0"<<surfaceNote3DSelected_CT[k].second.point[0][0]<<surfaceNote3DSelected_CT[k].second.point[0][1];
+				qDebug()<<"point 1"<<surfaceNote3DSelected_CT[k].second.point[1][0]<<surfaceNote3DSelected_CT[k].second.point[1][1];
+				qDebug()<<"point 2"<<surfaceNote3DSelected_CT[k].second.point[2][0]<<surfaceNote3DSelected_CT[k].second.point[2][1];
+				qDebug()<<"point 3"<<surfaceNote3DSelected_CT[k].second.point[3][0]<<surfaceNote3DSelected_CT[k].second.point[3][1];
+
+				QRectF rectangle(x1, y1, pointSize, pointSize);
+				painter.setPen(QPen(Qt::red, 4));
+				painter.drawPolygon(polygon);
+				painter.setPen(QPen(Qt::black, 4));
+				painter.drawText(rectangle, Qt::AlignCenter, QString::number(k+1+pointNote3DSelected.size()));
 			}
 			
 			painter.end(); 
@@ -631,7 +777,7 @@ void ReportGenerator::generate()
 					html = html + QString("<p><div align=\"center\"><img src=\"report/" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>\n");
 				}
 			}
-			else if (mObjects[i]->mMode == MODEL3D || mObjects[i]->mMode == CTSTACK)
+			else if (mObjects[i]->mMode == MODEL3D || mObjects[i]->mMode == CTSTACK || mObjects[i]->mMode == CTVOLUME)
 			{
 				double height = 100, width = 150;
 				height = (double)width * imgHeight / imgWidth;
@@ -661,7 +807,7 @@ void ReportGenerator::generate()
 			html = html + QString("<p><font size=\"2\" face=\"Garamond\">") + annotation + QString("</font></p><hr>\n");
 		for (int j = 0; j < contents.size(); j++)
 		{
-			QString content =  contents[j].first;
+			QString content = contents[j].first;
 			QString color = content.split("\nNote Start:\n")[0];
 			int type = color2type(color.toStdString());
 			if (mObjects[i]->mCategories.indexOf(type) == -1)
@@ -669,7 +815,7 @@ void ReportGenerator::generate()
 			html += QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\n");
 			switch(contents[j].second)
 			{
-				case POINTNOTE:	html += QString("Point Note "); break;
+				case POINTNOTE:		html += QString("Point Note "); break;
 				case SURFACENOTE:	html += QString("Surface Note "); break;
 				case FRUSTUMNOTE:	html += QString("Frustum Note "); break;
 				default: continue;
@@ -911,7 +1057,43 @@ void ReportGenerator::detectFrustumVisibility(const VtkWidget* gla, QVector<doub
 			}
 		}
 	}
+}
 
+void ReportGenerator::detectCTSurfaceVisibility(vtkSmartPointer<vtkRenderer> render, 
+		QVector<QPair<double*, CTSurfaceCornerPoint> > points, QVector<QPair<double*, CTSurfaceCornerPoint> >& visiblePoints)
+{
+	for (int i = 0; i < points.size(); i++)
+	{
+		vtkSmartPointer<vtkPoints> point = vtkSmartPointer<vtkPoints>::New();
+		vtkSmartPointer<vtkPolyData> pointData = vtkSmartPointer<vtkPolyData>::New();
+		point->SetNumberOfPoints(1);
+		point->SetPoint(0, points[i].first[0], points[i].first[1], points[i].first[2]);
+		pointData->SetPoints(point);
+		vtkSmartPointer<vtkSelectVisiblePoints> selectVisiblePoints = vtkSmartPointer<vtkSelectVisiblePoints>::New();
+		selectVisiblePoints->SetInput(pointData);
+		selectVisiblePoints->SetRenderer(render);
+		selectVisiblePoints->Update();
+		double *displayPt = new double[3];
+		if (selectVisiblePoints->GetOutput()->GetNumberOfPoints() != 0)
+		{
+			vtkInteractorObserver::ComputeWorldToDisplay (render, points[i].first[0], points[i].first[1], points[i].first[2], displayPt);
+			CTSurfaceCornerPoint corners;
+			for (int j = 0; j < 4; j++)
+			{
+				vtkInteractorObserver::ComputeWorldToDisplay (render, points[i].second.point[j][0],
+					points[i].second.point[j][1], points[i].second.point[j][2], corners.point[j]);
+				qDebug()<<"in detect"<<corners.point[j][0]<<corners.point[j][1];
+			}
+			visiblePoints.push_back(qMakePair(displayPt, corners));
+		}
+		else
+		{
+			displayPt[0] = -1;
+			displayPt[1] = -1;
+			displayPt[2] = -1;
+			visiblePoints.push_back(qMakePair(displayPt, points[i].second));
+		}
+	}
 }
 
 MainWindow* ReportGenerator::mw()
@@ -961,7 +1143,7 @@ void ReportGenerator::saveWidgetinfo(const VtkWidget* gla, WidgetInfo3D &info)
 		info.textureOn = -1;
 }
 
-void ReportGenerator::initWidget(VtkWidget* gla)
+void ReportGenerator::initWidget(VtkWidget* gla, bool isCTVolume)
 {
 	gla->setDisplayInfoOn(false);
 	mw()->mLightControl->reset();
@@ -969,12 +1151,20 @@ void ReportGenerator::initWidget(VtkWidget* gla)
 	{
 		gla->setTextureOn(true);
 	}
-	gla->setRenderMode3D(SURFACE3D); 
+	if (isCTVolume)
+	{
+		gla->annotate(false);
+	}
+	else
+	{
+		gla->setRenderMode3D(SURFACE3D);
+		gla->annotate(true);
+	}
 	gla->setVisibilityDistance(false);
-	gla->annotate(true);
+	
 }
 
-void ReportGenerator::recoverWidget(VtkWidget* gla, WidgetInfo3D info)
+void ReportGenerator::recoverWidget(VtkWidget* gla, WidgetInfo3D info, bool isCTVolume)
 {
 	gla->setDisplayInfoOn(info.infoStatus);
 	vtkSmartPointer<vtkCamera> camera = gla->mRenderer->GetActiveCamera();
@@ -1001,7 +1191,8 @@ void ReportGenerator::recoverWidget(VtkWidget* gla, WidgetInfo3D info)
 
 	mw()->mLightControl->restoreBookmarkLight(info.orientation, info.brightness, info.contrast, MODEL3D);
    
-	gla->setRenderMode3D(info.renderMode);
+	if (!isCTVolume)	
+		gla->setRenderMode3D(info.renderMode);
 	gla->setMeasureDistance(info.isMeasuring);
 	gla->annotate(info.isAnnotation);
 	if(gla->mQVTKWidget) gla->mQVTKWidget->update();
@@ -1086,3 +1277,15 @@ void ReportGenerator::computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoi
 	cellLocator->FindClosestPoint(CoM, center, cellId, subId, closestPointDist2);
 }
 
+void ReportGenerator::computeCenter(CTSurfaceCornerPoint cornerPoints, double* center)
+{
+	center[0] = 0;
+	center[1] = 0;
+	center[2] = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		center[0] += cornerPoints.point[i][0]/4;
+		center[1] += cornerPoints.point[i][1]/4;
+		center[2] += cornerPoints.point[i][2]/4;
+	}
+}

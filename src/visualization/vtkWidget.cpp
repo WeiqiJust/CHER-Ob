@@ -612,9 +612,18 @@ void VtkWidget::setOrthogonalView(OrthogonalView3D view)
     return;
   // move camera to the initial position
   vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
-  camera->SetPosition(mInitCamPos);
-  camera->SetFocalPoint(mInitCamFoc);
-  camera->SetViewUp(mInitCamUp);
+  if (mWidgetMode == CTVOLUME)
+  {
+	  camera->SetPosition(mInitCTCamPos);
+	  camera->SetFocalPoint(mInitCTCamFoc);
+	  camera->SetViewUp(mInitCTCamUp);
+  }
+  else
+  {
+	  camera->SetPosition(mInitCamPos);
+	  camera->SetFocalPoint(mInitCamFoc);
+	  camera->SetViewUp(mInitCamUp);
+  }
   mRenderer->ResetCamera();
 
   switch(view)
@@ -2543,6 +2552,8 @@ void VtkWidget::RenderingVolume(int blendType, float reductionFactor, CTVolumeRe
   mCallback3D->mViewStyle = style;
   mCallback3D->SetCTVolume(true);
 
+
+
   int dimss[3];
   mVtkImageData->GetDimensions(dimss);
   mCallback3D->SetDimensions(dimss);
@@ -2553,6 +2564,11 @@ void VtkWidget::RenderingVolume(int blendType, float reductionFactor, CTVolumeRe
   // reset camera
   mRenderer->ResetCamera();
   mRenderer->ResetCameraClippingRange();
+
+  vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
+  camera->GetPosition(mInitCTCamPos);
+  camera->GetFocalPoint(mInitCTCamFoc);
+  camera->GetViewUp(mInitCTCamUp);
 
   // connect the customized callback to the interactor
  /* style->AddObserver(vtkCommand::MouseMoveEvent, mCallback3D);

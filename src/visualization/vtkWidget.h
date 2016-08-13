@@ -381,6 +381,10 @@ private:
   double mInitCamFoc[3];
   double mInitCamUp[3];
 
+  double mInitCTCamPos[3];
+  double mInitCTCamFoc[3];
+  double mInitCTCamUp[3];
+
   // for Volume rendering
   vtkSmartPointer<vtkSmartVolumeMapper> mVolMapper;
 

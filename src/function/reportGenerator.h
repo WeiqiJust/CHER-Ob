@@ -44,6 +44,11 @@
 #include "../vtkEnums.h"
 #include "../visualization/vtkWidget.h"
 
+struct CTSurfaceCornerPoint
+{
+	double point[4][3];
+};
+
 /**
  * This class is to save the current status of 3D object since when generate a report,
  * 3D object screenshot will change the view status. This class serves as a back-up.
@@ -83,7 +88,7 @@ public:
 	WidgetMode mMode;
 	QString mName;
 	QString mNotesPath;
-	QVector<QString> mNotes;	// note content
+	QVector<QPair<QString, NoteType> > mNotes;	// note content and type (2D/3D)
 	QVector<QString> mPictures;	// image notes
 	QVector<int> mCategories;	// selected categories for notes
 	QString mCHEName;
@@ -168,6 +173,21 @@ private:
 	void detectFrustumVisibility(const VtkWidget* gla, QVector<double*> center,
 		QVector<QPair<double, double> >& visiblePoints, QVector<vtkSmartPointer<vtkDataSet> > dataset, OrthogonalView3D view);
 
+
+	/**
+	 * @brief  Detect whether the points can be seen from current directon.
+	 *         There are six directions to generate screenshot for 3D object.
+	 *         If the point is visible then transform it from world coordinate to image coordinate.
+	 *         This function is used to mark note labels as id numbers on screenshot for 3D images.
+	 *         It works for point note and surface note. For surface note, the center point of the surface
+	 *         is calculated and tested. If the center point is visible then we mark the note label.
+	 * @param  render         The current vtkRenderer that shows the object.
+	 * @param  points         The vector of points to be detected in world coordinate.
+	 * @param  visiblePoints  The vector of visible points in image coordinate.
+	 */
+	void detectCTSurfaceVisibility(vtkSmartPointer<vtkRenderer> render, 
+		QVector<QPair<double*, CTSurfaceCornerPoint> > points, QVector<QPair<double*, CTSurfaceCornerPoint> >& visiblePoints);
+
 	/**
 	 * @brief  Save the current vtkWidget info to prepare for the screenshot.
 	 * @param  gla   The vtkWidget of the 3D object.
@@ -177,19 +197,21 @@ private:
 
 	/**
 	 * @brief  Init the vtkWidget for the screenshot.
-	 * @param  gla   The vtkWidget of the 3D object.
+	 * @param  gla         The vtkWidget of the 3D or CT Volume object.
+	 * @param  isCTVolume  If the widget is CT Volume.
 	 */
-	void initWidget(VtkWidget* gla);
+	void initWidget(VtkWidget* gla, bool isCTVolume);
 
 	/**
 	 * @brief  recover the vtkWidget after screenshot.
-	 * @param  gla   The vtkWidget of the 3D object.
-	 * @param  info  The previous saved widget info.
+	 * @param  gla         The vtkWidget of the 3D or CT Volume object.
+	 * @param  info        The previous saved widget info.
+	 * @param  isCTVolume  If the widget is CT Volume.
 	 */
-	void recoverWidget(VtkWidget* gla, WidgetInfo3D info);
+	void recoverWidget(VtkWidget* gla, WidgetInfo3D info, bool isCTVolume);
 
 	/**
-	 * @brief  Compute center point for surface note.
+	 * @brief  Compute center point for surface note for 3D object.
 	 * @param  gla      The vtkWidget of the 3D object.
 	 * @param  cellIds  The selected cell ids in the surface.
 	 * @param  center   The center point in world coordinate.
@@ -197,7 +219,7 @@ private:
 	void computeCenter(const VtkWidget* gla, QVector<int> cellIds, double* center);
 
 	/**
-	 * @brief  Compute center point for frustum note.
+	 * @brief  Compute center point for frustum note for 3D object.
 	 * @param  gla       The vtkWidget of the 3D object.
 	 * @param  points    The center points of planes that defines the frustum.
 	 * @param  normals   The normal vectors of planes that defines the frustum.
@@ -206,6 +228,13 @@ private:
 	 */
 	void computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoints> points,
 		vtkSmartPointer<vtkDataArray> normals, double* center, vtkSmartPointer<vtkDataSet>& polyData);
+
+	/**
+	 * @brief  Compute center point for surface note for CT Volume data.
+	 * @param  cornerPoints  The vector of four corner points that define the surface.
+	 * @param  center        The center point in world coordinate.
+	 */
+	void computeCenter(CTSurfaceCornerPoint cornerPoints, double* center);
 
 private:
 	bool isProject;

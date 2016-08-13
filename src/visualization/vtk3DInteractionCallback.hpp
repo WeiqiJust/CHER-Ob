@@ -695,13 +695,12 @@ public:
     //================================================================
     // apply the camera transform T_c and the light transform T_l (T = T_c * T_l) in order to update the camera up vector transform
     trans->SetMatrix(cmatrix); // apply camera vector transform
-
     trans->Concatenate(lmatrix); // apply light vector transform
     //================================================================
-    light1->SetTransformMatrix(trans->GetMatrix());
+	if (light1)
+		light1->SetTransformMatrix(trans->GetMatrix());
 //    vtkSmartPointer<vtkLight> light2 = lights->GetNextItem();
 //    light2->SetPosition(camera->GetPosition()); // correct
-
 #ifdef SHOWCAMERALIGHT
     displayInfoAnnotation(true);
 #endif
