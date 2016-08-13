@@ -145,6 +145,12 @@ private slots:
 	void projectPathChanged(QString path);
 
 	/**
+	 * @brief  Change user name and trigger infoUpdate signal.
+	 * @param  name  The changed user name.
+	 */
+	void userNameChanged(QString name);
+
+	/**
 	 * @brief  Enable Next button when name and path are specified.
 	 */
 	void enableNextButton();
@@ -211,6 +217,7 @@ private:
 	QString mLastPath;
 	QString mProjectPath;
 	QString mProjectName;
+	QString mUserName;
 	QString mFullPath;
 
 };

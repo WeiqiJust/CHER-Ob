@@ -539,7 +539,7 @@ void CTControl::updateCTControl()
     break;
   }
 
-  qDebug()<<"Update CT Control";
+  //qDebug()<<"UpdateCTControl";
   // update interface
   switch (mCTVisualization)
   {

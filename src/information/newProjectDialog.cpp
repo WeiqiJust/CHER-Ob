@@ -39,15 +39,16 @@ NewProjectDialog::NewProjectDialog(const QString path)
 	mDialog->setWindowTitle(tr("New Project"));
 
 	mRoleVBox = new QVBoxLayout();
-	mGroupBox = new QGroupBox(tr("User Mode"));
+	mGroupBox = new QGroupBox(tr("User Mode (Coming soon)"));
 	mCreatorRadioButton = new QRadioButton(tr("Creator"));
     mModifierRadioButton = new QRadioButton(tr("Modifier"));
     mViewerRadioButton = new QRadioButton(tr("Viewer"));
     mCreatorRadioButton->setChecked(true);
-	mUserNameLabel = new QLabel(tr("User Name:"));
+	mUserNameLabel = new QLabel(tr("User Name*:"));
 	mUserNameLineEdit = new QLineEdit();
 	mUserNameLineEdit->setFixedWidth(350);
     mUserNameLabel->setBuddy(mUserNameLineEdit);
+	connect(mUserNameLineEdit, SIGNAL(textChanged(QString)), this, SLOT(userNameChanged(QString)));
 	mUserNameHBox = new QHBoxLayout();
 	mUserNameHBox->addWidget(mUserNameLabel);
 	mUserNameHBox->addWidget(mUserNameLineEdit, 0 , Qt::AlignRight);
@@ -89,7 +90,7 @@ NewProjectDialog::NewProjectDialog(const QString path)
 	mLoadDataVBox->addStretch(1);
 	mLoadDataGroupBox->setLayout(mLoadDataVBox);
 
-    mProjectNameLabel = new QLabel(tr("Name:  "));
+    mProjectNameLabel = new QLabel(tr("Name*:  "));
 	mProjectNameEdit = new QLineEdit();
 	mProjectNameEdit->setFixedWidth(350);
     mProjectNameLabel->setBuddy(mProjectNameEdit);
@@ -98,7 +99,7 @@ NewProjectDialog::NewProjectDialog(const QString path)
 	mProjectHBox->addWidget(mProjectNameLabel, 0 , Qt::AlignLeft);
     mProjectHBox->addWidget(mProjectNameEdit, 0 , Qt::AlignRight);
 	
-    mLocationLabel = new QLabel(tr("Location:"));
+    mLocationLabel = new QLabel(tr("Location*:"));
 	mLocationLineEdit = new QLineEdit();
     mLocationLabel->setBuddy(mLocationLineEdit);
 	connect(mLocationLineEdit, SIGNAL(textChanged(QString)), this, SLOT(projectPathChanged(QString)));
@@ -286,9 +287,15 @@ void NewProjectDialog::projectPathChanged(QString path)
 	emit infoUpdate();
 }
 
+void NewProjectDialog::userNameChanged(QString name)
+{
+	mUserName = name;
+	emit infoUpdate();
+}
+
 void NewProjectDialog::enableNextButton()
 {
-	if (!mProjectPath.isEmpty() && !mProjectName.isEmpty())
+	if (!mProjectPath.isEmpty() && !mProjectName.isEmpty() && !mUserName.isEmpty())
 	{
 		mNextButton->setEnabled(true);
 	}

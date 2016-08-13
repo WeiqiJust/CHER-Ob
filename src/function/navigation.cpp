@@ -628,7 +628,7 @@ void Navigation::showContextMenu(const QPoint& pos)
 	QTreeWidgetItem* item = mTreeWidget->itemAt(pos);
 	if(item && ((item->columnCount() == 3 && item->text(2).toInt() == 0) // if item is a removed note
 		|| (item->columnCount() == 4 && item->text(3).toInt() == 0)))	 // if item is a removed bookmark
-		QAction* undoRemoveAct = menu.addAction("Undo Remove");
+		menu.addAction("Undo Remove");
 	else
 		return;
 

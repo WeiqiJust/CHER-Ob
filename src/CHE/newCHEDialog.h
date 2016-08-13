@@ -141,6 +141,12 @@ private slots:
 	void CHEPathChanged(QString path);
 
 	/**
+	 * @brief  Change user name and trigger infoUpdate signal.
+	 * @param  name  The changed user name.
+	 */
+	void userNameChanged(QString name);
+
+	/**
 	 * @brief  Enable Next button when name and path are specified.
 	 */
 	void enableNextButton();
@@ -215,6 +221,7 @@ private:
 	QString mLastPath;
 	QString mCHEPath;
 	QString mCHEName;
+	QString mUserName;
 	QString mFullPath;
 
 	NewCHEInfoDialog *mCHEInfo;

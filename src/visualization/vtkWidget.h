@@ -277,24 +277,24 @@ public slots:
           break;
       }
   }
-  void removePointNoteMark(const int cellId); 
+  void removePointNoteMark(const int cellId);
   void removeSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> cornerPoints, bool isCTVolume);
   void removeFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals);
 
-  void openPointNoteMark(const int cellId); 
+  void openPointNoteMark(const int cellId);
   void openSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> cornerPoints, bool isCTVolume);
   void openFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals);
  
-  void loadPointNoteMark(const int cellId, const ColorType color, const double* position);
-  void loadSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, const ColorType color);
-  void loadFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const ColorType color);
+  void loadPointNoteMark(const int cellId, const ColorType color, const double* position, bool isDisplay = false);
+  void loadSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, const ColorType color, bool isDisplay = false);
+  void loadFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const ColorType color, bool isDisplay = false);
 
   void removeSurfaceNote2DMark(double* point);
   void openSurfaceNote2DMark(double* point);
-  void loadSurfaceNote2DMark(double* point, const ColorType color);
+  void loadSurfaceNote2DMark(double* point, const ColorType color, bool isDisplay = false);
   void removePointNote2DMark(double* point);
   void openPointNote2DMark(double* point);
-  void loadPointNote2DMark(double* point, const ColorType color);
+  void loadPointNote2DMark(double* point, const ColorType color, bool isDisplay = false);
 
 protected slots:
   void updateIntensityL12(double intensity1, double intensity2);

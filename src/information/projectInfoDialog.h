@@ -112,7 +112,7 @@ private:
 	QHBoxLayout* mHBoxDescription;
 	QLabel *mName, *mNameContent, *mPath, *mPathContent, *mKeyword, *mKeywordContent, *mAffiliation, *mAffiliationContent;
 	QLabel *mUserName, *mUserNameContent, *mDescription, *mDescriptionContent;
-	QLineEdit *mUserNameLineEdit, *mKeywordLineEdit, *mAffiliationLineEdit;
+	QLineEdit *mKeywordLineEdit, *mAffiliationLineEdit;
 	QTextEdit* mDescriptionText;
 	QPushButton* cancelButton;
 	QPushButton* editButton;

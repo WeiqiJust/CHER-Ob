@@ -37,15 +37,16 @@ NewCHEDialog::NewCHEDialog(const QString path)
 	mDialog->setWindowTitle(tr("New Culture Heritage Entity"));
 
 	mRoleVBox = new QVBoxLayout();
-	mGroupBox = new QGroupBox(tr("User Mode"));
+	mGroupBox = new QGroupBox(tr("User Mode (Coming soon)"));
 	mCreatorRadioButton = new QRadioButton(tr("Creator"));
     mModifierRadioButton = new QRadioButton(tr("Modifier"));
     mViewerRadioButton = new QRadioButton(tr("Viewer"));
     mCreatorRadioButton->setChecked(true);
-	mUserNameLabel = new QLabel(tr("User Name:"));
+	mUserNameLabel = new QLabel(tr("User Name*:"));
 	mUserNameLineEdit = new QLineEdit();
 	mUserNameLineEdit->setFixedWidth(350);
     mUserNameLabel->setBuddy(mUserNameLineEdit);
+	connect(mUserNameLineEdit, SIGNAL(textChanged(QString)), this, SLOT(userNameChanged(QString)));
 	mUserNameHBox = new QHBoxLayout();
 	mUserNameHBox->addWidget(mUserNameLabel);
 	mUserNameHBox->addWidget(mUserNameLineEdit, 0 , Qt::AlignRight);
@@ -87,7 +88,7 @@ NewCHEDialog::NewCHEDialog(const QString path)
 	mLoadDataVBox->addStretch(1);
 	mLoadDataGroupBox->setLayout(mLoadDataVBox);
 
-    mCHENameLabel = new QLabel(tr("Name:  "));
+    mCHENameLabel = new QLabel(tr("Name*:  "));
 	mCHENameEdit = new QLineEdit();
 	mCHENameEdit->setFixedWidth(350);
     mCHENameLabel->setBuddy(mCHENameEdit);
@@ -96,7 +97,7 @@ NewCHEDialog::NewCHEDialog(const QString path)
 	mCHEHBox->addWidget(mCHENameLabel, 0 , Qt::AlignLeft);
     mCHEHBox->addWidget(mCHENameEdit, 0 , Qt::AlignRight);
 	
-    mLocationLabel = new QLabel(tr("Location:"));
+    mLocationLabel = new QLabel(tr("Location*:"));
 	mLocationLineEdit = new QLineEdit();
     mLocationLabel->setBuddy(mLocationLineEdit);
 	connect(mLocationLineEdit, SIGNAL(textChanged(QString)), this, SLOT(CHEPathChanged(QString)));
@@ -265,7 +266,6 @@ void NewCHEDialog::nextCancel()
 	mCHENameEdit->clear();
 }
 
-
 void NewCHEDialog::cancel()
 {
 	mDialog->hide();
@@ -283,9 +283,15 @@ void NewCHEDialog::CHEPathChanged(QString path)
 	emit infoUpdate();
 }
 
+void NewCHEDialog::userNameChanged(QString name)
+{
+	mUserName = name;
+	emit infoUpdate();
+}
+
 void NewCHEDialog::enableNextButton()
 {
-	if (!mCHEPath.isEmpty() && !mCHEName.isEmpty())
+	if (!mCHEPath.isEmpty() && !mCHEName.isEmpty() && !mUserName.isEmpty())
 	{
 		mNextButton->setEnabled(true);
 	}

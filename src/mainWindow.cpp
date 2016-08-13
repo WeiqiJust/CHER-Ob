@@ -1500,6 +1500,7 @@ void MainWindow::saveProjectAs()
 	{
 		QString previousName = currentProjectName;
 		currentProjectName = dialog->getProjectName();
+		QString previousUserName = mUserName;
 		mUserName = dialog->getUserName();
 		currentProjectKeyword = dialog->getKeyword();
 		currentProjectAffiliation = dialog->getAffiliation();
@@ -1529,6 +1530,7 @@ void MainWindow::saveProjectAs()
         lastSavedDirectory.setPath(currentProjectFullName);
 		lastUsedDirectory.setPath(currentProjectFullName);
 		QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+		this->mInformation->removeAllNotesMark();
 		this->mInformation->refresh();
 		mNavigation->clear();
 		mNavigation->init(currentProjectName, true);
@@ -1545,13 +1547,13 @@ void MainWindow::saveProjectAs()
 				if (mvc->currentView()->isDICOM())
 				{
 					if (mvc->currentView()->getCTVisualization() == STACK)
-						this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
+						this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
 					else
-						this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath);
+						this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
 
 				}	
 				else
-					this->mInformation->init(mvc->currentView()->mProjectPath);	
+					this->mInformation->init(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());	
 			}
 			else if (!mvc->currentView()->mCHE.isEmpty() && !mvc->currentView()->mCHEObject.isEmpty())
 			{
@@ -1563,12 +1565,12 @@ void MainWindow::saveProjectAs()
 				if (mvc->currentView()->isDICOM())
 				{
 					if (mvc->currentView()->getCTVisualization() == STACK)
-						this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
+						this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
 					else
-						this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath);
+						this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
 				}	
 				else
-					this->mInformation->init(mvc->currentView()->mProjectPath);
+					this->mInformation->init(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
 				
 			}
 			else if (mvc->currentView()->mCHEObject.isEmpty())
@@ -1583,12 +1585,12 @@ void MainWindow::saveProjectAs()
 				if (mvc->currentView()->isDICOM())
 				{
 					if (mvc->currentView()->getCTVisualization() == STACK)
-						this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
+						this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
 					else
-						this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath);
+						this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
 				}	
 				else
-					this->mInformation->init(mvc->currentView()->mProjectPath);
+					this->mInformation->init(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
 			}
 			else	// If the mCHE is emplty string but mCHEObject is not, then infomation is lost
 			{
@@ -1600,6 +1602,7 @@ void MainWindow::saveProjectAs()
 			}
 			mNavigation->addObject(mvc->currentView()->mProjectPath, mvc->currentView()->mCHE);
 		}
+		this->mInformation->replaceNotesUserName(mUserName, previousUserName);
 		setWindowTitle(appName()+appBits()+QString(" Project ")+currentProjectName);
 		updateXML();
 		
@@ -3289,6 +3292,7 @@ void MainWindow::saveCHEAs()
 	if(!fn.isEmpty() && QDir(fn).isReadable())
 	{
 		QString previousName = currentProjectName;
+		QString previousUserName = mUserName;
 		currentProjectName = dialog->getProjectName();
 		mUserName = dialog->getUserName();
 		QString newProjectPath = fn;
@@ -3314,6 +3318,7 @@ void MainWindow::saveCHEAs()
         lastSavedDirectory.setPath(currentProjectFullName);
 		lastUsedDirectory.setPath(currentProjectFullName);
 		QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+		this->mInformation->removeAllNotesMark();
 		this->mInformation->refresh();
 		mNavigation->clear();
 		mNavigation->init(currentProjectName, false);
@@ -3326,16 +3331,17 @@ void MainWindow::saveCHEAs()
 			mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + fi.fileName();
 			w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
 			if (!mvc->currentView()->isDICOM())
-				this->mInformation->init(mvc->currentView()->mProjectPath);
+				this->mInformation->init(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
 			else
 			{
 				if (mvc->currentView()->getCTVisualization() == STACK)
-					this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
+					this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
 				else
-					this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath);
+					this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
 			}
 			mNavigation->addObject(mvc->currentView()->mProjectPath);
 		}
+		this->mInformation->replaceNotesUserName(mUserName, previousUserName);
 		setWindowTitle(appName()+appBits()+QString(" CHE ")+currentProjectName);
 		CHEInfoBasic* info = new CHEInfoBasic();
 		info = dialog->getCHEInfo();

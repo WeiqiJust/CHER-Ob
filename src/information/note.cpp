@@ -206,6 +206,28 @@ void Note::removeImage(int id)
 	}
 }
 
+void Note::replaceUserName(const QString newName, const QString oldName)
+{
+	if (oldName == QString())
+	{
+		mUsers.push_back(newName);
+	}
+	else
+	{
+		int index = mUsers.indexOf(oldName);
+		if (index == -1)
+		{
+			mUsers.push_back(newName);
+		}
+		else
+		{
+			mUsers[index] = newName;
+		}
+	}
+	updateInfo();
+	updateLabel();
+}
+
 void Note::remove()
 {
 	mFile->remove();

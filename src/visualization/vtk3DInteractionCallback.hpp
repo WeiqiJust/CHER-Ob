@@ -1475,7 +1475,7 @@ public:
 	  return false;
   }
 
-  void displayLoadPointNote(const int cellId, const ColorType color, const double* position)
+  void displayLoadPointNote(const int cellId, const ColorType color, const double* position, bool isDisplay = false)
   {
       vtkSmartPointer<vtkRenderer> renderer = this->GetInteractor()->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
 	  vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New();
@@ -1484,7 +1484,10 @@ public:
 	  actor->GetProperty()->EdgeVisibilityOn();
       actor->GetProperty()->SetEdgeColor(ColorPixel[color][0], ColorPixel[color][1], ColorPixel[color][2]);
       actor->GetProperty()->SetLineWidth(5);
-      actor->VisibilityOff();
+	  if (isDisplay)
+		  actor->VisibilityOn();
+	  else
+		  actor->VisibilityOff();
       renderer->AddActor(actor);
 	  vtkSmartPointer<vtkIdTypeArray> cell = vtkSmartPointer<vtkIdTypeArray>::New();
 	  cell->InsertNextValue(cellId);
@@ -1499,7 +1502,7 @@ public:
 	  displayPointNote(mapper, cell, position);  
   }
 
-  void displayLoadSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, const ColorType color)
+  void displayLoadSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, const ColorType color, bool isDisplay = false)
   {
 	  vtkSmartPointer<vtkRenderer> renderer = this->GetInteractor()->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
 	  vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New();
@@ -1509,7 +1512,10 @@ public:
 	  actor->GetProperty()->LightingOn();
       actor->GetProperty()->SetColor(ColorPixel[color][0], ColorPixel[color][1], ColorPixel[color][2]);
       actor->GetProperty()->SetLineWidth(5);
-      actor->VisibilityOff();
+      if (isDisplay)
+		  actor->VisibilityOn();
+	  else
+		  actor->VisibilityOff();
       renderer->AddActor(actor);
 	  vtkSmartPointer<vtkSelectionNode> newCellIds = vtkSmartPointer<vtkSelectionNode>::New();
 	  newCellIds->DeepCopy(cellIds);
@@ -1522,7 +1528,7 @@ public:
 	  qDebug()<<"load Surface note" << mSelectedSurface.size();
   }
 
-  void displayLoadFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const ColorType color)
+  void displayLoadFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const ColorType color, bool isDisplay = false)
   {
 	  if (points->GetNumberOfPoints() != 6 || normals->GetSize() != 18)
 	  {
@@ -1558,7 +1564,10 @@ public:
 	  actor->GetProperty()->SetLineWidth(5);
 	  renderer->AddActor(actor);
       displayFrustumNote(mapper, frustum);
-	  actor->VisibilityOff();
+	  if (isDisplay)
+		  actor->VisibilityOn();
+	  else
+		  actor->VisibilityOff();
 	  qDebug()<<"load Frustum note" << mSelectedFrustum.size();
 
   }

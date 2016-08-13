@@ -720,7 +720,7 @@ public:
 	  }
   }
 
-  void displayLoadPointNote(double* point, const ColorType color)
+  void displayLoadPointNote(double* point, const ColorType color, bool isDisplay = false)
   {
 	  vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
 	  vtkSmartPointer<vtkRenderer> renderer = interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
@@ -731,7 +731,10 @@ public:
 	  actor->GetProperty()->LightingOn();
       actor->GetProperty()->SetColor(ColorPixel[color][0], ColorPixel[color][1], ColorPixel[color][2]);
       actor->GetProperty()->SetLineWidth(2);
-      actor->VisibilityOff();
+      if (isDisplay)
+		  actor->VisibilityOn();
+	  else
+		  actor->VisibilityOff();
 
       renderer->AddActor(actor);
 	  mSelectedPoint.push_back(std::make_pair(point, actor));
@@ -739,7 +742,7 @@ public:
 	  displayPointNote(mapper, point);
   }
 
-  void displayLoadSurfaceNote(double* point, const ColorType color)
+  void displayLoadSurfaceNote(double* point, const ColorType color, bool isDisplay = false)
   {
 	  vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
 	  vtkSmartPointer<vtkRenderer> renderer = interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
@@ -752,7 +755,10 @@ public:
 	  actor->GetProperty()->LightingOn();
       actor->GetProperty()->SetColor(ColorPixel[color][0], ColorPixel[color][1], ColorPixel[color][2]);
       actor->GetProperty()->SetLineWidth(2);
-      actor->VisibilityOff();
+      if (isDisplay)
+		  actor->VisibilityOn();
+	  else
+		  actor->VisibilityOff();
 
       renderer->AddActor(actor);
 
@@ -765,19 +771,29 @@ public:
   void updateLightingPosition() {
     vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
     vtkSmartPointer<vtkRenderer> renderer = interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
+	if (!renderer)
+		return;
     vtkSmartPointer<vtkCamera> camera = renderer->GetActiveCamera();
     vtkSmartPointer<vtkLightCollection> lights = renderer->GetLights();
-    lights->InitTraversal();
+	if (lights)
+	{
+		lights->InitTraversal();
+		vtkSmartPointer<vtkLight> light1 = lights->GetNextItem();
+		if (light1)
+		{
+			light1->SetPosition(camera->GetPosition());
+			light1->SetTransformMatrix(mLightTransform->GetMatrix());
+		}
 
-    vtkSmartPointer<vtkLight> light1 = lights->GetNextItem();
-    light1->SetPosition(camera->GetPosition());
-    light1->SetTransformMatrix(mLightTransform->GetMatrix());
-
-    vtkSmartPointer<vtkLight> light2 = lights->GetNextItem();
-    light2->SetPosition(camera->GetPosition()); // correct
-#ifdef SHOWCAMERALIGHT
-    displayInfoAnnotation(true);
-#endif
+		vtkSmartPointer<vtkLight> light2 = lights->GetNextItem();
+		if (light2)
+		{
+			light2->SetPosition(camera->GetPosition()); // correct
+		}
+		#ifdef SHOWCAMERALIGHT
+		displayInfoAnnotation(true);
+		#endif
+	}
   }
 
   void SetInfoAnnotation (vtkCornerAnnotation *annotation) {

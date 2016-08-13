@@ -293,18 +293,26 @@ void VtkWidget::updateLightPosition(vtkTransform * transform)
   if (mCallback2D)
   {
     mCallback2D->SetLightTransform(transform);
+	qDebug()<<"after light transform";
     mCallback2D->updateLightingPosition();
+	qDebug()<<"after light transform";
   }
-
+qDebug()<<"in updatelight position";
   if (mCallback3D)
   {
+	  qDebug()<<"before activate";
 	mw()->activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL)); 
+	qDebug()<<"before set transform";
     mCallback3D->SetLightTransform(transform);
+	qDebug()<<"after set transform";
     mCallback3D->updateLightingPosition();
+	qDebug()<<"before lieght position";
   }
 
   if(mQVTKWidget)  mQVTKWidget->show();
+  qDebug()<<"after shown";
   if(mQVTKWidget)  mQVTKWidget->update();
+   qDebug()<<"after update";
 
 }
 
@@ -544,19 +552,19 @@ void VtkWidget::openFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartP
 	mCallback3D->openFrustumNoteMark(points, normals);
 }
 
-void VtkWidget::loadPointNoteMark(const int cellId, const ColorType color, const double* position)
+void VtkWidget::loadPointNoteMark(const int cellId, const ColorType color, const double* position, bool isDisplay)
 {
-	mCallback3D->displayLoadPointNote(cellId, color, position);
+	mCallback3D->displayLoadPointNote(cellId, color, position, isDisplay);
 }
 
-void VtkWidget::loadSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, const ColorType color)
+void VtkWidget::loadSurfaceNoteMark(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, const ColorType color, bool isDisplay)
 {
-	mCallback3D->displayLoadSurfaceNote(cellIds, points, color);
+	mCallback3D->displayLoadSurfaceNote(cellIds, points, color, isDisplay);
 }
 
-void VtkWidget::loadFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const ColorType color)
+void VtkWidget::loadFrustumNoteMark(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, const ColorType color, bool isDisplay)
 {
-	mCallback3D->displayLoadFrustumNote(points, normals, color);
+	mCallback3D->displayLoadFrustumNote(points, normals, color, isDisplay);
 }
 
 void VtkWidget::removePointNote2DMark(double* point)
@@ -579,14 +587,14 @@ void VtkWidget::openSurfaceNote2DMark(double* point)
 	mCallback2D->openSurfaceNoteMark(point);
 }
 
-void VtkWidget::loadPointNote2DMark(double* point, const ColorType color)
+void VtkWidget::loadPointNote2DMark(double* point, const ColorType color, bool isDisplay)
 {
-	mCallback2D->displayLoadPointNote(point, color);
+	mCallback2D->displayLoadPointNote(point, color, isDisplay);
 }
 
-void VtkWidget::loadSurfaceNote2DMark(double* point, const ColorType color)
+void VtkWidget::loadSurfaceNote2DMark(double* point, const ColorType color, bool isDisplay)
 {
-	mCallback2D->displayLoadSurfaceNote(point, color);
+	mCallback2D->displayLoadSurfaceNote(point, color, isDisplay);
 }
 
 void VtkWidget::setMeasureDistance(bool status)

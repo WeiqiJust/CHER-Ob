@@ -107,21 +107,24 @@ public:
 
 	/**
 	 * @brief  Init the widget by loading existing notes and annotation.
-	 * @param  path  The absolute object path.
+	 * @param  path               The absolute object path.
+	 * @param  isDisplayNoteMark  Whether or not to display note marks.
 	 */
-	void init(const QString path);
+	void init(const QString path, bool isDisplayNoteMark = false);
 
 	/**
 	 * @brief  Init the widget for CT 2d rendering mode (default open mode) by loading existing notes and annotation.
 	 * @param  path  The absolute object path.
+	 * @param  isDisplayNoteMark  Whether or not to display note marks.
 	 */
-	void initCT2DRendering(const QString path);
+	void initCT2DRendering(const QString path, bool isDisplayNoteMark = false);
 
 	/**
 	 * @brief  Init the widget for CT volume rendering mode by loading existing notes and annotation.
 	 * @param  path  The absolute object path.
+	 * @param  isDisplayNoteMark  Whether or not to display note marks.
 	 */
-	void initCTVolumeRendering(const QString path);
+	void initCTVolumeRendering(const QString path, bool isDisplayNoteMark = false);
 
 	/**
 	 * @brief  Enable annotation when annotation button in the main frame is checked.
@@ -168,6 +171,11 @@ public:
 	 * @brief  Remove current object's unsaved notes by setting their "removed" flags as true. Not delete the note instance.
 	 */
 	void removeUnSavedNotes();
+
+	/**
+	 * @brief  Clear the all the note marks.
+	 */
+	void removeAllNotesMark();
 
 	/**
 	 * @brief  Close all objects' notes by sending the signal. All the note dialogs are hidden.
@@ -271,6 +279,12 @@ public:
 	void openNotesByUsers(const QVector<QString> users);
 
 	/**
+	 * @brief  Replace the old user name to new user name. If old name is none, then add the new name.
+	 * @param  new and old user names.
+	 */
+	void replaceNotesUserName(const QString newName, const QString oldName = QString());
+
+	/**
 	 * @brief  Draw 2D Note marks on the 2D images. This function is used to display CT 2D rendering note marks.
 	 * @param  path  The absolute object path.
 	 */
@@ -333,6 +347,12 @@ signals:
 	void closeAll();
 
 	/**
+	 * @brief  Replace the old user name to new user name. If old name is none, then add the new name.
+	 * @param  new and old user names.
+	 */
+	void replaceUserName(const QString newName, const QString oldName);
+
+	/**
 	 * @brief  Trigger main frame to update menu.
 	 */
 	void updateMenu();
@@ -371,15 +391,16 @@ private:
 
 	/**
 	 * @brief  Load the 3D/2D note from the absolute path.
-	 * @param  path       The absolute note path.
-	 * @param  isDisplay  Whether or not to draw the note mark.
+	 * @param  path               The absolute note path.
+	 * @param  isLoadNoteMark     Whether or not to draw the note mark.
+	 * @param  isDisplayNoteMark  Whether or not to display note marks. If isLoadNoteMark is set false, then isDisplayNoteMark should also be set false.
 	 * @return If note is correctly loaded return true, otherwise false.
 	 */
-	bool loadPointNote(const QString path, bool isDisplay = true);
-	bool loadSurfaceNote(const QString path, bool isDisplay = true);
-	bool loadFrustumNote(const QString path, bool isDisplay = true);
-	bool loadPointNote2D(const QString path, bool isDisplay = true);
-	bool loadSurfaceNote2D(const QString path, bool isDisplay = true);
+	bool loadPointNote(const QString path, bool isLoadNoteMark = true, bool isDisplayNoteMark = false);
+	bool loadSurfaceNote(const QString path, bool isLoadNoteMark = true, bool isDisplayNoteMark = false);
+	bool loadFrustumNote(const QString path, bool isLoadNoteMark = true, bool isDisplayNoteMark = false);
+	bool loadPointNote2D(const QString path, bool isLoadNoteMark = true, bool isDisplayNoteMark = false);
+	bool loadSurfaceNote2D(const QString path, bool isLoadNoteMark = true, bool isDisplayNoteMark = false);
 
 	/**
 	 * @brief  Load Annotation from the absolute path.

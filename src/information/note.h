@@ -169,6 +169,12 @@ public slots:
 	 */
 	void removeImage(int id);
 
+	/**
+	 * @brief  Replace the old user name to new user name. If old name is none, then add the new name.
+	 * @param  old and new user names.
+	 */
+	void replaceUserName(const QString newName, const QString oldName = QString());
+
 protected slots:
 
 	/**

@@ -36,8 +36,6 @@ ProjectInfoDialog::ProjectInfoDialog(const QString name, const QString path, con
 	mVBox = new QVBoxLayout();
 	mHBox = new QHBoxLayout();
 	mHBoxDescription = new QHBoxLayout();
-	mUserNameLineEdit = new QLineEdit();
-	mUserNameLineEdit->setFixedWidth(200);
 	mKeywordLineEdit = new QLineEdit();
 	mKeywordLineEdit->setFixedWidth(200);
 	mAffiliationLineEdit = new QLineEdit();
@@ -144,16 +142,7 @@ void ProjectInfoDialog::edit()
 	editButton->setEnabled(false);
 	saveButton->setEnabled(true);
 
-	QString text = mUserNameContent->text();
-	mGrid->removeWidget(mUserNameContent);
-	delete mUserNameContent;
-	mUserNameLineEdit = new QLineEdit();
-	mUserNameLineEdit->setFixedWidth(200);
-	mUserNameLineEdit->setText(text);
-	mUserName->setBuddy(mUserNameLineEdit);
-	mGrid->addWidget(mUserNameLineEdit, 3, 1, 1, 1, Qt::AlignLeft);
-
-	text = mKeywordContent->text();
+	QString text = mKeywordContent->text();
 	mGrid->removeWidget(mKeywordContent);
 	delete mKeywordContent;
 	mKeywordLineEdit = new QLineEdit();
@@ -184,13 +173,6 @@ void ProjectInfoDialog::save()
 {
 	editButton->setEnabled(true);
 	saveButton->setEnabled(false);
-
-	mCurrentUserName = mUserNameLineEdit->text();
-	mGrid->removeWidget(mUserNameLineEdit);
-	delete mUserNameLineEdit;
-	mUserNameContent = new QLabel(mCurrentUserName);
-	mUserName->setBuddy(mUserNameContent);
-	mGrid->addWidget(mUserNameContent, 3, 1, 1, 1, Qt::AlignLeft);
 
 	mCurrentKeyword = mKeywordLineEdit->text();
 	mGrid->removeWidget(mKeywordLineEdit);
@@ -243,7 +225,7 @@ bool ProjectInfoDialog::saveNotification()
 {
 	if (saveButton->isEnabled() && !mDialog->isHidden())
 	{
-		if (mCurrentUserName != mUserNameLineEdit->text() || mCurrentKeyword != mKeywordLineEdit->text() || mCurrentAffiliation != mAffiliationLineEdit->text() 
+		if (mCurrentKeyword != mKeywordLineEdit->text() || mCurrentAffiliation != mAffiliationLineEdit->text() 
 			|| mCurrentDescription != mDescriptionText->toPlainText())
 		{
 			int ret = QMessageBox::warning(this, tr("Warning"),
