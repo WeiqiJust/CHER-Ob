@@ -304,7 +304,7 @@ void Navigation::showTreeWidgetItem(QTreeWidgetItem* item, int column)
 	if (item->columnCount() == 3)	// check the item is note
 		mw()->mInformation->openNoteFromNavigation(item);
 	else if (item->columnCount() == 4)	// check the item is bookmark
-		mw()->mBookmark->viewBookmark(item);
+		mw()->mBookmark->viewBookmark(item, item->text(2));
 }
 
 void Navigation::addNoteItem(const QString path, const NoteMode type, const NoteType dim)

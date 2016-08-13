@@ -2,7 +2,8 @@
 
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
- - Writers:   Min H. Kim (minhkim@cs.yale.edu)
+ - Writers:  Min H. Kim (minhkim@cs.yale.edu)
+			 Weiqi Shi (weiqi.shi@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -101,7 +102,7 @@ signals:
    */
   void sendVolumeRenderModeChanged(CTVolumeRenderMode currentVolumeRenderMode);
 
-  friend bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item);
+  friend bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item, QString objectPath);
 
   // only max number needs to be updated from the VtkWidget
   // all the rest goes from the CTcontrol to the VtkWidget

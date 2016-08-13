@@ -2,7 +2,8 @@
 
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
- - Writers:   Min H. Kim (minhkim@cs.yale.edu)
+ - Writers:  Min H. Kim (minhkim@cs.yale.edu)
+ 			 Weiqi Shi (weiqi.shi@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -608,7 +609,6 @@ bool Information::loadPointNote2D(const QString path, bool isDisplay)
 		//else
 		//	qDebug()<<"Cannot find the window!!!!";
 	}
-	qDebug()<<"Load Point Note2d "<<notePath;
 	qDebug() << "Load "<<mPointNotes2D[notePath].size()<<" Point Note";
 	return isLoadSucceed;
 }

@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  David Tidmarsh (tidmarsh@aya.yale.edu)
+			 Weiqi Shi (weiqi.shi@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -101,7 +102,7 @@ public:
 
 public slots:
   void createBookmark();
-  bool viewBookmark(QTreeWidgetItem* item);
+  bool viewBookmark(QTreeWidgetItem* item, QString objectPath = QString());
 
 private slots:
   void createFolder();

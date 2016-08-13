@@ -1,0 +1,6 @@
+set(ITKVideoIO_LOADED 1)
+set(ITKVideoIO_DEPENDS "ITKIOImageBase;ITKVideoCore")
+set(ITKVideoIO_LIBRARIES "ITKVideoIO")
+set(ITKVideoIO_INCLUDE_DIRS "${ITK_INSTALL_PREFIX}/include/ITK-4.4")
+set(ITKVideoIO_LIBRARY_DIRS "")
+

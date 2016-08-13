@@ -1,0 +1,6 @@
+set(ITKGPUCommon_LOADED 1)
+set(ITKGPUCommon_DEPENDS "ITKCommon")
+set(ITKGPUCommon_LIBRARIES "ITKCommon")
+set(ITKGPUCommon_INCLUDE_DIRS "${ITK_INSTALL_PREFIX}/include/ITK-4.4")
+set(ITKGPUCommon_LIBRARY_DIRS "")
+

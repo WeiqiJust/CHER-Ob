@@ -2,7 +2,7 @@
 
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
- - Writers:   Min H. Kim (minhkim@cs.yale.edu)
+ - Writers:  Min H. Kim (minhkim@cs.yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General

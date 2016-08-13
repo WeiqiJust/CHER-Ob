@@ -2,7 +2,8 @@
 
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
- - Writers:   Min H. Kim (minhkim@cs.yale.edu)
+ - Writers:  Min H. Kim (minhkim@cs.yale.edu)
+             Weiqi Shi (weiqi.shi@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -1526,8 +1527,11 @@ void MainWindow::saveProjectAs()
 		QString previousProjectFullName = currentProjectFullName;
 		currentProjectFullName = newProjectPath;
         lastSavedDirectory.setPath(currentProjectFullName);
+		lastUsedDirectory.setPath(currentProjectFullName);
 		QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
 		this->mInformation->refresh();
+		mNavigation->clear();
+		mNavigation->init(currentProjectName, true);
 		foreach(QMdiSubWindow *w, windows)
 		{
 			VtkView* mvc = qobject_cast<VtkView *>(w->widget());
@@ -1538,15 +1542,16 @@ void MainWindow::saveProjectAs()
 				mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + fi.fileName() + QDir::separator() + fi.fileName();
 				mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + fi.fileName();
 				w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
-				if (!mvc->currentView()->isDICOM())
-					this->mInformation->init(mvc->currentView()->mProjectPath);
-				else
+				if (mvc->currentView()->isDICOM())
 				{
 					if (mvc->currentView()->getCTVisualization() == STACK)
 						this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
 					else
 						this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath);
-				}
+
+				}	
+				else
+					this->mInformation->init(mvc->currentView()->mProjectPath);	
 			}
 			else if (!mvc->currentView()->mCHE.isEmpty() && !mvc->currentView()->mCHEObject.isEmpty())
 			{
@@ -1555,41 +1560,45 @@ void MainWindow::saveProjectAs()
 				mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName() + QDir::separator() + fi.fileName();
 				mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName();
 				w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
-				if (!mvc->currentView()->isDICOM())
-					this->mInformation->init(mvc->currentView()->mProjectPath);
-				else
+				if (mvc->currentView()->isDICOM())
 				{
 					if (mvc->currentView()->getCTVisualization() == STACK)
 						this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
 					else
 						this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath);
-				}
+				}	
+				else
+					this->mInformation->init(mvc->currentView()->mProjectPath);
+				
 			}
 			else if (mvc->currentView()->mCHEObject.isEmpty())
 			{
 				QStringList nameElement = mvc->currentView()->mCHE.split(QDir::separator());
 				QString CHEName = nameElement[nameElement.size() - 1];
-				mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName() + QDir::separator() + fi.fileName();
+				mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + CHEName + QDir::separator()
+					+ fi.fileName() + QDir::separator() + fi.fileName();
 				mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName();
 				mvc->currentView()->mCHEObject = fi.fileName();
 				w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
-				if (!mvc->currentView()->isDICOM())
-					this->mInformation->init(mvc->currentView()->mProjectPath);
-				else
+				if (mvc->currentView()->isDICOM())
 				{
 					if (mvc->currentView()->getCTVisualization() == STACK)
 						this->mInformation->initCT2DRendering(mvc->currentView()->mProjectPath);
 					else
 						this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath);
-				}
+				}	
+				else
+					this->mInformation->init(mvc->currentView()->mProjectPath);
 			}
-			else	// If the CHE infomation is lost
+			else	// If the mCHE is emplty string but mCHEObject is not, then infomation is lost
 			{
 				QMessageBox mb;
-				mb.critical(this, tr("Save Project Error"), tr("Failed to save project due to the missing Cultural Heritage Entity info! "));
-				rmDir(currentProjectFullName);
-				return;
+				QString message = QString("The original Cultrual Heritage inheritance relationship of object ")
+					+ mvc->currentView()->mProjectPath + QString(" is missing");
+				mb.critical(this, tr("Save Project Error"), message);
+				mvc->currentView()->mCHEObject = QString();
 			}
+			mNavigation->addObject(mvc->currentView()->mProjectPath, mvc->currentView()->mCHE);
 		}
 		setWindowTitle(appName()+appBits()+QString(" Project ")+currentProjectName);
 		updateXML();
@@ -2835,6 +2844,7 @@ void MainWindow::updateMenus()
 	pointNote->setEnabled(writeAnnotationAct->isChecked());
 	surfaceNote->setEnabled(writeAnnotationAct->isChecked());
 	frustumNote->setEnabled(writeAnnotationAct->isChecked());
+	colorToolButton->setEnabled(writeAnnotationAct->isChecked());
 	colorDropMenu->setEnabled(writeAnnotationAct->isChecked());
 	if (writeAnnotationAct->isChecked())
 	{
@@ -3302,8 +3312,11 @@ void MainWindow::saveCHEAs()
 		currentProjectSave.append(QDir::separator() + currentProjectName + QString(".xml"));
 		currentProjectFullName = newProjectPath;
         lastSavedDirectory.setPath(currentProjectFullName);
+		lastUsedDirectory.setPath(currentProjectFullName);
 		QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
 		this->mInformation->refresh();
+		mNavigation->clear();
+		mNavigation->init(currentProjectName, false);
 		foreach(QMdiSubWindow *w, windows)
 		{
 			VtkView* mvc = qobject_cast<VtkView *>(w->widget());
@@ -3321,6 +3334,7 @@ void MainWindow::saveCHEAs()
 				else
 					this->mInformation->initCTVolumeRendering(mvc->currentView()->mProjectPath);
 			}
+			mNavigation->addObject(mvc->currentView()->mProjectPath);
 		}
 		setWindowTitle(appName()+appBits()+QString(" CHE ")+currentProjectName);
 		CHEInfoBasic* info = new CHEInfoBasic();
@@ -3417,6 +3431,7 @@ void MainWindow::exportCHEToProject()
 		QFile file(previousXML);
 		file.remove();	// remove copied xml
         lastSavedDirectory.setPath(newProjectPath);
+		lastUsedDirectory.setPath(newProjectPath);
 		QDir projectDir(newProjectPath);
 		QFileInfoList entries = projectDir.entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
 		for (int i = 0; i < entries.size(); i++)
@@ -4278,7 +4293,7 @@ void MainWindow::createToolBars()
 	colorDropMenu->addAction(annotationPurple);
 	colorDropMenu->addAction(annotationWhite);
 	
-	QToolButton *colorToolButton = new QToolButton();
+	colorToolButton = new QToolButton();
 	colorToolButton->setText(tr("Annotation Color"));
 	colorToolButton->setIcon(QIcon(":/images/palette.png"));
 	colorToolButton->setMenu(colorDropMenu);

@@ -2,7 +2,8 @@
 
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
- - Writers:   Min H. Kim (minhkim@cs.yale.edu)
+ - Writers:  Min H. Kim (minhkim@cs.yale.edu)
+			 Weiqi Shi (weiqi.shi@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -283,7 +284,7 @@ public:
 	 * @param  item  The double clicked item.
 	 * @return If the status is correctly restored, return true.
 	 */
-	friend bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item);
+	friend bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item, QString objectPath);
 
 	/**
 	 * @brief Friend class. It is currently not being used.
@@ -839,6 +840,7 @@ private:
 	QMenu *viewFromMenu;
 	QMenu *annotationModeMenu;
 	QMenu *annotationColorMenu;
+	QToolButton *colorToolButton;
 	QMenu *colorDropMenu;
 	QMenu *handleMenu;
 	QMenu *splitMenu;

@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  David Tidmarsh (tidmarsh@aya.yale.edu)
+ 			 Weiqi Shi (weiqi.shi@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -540,7 +541,7 @@ void BookmarkWidget::buildDOMDocument(QDomDocument& doc, QDomElement& root)
     doc.appendChild(root);
 }
 
-bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item)
+bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item, QString objectPath)
 {
     double pos[3]; // camera position
     double foc[3]; // focal point
@@ -572,9 +573,17 @@ bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item)
 
     vtkSmartPointer<vtkCamera> camera = mw()->VTKA()->mRenderer->GetActiveCamera();
 
-    QString path = getBookmarkFilepath();
+    QString path = objectPath;
+	if (objectPath == QString())
+		path = getBookmarkFilepath();
+	else
+	{
+		path.append(QDir::separator() + QString("BookMark"));
+		path = path + QDir::separator() + BOOKMARK_FN;
+	}
     QFile file(path);
-    if(!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+    if(!file.open(QIODevice::ReadWrite | QIODevice::Text))
+	{
         showFileOpenError();
         file.close();
         return false;
@@ -582,7 +591,8 @@ bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item)
     QDomDocument doc;
     doc.setContent(&file);
     QDomNodeList list = doc.elementsByTagName(BOOKMARK_XML_ROOT);
-    if(list.isEmpty()) {
+    if(list.isEmpty())
+	{
         showInvalidFileError();
         file.close();
         return false;
@@ -591,15 +601,18 @@ bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item)
     QDomNodeList bmks = root.elementsByTagName(BOOKMARK_NAME);
     QDomElement elt;
     QString value;
-    for(int i = 0; i < bmks.length(); i++) {
+    for(int i = 0; i < bmks.length(); i++)
+	{
         elt = bmks.at(i).toElement();
         value = elt.attribute(UUID_NAME);
-        if(value == uuid) {
+        if(value == uuid)
+		{
             break;
         }
         value.clear();
     }
-    if(value.isEmpty()) {
+    if(value.isEmpty())
+	{
         QMessageBox mb;
         mb.critical(this, tr("Bookmark Error"),
                     tr("The bookmark with the provided caption cannot be found."));
@@ -626,7 +639,7 @@ bool BookmarkWidget::viewBookmark(QTreeWidgetItem* item)
                   && !(filetype == CTVOLUME && mode == CTSTACK)) {
             QMessageBox mb;
             mb.critical(this, tr("Bookmark Error"),
-                        tr("This bookmark cannot be loaded because it corresponds to a file type different from the current file."));
+                        tr("This bookmark cannot be loaded because it corresponds to a file type different from the current file. Please switch to the correct object window."));
             file.close();
             return false;
         }

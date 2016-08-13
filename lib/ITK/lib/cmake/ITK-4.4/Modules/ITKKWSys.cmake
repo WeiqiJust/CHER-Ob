@@ -1,0 +1,6 @@
+set(ITKKWSys_LOADED 1)
+set(ITKKWSys_DEPENDS "")
+set(ITKKWSys_LIBRARIES "itksys")
+set(ITKKWSys_INCLUDE_DIRS "${ITK_INSTALL_PREFIX}/include/ITK-4.4")
+set(ITKKWSys_LIBRARY_DIRS "")
+

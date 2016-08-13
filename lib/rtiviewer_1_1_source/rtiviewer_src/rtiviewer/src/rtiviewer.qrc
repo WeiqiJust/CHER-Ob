@@ -1,0 +1,19 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/" >
+        <file>images/chi-logo.png</file>
+        <file>images/config.png</file>
+        <file>images/hptran.png</file>
+        <file>images/info.png</file>
+        <file>images/logo_imls.gif</file>
+        <file>images/logousc_resize.png</file>
+        <file>images/openlocal.png</file>
+        <file>images/openremote.png</file>
+		<file>images/snapshot.png</file>
+        <file>images/ucsantacruz_resize.png</file>
+        <file>images/vcglogo.png</file>
+		<file>images/logo-pdf.png</file>
+		<file>images/minho.jpeg</file>
+		<file>images/tomb.png</file>
+    </qresource>
+</RCC>

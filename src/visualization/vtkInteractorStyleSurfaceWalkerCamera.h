@@ -1,3 +1,25 @@
+/****************************************************************************
+
+ - Codename: CHER-Ob (Yale Computer Graphics Group)
+
+ - Writers:  Min H. Kim (minhkim@cs.yale.edu)
+
+ - License:  GNU General Public License Usage
+   Alternatively, this file may be used under the terms of the GNU General
+   Public License version 3.0 as published by the Free Software Foundation
+   and appearing in the file LICENSE.GPL included in the packaging of this
+   file. Please review the following information to ensure the GNU General
+   Public License version 3.0 requirements will be met:
+   http://www.gnu.org/copyleft/gpl.html.
+
+ - Warranty: This software is distributed WITHOUT ANY WARRANTY; without even
+   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+   PURPOSE.
+
+ - Acknowledgments: This EXR file reader is based on the original code of
+   exrreadchannel for MATLAB by Edgar Velazquez-Armendariz.
+
+*****************************************************************************/
 #ifndef VTKINTERACTORSTYLESURFACEWALKERCAMERA_H
 #define VTKINTERACTORSTYLESURFACEWALKERCAMERA_H
 
@@ -16,7 +38,7 @@ class VtkWidget;
 class LSCM;
 
 /**
- * This class is to designed to provide surface walker camera mode. It is buggy and not being used!
+ * This class is to designed to provide surface walker camera mode. It is not being used!
  */
 
 class vtkInteractorStyleSurfaceWalkerCamera : public vtkInteractorStyleTrackballCamera

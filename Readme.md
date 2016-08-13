@@ -9,5 +9,11 @@ Alternatively, this file may be used under the terms of the GNU General Public L
 **Warranty:**<br />
 This software is distributed WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+**Contributor:**<br />
+Weiqi Shi (weiqi.shi@yale.edu)
+Ying Yang (ying.yang.yy368@yale.edu)
+Min H. Kim (minhkim@cs.yale.edu)
+David Tidmarsh (tidmarsh@aya.yale.edu)
+
 **Acknowledgments:**<br />
 Some portions of this file are based on the example codes of ITK/VTK library from Kitware, QT API from Nokia and Meshlab VCG library from ISTI CNR. We would like to thank anonymous help by various software engineering communities.
