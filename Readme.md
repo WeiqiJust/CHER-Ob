@@ -5,7 +5,7 @@ It introduces the concept of Cultural Heritage Entity, which serves as a templat
 
 ##Install
 
-CHER-Ob is currently supplied as pre-built binaries windows. Mac version is comming soon.
+CHER-Ob is currently supplied as pre-built binaries for windows. Mac version is comming soon.
 
 ###Prerequisites
 - Qt
@@ -57,10 +57,13 @@ Alternatively, this file may be used under the terms of the GNU General Public L
 
 ##Contributor
 **Yale Computer Graphics Group**<br />
-Weiqi Shi (weiqi.shi@yale.edu)<br />
-Ying Yang (ying.yang.yy368@yale.edu)<br />
-Min H. Kim (minhkim@cs.yale.edu)<br />
-David Tidmarsh (tidmarsh@aya.yale.edu)<br />
+- Weiqi Shi (weiqi.shi@yale.edu)
+- Ying Yang (ying.yang.yy368@yale.edu)
+- Min H. Kim (minhkim@cs.yale.edu)
+- David Tidmarsh (tidmarsh@aya.yale.edu)
+- Eleni Kotoula (eleni.kotoula@yale.edu)
+- Kiraz Akoglu (goze.akoglu@yale.edu)
+- Holly Rushmeier (holly.rushmeier@yale.edu)
 
 ##Acknowledgments
 Some portions of this file are based on the example codes of ITK/VTK library from Kitware, QT API from Nokia, RTIViewer from Visual Computing Lab and Meshlab VCG library from ISTI CNR. We would like to thank anonymous help by various software engineering communities.
