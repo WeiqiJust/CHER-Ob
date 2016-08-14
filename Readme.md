@@ -28,17 +28,18 @@ $(ProjectPath)\lib\qwt-6.1.0\lib<br />
 $(QTDir)\bin<br />
 ```
 
-$(ProjectPath) is where the lib folder locate. $(QTDir) is where your QT is installed.
+`$(ProjectPath)` is where the lib folder locate. 
+`$(QTDir)` is where your QT is installed.
 
-Optional:
+Optional:<br />
 The .sln file under Visual Studio folder has already loaded all the include files and .lib files under lib folder.<br />
 If you recompile the libraries, please follow the instructions below to link the libraries:<br />
 - Put all the compiled libraries in different separte folders with the library's name. Each library should include an include/src, lib and bin(optional) folder.<br />
-- Put all the library folder under $(ProjectPath)\lib folder.<br />
-- Open .sln file and open solution "Properties".<br />
+- Put all the library folder under `$(ProjectPath)\lib` folder.<br />
+- Open .sln file and open solution `Properties`.<br />
 - Choose the configuration and platform in which you compiled all your libraries. Make sure they are consistent.
-- Open Configuration Properties->C/C++->General->Additional Include Directories and add each library include file in the format: ..\lib\(Library Name)\include.<br />
-- Open Configuration Properties->Linker->General->Additional Include Directories and add each library .lib file in the format: ..\lib\(Library Name)\lib.<br />
+- Open `Configuration Properties->C/C++->General->Additional Include Directories` and add each library include file in the format: `..\lib\(Library Name)\include`.<br />
+- Open `Configuration Properties->Linker->General->Additional Include Directories` and add each library .lib file in the format: `..\lib\(Library Name)\lib`.<br />
 - Choose OK to save the configurations.<br />
 
 All the images and icons are registered in the file `Visual Studio/CHEROb.qrc` and `Visual Studio/CHEROb.rc` in relative path. If you move the images or icon folder, please modify the .qrc and .rc file to correctly load images.
