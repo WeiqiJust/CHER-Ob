@@ -1,7 +1,7 @@
 Read me for installed library of CHER-Ob 
 ========================================
 
-Required Library:
+Required Library and Recommend Version:
 - Qt_4
 - VTK_5.10
 - ITK_4.4
