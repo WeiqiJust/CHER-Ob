@@ -24,11 +24,11 @@ CHER-Ob is currently supplied as pre-built binaries windows. Mac version is comm
 Please add following path in system environment "Path" variable (`Control Panel->System->Advanced System Settings->advanced tab->Environment Variables->System Varible->Path`): <br />
 
 ```
-$(ProjectPath)\lib\ITK\bin;<br />
-$(ProjectPath)\lib\VTK\bin;<br />
-$(ProjectPath)\lib\openEXR-1.7.0\bin;<br />
-$(ProjectPath)\lib\qwt-6.1.0\lib<br />
-$(QTDir)\bin<br />
+$(ProjectPath)\lib\ITK\bin
+$(ProjectPath)\lib\VTK\bin
+$(ProjectPath)\lib\openEXR-1.7.0\bin
+$(ProjectPath)\lib\qwt-6.1.0\lib
+$(QTDir)\bin
 ```
 
 `$(ProjectPath)` is where the lib folder locate. 
