@@ -225,7 +225,7 @@ bool ProjectInfoDialog::saveNotification()
 {
 	if (saveButton->isEnabled() && !mDialog->isHidden())
 	{
-		if (mCurrentKeyword != mKeywordLineEdit->text() || mCurrentAffiliation != mAffiliationLineEdit->text() 
+		if (mCurrentKeyword != mKeywordLineEdit->text() || mCurrentAffiliation != mAffiliationLineEdit->text()
 			|| mCurrentDescription != mDescriptionText->toPlainText())
 		{
 			int ret = QMessageBox::warning(this, tr("Warning"),

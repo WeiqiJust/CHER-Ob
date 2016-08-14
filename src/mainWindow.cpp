@@ -1553,7 +1553,7 @@ void MainWindow::saveProjectAs()
 
 				}	
 				else
-					this->mInformation->init(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());	
+					this->mInformation->init(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
 			}
 			else if (!mvc->currentView()->mCHE.isEmpty() && !mvc->currentView()->mCHEObject.isEmpty())
 			{
