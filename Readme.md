@@ -23,7 +23,7 @@ CHER-Ob is currently supplied as pre-built binaries for windows. Mac version is 
 
 ###Windows
 
-To use the software, please run setup.exe under `software/windows' folder.
+To use the software, please run setup.exe under `software/windows` folder.
 
 To compile the software from source, please first add following path in system environment "Path" variable (`Control Panel->System->Advanced System Settings->advanced tab->Environment Variables->System Varible->Path`): <br />
 
