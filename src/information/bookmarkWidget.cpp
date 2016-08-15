@@ -380,7 +380,7 @@ void BookmarkWidget::refreshCurrentFileInfo()
 			QMap<int, RenderingMode*>* list = mw()->VTKA()->mRTIbrowser->getRenderingModes();
 			renderingMode = list->value(static_cast<int>(renderModeRTI));
 		}
-		else { renderModeRTI = RenderingRTI::DEFAULT; }
+		else { renderModeRTI = DEFAULT; }
     }
     if(mw()->mCtControl) {
         slice = mw()->mCtControl->GetSliceCurrent();
@@ -439,21 +439,18 @@ QString BookmarkWidget::getBookmarkFilepath()
     if(bfn.isEmpty()) return QString();
 
     QFileInfo finfo(bfn);
-	/*********** Modified by Weiqi Shi 1/15/2016*************/
     //QString path = mw()->getDataLocation();
 	QString path = mw()->VTKA()->mProjectPath;
     // DT: ensures that the directory for the current file exists or will exist.
-	/*********** Modified by Weiqi Shi 1/15/2016*************/
 	// the comment parts are the previous version
     //mw()->createDataLocation(path);
 	path.append(QDir::separator() + QString("BookMark"));
 
-    QDir* dir = new QDir();
+    //QDir* dir = new QDir();
     //QString fn = QDir::toNativeSeparators(dir->relativeFilePath(finfo.absoluteFilePath()));
 
     //path.append(QDir::separator() + finfo.fileName().simplified().replace(" ", WORD_SEPARATOR) + WORD_SEPARATOR
     //            + QString::number(qHash(fn)));
-	/*********** Modified by Weiqi Shi 1/15/2016*************/
     if(!QDir(path).exists()) QDir().mkdir(path);
 
     path = path + QDir::separator() + BOOKMARK_FN;
@@ -1364,4 +1361,5 @@ MainWindow* BookmarkWidget::mw()
       return mainwindow;
     }
   }
+  return NULL;
 }

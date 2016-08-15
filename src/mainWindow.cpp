@@ -1571,7 +1571,6 @@ void MainWindow::saveProjectAs()
 				}	
 				else
 					this->mInformation->init(mvc->currentView()->mProjectPath, mvc->currentView()->getUserAnnotationOn());
-				
 			}
 			else if (mvc->currentView()->mCHEObject.isEmpty())
 			{
@@ -2136,7 +2135,7 @@ bool MainWindow::rmDir(const QString &dirPath)
 }
 
 
-void MainWindow::newVtkProject(const QString& projName)
+void MainWindow::newVtkProject()
 {
     if (currentProjectFullName != NULL && !this->closeAll())
 		return;
@@ -4385,7 +4384,7 @@ QWidget * MainWindow::mountWidgetCenter(QWidget *inputWidget)
 
 void MainWindow::createDockWindows()
 {
-	int mwWidth = this->sizeHint().width();
+	//int mwWidth = this->sizeHint().width();
 	int mwHeight = this->sizeHint().height();
 
 	tabWidgetTop = new QTabWidget;
@@ -4397,7 +4396,7 @@ void MainWindow::createDockWindows()
 
 	mLightControl = new LightControl(this);
 	tabWidgetTop->addTab(mLightControl, tr("Light Control 3D") );
-	activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL));
+	activateTabWidgetTop(Model3DLIGHTCONTROL);
 
 	mLightControlRTI = new LightControlRTI(this, 160);
 
@@ -4430,7 +4429,7 @@ void MainWindow::createDockWindows()
 	mInformation = new Information(this);
 	mBookmark = new BookmarkWidget(this);
 	mSearch = new SearchWidget(this);
-	QDockWidget *dockBot = new QDockWidget(this);
+	//QDockWidget *dockBot = new QDockWidget(this);
 	mSearchAll = new SearchAllWidget(this);
 
 	if(mwHeight < 600) 

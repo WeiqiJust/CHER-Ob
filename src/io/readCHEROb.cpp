@@ -1575,6 +1575,7 @@ MainWindow * ReadCHEROb::mw()
       return mainwindow;
     }
   }
+  return NULL;
 }
 
 

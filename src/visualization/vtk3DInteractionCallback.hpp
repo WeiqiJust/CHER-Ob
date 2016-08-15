@@ -141,7 +141,7 @@ public:
           return mainwindow;
         }
       }
-
+	  return NULL;
     }
 
   static vtk3DInteractionCallback *New() {

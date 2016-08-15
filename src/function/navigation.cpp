@@ -651,4 +651,5 @@ MainWindow* Navigation::mw()
       return mainwindow;
     }
   }
+  return NULL;
 }

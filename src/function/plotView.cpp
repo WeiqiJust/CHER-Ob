@@ -76,6 +76,7 @@ MainWindow * PlotView::mw()
       return mainwindow;
     }
   }
+  return NULL;
 }
 
 PlotView::~PlotView()

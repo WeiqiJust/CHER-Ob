@@ -336,6 +336,7 @@ MainWindow * VtkView::findmw()
       return mainwindow;
     }
   }
+  return NULL;
 }
 
 void VtkView::closeEvent( QCloseEvent *event )

@@ -203,14 +203,13 @@ void SpectralPlot::initGradient()
 }
 
 void SpectralPlot::normalize_vector_in(QVector<double>& vec) {
-  std::size_t vec_size = vec.size();
   double length = 0.0;
-  for (std::size_t i = 0; i < vec_size; ++i) {
+  for (int i = 0; i < vec.size(); ++i) {
     double value = vec[i];
     length += (value * value);
   }
   length = std::sqrt(length);
-  for (std::size_t i = 0; i < vec_size; ++i) {
+  for (int i = 0; i < vec.size(); ++i) {
     vec[i] /= length;
   }
 }

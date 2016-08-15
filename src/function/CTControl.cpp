@@ -35,8 +35,8 @@ CTControl::CTControl(QWidget *parent)
     : QWidget(parent)
 {
   // DT: These are currently unused - necessary?
-  int width = this->frameGeometry().width();
-  int height = this->frameGeometry().height();
+  //int width = this->frameGeometry().width();
+  //int height = this->frameGeometry().height();
 
   // Enums are defined in vtkWidget.h
   mSliceMax = 0;
@@ -167,10 +167,10 @@ QGroupBox *CTControl::createStackCtrlGroup()
 
   QVBoxLayout *vboxx = new QVBoxLayout;
 
-  int width = this->frameGeometry().width();
-  int height = this->frameGeometry().height();
+  //int width = this->frameGeometry().width();
+  //int height = this->frameGeometry().height();
   int iheight = 25;
-  int iwidth = 60;
+  //int iwidth = 60;
 
   //MK: LCD
   QPalette pal( Qt::black );
@@ -690,6 +690,6 @@ MainWindow * CTControl::mw()
       return mainwindow;
     }
   }
-
+  return NULL;
 }
 

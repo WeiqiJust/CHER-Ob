@@ -191,7 +191,7 @@ void SpecularEnhancement::setExp(int value)
 void SpecularEnhancement::applyPtmLRGB(const PyramidCoeff& coeff, const PyramidRGB& rgb, const QSize* mipMapSize, const PyramidNormals& normals, const RenderingInfo& info, unsigned char* buffer)
 {
 	// Creates the output texture.
-	int offsetBuf = 0;
+	//int offsetBuf = 0;
 	const PTMCoefficient* coeffPtr = coeff.getLevel(info.level);
 	const unsigned char* rgbPtr = rgb.getLevel(info.level);
 	const vcg::Point3f* normalsPtr = normals.getLevel(info.level);
@@ -285,7 +285,7 @@ void SpecularEnhancement::applyHSH(const PyramidCoeffF& redCoeff, const PyramidC
 		phi = 2*M_PI+phi;
     float theta = qMin<float>(acos(temp.Z()/temp.Norm()), M_PI / 2 - 0.04);
 
-	int offsetBuf = 0;
+	//int offsetBuf = 0;
 	getHSH(theta, phi, hweights, sqrt((float)info.ordlen));
 	
 	#pragma omp parallel for schedule(static,CHUNK) 

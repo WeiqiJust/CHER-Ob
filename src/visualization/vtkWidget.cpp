@@ -263,7 +263,7 @@ void VtkWidget::updateRTIImageVTK(std::vector<unsigned char> textureData, int te
 	if (FIRST_RTI_RENDERING) {
 
 		// YY: activate the correct light control tab in MainWindow
-		mw()->activateTabWidgetTop(static_cast<int>(LightControlType::RTILIGHTCONTROL));
+		mw()->activateTabWidgetTop(RTILIGHTCONTROL);
 		QEventLoop loop;
 		QTimer::singleShot(0.01, &loop, SLOT(quit()));
 		loop.exec();
@@ -293,27 +293,17 @@ void VtkWidget::updateLightPosition(vtkTransform * transform)
   if (mCallback2D)
   {
     mCallback2D->SetLightTransform(transform);
-	qDebug()<<"after light transform";
     mCallback2D->updateLightingPosition();
-	qDebug()<<"after light transform";
   }
-qDebug()<<"in updatelight position";
   if (mCallback3D)
   {
-	  qDebug()<<"before activate";
-	mw()->activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL)); 
-	qDebug()<<"before set transform";
+	mw()->activateTabWidgetTop(Model3DLIGHTCONTROL); 
     mCallback3D->SetLightTransform(transform);
-	qDebug()<<"after set transform";
     mCallback3D->updateLightingPosition();
-	qDebug()<<"before lieght position";
   }
 
   if(mQVTKWidget)  mQVTKWidget->show();
-  qDebug()<<"after shown";
   if(mQVTKWidget)  mQVTKWidget->update();
-   qDebug()<<"after update";
-
 }
 
 void VtkWidget::rotateCameraViewUpsideDown()
@@ -974,7 +964,7 @@ void VtkWidget::updateSlideMaxOnDocks()
     // connect the renderer to the window
 //    mVtkImageViewer->SetRenderWindow(this->GetRenderWindow());
 
-    int* Size = mVtkImageViewer->GetInput()->GetDimensions();
+    mVtkImageViewer->GetInput()->GetDimensions();
 //    qDebug() << "Dimensions of the picture as read with ITK: " << Size[0] << " x " << Size[1] << " x " << Size[2];
 
     // update max slices
@@ -1039,6 +1029,7 @@ MainWindow * VtkWidget::mw() // current MainWindow
       return mainwindow;
     }
   }
+  return NULL;
 }
 
 void VtkWidget::drawAxes3D()
@@ -1046,7 +1037,7 @@ void VtkWidget::drawAxes3D()
   vtkSmartPointer<vtkConeSource> coneSource = vtkSmartPointer<vtkConeSource>::New();
   coneSource->Update();
 
-  vtkPolyData* cone = coneSource->GetOutput();
+  //coneSource->GetOutput();
 
   //create a mapper
   vtkSmartPointer<vtkPolyDataMapper> coneMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -1343,7 +1334,7 @@ void VtkWidget::toggleImageProvenanceFeature()
 
 void VtkWidget::Rendering3D()
 {
-	mw()->activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL)); 
+	mw()->activateTabWidgetTop(Model3DLIGHTCONTROL); 
 	QEventLoop loop;
 	QTimer::singleShot(0.01, &loop, SLOT(quit()));
 	loop.exec();
@@ -2204,15 +2195,15 @@ void VtkWidget::RenderingVolume(int blendType, float reductionFactor, CTVolumeRe
   mWidgetMode = CTVOLUME;
   emit currentWidgetModeChanged(mWidgetMode);
 
-  int count = 1;
-  char *dirname = NULL;
+  //int count = 1;
+  //char *dirname = NULL;
   double opacityWindow = 4096;
   double opacityLevel = 2048;
   //int blendType = 0;
   //double reductionFactor = 1.0;
   double frameRate = 10.0;
-  char *fileName=0;
-  int fileType=0;
+  //char *fileName=0;
+  //int fileType=0;
 
   int clip = 1; // for clipping of bounding volume
 
@@ -2858,7 +2849,7 @@ bool VtkWidget::ReadDICOMDir(QString filename)
   catch (itk::ExceptionObject &excp)
     {
 //    qDebug() << "Exception thrown while reading the series: " << excp.GetDescription();
-    return false;
+		return false;
     }
 
   // ITK-VTK connector
@@ -2921,7 +2912,7 @@ bool VtkWidget::ReadDICOM(QString filename)
   catch (itk::ExceptionObject &excp)
     {
 //    qDebug() << "Exception thrown while reading the series: " << excp.GetDescription();
-    return false;
+		return false;
     }
 
   // ITK-VTK connector
@@ -3268,7 +3259,7 @@ bool VtkWidget::ReadRTI(QString filename)
 	QFile data(filename);
 	QString extension = fi.suffix().toLower();
 	std::string fnstr = filename.toLocal8Bit().constData(); // QString -> Std. String
-	const char *filenamesc = fnstr.c_str();
+	//const char *filenamesc = fnstr.c_str();
 
 	if (data.open(QFile::ReadOnly))
 	{
@@ -3345,7 +3336,7 @@ void VtkWidget::RenderingStack()
 
 bool VtkWidget::ReadHDRImage(QString filename)
 {
-  ReadCHEROb *rh;
+  ReadCHEROb *rh = new ReadCHEROb();
   vtkTexture* texture;
 
   // new file should be open with mCTVisualization == STACK always
@@ -3364,6 +3355,7 @@ bool VtkWidget::ReadHDRImage(QString filename)
 
   RenderingStack();
 
+  delete rh;
   return true;
 }
 
@@ -3412,7 +3404,7 @@ bool VtkWidget::ReadColorImage(QString filename)
   catch (itk::ExceptionObject &excp)
     {
 //    qDebug() << "Exception thrown while reading the series: " << excp.GetDescription();
-    return false;
+		return false;
     }
 
   // ITK-VTK connector
