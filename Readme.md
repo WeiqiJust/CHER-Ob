@@ -1,11 +1,13 @@
 #CHER-Ob  
 
 CHER-Ob (CULTURAL HERITAGE-Object) is an open source platform developed in an attempt to enhance analysis, evaluation, documentation, sharing and management of 3D and 2D visualizations as well as textual and conservation science data.
-It introduces the concept of Cultural Heritage Entity, which serves as a template for cultural heritage research and a model to manage projects.
+
+The development of CHER-Ob is intended to offer a flexible, expandable integrated platform for collaborative cultural heritage research. It is compatible with commonly used imaging data types (2D and 3D images, RTIs, CT) and textual information. 
+CHER-Ob offers an enhanced annotation framework and metadata schema, automatic report generation, different roles assigned to users, bookmark, screenshot, searching, sorting and filtering options.
 
 ##Install
 
-CHER-Ob is currently supplied as pre-built binaries for windows. Mac version is comming soon.
+CHER-Ob is currently supplied as pre-built binaries for windows. 
 
 ###Prerequisites
 - Qt
@@ -21,7 +23,9 @@ CHER-Ob is currently supplied as pre-built binaries for windows. Mac version is 
 
 ###Windows
 
-Please add following path in system environment "Path" variable (`Control Panel->System->Advanced System Settings->advanced tab->Environment Variables->System Varible->Path`): <br />
+To use the software, please run `setup.exe` under `software/windows` folder.
+
+To compile the software from source, please first add following path in system environment "Path" variable (`Control Panel->System->Advanced System Settings->advanced tab->Environment Variables->System Varible->Path`): <br />
 
 ```
 $(ProjectPath)\lib\ITK\bin
@@ -36,7 +40,7 @@ $(QTDir)\bin
 
 ####Optional:
 The .sln file under Visual Studio folder has already loaded all the include files and .lib files under lib folder.<br />
-If you recompile the libraries, please follow the instructions below to link the libraries:<br />
+If you want to recompile the libraries, please follow the instructions below to link the libraries to the solution:<br />
 - Put all the compiled libraries in different separte folders with the library's name. Each library should include an include/src, lib and bin(optional) folder.<br />
 - Put all the library folder under `$(ProjectPath)\lib` folder.<br />
 - Open .sln file and open solution `Properties`.<br />
@@ -46,8 +50,6 @@ If you recompile the libraries, please follow the instructions below to link the
 - Choose OK to save the configurations.<br />
 
 All the images and icons are registered in the file `Visual Studio/CHEROb.qrc` and `Visual Studio/CHEROb.rc` in relative path. If you move the images or icon folder, please modify the .qrc and .rc file to correctly load images.
-
-The compiled software can be found in folder `software/windows/CHER-Ob.exe`.
 
 ##License
 GNU General Public License Usage
