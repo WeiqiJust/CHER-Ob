@@ -187,6 +187,7 @@ MainWindow * Hsh::mw() // current MainWindow
       return mainwindow;
     }
   }
+  return NULL;
 }
 
 //YY

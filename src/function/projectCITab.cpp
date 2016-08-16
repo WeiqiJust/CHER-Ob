@@ -160,14 +160,14 @@ void ProjectClassifiedInfoTab::loadCHEInfo()
 	}
 	QDomElement root = list.at(0).toElement();
 	QDomNodeList CHEInfo = root.elementsByTagName("cultural_heritage_entity");
-	for (int i = 0; i < CHEInfo.length(); i++)
+	for (int i = 0; i < CHEInfo.size(); i++)
 	{
 		QDomElement mCHEInfo = CHEInfo.at(i).toElement();
 		QString CHEName = mCHEInfo.attribute("name");
 		QDomNodeList childeNodes = mCHEInfo.childNodes();
 		QVector<QString> categories, contents;
 		qDebug()<<"load category xml"<<childeNodes.length();
-		for (int j = 0; j < childeNodes.length(); j++)
+		for (int j = 0; j < childeNodes.size(); j++)
 		{
 			QString category = childeNodes.at(j).toElement().tagName();
 			QString content = childeNodes.at(j).toElement().text();
@@ -191,14 +191,14 @@ void ProjectClassifiedInfoTab::addCHEInfoToFile(const QString CHEName)
 	bool isFound = false;
 	if (CHEInfos.length() != 0)
 	{
-		for (int i = 0; i < CHEInfos.length(); i++)
+		for (int i = 0; i < CHEInfos.size(); i++)
 		{
 			
 			if (CHEName == CHEInfos.at(i).toElement().attribute("name"))
 			{
 				qDebug()<<"in add CHE to file"<<CHEInfos.at(i).toElement().attribute("name")<<CHEName;
 				QDomNodeList childNodes = CHEInfos.at(i).toElement().childNodes();
-				for (int j = 0; j < childNodes.length(); j++)
+				for (int j = 0; j < childNodes.size(); j++)
 					childNodes.at(j).toElement().clear();
 				mCHEInfo = CHEInfos.at(i).toElement();
 				isFound = true;

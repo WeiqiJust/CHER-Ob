@@ -430,7 +430,6 @@ void ReportGenerator::generate()
 		QVector<QPair<double, double> > frustumNote3DFront, frustumNote3DLeft, frustumNote3DRight, frustumNote3DTop, frustumNote3DBottom, frustumNote3DBack;
 		WidgetInfo3D info;
 		QPixmap RTIScreenShot;
-		CTOrientation ctOrientation; //save current orientation if it is a ct object.
 		switch(mObjects[i]->mMode)
 		{
 			case EMPTYWIDGET:

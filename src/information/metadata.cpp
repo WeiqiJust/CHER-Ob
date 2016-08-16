@@ -228,7 +228,7 @@ MainWindow* Metadata::mw()
       return mainwindow;
     }
   }
-
+  return NULL;
 }
 
 void Metadata::showContextMenu(const QPoint& pos)

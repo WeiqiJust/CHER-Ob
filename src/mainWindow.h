@@ -529,10 +529,9 @@ private slots:
 	void openRecentFile();
 
 	/**
-	 * @brief  Handle new project button and create newProjectDialog.
-	 * @param  projName  Project Name.  
+	 * @brief  Handle new project button and create newProjectDialog. 
 	 */
-	void newVtkProject(const QString& projName = QString());
+	void newVtkProject();
 
 	/**
 	 * @brief  Create the new project based on the information in newProjectDialog

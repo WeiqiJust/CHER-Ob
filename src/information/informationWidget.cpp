@@ -164,8 +164,8 @@ DTextEdit::~DTextEdit()
 Information::Information(QWidget *parent)
     : QWidget(parent)
 {
-  int width = this->frameGeometry().width();
-  int height = this->frameGeometry().height();
+  //int width = this->frameGeometry().width();
+  //int height = this->frameGeometry().height();
 
   hlay1 = new QHBoxLayout();
   dText = new QTextBrowser(this);
@@ -2056,5 +2056,6 @@ MainWindow* Information::mw()
       return mainwindow;
     }
   }
+  return NULL;
 }
 

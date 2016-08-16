@@ -161,7 +161,7 @@ void vtkVRMLSource2::CopyImporterToOutputs()
   vtkPolyData* input;
   vtkPolyData* output;
   int idx;
-  int numArrays, arrayIdx, numPoints, numCells, numTCoords;
+  int numArrays, arrayIdx, numPoints, numCells;
   vtkDataArray* array;
   int arrayCount = 0;
   char name[256]; memset( name, 0, sizeof(name) );

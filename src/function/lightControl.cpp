@@ -244,9 +244,9 @@ private:
 LightControl::LightControl(QWidget *parent)
     : QWidget(parent)
 {
-  int width = this->frameGeometry().width();
-  int height = this->frameGeometry().height();
-//  this->setMinimumSize(QSize(width, height));
+  //int width = this->frameGeometry().width();
+  //int height = this->frameGeometry().height();
+  //this->setMinimumSize(QSize(width, height));
 
   mIntensityL1 = 1.0;
   mIntensityL2 = 1.0;
@@ -463,6 +463,7 @@ MainWindow * LightControl::mw()
       return mainwindow;
     }
   }
+  return NULL;
 }
 
 

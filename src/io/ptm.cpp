@@ -102,6 +102,7 @@ MainWindow * Ptm::mw() // current MainWindow
       return mainwindow;
     }
   }
+  return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////////

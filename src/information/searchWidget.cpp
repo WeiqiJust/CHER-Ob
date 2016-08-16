@@ -47,6 +47,7 @@ std::string category2str(int mode)
 		case 11: return "Administration";
 		case 12: return "Documentation";
 		case 13: return "Other";
+		default: return "Other";
 	}
 }
 
@@ -325,6 +326,7 @@ MainWindow* SearchWidget::mw()
       return mainwindow;
     }
   }
+  return NULL;
 }
 
 SearchAllWidget::SearchAllWidget(QWidget *parent)
@@ -660,4 +662,5 @@ MainWindow* SearchAllWidget::mw()
       return mainwindow;
     }
   }
+  return NULL;
 }

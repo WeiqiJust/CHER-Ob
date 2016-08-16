@@ -107,6 +107,7 @@ public:
          return mainwindow;
        }
      }
+	 return NULL;
    }
 
   static vtk2DInteractionCallback *New() {

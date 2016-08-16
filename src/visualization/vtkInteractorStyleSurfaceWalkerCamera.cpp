@@ -181,14 +181,14 @@ void vtkInteractorStyleSurfaceWalkerCamera::testPointNormals()
 
 bool vtkInteractorStyleSurfaceWalkerCamera::getPointNormals()
 {
-  vtkIdType numPoints = mPolyData->GetNumberOfPoints();
-  vtkIdType numPolys = mPolyData->GetNumberOfPolys();
+  //vtkIdType numPoints = mPolyData->GetNumberOfPoints();
+  //vtkIdType numPolys = mPolyData->GetNumberOfPolys();
 
   vtkDoubleArray* normalDataDouble = vtkDoubleArray::SafeDownCast(mPolyData->GetPointData()->GetArray("Normals"));
 
   if(normalDataDouble)
     {
-    int nc = normalDataDouble->GetNumberOfTuples();
+    //int nc = normalDataDouble->GetNumberOfTuples();
     return true;
     }
 
@@ -297,7 +297,7 @@ void vtkInteractorStyleSurfaceWalkerCamera::linkPolyData(vtkPolyData *polyData, 
     kdTree->SetDataSet(polyData);
     kdTree->BuildLocator();
 
-    double aveNormal[3] = {0,0,0};
+    //double aveNormal[3] = {0,0,0};
     testPointNormals();
 
     /*

@@ -154,6 +154,7 @@ MainWindow* Note::mw()
       return mainwindow;
     }
   }
+  return NULL;
 }
 
 void Note::updateInfo()
