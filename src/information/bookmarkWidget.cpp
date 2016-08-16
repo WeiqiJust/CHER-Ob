@@ -380,7 +380,7 @@ void BookmarkWidget::refreshCurrentFileInfo()
 			QMap<int, RenderingMode*>* list = mw()->VTKA()->mRTIbrowser->getRenderingModes();
 			renderingMode = list->value(static_cast<int>(renderModeRTI));
 		}
-		else { renderModeRTI = RenderingRTI::DEFAULT; }
+        else { renderModeRTI = DEFAULT; }
     }
     if(mw()->mCtControl) {
         slice = mw()->mCtControl->GetSliceCurrent();

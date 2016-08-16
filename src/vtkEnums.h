@@ -57,7 +57,7 @@ enum RenderingRTI
 	COEFF_ENHANCEMENT,
 	DETAIL_ENHANCEMENT,
 	DYN_DETAIL_ENHANCEMENT,
-    NORMALS,
+    NORMALS
 };
 
 double const ColorPixel[11][3] = {

@@ -136,7 +136,8 @@
 
 #include <QDebug>
 
-#include "windows.h" 
+//#include "windows.h"
+
 //----------------------------------------------------------
 //#define VTK_CREATE(type, name) vtkSmartPointer<type> name = vtkSmartPointer<type>::New()
 #define MAX_PICKCELLARRAY (1)
@@ -263,7 +264,7 @@ void VtkWidget::updateRTIImageVTK(std::vector<unsigned char> textureData, int te
 	if (FIRST_RTI_RENDERING) {
 
 		// YY: activate the correct light control tab in MainWindow
-		mw()->activateTabWidgetTop(static_cast<int>(LightControlType::RTILIGHTCONTROL));
+        mw()->activateTabWidgetTop(static_cast<int>(RTILIGHTCONTROL));
 		QEventLoop loop;
 		QTimer::singleShot(0.01, &loop, SLOT(quit()));
 		loop.exec();
@@ -301,7 +302,7 @@ qDebug()<<"in updatelight position";
   if (mCallback3D)
   {
 	  qDebug()<<"before activate";
-	mw()->activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL)); 
+    mw()->activateTabWidgetTop(static_cast<int>(Model3DLIGHTCONTROL));
 	qDebug()<<"before set transform";
     mCallback3D->SetLightTransform(transform);
 	qDebug()<<"after set transform";
@@ -1343,7 +1344,7 @@ void VtkWidget::toggleImageProvenanceFeature()
 
 void VtkWidget::Rendering3D()
 {
-	mw()->activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL)); 
+    mw()->activateTabWidgetTop(static_cast<int>(Model3DLIGHTCONTROL));
 	QEventLoop loop;
 	QTimer::singleShot(0.01, &loop, SLOT(quit()));
 	loop.exec();

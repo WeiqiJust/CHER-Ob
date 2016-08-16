@@ -452,11 +452,11 @@ private:
 	QPushButton* removeButton;
 	QString notePath;
 	QMap<QString, std::pair<QString, bool > > content;	// Annotation
-	QMap<QString, QVector<PointNote*>> mPointNotes;
-	QMap<QString, QVector<SurfaceNote*>> mSurfaceNotes;
-	QMap<QString, QVector<FrustumNote*>> mFrustumNotes;
-	QMap<QString, QVector<PointNote2D*>> mPointNotes2D;
-	QMap<QString, QVector<SurfaceNote2D*>> mSurfaceNotes2D;
+    QMap<QString, QVector<PointNote*> > mPointNotes;
+    QMap<QString, QVector<SurfaceNote*> > mSurfaceNotes;
+    QMap<QString, QVector<FrustumNote*> > mFrustumNotes;
+    QMap<QString, QVector<PointNote2D*> > mPointNotes2D;
+    QMap<QString, QVector<SurfaceNote2D*> > mSurfaceNotes2D;
 	QMap<QString, bool> hasNotesRemoved;
 	QMap<QString, QString> removedAnnotation;
 	bool skipTextChange;

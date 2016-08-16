@@ -171,7 +171,7 @@ RenderingRTI RtiBrowser::getRenderingMode()
 {
 	if (img)
 		return static_cast<RenderingRTI>(this->getCurrentRendering());
-	return RenderingRTI::DEFAULT;
+    return DEFAULT;
 }
 
 void RtiBrowser::setLight(vcg::Point3f l, bool refresh)

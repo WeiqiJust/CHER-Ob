@@ -3123,7 +3123,8 @@ void MainWindow::newCHE()
 {
     if (currentProjectFullName != NULL && !this->closeAll())
 		return;
-	NewCHEDialog* dialog = new NewCHEDialog();
+    // NewCHEDialog* dialog = new NewCHEDialog();
+    NewCHEDialog* dialog = new NewCHEDialog(NULL);
 	connect(dialog, SIGNAL(createCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString, const QString, const QString)), 
 		this, SLOT(createNewCHE(const QString, const QString, const USERMODE, const CHEInfoBasic*, const QString, const QString, const QString)));
 	dialog->exec();
@@ -4397,7 +4398,7 @@ void MainWindow::createDockWindows()
 
 	mLightControl = new LightControl(this);
 	tabWidgetTop->addTab(mLightControl, tr("Light Control 3D") );
-	activateTabWidgetTop(static_cast<int>(LightControlType::Model3DLIGHTCONTROL));
+    activateTabWidgetTop(static_cast<int>(Model3DLIGHTCONTROL));
 
 	mLightControlRTI = new LightControlRTI(this, 160);
 
