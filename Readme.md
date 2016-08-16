@@ -14,16 +14,20 @@ CHER-Ob supports the platform of windows and Mac OS X, and user can run the exec
 CHER-Ob is currently supplied as pre-built binaries for windows and Mac OS X
 
 ###Prerequisites
-- Qt
-- VTK
-- ITK
-- openEXR
+- Qt (4.8.5)
+- VTK (5.10)
+- ITK (4.4)
+- QWT (6.1.0)
+- openEXR (1.7.0)
 - rtiviewer
 - itkvtkglue
 - clapack
 - armadillo
 - vcglib
 - rtiwebmaker
+
+Note that the numbers in the round brackets indicate the versions of third-party libraries we used to compile the source code and that you may encounter compatibility issues when using lower/higher versions. 
+
 
 ###Windows
 
@@ -55,6 +59,9 @@ All the images and icons are registered in the file `Visual Studio/CHEROb.qrc` a
 
 ###Mac OS X
 
+In order to compile the source code on Mac, you first need to install the third-party libraries. Since "itkvtkglue", "clapack", "armadillo", "vcglib", "rtiviewer" and "rtiwebmaker" include just a set of header files, you just need to download and place them into a directory/directories where you can locate them. For the other third-party libraries, you may first download the source code from their respective official sites and then follow their provided instructions to carry out compilations and installations. 
+
+To facilitate compilation, an example QT project file (CHER-Ob.pro) is also provided, but you may have to modify some lines to include the correct paths to the required libraries.
 
 ##License
 GNU General Public License Usage
