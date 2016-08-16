@@ -7,7 +7,11 @@ CHER-Ob offers an enhanced annotation framework and metadata schema, automatic r
 
 ##Install
 
-CHER-Ob is currently supplied as pre-built binaries for windows. 
+CHER-Ob supports the platform of windows and Mac OS X, and user can run the executable file to finish installation. The executable files are named as `setup`  under specific folder for each platform in `software`.
+
+##Build
+
+CHER-Ob is currently supplied as pre-built binaries for windows and Mac OS X
 
 ###Prerequisites
 - Qt
@@ -22,8 +26,6 @@ CHER-Ob is currently supplied as pre-built binaries for windows.
 - rtiwebmaker
 
 ###Windows
-
-To use the software, please run `setup.exe` under `software/windows` folder.
 
 To compile the software from source, please first add following path in system environment "Path" variable (`Control Panel->System->Advanced System Settings->advanced tab->Environment Variables->System Varible->Path`): <br />
 
@@ -50,6 +52,9 @@ If you want to recompile the libraries, please follow the instructions below to 
 - Choose OK to save the configurations.<br />
 
 All the images and icons are registered in the file `Visual Studio/CHEROb.qrc` and `Visual Studio/CHEROb.rc` in relative path. If you move the images or icon folder, please modify the .qrc and .rc file to correctly load images.
+
+###Mac OS X
+
 
 ##License
 GNU General Public License Usage

@@ -2136,7 +2136,7 @@ bool MainWindow::rmDir(const QString &dirPath)
 }
 
 
-void MainWindow::newVtkProject(const QString& projName)
+void MainWindow::newVtkProject()
 {
     if (currentProjectFullName != NULL && !this->closeAll())
 		return;
