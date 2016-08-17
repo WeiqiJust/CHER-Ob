@@ -45,7 +45,7 @@ $(QTDir)\bin
 `$(QTDir)` is where your QT is installed.
 
 ####Optional:
-The .sln file under Visual Studio folder has already loaded all the include files and .lib files under lib folder.<br />
+The .sln file under Windows folder has already loaded all the include files and .lib files under lib folder.<br />
 If you want to recompile the libraries, please follow the instructions below to link the libraries to the solution:<br />
 - Put all the compiled libraries in different separte folders with the library's name. Each library should include an include/src, lib and bin(optional) folder.<br />
 - Put all the library folder under `$(ProjectPath)\lib` folder.<br />
@@ -55,17 +55,20 @@ If you want to recompile the libraries, please follow the instructions below to 
 - Open `Configuration Properties->Linker->General->Additional Include Directories` and add each library .lib file in the format: `..\lib\(Library Name)\lib`.<br />
 - Choose OK to save the configurations.<br />
 
-All the images and icons are registered in the file `Visual Studio/CHEROb.qrc` and `Visual Studio/CHEROb.rc` in relative path. If you move the images or icon folder, please modify the .qrc and .rc file to correctly load images.
+All the images and icons are registered in the file `Windows/CHEROb.qrc` and `Windows/CHEROb.rc` in relative path. If you move the images or icon folder, please modify the .qrc and .rc file to correctly load images.
 
 ###Mac OS X
 
-In order to compile the source code on Mac, you first need to install the third-party libraries. Since "itkvtkglue", "clapack", "armadillo", "vcglib", "rtiviewer" and "rtiwebmaker" include just a set of header files, you just need to download and place them into a directory/directories where you can locate them. For the other third-party libraries, you may first download the source code from their respective official sites and then follow their provided instructions to carry out compilations and installations. 
+In order to compile the source code on Mac, you first need to install the third-party libraries. Since `itkvtkglue`, `clapack`, `armadillo`, `vcglib`, `rtiviewer` and `rtiwebmaker` include just a set of header files,
+you can directly use the files in `lib` folder, or your may download and place them into directories where you can locate them. For the other third-party libraries (`QT`, `VTK`, `ITK`, `QWT`, `openEXR`), you may first
+download the source code from their respective official sites and then follow their provided instructions to carry out compilations and installations. 
 
 To facilitate compilation, an example QT project file (CHER-Ob.pro) is also provided, but you may have to modify some lines to include the correct paths to the required libraries.
 
 ##License
 GNU General Public License Usage
-Alternatively, this file may be used under the terms of the GNU General Public License version 3.0 as published by the Free Software Foundation and appearing in the file LICENSE.GPL included in the packaging of this file. Please review the following information to ensure the GNU General Public License version 3.0 requirements will be met:
+Alternatively, this file may be used under the terms of the GNU General Public License version 3.0 as published by the Free Software Foundation and appearing in the file LICENSE.
+GPL included in the packaging of this file. Please review the following information to ensure the GNU General Public License version 3.0 requirements will be met:
 * http://www.gnu.org/copyleft/gpl.html.
 
 
@@ -80,4 +83,5 @@ Alternatively, this file may be used under the terms of the GNU General Public L
 - Holly Rushmeier (holly.rushmeier@yale.edu)
 
 ##Acknowledgments
-Some portions of this file are based on the example codes of ITK/VTK library from Kitware, QT API from Nokia, RTIViewer from Visual Computing Lab and Meshlab VCG library from ISTI CNR. We would like to thank anonymous help by various software engineering communities.
+Some portions of this file are based on the example codes of ITK/VTK library from Kitware, QT API from Nokia, RTIViewer from Visual Computing Lab and Meshlab VCG library from ISTI CNR. 
+We would like to thank anonymous help by various software engineering communities.
