@@ -242,7 +242,7 @@ void ReportGenerator::generate()
 						qDebug()<<"Parsing Error in report generation: Note Type Error!"<<firstLine;
 						continue;
 					}
-					//note.remove(0, index+13);	// Remove note header.
+					note.remove(0, index+13);	// Remove note header for the convenience of further parsing
 					contents.push_back(qMakePair(note, mode));
 				}
 				else if (mObjects[i]->mMode == MODEL3D && mObjects[i]->mNotes[j].second == NOTE3D)
@@ -352,7 +352,7 @@ void ReportGenerator::generate()
 						qDebug()<<"Parsing Error in report generation: Note Type Error!"<<firstLine;
 						continue;
 					}
-					//note.remove(0, index+13);
+					note.remove(0, index+13);	// Remove note header for the convenience of further parsing
 					contents.push_back(qMakePair(note, mode));
 				}
 				else if ((mObjects[i]->mMode == CTSTACK || mObjects[i]->mMode == CTVOLUME) && mObjects[i]->mNotes[j].second == NOTE3D)
@@ -413,7 +413,7 @@ void ReportGenerator::generate()
 						qDebug()<<"Parsing Error in report generation: Note Type Error!"<<firstLine;
 						continue;
 					}
-					//note.remove(0, index+13);
+					note.remove(0, index+13);	// Remove note header for the convenience of further parsing
 					contents.push_back(qMakePair(note, mode));
 				}
 				
@@ -922,7 +922,7 @@ void ReportGenerator::generate()
 	
     int count = 0;
     painter.save();
-    painter.translate(0, 30);
+    painter.translate(0, 20);
     while (currentRect.intersects(contentRect)) 
 	{
         mDoc->drawContents(&painter, currentRect);
@@ -934,10 +934,10 @@ void ReportGenerator::generate()
         painter.drawText(mPrinter->pageRect().right() - 100, 10, QString("CHER-Ob"));
 		painter.setPen(Qt::black);
 		painter.setFont(QFont("Garamond", 8));
-		painter.drawText(mPrinter->pageRect().left(), mPrinter->pageRect().bottom()+5, date.toString("MM/dd/yyyy"));
-        painter.drawText(mPrinter->pageRect().right() - 70, mPrinter->pageRect().bottom()+5, QString("Page %1").arg(count));
+		painter.drawText(mPrinter->pageRect().left(), mPrinter->pageRect().bottom()+12, date.toString("MM/dd/yyyy"));
+        painter.drawText(mPrinter->pageRect().right() - 70, mPrinter->pageRect().bottom()+12, QString("Page %1").arg(count));
         painter.save();
-        painter.translate(0, -currentRect.height() * count+30);
+        painter.translate(0, -currentRect.height() * count+20);
         if (currentRect.intersects(contentRect))
             mPrinter->newPage();
     }
