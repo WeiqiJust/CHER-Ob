@@ -26,7 +26,7 @@ CHER-Ob is currently supplied as pre-built binaries for windows and Mac OS X
 - vcglib
 - rtiwebmaker
 
-Note that the numbers in the round brackets indicate the versions of third-party libraries we used to compile the source code and that you may encounter compatibility issues when using lower/higher versions. Also note that the provided libraries were built with 64 bits using Visual Studio 2008, so you may need to re-compile if you are using 32 bits and a different compiler. 
+Note that the numbers in the round brackets indicate the versions of third-party libraries we used to compile the source code and that you may encounter compatibility issues when using lower/higher versions. Also note that the provided libraries were built with 64 bits using Visual Studio 2008 under `Release` mode, so you may need to re-compile if you are using 32 bits and a different compiler. 
 
 
 ###Windows
@@ -60,7 +60,7 @@ All the images and icons are registered in the file `Windows/CHEROb.qrc` and `Wi
 ###Mac OS X
 
 In order to compile the source code on Mac, you first need to install the third-party libraries. Since `itkvtkglue`, `clapack`, `armadillo`, `vcglib`, `rtiviewer` and `rtiwebmaker` include just a set of header files,
-you can directly use the files in `lib` folder, or your may download and place them into directories where you can locate them. For the other third-party libraries (`QT`, `VTK`, `ITK`, `QWT`, `openEXR`), you may first
+you can directly use the files in `lib` folder, or you may download and place them into directories where you can locate them. For the other third-party libraries (`QT`, `VTK`, `ITK`, `QWT`, `openEXR`), you may first
 download the source code from their respective official sites and then follow their provided instructions to carry out compilations and installations. 
 
 To facilitate compilation, an example QT project file (CHER-Ob.pro) is also provided, but you may have to modify some lines to include the correct paths to the required libraries.
