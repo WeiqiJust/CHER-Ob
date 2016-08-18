@@ -26,7 +26,7 @@ CHER-Ob is currently supplied as pre-built binaries for windows and Mac OS X
 - vcglib
 - rtiwebmaker
 
-Note that the numbers in the round brackets indicate the versions of third-party libraries we used to compile the source code and that you may encounter compatibility issues when using lower/higher versions. 
+Note that the numbers in the round brackets indicate the versions of third-party libraries we used to compile the source code and that you may encounter compatibility issues when using lower/higher versions. Also note that the provided libraries were built with 64 bits using Visual Studio 2008, so you may need to re-compile if you are using 32 bits and a different compiler. 
 
 
 ###Windows
