@@ -5,6 +5,8 @@ CHER-Ob (CULTURAL HERITAGE-Object) is an open source platform developed in an at
 The development of CHER-Ob is intended to offer a flexible, expandable integrated platform for collaborative cultural heritage research. It is compatible with commonly used imaging data types (2D and 3D images, RTIs, CT) and textual information. 
 CHER-Ob offers an enhanced annotation framework and metadata schema, automatic report generation, different roles assigned to users, bookmark, screenshot, searching, sorting and filtering options.
 
+More details can be found in http://graphics.cs.yale.edu/site/cher-ob-open-source-platform-shared-analysis-cultural-heritage-research.
+
 ##Install
 
 CHER-Ob supports the platform of windows and Mac OS X, and user can run the executable file to finish installation. The executable files are named as `setup`  under specific folder for each platform in `software`.
