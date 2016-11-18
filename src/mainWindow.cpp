@@ -4,6 +4,7 @@
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
              Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -237,11 +238,21 @@ void MainWindow::closeEvent(QCloseEvent *event)
 			}
 		}
 	}
-	
+
 	isClose = true;
-    mdiArea->closeAllSubWindows();
+
+	QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+	foreach(QMdiSubWindow *w, windows)
+	{
+		VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+		VtkWidget* gla = mvc->currentView();
+		gla->annotate(false);
+	}
+	writeAnnotationAct->setChecked(false); // uncheck annotation before close
+
+	mdiArea->closeAllSubWindows();
 	isClose = false;
-    if (mdiArea->currentSubWindow()) 
+	if (mdiArea->currentSubWindow()) 
 	{
         event->ignore();
     } else 
@@ -258,6 +269,16 @@ bool MainWindow::closeAll()
 		if(closeProject()) 
 		{
 			isClose = true;	// skip the eventfilter
+
+			QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+			foreach(QMdiSubWindow *w, windows)
+			{
+				VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+				VtkWidget* gla = mvc->currentView();
+				gla->annotate(false);
+			}
+			writeAnnotationAct->setChecked(false); // uncheck annotation before close
+
 			mdiArea->closeAllSubWindows();
 			isClose = false;
 			return true;
@@ -268,6 +289,16 @@ bool MainWindow::closeAll()
 		if(closeCHE()) 
 		{
 			isClose = true;	// skip the eventfilter
+			
+			QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+			foreach(QMdiSubWindow *w, windows)
+			{
+				VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+				VtkWidget* gla = mvc->currentView();
+				gla->annotate(false);
+			}
+			writeAnnotationAct->setChecked(false); // uncheck annotation before close
+
 			mdiArea->closeAllSubWindows();
 			isClose = false;
 			return true;
@@ -277,8 +308,8 @@ bool MainWindow::closeAll()
 }
 
 void MainWindow::closeAllWindows()
-{   
-    if(!VTKA()) 
+{
+    if(!VTKA())
 	{
         closeAll();
 		return;
@@ -836,9 +867,40 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 
 	if (list.isEmpty())
 	{
-	  QString message = fi.fileName() + tr(" is not a valid CHEROb project file.");
-	  QMessageBox::critical(this, tr("Project Error"), message);
-	  return false;
+		if (!readCHE)
+		{
+			QString message = fi.fileName() + tr(" is not a valid CHEROb project file.\nDo you want to open this as entity file?");
+			QMessageBox msgBox;
+			QPushButton *yesButton = msgBox.addButton(QMessageBox::Yes);
+			QPushButton *noButton = msgBox.addButton(QMessageBox::No);
+			msgBox.setWindowTitle(tr("Project Error"));
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.setText(message);
+			msgBox.exec();
+			if (msgBox.clickedButton() == yesButton)
+			{
+				isCHE = true;
+				return readXML(fileName, objectList, objectType, filterList, false, true);
+			}
+		}
+		else
+		{
+			QString message = fi.fileName() + tr(" is not a valid CHEROb entity file.\nDo you want to open this as project file?");
+			QMessageBox msgBox;
+			QPushButton *yesButton = msgBox.addButton(QMessageBox::Yes);
+			QPushButton *noButton = msgBox.addButton(QMessageBox::No);
+			msgBox.setWindowTitle(tr("Project Error"));
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.setText(message);
+			msgBox.exec();
+			if (msgBox.clickedButton() == yesButton)
+			{
+				isCHE = false;
+				return readXML(fileName, objectList, objectType, filterList, false, false);
+			}
+		}
+		//// Modified by Zeyu Wang on Nov 11, 2016
+		return false;
 	}
 
 	currentProjectFullName = QDir::toNativeSeparators(QDir::currentPath());
@@ -1559,8 +1621,14 @@ void MainWindow::saveProjectAs()
 			{
 				QStringList nameElement = mvc->currentView()->mCHE.split(QDir::separator());
 				QString CHEName = nameElement[nameElement.size() - 1];
-				mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName() + QDir::separator() + fi.fileName();
-				mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + CHEName + QDir::separator() + fi.fileName();
+				mvc->currentView()->mFilename = currentProjectFullName + QDir::separator() + /*CHEName + QDir::separator() +*/ fi.fileName() + QDir::separator() + fi.fileName();
+				mvc->currentView()->mProjectPath = currentProjectFullName + QDir::separator() + /*CHEName + QDir::separator() +*/ fi.fileName();
+				/*qDebug() << "***********************\n";
+				qDebug() << CHEName << '\n';
+				qDebug() << mvc->currentView()->mFilename << '\n';
+				qDebug() << mvc->currentView()->mProjectPath << '\n';
+				qDebug() << "***********************\n";*/
+				//// Modified by Zeyu Wang on Nov 2, 2016 to fix the path
 				w->setWindowTitle(currentProjectFullName + QString(" : ") + fi.fileName());
 				if (mvc->currentView()->isDICOM())
 				{
@@ -1718,7 +1786,7 @@ void MainWindow::importCHE()
 	list = doc.elementsByTagName("CHEROb.cultural_heritage_entity");
 	if (list.isEmpty())
 	{
-	  QString message = fi.fileName() + tr(" is not a valid CHEROb project file.");
+	  QString message = fi.fileName() + tr(" is not a valid CHEROb entity file. Fail to import.");
 	  QMessageBox::critical(this, tr("Project Error"), message);
 	  return;
 	}
@@ -2024,7 +2092,7 @@ void MainWindow::createCTFolder(QString path)
 
 bool MainWindow::openProject(QString fileName)
 {
-  if (!this->closeAll() && currentProjectFullName != NULL)
+  if (currentProjectFullName != NULL && !this->closeAll())
 	  return false;
 
   if (fileName.isEmpty())
@@ -2059,7 +2127,7 @@ bool MainWindow::openProject(QString fileName)
   }
 
   isSaved = true;
-  setWindowTitle(appName()+appBits()+QString(" Project ")+currentProjectName);
+  setWindowTitle(appName()+appBits()+(isCHE ? QString(" CHE ") : QString(" Project "))+currentProjectName);
   updateMenus();
   if(this->VTKA() == 0)  return false;
   qb->reset();
@@ -2777,6 +2845,57 @@ void MainWindow::updateRecentFileActions()
   }
 }
 
+void MainWindow::updateNoteMode()
+{
+	if (VTKA()->getWidgetMode() == IMAGE2D || VTKA()->getWidgetMode() == RTI2D)
+	{
+		switch (VTKA()->getNoteMode2D())
+		{
+		case POINTNOTE:
+			pointNote->setChecked(true);
+			surfaceNote->setChecked(false);
+			polygonNote->setChecked(false);
+			break;
+		case SURFACENOTE:
+			pointNote->setChecked(false);
+			surfaceNote->setChecked(true);
+			polygonNote->setChecked(false);
+			break;
+		case POLYGONNOTE:
+			pointNote->setChecked(false);
+			surfaceNote->setChecked(false);
+			polygonNote->setChecked(true);
+			break;
+		default:
+			break;
+		}
+	}
+	else
+	{
+		switch (VTKA()->getNoteMode3D())
+		{
+		case POINTNOTE:
+			pointNote->setChecked(true);
+			surfaceNote->setChecked(false);
+			frustumNote->setChecked(false);
+			break;
+		case SURFACENOTE:
+			pointNote->setChecked(false);
+			surfaceNote->setChecked(true);
+			frustumNote->setChecked(false);
+			break;
+		case FRUSTUMNOTE:
+			pointNote->setChecked(false);
+			surfaceNote->setChecked(false);
+			frustumNote->setChecked(true);
+			break;
+		default:
+			break;
+		}
+	}
+	//// Modified by Zeyu Wang on Nov 4, 2016 to make note mode consistent when change windows
+}
+
 void MainWindow::updateMenus()
 {
 	bool activeDoc = false;
@@ -2846,13 +2965,15 @@ void MainWindow::updateMenus()
 	writeAnnotationAct->setEnabled(activeDoc);
 	pointNote->setEnabled(writeAnnotationAct->isChecked());
 	surfaceNote->setEnabled(writeAnnotationAct->isChecked());
+	polygonNote->setEnabled(writeAnnotationAct->isChecked());
 	frustumNote->setEnabled(writeAnnotationAct->isChecked());
 	colorToolButton->setEnabled(writeAnnotationAct->isChecked());
 	colorDropMenu->setEnabled(writeAnnotationAct->isChecked());
 	if (writeAnnotationAct->isChecked())
 	{
 	  this->mInformation->startAnnotation();
-	  if (!pointNote->isChecked() && !surfaceNote->isChecked() && !frustumNote->isChecked())
+	  this->updateNoteMode();
+	  if (!pointNote->isChecked() && !surfaceNote->isChecked() && !polygonNote->isChecked() && !frustumNote->isChecked())
 		  pointNote->setChecked(true);
 	}
 	else
@@ -2958,6 +3079,7 @@ void MainWindow::updateMenus()
 				renderToolBar->setEnabled(true);
 				measureToolBar->setEnabled(true);
 				annotationToolBar->setEnabled(true);
+				polygonNote->setEnabled(false);
 				toolsMenu->setEnabled(true);
 				viewToolBar->setEnabled(true);
 
@@ -2983,6 +3105,7 @@ void MainWindow::updateMenus()
 				measureDistanceAct->setEnabled(false);
 				removeDistanceAct->setEnabled(false);
 				viewToolBar->setEnabled(false);
+				polygonNote->setEnabled(false);
 				frustumNote->setEnabled(false);
 				break;
 			case CTVOLUME:
@@ -2995,6 +3118,7 @@ void MainWindow::updateMenus()
 				annotationModeMenu->setEnabled(true);
 				toolsMenu->setEnabled(true);
 				viewToolBar->setEnabled(false);
+				polygonNote->setEnabled(false);
 				frustumNote->setEnabled(false);
 
 				// DT: preventing crash when these buttons are clicked w/ no texture
@@ -3244,7 +3368,7 @@ bool MainWindow::openCHE(QString fileName)
 	}
 
 	isSaved = true;
-	setWindowTitle(appName()+appBits()+QString(" CHE ")+currentProjectName);
+	setWindowTitle(appName()+appBits()+(isCHE ? QString(" CHE ") : QString(" Project "))+currentProjectName);
 	updateMenus();
 	if(this->VTKA() == 0)  return false;
 	qb->reset();
@@ -3283,7 +3407,7 @@ void MainWindow::saveCHEAs()
 {
 	CHEInfoBasic* info = new CHEInfoBasic();
 	info = mCHETab->getCHEInfo();
-	SaveCHEAsDialog* dialog = new SaveCHEAsDialog(mUserName,  info, this->lastUsedDirectory.path());
+	SaveCHEAsDialog* dialog = new SaveCHEAsDialog(mUserName, info, this->lastUsedDirectory.path());
 	dialog->exec();
 	if (!dialog->checkOk())
 		return;
@@ -3752,10 +3876,10 @@ void MainWindow::createActions()
 	saveAct->setStatusTip(tr("Save the Project/Cultural Heritage Entity"));
 	connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
-	saveAsAct = new QAction(QIcon(":/images/save_project.png"),tr("Save As..."), this);
-	saveAsAct->setStatusTip(tr("Save the Project/Cultural Heritage Entity as a new one"));
+	saveAsAct = new QAction(QIcon(":/images/save_project.png"), tr("Save As..."), this);
 	saveAsAct->setShortcutContext(Qt::ApplicationShortcut);
 	saveAsAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_S);
+	saveAsAct->setStatusTip(tr("Save the Project/Cultural Heritage Entity as a new one"));
 	connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
 	closeAct = new QAction(tr("Close"), this);
@@ -4002,10 +4126,13 @@ void MainWindow::createActions()
 	pointNote->setCheckable(true);
     surfaceNote = new QAction(QIcon(":/images/surface.png"), tr("Surface Note"), annotationModeGroupAct);
 	surfaceNote->setCheckable(true);
+    polygonNote = new QAction(QIcon(":/images/polygon.png"), tr("Polygon Note"), annotationModeGroupAct);
+	polygonNote->setCheckable(true);
     frustumNote	= new QAction(QIcon(":/images/frustum.png"), tr("Frustum Note"), annotationModeGroupAct);
 	frustumNote->setCheckable(true);
     connect(pointNote, SIGNAL(triggered()), this, SLOT(writePointNote()));
     connect(surfaceNote, SIGNAL(triggered()), this, SLOT(writeSurfaceNote()));
+    connect(polygonNote, SIGNAL(triggered()), this, SLOT(writePolygonNote()));
     connect(frustumNote, SIGNAL(triggered()), this, SLOT(writeFrustumNote()));
 
 	annotationColorGroupAct =  new QActionGroup(this);	annotationColorGroupAct->setExclusive(true);
@@ -4042,7 +4169,7 @@ void MainWindow::createActions()
 
     screenshotAct = new QAction (QIcon(":/images/snapshot.png"), tr("Screenshot"), this);
     screenshotAct->setShortcutContext(Qt::ApplicationShortcut);
-    screenshotAct->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
+    screenshotAct->setShortcut(Qt::CTRL+Qt::Key_R); //// Modified by Zeyu Wang on Nov 2, 2016 to resolve conflict with Save As...
     screenshotAct->setCheckable(false);
     connect(screenshotAct, SIGNAL(triggered()), this, SLOT(takeScreenshot()));
 
@@ -4285,6 +4412,7 @@ void MainWindow::createToolBars()
 	annotationToolBar->addAction(writeAnnotationAct);
 	annotationToolBar->addAction(pointNote);
 	annotationToolBar->addAction(surfaceNote);
+	annotationToolBar->addAction(polygonNote);
 	annotationToolBar->addAction(frustumNote);
 
 	colorDropMenu = new QMenu();
@@ -4491,7 +4619,7 @@ void MainWindow::createClassifiedInfoDockWindows()
 		delete mClassifiedInfoTab;
 	mClassifiedInfoTab = new ProjectClassifiedInfoTab(currentProjectFullName, mUserName);
 	rightTab->setUpdatesEnabled(false);
-	rightTab->addTab(mClassifiedInfoTab, tr("Classified Info"));
+	rightTab->addTab(mClassifiedInfoTab, tr("Categorized Info"));
 	rightTab->setUpdatesEnabled(true);
 }
 
@@ -4618,7 +4746,10 @@ void MainWindow::writeAnnotation()
 	QAction *a = qobject_cast<QAction* >(sender());
 	bool answer = a->isChecked() ? true : false;
 	if (VTKA())
+	{
 		VTKA()->annotate(answer);
+		this->updateNoteMode();
+	}
 	updateMenus();
 }
 
@@ -4633,6 +4764,7 @@ void MainWindow::writePointNote()
 	}
 	pointNote->setChecked(true);
 	surfaceNote->setChecked(false);
+	polygonNote->setChecked(false);
 	frustumNote->setChecked(false);
 }
 
@@ -4647,6 +4779,22 @@ void MainWindow::writeSurfaceNote()
 	}
 	pointNote->setChecked(false);
 	surfaceNote->setChecked(true);
+	polygonNote->setChecked(false);
+	frustumNote->setChecked(false);
+}
+
+void MainWindow::writePolygonNote() 
+{
+	if (writeAnnotationAct->isChecked())
+		VTKA()->annotate(true, POLYGONNOTE, false); 
+	else
+	{
+		VTKA()->annotate(true, POLYGONNOTE); 
+		writeAnnotationAct->setChecked(true);
+	}
+	pointNote->setChecked(false);
+	surfaceNote->setChecked(false);
+	polygonNote->setChecked(true);
 	frustumNote->setChecked(false);
 }
 
@@ -4661,6 +4809,7 @@ void MainWindow::writeFrustumNote()
 	}
 	pointNote->setChecked(false);
 	surfaceNote->setChecked(false);
+	polygonNote->setChecked(false);
 	frustumNote->setChecked(true);
 }
 

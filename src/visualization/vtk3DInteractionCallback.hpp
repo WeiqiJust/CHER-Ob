@@ -4,6 +4,7 @@
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
 			 Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -211,6 +212,10 @@ public:
 
     mLightTransform = vtkSmartPointer<vtkTransform>::New();
     mTransform = vtkSmartPointer<vtkTransform>::New();
+  }
+
+  NoteMode GetNoteMode() {
+	  return mNoteMode;
   }
 
   void SetPolyData(vtkPolyData *polyData) {

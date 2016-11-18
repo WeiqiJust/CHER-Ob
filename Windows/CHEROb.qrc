@@ -62,6 +62,7 @@
         <file>../images/color_yellow.png</file>
         <file>../images/point.png</file>
         <file>../images/surface.png</file>
+        <file>../images/polygon.png</file>
         <file>../images/frustum.png</file>
         <file>../images/palette.png</file>
     </qresource>

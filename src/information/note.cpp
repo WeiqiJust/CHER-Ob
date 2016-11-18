@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -1194,7 +1195,7 @@ PointNote2D::PointNote2D(QString path, QString fileName, const int noteId, bool&
 
 void PointNote2D::removePointNote2D()
 {
-	qDebug()<<"remove Point note 2d"<<mFile->fileName();
+	qDebug() << "Remove Point Note 2D" << mFile->fileName();
 	mFile->remove();
 	this->hideNote(); 
 }
@@ -1408,10 +1409,251 @@ SurfaceNote2D::SurfaceNote2D(QString path, QString fileName, const int noteId, b
 
 void SurfaceNote2D::removeSurfaceNote2D()
 {
+	qDebug() << "Remove Surface Note 2D" << mFile->fileName();
 	mFile->remove();
-	this->hideNote(); 
+	this->hideNote();
 }
 
+PolygonNote2D::PolygonNote2D(QString path, const std::vector<std::pair<double, double> >* polygon, const std::vector<std::pair<int, int> >* polygonImage, const int noteId, const ColorType type, const QString user)
+	: Note(noteId, type)
+{
+	mPath = new QString(path);
+    mPolygon = new std::vector<std::pair<double, double> >;
+	mPolygonImage = new std::vector<std::pair<int, int> >;
+	mFileName = new QString(path);
+	//mFileName->append(QDir::separator() + QString("Note") + WORD_SEPARATOR + QString::number(qHash(QString::number(number))) + QString(".txt"));
+	qsrand(time(NULL));
+	int number = qrand();
+	mFileName->append(QDir::separator() + QString("PolygonNote2D") + WORD_SEPARATOR + QString::number(qHash(QString::number(number))) + QString(".txt"));
+	QString mUser = user;
+	if (user == QString())
+		mUsers.push_back(QString("Unknown"));
+	else
+	{
+		mUser.simplified();
+		mUser.replace("; ", ";");
+		mUser.replace(" ;", ";");
+		QStringList users = mUser.split(";");
+		for (int i = 0; i < users.size(); i++)
+			mUsers.push_back(users[i]);
+	}
 
+	qDebug(mFileName->toLatin1());
+	mFile = new QFile(*mFileName);
 
+	std::vector<std::pair<double, double> >::const_iterator it;
+	for (it = polygon->begin(); it != polygon->end(); it++)
+	{
+		mPolygon->push_back(std::pair<double, double>(it->first, it->second));
+	}
+	std::vector<std::pair<int, int> >::const_iterator itImage;
+	for (itImage = polygonImage->begin(); itImage != polygonImage->end(); itImage++)
+	{
+		mPolygonImage->push_back(std::pair<int, int>(itImage->first, itImage->second));
+	}
 
+	QString label;
+	label.append(QString("Polygon Note: World Coordinate ") + QString::number(polygon->size()));
+	for (it = polygon->begin(); it != polygon->end(); it++)
+	{
+		label.append(QString("\n(") + QString::number(it->first) + QString(", ") + QString::number(it->second) + QString(")"));
+	}
+	QString info;
+	info.append(QString("Polygon Note: World Coordinate ") + QString::number(polygon->size()));
+	for (it = polygon->begin(); it != polygon->end(); it++)
+	{
+		info.append(QString(" (") + QString::number(it->first) + QString(", ") + QString::number(it->second) + QString(")"));
+	}
+	info.append(QString(" Image Coordinate ") + QString::number(polygonImage->size()));
+	for (itImage = polygonImage->begin(); itImage != polygonImage->end(); itImage++)
+	{
+		info.append(QString(" (") + QString::number(itImage->first) + QString(", ") + QString::number(itImage->second) + QString(")"));
+	}
+	info.append(QString("\n"));
+
+	QString userLabel = QString("User: ");
+	QString userInfo;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		userInfo.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			userInfo.append(QString(";"));
+	}
+	label.append(QString("\n") + userLabel + userInfo);
+	this->setLabel(label);
+	info.append(userLabel + QString("\n") + userInfo + QString("\n"));
+	info.append(QString("Color Type:\n"));
+	info.append(QString(colortype2str(mColor).c_str()));
+	info.append(QString("\nNote Start:"));
+	this->setInfo(info);
+	qDebug() << "finish Polygon Note 2D instructor";
+	//// TO BE TESTED
+}
+PolygonNote2D::PolygonNote2D(QString path, QString fileName, const int noteId, bool& isSucceed)
+	: Note(noteId)
+{
+	mPath = new QString(path);
+	mPolygon = new std::vector<std::pair<double, double> >;
+	mPolygonImage = new std::vector<std::pair<int, int> >;
+	vtkSmartPointer<vtkIdTypeArray> ids = vtkSmartPointer<vtkIdTypeArray>::New();
+	
+	mFileName = new QString(path);
+	mFileName->append(QDir::separator() + fileName);
+
+	qDebug(mFileName->toLatin1());
+	mFile = new QFile(*mFileName);
+    if (!mFile->open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		qDebug() << "Open Note file " << this->mNoteId << " " << mFileName << " Failed"; 
+		isSucceed = false;
+		return;
+	}
+
+    QTextStream in(mFile);
+    QString firstLine = in.readLine();
+	bool okSize;
+	int polygonSize = firstLine.split(" ")[4].toInt(&okSize);
+	if (firstLine.split(" ").size() != 4 * polygonSize + 8)
+	{
+		qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+		isSucceed = false;
+		return;
+	}
+
+	for (int i = 1; i <= polygonSize; i++)
+	{
+		bool okX, okY;
+		double posX, posY;
+		posX = firstLine.split(" ")[2*i+3].split(",")[0].split("(")[1].toDouble(&okX);
+		posY = firstLine.split(" ")[2*i+4].split(")")[0].toDouble(&okY);
+		if (!okX || !okY)
+		{
+			qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+			isSucceed = false;
+			return;
+		} 
+		mPolygon->push_back(std::pair<double, double>(posX, posY));
+		bool okImgX, okImgY;
+		int posImageX, posImageY;
+		posImageX = firstLine.split(" ")[2*i + 2*polygonSize + 6].split(",")[0].split("(")[1].toInt(&okImgX);
+		posImageY = firstLine.split(" ")[2*i + 2*polygonSize + 7].split(")")[0].toInt(&okImgY);
+		if (!okImgX || !okImgY)
+		{
+			qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+			isSucceed = false;
+			return;
+		} 
+		mPolygonImage->push_back(std::pair<int, int>(posImageX, posImageY));
+	}
+
+	while(!in.atEnd())
+	{
+		QString signal = in.readLine();
+		if (signal == QString("User: "))
+			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
+	QString userLine;
+	in >> userLine;
+	QStringList users = userLine.split(";");
+	for (int i = 0; i < users.size(); i++)
+		mUsers.push_back(users[i]);
+
+	while(!in.atEnd())
+	{
+		QString signal = in.readLine();
+		if (signal == QString("Color Type:"))
+			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
+	QString colorType;
+	in >> colorType;
+
+	mColor = str2colortype(colorType.toStdString());
+	while(!in.atEnd())
+	{
+		QString signal = in.readLine();
+		if (signal == QString("Note Start:"))
+			break;
+	}
+	if (in.atEnd())
+	{
+		isSucceed = false;
+		return;
+	}
+
+	QString content = in.readAll();
+	QString text = content.split("\nLinked Images:\n")[0];
+	QString imagePaths = content.split("\nLinked Images:\n")[1];
+	QStringList imagePathList = imagePaths.split("\n");
+	QDir dir(*mPath);
+	for (int i = 0; i < imagePathList.size(); i++)
+	{
+		qDebug()<<"Image Path"<<imagePathList[i];
+		QFileInfo finfo(dir.absoluteFilePath(imagePathList[i]));
+		if (!finfo.exists())
+			continue;
+		QString extension = finfo.suffix().toLower();
+		if (extension != tr("png") && extension != tr("jpg") && extension != tr("jpeg") && extension != tr("tif") && extension != tr("bmp"))
+			continue;
+		addImage(finfo.absoluteFilePath());
+	}
+	this->setText(text);
+
+	QString label;
+	label.append(QString("Polygon Note: World Coordinate ") + QString::number(mPolygon->size()));
+	std::vector<std::pair<double, double> >::const_iterator it;
+	for (it = mPolygon->begin(); it != mPolygon->end(); it++)
+	{
+		label.append(QString("\n(") + QString::number(it->first) + QString(", ") + QString::number(it->second) + QString(")"));
+	}
+	QString info;
+	info.append(QString("Polygon Note: World Coordinate ") + QString::number(mPolygon->size()));
+	for (it = mPolygon->begin(); it != mPolygon->end(); it++)
+	{
+		info.append(QString(" (") + QString::number(it->first) + QString(", ") + QString::number(it->second) + QString(")"));
+	}
+	info.append(QString(" Image Coordinate ") + QString::number(mPolygonImage->size()));
+	std::vector<std::pair<int, int> >::const_iterator itImage;
+	for (itImage = mPolygonImage->begin(); itImage != mPolygonImage->end(); itImage++)
+	{
+		info.append(QString(" (") + QString::number(itImage->first) + QString(", ") + QString::number(itImage->second) + QString(")"));
+	}
+	info.append(QString("\n"));
+	
+	QString userLabel = QString("User: ");
+	QString userInfo;
+	for (int i = 0; i < mUsers.size(); i++)
+	{
+		userInfo.append(mUsers[i]);
+		if (i != mUsers.size() - 1)
+			userInfo.append(QString(";"));
+	}
+	label.append(QString("\n") + userLabel + userInfo);
+	this->setLabel(label);
+	info.append(userLabel + QString("\n") + userInfo + QString("\n"));
+	info.append(QString("Color Type:\n"));
+	info.append(QString(colortype2str(mColor).c_str()));
+	info.append(QString("\nNote Start:"));
+	this->setInfo(info);
+	mFile->close();
+	qDebug() << "finish Polygon Note 2D instructor";
+	isSucceed = true;
+
+	//// TO BE TESTED
+}
+void PolygonNote2D::removePolygonNote2D()
+{
+	qDebug() << "Remove Polygon Note 2D" << mFile->fileName();
+	mFile->remove();
+	this->hideNote();
+	//// TO BE TESTED
+}

@@ -4,6 +4,7 @@
 
  - Writers:  David Tidmarsh (tidmarsh@aya.yale.edu)
 			 Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -42,7 +43,7 @@ enum Interpolation{INTERPOLATION_OFF=0, INTERPOLATION_ON};
 enum Texture{TEXTURE_OFF=0, TEXTURE_ON};
 enum CameraMode3D{TRACKBALLMODE=0, SURFACEWALKERMODE, RUBBERBANDPICKMODE};
 enum NoteType{NOTE2D = 0, NOTE3D, NONE};
-enum NoteMode{UNDECLARE=0, POINTNOTE, SURFACENOTE, FRUSTUMNOTE, ANNOTATION};
+enum NoteMode{UNDECLARE=0, POINTNOTE, SURFACENOTE, POLYGONNOTE, FRUSTUMNOTE, ANNOTATION};
 enum ColorType{MAROON=0, RED, ORANGE, YELLOW, LIME, GREEN, AQUA, BLUE, PINK, PURPLE, WHITE};
 enum LightControlType{Model3DLIGHTCONTROL=0, RTILIGHTCONTROL}; //YY
 

@@ -122,6 +122,10 @@
 #include <vtkPropPicker.h>
 #include <vtkImageActor.h>
 #include <vtkInteractorStyleImage.h>
+
+#include "vtk2DInteractionCallback.hpp" // 2D mouse interaction program
+#include "vtk3DInteractionCallback.hpp" // 3D mouse interaction program
+
 //----------------------------------------------------------
 #include "../function/CTControl.h"
 #include "../function/lightControl.h"
@@ -154,9 +158,6 @@
 
 #define POINTSSIZE (4)
 #define LINEWIDTH (2)
-
-#include "vtk2DInteractionCallback.hpp" // 2D mouse interaction program
-#include "vtk3DInteractionCallback.hpp" // 3D mouse interaction program
 
 // Constructor
 VtkWidget::VtkWidget(QWidget * parent)
@@ -205,6 +206,8 @@ VtkWidget::~VtkWidget(){
   resetStackControlOnDocks(); // update control CT panels
 }
 
+NoteMode VtkWidget::getNoteMode2D() const { return mCallback2D->GetNoteMode(); }
+NoteMode VtkWidget::getNoteMode3D() const { return mCallback3D->GetNoteMode(); } //// TO BE TESTED
 
 void VtkWidget::updateCurrentSlice(int index)
 {
@@ -307,7 +310,7 @@ qDebug()<<"in updatelight position";
     mCallback3D->SetLightTransform(transform);
 	qDebug()<<"after set transform";
     mCallback3D->updateLightingPosition();
-	qDebug()<<"before lieght position";
+	qDebug()<<"before leight position";
   }
 
   if(mQVTKWidget)  mQVTKWidget->show();
@@ -578,6 +581,12 @@ void VtkWidget::removeSurfaceNote2DMark(double* point)
 	mCallback2D->removeSurfaceNoteMark(point);
 }
 
+void VtkWidget::removePolygonNote2DMark(std::vector<std::pair<double, double> >* polygon)
+{
+	mCallback2D->removePolygonNoteMark(polygon);
+	//// TO BE TESTED
+}
+
 void VtkWidget::openPointNote2DMark(double* point)
 {
 	mCallback2D->openPointNoteMark(point);
@@ -588,6 +597,12 @@ void VtkWidget::openSurfaceNote2DMark(double* point)
 	mCallback2D->openSurfaceNoteMark(point);
 }
 
+void VtkWidget::openPolygonNote2DMark(std::vector<std::pair<double, double> >* polygon)
+{
+	mCallback2D->openPolygonNoteMark(polygon);
+	//// TO BE TESTED
+}
+
 void VtkWidget::loadPointNote2DMark(double* point, const ColorType color, bool isDisplay)
 {
 	mCallback2D->displayLoadPointNote(point, color, isDisplay);
@@ -596,6 +611,12 @@ void VtkWidget::loadPointNote2DMark(double* point, const ColorType color, bool i
 void VtkWidget::loadSurfaceNote2DMark(double* point, const ColorType color, bool isDisplay)
 {
 	mCallback2D->displayLoadSurfaceNote(point, color, isDisplay);
+}
+
+void VtkWidget::loadPolygonNote2DMark(std::vector<std::pair<double, double> >* polygon, const ColorType color, bool isDisplay)
+{
+	mCallback2D->displayLoadPolygonNote(polygon, color, isDisplay);
+	//// TO BE TESTED
 }
 
 void VtkWidget::setMeasureDistance(bool status)

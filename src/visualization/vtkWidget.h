@@ -57,6 +57,7 @@
 #include <vtkFloatArray.h>
 #include <vtkEventQtSlotConnect.h>
 #include <vtkSelectionNode.h>
+
 //----------------------------------------------------------
 // 2D images (including DICOM CT images) are factorized by using ITK
 #include <itkImage.h>
@@ -112,8 +113,10 @@
 #define DEFAULTINTENSITYL2 (0.25)
 
 #define RENDERING_TIME_INTERVAL (250) // YY. time interval for re-rendering
+
 class vtk2DInteractionCallback;
 class vtk3DInteractionCallback;
+
 class ReadCHEROb;
 class InputImageSet;
 class Bookmark;
@@ -181,6 +184,10 @@ public:
   bool getDisplayInfoOn() const {return mDisplayInfoOn; }
   bool getUserAnnotationOn() const {return mUserIsAnnotating;}
   QString getmRgbTextureFilename() const {return mRgbTextureFilename;}
+
+  NoteMode getNoteMode2D() const;
+  NoteMode getNoteMode3D() const;
+  //// Modified by Zeyu Wang on Nov 4, 2016 to make note mode consistent when change windows
 
   void setSliceMax(int input) {mSliceMax = input;}
   void setSliceCurrent(int input) {mSliceCurrent = input;}
@@ -295,6 +302,9 @@ public slots:
   void removePointNote2DMark(double* point);
   void openPointNote2DMark(double* point);
   void loadPointNote2DMark(double* point, const ColorType color, bool isDisplay = false);
+  void removePolygonNote2DMark(std::vector<std::pair<double, double> >* polygon);
+  void openPolygonNote2DMark(std::vector<std::pair<double, double> >* polygon);
+  void loadPolygonNote2DMark(std::vector<std::pair<double, double> >* polygon, const ColorType color, bool isDisplay = false);
 
 protected slots:
   void updateIntensityL12(double intensity1, double intensity2);

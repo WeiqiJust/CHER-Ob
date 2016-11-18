@@ -4,6 +4,7 @@
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
 			 Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -123,7 +124,7 @@ public:
 	/**
 	 * @brief  Set the application version number.
 	 */
-	const QString appVer() const {return tr(" 1.0.0"); }
+	const QString appVer() const {return tr(" 1.1.0"); }
 
 	/**
 	 * @brief  Set the bits of the running application.
@@ -348,6 +349,7 @@ public slots:
 	/**
 	 * @brief  Update toolbars.
 	 */
+	void updateNoteMode();
 	void updateMenus();
 
 	/**
@@ -415,7 +417,7 @@ private:
 	void createNavigationDockWindows();
 
 	/**
-	 * @brief  Create and add the classified info tab in dock window for project.
+	 * @brief  Create and add the categorized info tab in dock window for project.
 	 */
 	void createClassifiedInfoDockWindows();
 
@@ -740,10 +742,11 @@ private slots:
 	void writeAnnotation();
 
 	/**
-	 * @brief  Choose different note types. Frustum note only works for 3D.
+	 * @brief  Choose different note types. Polygon note only works for 2D. Frustum note only works for 3D.
 	 */
 	void writePointNote();
 	void writeSurfaceNote();
+	void writePolygonNote();
 	void writeFrustumNote();
 
 	/**
@@ -941,6 +944,7 @@ private:
 	QActionGroup *annotationModeGroupAct;
 	QAction *pointNote;
 	QAction *surfaceNote;
+	QAction *polygonNote;
 	QAction *frustumNote;
 	QActionGroup *annotationColorGroupAct;
 	QAction *annotationMaroon;

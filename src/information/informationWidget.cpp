@@ -4,6 +4,8 @@
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
  			 Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
+			 Ying Yang (ying.yang.yy368@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -211,6 +213,8 @@ void Information::refresh()
 	mFrustumNotes.clear();
 	mPointNotes2D.clear();
 	mSurfaceNotes2D.clear();
+	mPolygonNotes2D.clear();
+	//// TO BE TESTED
 	hasNotesRemoved.clear();
 	removedAnnotation.clear();
 }
@@ -225,6 +229,8 @@ void Information::init(const QString path, bool isDisplayNoteMark)
 	loadFrustumNote(objectPath, true, isDisplayNoteMark);
 	loadPointNote2D(objectPath, true, isDisplayNoteMark);
 	loadSurfaceNote2D(objectPath, true, isDisplayNoteMark);
+	loadPolygonNote2D(objectPath, true, isDisplayNoteMark);
+	//// TO BE TESTED
 	loadAnnotation(notePath);
 }
 
@@ -235,6 +241,8 @@ void Information::initCT2DRendering(const QString path, bool isDisplayNoteMark)
 	notePath.append(QDir::separator() + QString("Note"));
 	loadPointNote2D(objectPath, true, isDisplayNoteMark);
 	loadSurfaceNote2D(objectPath, true, isDisplayNoteMark);
+	loadPolygonNote2D(objectPath, true, isDisplayNoteMark);
+	//// TO BE TESTED
 	loadPointNote(objectPath, false);
 	loadSurfaceNote(objectPath, false);
 	loadFrustumNote(objectPath, false);
@@ -248,6 +256,8 @@ void Information::initCTVolumeRendering(const QString path, bool isDisplayNoteMa
 	notePath.append(QDir::separator() + QString("Note"));
 	loadPointNote2D(objectPath, false);
 	loadSurfaceNote2D(objectPath, false);
+	loadPolygonNote2D(objectPath, false);
+	//// TO BE TESTED
 	loadPointNote(objectPath, true, isDisplayNoteMark);
 	loadSurfaceNote(objectPath, true, isDisplayNoteMark);
 	loadFrustumNote(objectPath, true, isDisplayNoteMark);
@@ -267,6 +277,7 @@ void Information::annotationChanges()
 
 void Information::startAnnotation()
 {
+	//qDebug() << "startAnnotation() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	saveButton->setEnabled(true);
 	removeButton->setEnabled(true);
@@ -275,6 +286,7 @@ void Information::startAnnotation()
 
 void Information::finishAnnotation()
 {
+	//qDebug() << "finishAnnotation() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	dText->setReadOnly(true);
 	saveButton->setEnabled(false);
@@ -301,6 +313,7 @@ bool Information::loadAnnotation(const QString notePath)
 
 void Information::reloadAnnotation()
 {
+	//qDebug() << "reloadAnnotation() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	//bool saved = content[notePath].second;
 	skipTextChange = true;
@@ -311,6 +324,7 @@ void Information::reloadAnnotation()
 
 void Information::clearAnnotation()
 {
+	//qDebug() << "clearAnnotation() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	//bool saved = content[notePath].second;
 	skipTextChange = true;
@@ -321,6 +335,7 @@ void Information::clearAnnotation()
 
 void Information::saveAnnotation()
 {
+	//qDebug() << "saveAnnotation() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	if (dText->toPlainText() == QString())
 		return;
@@ -343,6 +358,7 @@ void Information::saveAnnotation()
 
 void Information::removeAnnotation()
 {
+	//qDebug() << "removeAnnotation() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	QString fileName = notePath;
 	qDebug() << "removeAnnotation " << notePath;
@@ -360,6 +376,7 @@ void Information::removeAnnotation()
 void Information::createPointNote(double *pos, int cellId, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
+	//qDebug() << "createPointNote() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	int size = mPointNotes[notePath].size();
 	qDebug() << "Create Point Note, current size = " << size;
@@ -376,6 +393,7 @@ void Information::createPointNote(double *pos, int cellId, ColorType color)
 void Information::createSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, QVector<double*> points, ColorType color, bool isCTVolume)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
+	//qDebug() << "createSurfaceNote() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	int size = mSurfaceNotes[notePath].size();
 	qDebug() << "Create Surface Note, current size = " << size;
@@ -392,6 +410,7 @@ void Information::createSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, Q
 void Information::createFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
+	//qDebug() << "createFrustumNote() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	int size = mFrustumNotes[notePath].size();
 	qDebug() << "Create Frustum Note, current size = " << size;
@@ -408,6 +427,7 @@ void Information::createFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartP
 void Information::createPointNote2D(double* point,  int* pointImage, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
+	//qDebug() << "createPointNote2D() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	int size = mPointNotes2D[notePath].size();
 	qDebug() << "Create Point Note 2D, current size = " << size;
@@ -424,6 +444,7 @@ void Information::createPointNote2D(double* point,  int* pointImage, ColorType c
 void Information::createSurfaceNote2D(double* point, int* pointImage, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
+	//qDebug() << "createSurfaceNote2D() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	int size = mSurfaceNotes2D[notePath].size();
 	qDebug() << "Create Surface Note 2D, current size = " << size;
@@ -435,6 +456,24 @@ void Information::createSurfaceNote2D(double* point, int* pointImage, ColorType 
 	connect(this, SIGNAL(closeAll()), mSurfaceNotes2D[notePath][size], SLOT(close()));
 	connect(this, SIGNAL(replaceUserName(const QString, const QString)), mSurfaceNotes2D[notePath][size], SLOT(replaceUserName(const QString, const QString)));
 	emit addNavigationItem(notePath, SURFACENOTE, NOTE2D);
+}
+
+void Information::createPolygonNote2D(std::vector<std::pair<double, double> >* polygon, std::vector<std::pair<int, int> >* polygonImage, ColorType color)
+{
+	//qDebug() <<mw()->VTKA()->mFilename;
+	//qDebug() << "createPolygonNote2D() calls updateCurrentPath()\n";
+	updateCurrentPath();
+	int size = mPolygonNotes2D[notePath].size();
+	qDebug() << "Create Polygon Note 2D, current size = " << size;
+	PolygonNote2D* newNote = new PolygonNote2D(notePath, polygon, polygonImage, size, color, mw()->mUserName);
+	newNote->showNote();
+	mPolygonNotes2D[notePath].push_back(newNote);
+	connect(mPolygonNotes2D[notePath][size], SIGNAL(removeNote(int, QString*)), this, SLOT(removePolygonNote2D(int, QString*)));
+	connect(this, SIGNAL(saveAll()), mPolygonNotes2D[notePath][size], SLOT(save()));
+	connect(this, SIGNAL(closeAll()), mPolygonNotes2D[notePath][size], SLOT(close()));
+	connect(this, SIGNAL(replaceUserName(const QString, const QString)), mPolygonNotes2D[notePath][size], SLOT(replaceUserName(const QString, const QString)));
+	emit addNavigationItem(notePath, POLYGONNOTE, NOTE2D);
+	//// TO BE TESTED
 }
 
 bool Information::loadPointNote(const QString path, bool isLoadNoteMark, bool isDisplayNoteMark)
@@ -484,6 +523,28 @@ bool Information::loadPointNote(const QString path, bool isLoadNoteMark, bool is
 	return isLoadSucceed;
 }
 
+bool Information::loadPointNoteFromFile(const QString noteFileName, const QString path, bool isLoadNoteMark, bool isDisplayNoteMark)
+{
+	bool isLoadSucceed = true;
+	bool isSucceed;
+	bool duplicated = false;
+
+	int i = mPointNotes[notePath].size(); 
+	PointNote* newNote = new PointNote(notePath, noteFileName, i, isSucceed);
+	
+	mPointNotes[notePath].push_back(newNote);
+	connect(mPointNotes[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removePointNote(int, QString*)));
+	connect(this, SIGNAL(saveAll()), mPointNotes[notePath][i], SLOT(save()));
+	connect(this, SIGNAL(closeAll()), mPointNotes[notePath][i], SLOT(close()));
+	connect(this, SIGNAL(replaceUserName(const QString, const QString)), mPointNotes[notePath][i], SLOT(replaceUserName(const QString, const QString)));
+	mPointNotes[notePath][i]->setSaved(true);
+	if (mw()->VTKA(path) && isLoadNoteMark)
+		mw()->VTKA(path)->loadPointNoteMark(newNote->getCellId(), newNote->getColorType(), newNote->getPosition(), isDisplayNoteMark);
+	
+	qDebug() << "Load "<<mPointNotes[notePath].size() <<" Point Note";
+	return isLoadSucceed;
+}
+
 bool Information::loadSurfaceNote(const QString path, bool isLoadNoteMark, bool isDisplayNoteMark)
 {
 	QDir dir(notePath);
@@ -525,6 +586,29 @@ bool Information::loadSurfaceNote(const QString path, bool isLoadNoteMark, bool 
 		//else
 		//	qDebug()<<"Cannot find the window!!!!";
 	}
+	qDebug() << "Load "<<mSurfaceNotes[notePath].size()<<" Surface Note";
+	return isLoadSucceed;
+}
+
+bool Information::loadSurfaceNoteFromFile(const QString noteFileName, const QString path, bool isLoadNoteMark, bool isDisplayNoteMark)
+{
+	bool isLoadSucceed = true;
+	bool isSucceed;
+	bool duplicated = false;
+
+	int i = mSurfaceNotes[notePath].size();
+		
+	SurfaceNote* newNote = new SurfaceNote(notePath, noteFileName, i, isSucceed);
+	
+	mSurfaceNotes[notePath].push_back(newNote);
+	connect(mSurfaceNotes[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removeSurfaceNote(int, QString*)));
+	connect(this, SIGNAL(saveAll()), mSurfaceNotes[notePath][i], SLOT(save()));
+	connect(this, SIGNAL(closeAll()), mSurfaceNotes[notePath][i], SLOT(close()));
+	connect(this, SIGNAL(replaceUserName(const QString, const QString)), mSurfaceNotes[notePath][i], SLOT(replaceUserName(const QString, const QString)));
+	mSurfaceNotes[notePath][i]->setSaved(true);
+	if (mw()->VTKA(path) && isLoadNoteMark)
+		mw()->VTKA(path)->loadSurfaceNoteMark(newNote->getCellIds(), newNote->getCornerPoints(), newNote->getColorType(), isDisplayNoteMark);
+	
 	qDebug() << "Load "<<mSurfaceNotes[notePath].size()<<" Surface Note";
 	return isLoadSucceed;
 }
@@ -571,6 +655,27 @@ bool Information::loadFrustumNote(const QString path, bool isLoadNoteMark, bool 
 		//	qDebug()<<"Cannot find the window!!!!";
 
 	}
+	qDebug() << "Load "<<mFrustumNotes[notePath].size()<<" Frustum Note";
+	return isLoadSucceed;
+}
+
+bool Information::loadFrustumNoteFromFile(const QString noteFileName, const QString path, bool isLoadNoteMark, bool isDisplayNoteMark)
+{
+	bool isLoadSucceed = true;
+	bool isSucceed;
+	bool duplicated = false;
+
+	int i = mFrustumNotes[notePath].size();
+	FrustumNote* newNote = new FrustumNote(notePath, noteFileName, i, isSucceed);
+	
+	mFrustumNotes[notePath].push_back(newNote);
+	connect(mFrustumNotes[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removeFrustumNote(int, QString*)));
+	connect(this, SIGNAL(saveAll()), mFrustumNotes[notePath][i], SLOT(save()));
+	mFrustumNotes[notePath][i]->setSaved(true);
+	connect(this, SIGNAL(closeAll()), mFrustumNotes[notePath][i], SLOT(close()));
+	connect(this, SIGNAL(replaceUserName(const QString, const QString)), mFrustumNotes[notePath][i], SLOT(replaceUserName(const QString, const QString)));
+	if (mw()->VTKA(path) && isLoadNoteMark)
+		mw()->VTKA(path)->loadFrustumNoteMark(newNote->getPoints(), newNote->getNormals(), newNote->getColorType(), isDisplayNoteMark);
 	qDebug() << "Load "<<mFrustumNotes[notePath].size()<<" Frustum Note";
 	return isLoadSucceed;
 }
@@ -622,6 +727,29 @@ bool Information::loadPointNote2D(const QString path, bool isLoadNoteMark, bool 
 	return isLoadSucceed;
 }
 
+bool Information::loadPointNote2DFromFile(const QString noteFileName, const QString path, bool isLoadNoteMark, bool isDisplayNoteMark)
+{
+	bool isLoadSucceed = true;
+	bool isSucceed;
+	bool duplicated = false;
+
+	int i = mPointNotes2D[notePath].size();
+	PointNote2D* newNote = new PointNote2D(notePath, noteFileName, i, isSucceed);
+	
+	mPointNotes2D[notePath].push_back(newNote);
+	connect(mPointNotes2D[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removePointNote2D(int, QString*)));
+	connect(this, SIGNAL(saveAll()), mPointNotes2D[notePath][i], SLOT(save()));
+	connect(this, SIGNAL(closeAll()), mPointNotes2D[notePath][i], SLOT(close()));
+	connect(this, SIGNAL(replaceUserName(const QString, const QString)), mPointNotes2D[notePath][i], SLOT(replaceUserName(const QString, const QString)));
+	mPointNotes2D[notePath][i]->setSaved(true);
+
+	if (mw()->VTKA(path) && isLoadNoteMark)
+		mw()->VTKA(path)->loadPointNote2DMark(newNote->getPoint(), newNote->getColorType(), isDisplayNoteMark);
+	
+	qDebug() << "Load "<<mPointNotes2D[notePath].size()<<" Point Note";
+	return isLoadSucceed;
+}
+
 bool Information::loadSurfaceNote2D(const QString path, bool isLoadNoteMark, bool isDisplayNoteMark)
 {
 	QDir dir(notePath);
@@ -668,8 +796,105 @@ bool Information::loadSurfaceNote2D(const QString path, bool isLoadNoteMark, boo
 	return isLoadSucceed;
 }
 
+bool Information::loadSurfaceNote2DFromFile(const QString noteFileName, const QString path, bool isLoadNoteMark, bool isDisplayNoteMark)
+{
+	bool isLoadSucceed = true;
+	bool isSucceed;
+	bool duplicated = false;
+
+	int i = mSurfaceNotes2D[notePath].size();
+	SurfaceNote2D* newNote = new SurfaceNote2D(notePath, noteFileName, i, isSucceed);
+
+	mSurfaceNotes2D[notePath].push_back(newNote);
+	connect(mSurfaceNotes2D[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removeSurfaceNote2D(int, QString*)));
+	connect(this, SIGNAL(saveAll()), mSurfaceNotes2D[notePath][i], SLOT(save()));
+	connect(this, SIGNAL(closeAll()), mSurfaceNotes2D[notePath][i], SLOT(close()));
+	connect(this, SIGNAL(replaceUserName(const QString, const QString)), mSurfaceNotes2D[notePath][i], SLOT(replaceUserName(const QString, const QString)));
+	mSurfaceNotes2D[notePath][i]->setSaved(true);
+	
+	if (mw()->VTKA(path) && isLoadNoteMark)
+		mw()->VTKA(path)->loadSurfaceNote2DMark(newNote->getPoint(), newNote->getColorType(), isDisplayNoteMark);
+
+	qDebug() << "Path = " << path << endl;
+	qDebug() << "Load "<<mSurfaceNotes2D[notePath].size()<<" Surface Note";
+	return isLoadSucceed;
+}
+
+bool Information::loadPolygonNote2D(const QString path, bool isLoadNoteMark, bool isDisplayNoteMark)
+{
+	QDir dir(notePath);
+	dir.setNameFilters(QStringList()<<"PolygonNote2D_*.txt");
+	dir.setSorting(QDir::Name|QDir::LocaleAware);
+	QStringList fileList = dir.entryList();
+	bool isLoadSucceed = true;
+	bool isSucceed;
+	for (int i = 0; i < fileList.size(); ++i)
+	{
+		qDebug() << fileList[i];
+		bool duplicated = false;
+		for (int j = 0; j < mPolygonNotes2D[notePath].size(); j++)
+		{
+			QString file = mPolygonNotes2D[notePath][j]->getFileName();
+			file.truncate(file.lastIndexOf(QDir::separator()));
+			if (file == fileList[i])
+			{
+				duplicated = true;
+				break;
+			}
+		}
+		if (duplicated)
+			continue;
+		PolygonNote2D* newNote = new PolygonNote2D(notePath, fileList[i], i, isSucceed);
+		if (!isSucceed)
+		{
+			isLoadSucceed = false;
+			continue;
+		}
+		mPolygonNotes2D[notePath].push_back(newNote);
+		connect(mPolygonNotes2D[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removePolygonNote2D(int, QString*)));
+		connect(this, SIGNAL(saveAll()), mPolygonNotes2D[notePath][i], SLOT(save()));
+		connect(this, SIGNAL(closeAll()), mPolygonNotes2D[notePath][i], SLOT(close()));
+		connect(this, SIGNAL(replaceUserName(const QString, const QString)), mPolygonNotes2D[notePath][i], SLOT(replaceUserName(const QString, const QString)));
+		mPolygonNotes2D[notePath][i]->setSaved(true);
+		if (mw()->VTKA(path) && isLoadNoteMark)
+			mw()->VTKA(path)->loadPolygonNote2DMark(newNote->getPolygon(), newNote->getColorType(), isDisplayNoteMark);
+		//else
+		//	qDebug()<<"Cannot find the window!!!!";
+
+	}
+	qDebug() << "Load "<<mPolygonNotes2D[notePath].size()<<" Polygon Note";
+	return isLoadSucceed;
+
+	//// TO BE TESETED
+}
+
+bool Information::loadPolygonNote2DFromFile(const QString noteFileName, const QString path, bool isLoadNoteMark, bool isDisplayNoteMark)
+{
+	bool isLoadSucceed = true;
+	bool isSucceed;
+	bool duplicated = false;
+
+	int i = mPolygonNotes2D[notePath].size();
+	PolygonNote2D* newNote = new PolygonNote2D(notePath, noteFileName, i, isSucceed);
+
+	mPolygonNotes2D[notePath].push_back(newNote);
+	connect(mPolygonNotes2D[notePath][i], SIGNAL(removeNote(int, QString*)), this, SLOT(removePolygonNote2D(int, QString*)));
+	connect(this, SIGNAL(saveAll()), mPolygonNotes2D[notePath][i], SLOT(save()));
+	connect(this, SIGNAL(closeAll()), mPolygonNotes2D[notePath][i], SLOT(close()));
+	connect(this, SIGNAL(replaceUserName(const QString, const QString)), mPolygonNotes2D[notePath][i], SLOT(replaceUserName(const QString, const QString)));
+	mPolygonNotes2D[notePath][i]->setSaved(true);
+	
+	if (mw()->VTKA(path) && isLoadNoteMark)
+		mw()->VTKA(path)->loadPolygonNote2DMark(newNote->getPolygon(), newNote->getColorType(), isDisplayNoteMark);
+
+	qDebug() << "Path = " << path << endl;
+	qDebug() << "Load "<<mPolygonNotes2D[notePath].size()<<" Polygon Note";
+	return isLoadSucceed;
+}
+
 void Information::openPointNote(int cellId)
 {
+	//qDebug() << "openPointNote() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
 	{
@@ -684,6 +909,7 @@ void Information::openPointNote(int cellId)
 
 void Information::openSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, std::vector<double*> cornerPoints, bool isCTVolume)
 {
+	//qDebug() << "openSurfaceNote() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	bool isOpen = false;
 	if (!isCTVolume)
@@ -745,6 +971,7 @@ void Information::openSurfaceNote(vtkSmartPointer<vtkSelectionNode> cellIds, std
 
 void Information::openFrustumNote(vtkSmartPointer<vtkPlanes> planes)
 {
+	//qDebug() << "openFrustumNote() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	if (planes->GetNumberOfPlanes() != 6)
 	{
@@ -794,6 +1021,7 @@ void Information::openFrustumNote(vtkSmartPointer<vtkPlanes> planes)
 
 void Information::openPointNote2D(double* point)
 {
+	//qDebug() << "openPointNote2D() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mPointNotes2D[notePath].size(); ++i) 
 	{
@@ -801,7 +1029,7 @@ void Information::openPointNote2D(double* point)
 		bool isSame = true;
 		for (int j = 0; j  < 3; j++)
 		{
-			if (select[j] != point[j])
+			if (select[j] != point[j]) //// HAZARD TEST DOUBLE
 			{
 				isSame = false;
 				break;
@@ -818,6 +1046,7 @@ void Information::openPointNote2D(double* point)
 
 void Information::openSurfaceNote2D(double* point)
 {
+	//qDebug() << "openSurfaceNote2D() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mSurfaceNotes2D[notePath].size(); ++i) 
 	{
@@ -825,7 +1054,7 @@ void Information::openSurfaceNote2D(double* point)
 		bool isSame = true;
 		for (int j = 0; j  < 4; j++)
 		{
-			if (select[j] != point[j])
+			if (select[j] != point[j]) //// HAZARD TEST DOUBLE
 			{
 				isSame = false;
 				break;
@@ -840,9 +1069,48 @@ void Information::openSurfaceNote2D(double* point)
 	}
 }
 
+void Information::openPolygonNote2D(std::vector<std::pair<double, double> >* polygon)
+{
+	//qDebug() << "openPolygonNote2D() calls updateCurrentPath()\n";
+	updateCurrentPath();
+	for (int i = 0; i < mPolygonNotes2D[notePath].size(); ++i) 
+	{
+		std::vector<std::pair<double, double> >* select = mPolygonNotes2D[notePath][i]->getPolygon();
+		bool isSame = true;
+		std::vector<std::pair<double, double> >::iterator it1, it2;
+		for (it1 = select->begin(), it2 = polygon->begin(); it1 != select->end() && it2 != polygon->end(); ++it1, ++it2)
+		{
+			if (abs(it1->first - it2->first) > 0.000001 || abs(it1->second - it2->second) > 0.000001)
+			{
+				isSame = false;
+				break;
+			}
+		}
+		if (isSame)
+		{
+			mPolygonNotes2D[notePath][i]->hideNote();
+			mPolygonNotes2D[notePath][i]->showNote();
+			break;
+		}
+	}
+	//// TO BE TESTED
+}
+
+void Information::setNotePath(QString path)
+{
+	notePathPre = notePath;
+	notePath = path;
+}
+
+void Information::recoverNotePath()
+{
+	notePath = notePathPre;
+}
+
 void Information::removePointNote(int noteId, QString* path)
 {
 	//qDebug() << "remove Note "<<noteId;
+	//qDebug() << "removePointNote() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mPointNotes[*path].size(); ++i) 
 	{
@@ -861,6 +1129,7 @@ void Information::removePointNote(int noteId, QString* path)
 void Information::removeSurfaceNote(int noteId, QString* path)
 {
 	//qDebug() << "remove Note "<<noteId;
+	//qDebug() << "removeSurfaceNote() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mSurfaceNotes[*path].size(); ++i) 
 	{
@@ -880,6 +1149,7 @@ void Information::removeSurfaceNote(int noteId, QString* path)
 void Information::removeFrustumNote(int noteId, QString* path)
 {
 	//qDebug() << "remove Note "<<noteId;
+	//qDebug() << "removeFrustumNote() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mFrustumNotes[*path].size(); ++i) 
 	{
@@ -898,6 +1168,7 @@ void Information::removeFrustumNote(int noteId, QString* path)
 void Information::removePointNote2D(int noteId, QString* path)
 {
 	//qDebug() << "remove Note "<<noteId;
+	//qDebug() << "removePointNote2D() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mPointNotes2D[*path].size(); ++i) 
 	{
@@ -915,7 +1186,8 @@ void Information::removePointNote2D(int noteId, QString* path)
 
 void Information::removeSurfaceNote2D(int noteId, QString* path)
 {
-	//qDebug() << "remove Note "<<noteId;
+	//qDebug() << "remove surface Note "<<noteId;
+	//qDebug() << "removeSurfaceNote2D() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mSurfaceNotes2D[*path].size(); ++i) 
 	{
@@ -929,6 +1201,26 @@ void Information::removeSurfaceNote2D(int noteId, QString* path)
 			break;
 		}
 	}
+}
+
+void Information::removePolygonNote2D(int noteId, QString* path)
+{
+	//qDebug() << "remove polygon Note "<<noteId;
+	//qDebug() << "removePolygonNote2D() calls updateCurrentPath()\n";
+	updateCurrentPath();
+	for (int i = 0; i < mPolygonNotes2D[*path].size(); ++i) 
+	{
+		if (mPolygonNotes2D[*path][i]->getNoteId() == noteId)
+		{
+			mw()->VTKA()->removePolygonNote2DMark(mPolygonNotes2D[*path][i]->getPolygon());
+			//mPolygonNotes2D[*path].remove(i);
+			mPolygonNotes2D[*path][i]->setRemoved(true);
+			hasNotesRemoved[notePath] = true;
+			emit removeNavigationItem(notePath, POLYGONNOTE, i, NOTE2D);
+			break;
+		}
+	}
+	//// TO BE TESTED
 }
 
 void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
@@ -953,7 +1245,7 @@ void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
 	fileName.append(QDir::separator() + file);
 	QString type = file.split("_")[0];
 	QStringList options;
-	options << "Annotation.txt" << "PointNote" << "SurfaceNote" << "FrustumNote" << "PointNote2D" << "SurfaceNote2D";
+	options << "Annotation.txt" << "PointNote" << "SurfaceNote" << "FrustumNote" << "PointNote2D" << "SurfaceNote2D" << "PolygonNote2D";
 	QTabWidget* tab = new QTabWidget();
 
 	switch(options.indexOf(type))
@@ -1032,6 +1324,21 @@ void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
 				}
 			}
 			break;
+		case 6:
+			for (int i = 0; i < mPolygonNotes2D[path].size(); i++)
+			{
+				if (mPolygonNotes2D[path][i]->getFileName() == fileName)
+				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
+					mPolygonNotes2D[path][i]->hideNote();
+					mPolygonNotes2D[path][i]->showNote();
+					break;
+				}
+			}
+			//// TO BE TESTED
+			break;
 		default: qDebug() << "Incorrect Note File!";
 	}
 	mw()->switchSubWindow(projectPath);
@@ -1052,7 +1359,7 @@ void Information::openNoteFromNavigation(QTreeWidgetItem* item)
 	if (type != QString("Annotation"))
 		number = file.split("_")[1].toInt();
 	QStringList options;
-	options << "Annotation" << "PointNote" << "SurfaceNote" << "FrustumNote" << "PointNote2D" << "SurfaceNote2D";
+	options << "Annotation" << "PointNote" << "SurfaceNote" << "FrustumNote" << "PointNote2D" << "SurfaceNote2D" << "PolygonNote2D";
 	QTabWidget* rightTab = new QTabWidget();
 	QTabWidget* functionTab = new QTabWidget();
 
@@ -1160,6 +1467,24 @@ void Information::openNoteFromNavigation(QTreeWidgetItem* item)
 				qDebug()<<"Incorrect Notes!";
 			}
 			break;
+		case 6:
+			if (mPolygonNotes2D[path].size() >= number)
+			{
+				if (!mPolygonNotes2D[path][number-1]->checkRemoved())
+				{
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
+					mPolygonNotes2D[path][number-1]->hideNote();
+					mPolygonNotes2D[path][number-1]->showNote();
+				}
+			}
+			else
+			{
+				qDebug()<<"Incorrect Notes!";
+			}
+			//// TO BE TESTED
+			break;
 		default: qDebug() << "Incorrect Note File!";
 	}
 	mw()->switchSubWindow(projectPath);
@@ -1168,6 +1493,7 @@ void Information::openNoteFromNavigation(QTreeWidgetItem* item)
 
 void Information::openNotesByUsers(const QVector<QString> users)
 {
+	//qDebug() << "openNotesByUsers() calls updateCurrentPath()\n";
 	if (!updateCurrentPath())
 		return;
 	QVector<QString> mUsers;
@@ -1232,6 +1558,19 @@ void Information::openNotesByUsers(const QVector<QString> users)
 			}
 		}
 	}
+	for (int i = 0; i < mPolygonNotes2D[notePath].size(); ++i)
+	{
+		mUsers = mPolygonNotes2D[notePath][i]->getUser();
+		for (int j = 0; j < users.size(); j++)
+		{
+			if (mUsers.indexOf(users[j]) != -1)
+			{
+				mw()->VTKA()->openPolygonNote2DMark(mPolygonNotes2D[notePath][i]->getPolygon());
+				break;
+			}
+		}
+		//// TO BE TESTED
+	}
 }
 
 void Information::replaceNotesUserName(const QString newName, const QString oldName)
@@ -1258,6 +1597,12 @@ void Information::draw2DNoteMark(const QString path)
 			mw()->VTKA(objectPath)->loadSurfaceNote2DMark(mSurfaceNotes2D[noteFolder][i]->getPoint(), 
 				mSurfaceNotes2D[noteFolder][i]->getColorType());
 		}
+		for (int i = 0; i < mPolygonNotes2D[noteFolder].size(); i++)
+		{
+			mw()->VTKA(objectPath)->loadPolygonNote2DMark(mPolygonNotes2D[noteFolder][i]->getPolygon(), 
+				mPolygonNotes2D[noteFolder][i]->getColorType());
+		}
+		//// TO BE TESTED
 	}
 }
 
@@ -1286,6 +1631,172 @@ void Information::draw3DNoteMark(const QString path)
 	}
 }
 
+// Added by Ying to copy annotations
+QVector<QString> Information::getNoteModeType(QTreeWidgetItem* item)
+{
+	QVector<QString> res;
+
+	QString file = item->text(0);
+
+	QString path = item->text(1);
+	
+	path.append(QDir::separator() + QString("Note"));
+
+	QString type = file.split("_")[0];
+	int number;
+	if (type != QString("Annotation"))
+		number = file.split("_")[1].toInt();
+
+	QStringList options;
+	options << "Annotation" << "PointNote" << "SurfaceNote" << "FrustumNote" << "PointNote2D" << "SurfaceNote2D" << "PolygonNote2D";
+
+	switch(options.indexOf(type))
+	{
+		case 0:
+			{ break; return res; }
+		case 1:
+			if (mPointNotes[path].size() >= number) {
+				res.push_back(QString("PointNote"));
+				res.push_back(QString("3D"));
+			}
+			else {
+				qDebug() << "Did not find the Notes!";
+			}
+			break;
+		case 2:
+			if (mSurfaceNotes[path].size() >= number) {
+				res.push_back(QString("SurfaceNote"));
+				res.push_back(QString("3D"));
+			}
+			else {
+				qDebug() << "Did not find the Notes!";
+			}
+			break;
+		case 3:
+			if (mFrustumNotes[path].size() >= number) {
+				res.push_back(QString("FrustumNote"));
+				res.push_back(QString("3D"));
+			}
+			else {
+				qDebug() << "Did not find the Notes!";
+			}
+			break;
+		case 4:
+			if (mPointNotes2D[path].size() >= number) {
+				res.push_back(QString("PointNote"));
+				res.push_back(QString("2D"));
+			}
+			else {
+				qDebug() << "Did not find the Notes!";
+			}
+			break;
+		case 5: 
+			if (mSurfaceNotes2D[path].size() >= number) {
+				res.push_back(QString("SurfaceNote"));
+				res.push_back(QString("2D"));
+			}
+			else {
+				qDebug() << "Did not find the Notes!";
+			}
+			break;
+		case 6: 
+			if (mPolygonNotes2D[path].size() >= number) {
+				res.push_back(QString("PolygonNote"));
+				res.push_back(QString("2D"));
+			}
+			else {
+				qDebug() << "Did not find the Notes!";
+			}
+			break;
+		default: { qDebug() << "Did not find the Notes!"; }
+	}
+
+	return res;
+}
+
+QString Information::getNoteFileName(QTreeWidgetItem* item)
+{
+	QString file = item->text(0);
+
+	QString path = item->text(1);
+	
+	path.append(QDir::separator() + QString("Note"));
+
+	QString type = file.split("_")[0];
+	int number;
+	if (type != QString("Annotation"))
+		number = file.split("_")[1].toInt();
+
+	QStringList options;
+	options << "Annotation" << "PointNote" << "SurfaceNote" << "FrustumNote" << "PointNote2D" << "SurfaceNote2D" << "PolygonNote2D";
+
+	switch(options.indexOf(type))
+	{
+		case 0:
+			break;
+		case 1:
+			if (mPointNotes[path].size() >= number)
+			{
+				return mPointNotes[path][number-1]->getFileName();
+			}
+			else
+			{
+				qDebug() << "Did not find the Notes!";
+			}
+			break;
+		case 2:
+			if (mSurfaceNotes[path].size() >= number)
+			{
+				return mSurfaceNotes[path][number-1]->getFileName();
+			}
+			else
+			{
+				qDebug() << "Did not find the Notes!";
+			}
+			break;
+		case 3:
+			if (mFrustumNotes[path].size() >= number)
+			{
+				return mFrustumNotes[path][number-1]->getFileName();
+			}
+			else
+			{
+				qDebug() << "Did not find the Notes!";
+			}
+			break;
+		case 4:
+			if (mPointNotes2D[path].size() >= number)
+			{
+				return mPointNotes2D[path][number-1]->getFileName();
+			}
+			else
+			{
+				qDebug() << "Did not find the Notes!";
+			}
+			break;
+		case 5:
+			if (mSurfaceNotes2D[path].size() >= number)
+			{
+				return mSurfaceNotes2D[path][number-1]->getFileName();
+			}
+			else
+			{
+				qDebug() << "Did not find the Notes!";
+			}
+			break;
+		case 6:
+			if (mPolygonNotes2D[path].size() >= number)
+			{
+				return mPolygonNotes2D[path][number-1]->getFileName();
+			}
+			else
+			{
+				qDebug() << "Did not find the Notes!";
+			}
+			break;
+		default: qDebug() << "Did not find the Notes!";
+	}
+}
 
 void Information::undoRemoveNote(QTreeWidgetItem* item)
 {
@@ -1303,7 +1814,7 @@ void Information::undoRemoveNote(QTreeWidgetItem* item)
 	if (type != QString("Annotation"))
 		number = file.split("_")[1].toInt();
 	QStringList options;
-	options << "Annotation" << "PointNote" << "SurfaceNote" << "FrustumNote" << "PointNote2D" << "SurfaceNote2D";
+	options << "Annotation" << "PointNote" << "SurfaceNote" << "FrustumNote" << "PointNote2D" << "SurfaceNote2D" << "PolygonNote2D";
 	switch(options.indexOf(type))
 	{
 		case 0:
@@ -1405,7 +1916,7 @@ void Information::undoRemoveNote(QTreeWidgetItem* item)
 				qDebug()<<"Incorrect Notes!";
 			}
 			break;
-		case 5: 
+		case 5:
 			if (mSurfaceNotes2D[path].size() >= number)
 			{
 				if (mSurfaceNotes2D[path][number-1]->checkRemoved())
@@ -1426,6 +1937,28 @@ void Information::undoRemoveNote(QTreeWidgetItem* item)
 				qDebug()<<"Incorrect Notes!";
 			}
 			break;
+		case 6:
+			if (mPolygonNotes2D[path].size() >= number)
+			{
+				if (mPolygonNotes2D[path][number-1]->checkRemoved())
+				{
+					mPolygonNotes2D[path][number-1]->setRemoved(false);
+					mPolygonNotes2D[path][number-1]->setSaved(false);  // To process save() correctly;
+					mPolygonNotes2D[path][number-1]->save();
+					if (mw()->VTKA(projectPath) && mw()->VTKA(projectPath)->getWidgetMode() != CTVOLUME) // 3D CTVOLUME cannot display 2D notes
+						mw()->VTKA(projectPath)->loadPolygonNote2DMark(mPolygonNotes2D[path][number-1]->getPolygon(),
+							mPolygonNotes2D[path][number-1]->getColorType());
+					if (mw()->VTKA())
+						mw()->VTKA()->annotate(true);
+					emit updateMenu();
+				}
+			}
+			else
+			{
+				qDebug()<<"Incorrect Notes!";
+			}
+			//// TO BE TESTED
+			break;
 		default: qDebug() << "Incorrect Note File!";
 	}
 	item->setText(0, file);
@@ -1444,6 +1977,7 @@ void Information::saveAllNotes()
 
 void Information::saveObjectNotes()
 {
+	//qDebug() << "saveObjectNotes() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
 	{
@@ -1465,6 +1999,11 @@ void Information::saveObjectNotes()
 	{
 		mSurfaceNotes2D[notePath][i]->save();
 	}
+	for (int i = 0; i < mPolygonNotes2D[notePath].size(); ++i)
+	{
+		mPolygonNotes2D[notePath][i]->save();
+	}
+	//// TO BE TESTED
 	saveAnnotation();
 	hasNotesRemoved[notePath] = false;
 }
@@ -1476,6 +2015,7 @@ void Information::closeAllNotes()
 
 void Information::closeObjectNotes()
 {
+	//qDebug() << "closeObjectNotes() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
 	{
@@ -1497,12 +2037,17 @@ void Information::closeObjectNotes()
 	{
 		mSurfaceNotes2D[notePath][i]->hideNote();
 	}
-
+	for (int i = 0; i < mPolygonNotes2D[notePath].size(); ++i)
+	{
+		mPolygonNotes2D[notePath][i]->hideNote();
+	}
+	//// TO BE TESTED
 }
 
 void Information::removeAllNotes()
 {
-	qDebug() << "remove ALL Note ";
+	//qDebug() << "remove ALL Note ";
+	//qDebug() << "removeAllNotes() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	hasNotesRemoved[notePath] = true;
 	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
@@ -1556,6 +2101,17 @@ void Information::removeAllNotes()
 		emit removeNavigationItem(notePath, SURFACENOTE, i, NOTE2D);
 	}
 	//mSurfaceNotes2D.remove(notePath);
+	for (int i = 0; i < mPolygonNotes2D[notePath].size(); ++i) 
+	{
+		// If current widget mode is in CTVOLUME, no polygon 2D note mark are drawn.
+		if (mw()->VTKA()->getWidgetMode() != CTVOLUME)
+			mw()->VTKA()->removePolygonNote2DMark(mPolygonNotes2D[notePath][i]->getPolygon());
+		mPolygonNotes2D[notePath][i]->removePolygonNote2D();
+		mPolygonNotes2D[notePath][i]->setRemoved(true);
+		emit removeNavigationItem(notePath, POLYGONNOTE, i, NOTE2D);
+	}
+	//mPolygonNotes2D.remove(notePath);
+	//// TO BE TESTED
 }
 
 void Information::removeAllNotes(QString path)
@@ -1615,10 +2171,22 @@ void Information::removeAllNotes(QString path)
 		emit removeNavigationItem(removePath, SURFACENOTE, i, NOTE2D);
 	}
 	//mSurfaceNotes2D.remove(removePath);
+	for (int i = 0; i < mPolygonNotes2D[removePath].size(); ++i) 
+	{
+		// If current widget mode is in CTVOLUME, no polygon 2D note mark are drawn.
+		if (mw()->VTKA(path)->getWidgetMode() != CTVOLUME)
+			mw()->VTKA(path)->removePolygonNote2DMark(mPolygonNotes2D[removePath][i]->getPolygon());
+		mPolygonNotes2D[removePath][i]->removePolygonNote2D();
+		mPolygonNotes2D[removePath][i]->setRemoved(true);
+		emit removeNavigationItem(removePath, POLYGONNOTE, i, NOTE2D);
+	}
+	//mPolygonNotes2D.remove(removePath);
+	//// TO BE TESTED
 }
 
 void Information::removeUnSavedNotes()
 {
+	//qDebug() << "removeUnSavedNotes() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
 	{
@@ -1686,6 +2254,20 @@ void Information::removeUnSavedNotes()
 			//mSurfaceNotes2D[notePath].remove(i);
 		}
 	}
+	for (int i = 0; i < mPolygonNotes2D[notePath].size(); ++i) 
+	{
+		if (!mPolygonNotes2D[notePath][i]->checkSaved())
+		{
+			// If current widget mode is in CTVOLUME, no polygon 2D note mark are drawn.
+			if (mw()->VTKA()->getWidgetMode() != CTVOLUME)
+				mw()->VTKA()->removePolygonNote2DMark(mPolygonNotes2D[notePath][i]->getPolygon());
+			mPolygonNotes2D[notePath][i]->removePolygonNote2D();
+			mPolygonNotes2D[notePath][i]->setRemoved(true);
+			emit removeNavigationItem(notePath, POLYGONNOTE, i, NOTE2D);
+			//mPolygonNotes2D[notePath].remove(i);
+		}
+	}
+	//// TO BE TESTED
 }
 
 void Information::removeAllNotesMark()
@@ -1730,11 +2312,19 @@ void Information::removeAllNotesMark()
 			if (mw()->VTKA(path)->getWidgetMode() != CTVOLUME)
 				mw()->VTKA(path)->removeSurfaceNote2DMark(mSurfaceNotes2D[removePath][i]->getPoint());
 		}
+		for (int i = 0; i < mPolygonNotes2D[removePath].size(); ++i)
+		{
+			// If current widget mode is in CTVOLUME, no polygon 2D note mark are drawn.
+			if (mw()->VTKA(path)->getWidgetMode() != CTVOLUME)
+				mw()->VTKA(path)->removePolygonNote2DMark(mPolygonNotes2D[removePath][i]->getPolygon());
+		}
+		//// TO BE TESTED
 	}
 }
 
 void Information::hideNotes()
 {
+	//qDebug() << "hideNotes() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
 	{
@@ -1756,10 +2346,16 @@ void Information::hideNotes()
 	{
 		mSurfaceNotes2D[notePath][i]->hideNote();
 	}
+	for (int i = 0; i < mPolygonNotes2D[notePath].size(); ++i) 
+	{
+		mPolygonNotes2D[notePath][i]->hideNote();
+	}
+	//// TO BE TESTED
 }
 
 void Information::showNotes()
 {
+	//qDebug() << "showNotes() calls updateCurrentPath()\n";
 	updateCurrentPath();
 	for (int i = 0; i < mPointNotes[notePath].size(); ++i) 
 	{
@@ -1781,6 +2377,11 @@ void Information::showNotes()
 	{
 		mSurfaceNotes2D[notePath][i]->showNote();
 	}
+	for (int i = 0; i < mPolygonNotes2D[notePath].size(); ++i) 
+	{
+		mPolygonNotes2D[notePath][i]->showNote();
+	}
+	//// TO BE TESTED
 }
 
 bool Information::updateCurrentPath()
@@ -1849,6 +2450,14 @@ bool Information::checkAllSaved()
 				return false;
 			}
 		}
+		for (int i = 0; i < mPolygonNotes2D[path].size(); ++i) 
+		{
+			if (!mPolygonNotes2D[path][i]->checkSaved())
+			{	
+				return false;
+			}
+		}
+		//// TO BE TESTED
 		if (!content[path].second)
 		{
 			return false;
@@ -1860,6 +2469,7 @@ bool Information::checkAllSaved()
 
 bool Information::checkObjectSaved()
 {
+	//qDebug() << "checkObjectSaved() calls updateCurrentPath()\n";
 	if (!updateCurrentPath())
 		return true;
 	// Test whether there are removed notes and annotation
@@ -1901,6 +2511,14 @@ bool Information::checkObjectSaved()
 			return false;
 		}
 	}
+	for (int i = 0; i < mPolygonNotes2D[notePath].size(); ++i) 
+	{
+		if (!mPolygonNotes2D[notePath][i]->checkSaved())
+		{	
+			return false;
+		}
+	}
+	//// TO BE TESTED
 	if (!content[notePath].second)
 	{
 		qDebug()<<"content";
@@ -1959,6 +2577,15 @@ QVector<QPair<QString, NoteType> > Information::getAllNotes(const QString object
 				notes.push_back(qMakePair(mSurfaceNotes2D[path][i]->getContent(), NOTE2D));
 		}
 	}
+	if (mPolygonNotes2D.find(path) != mPolygonNotes2D.end())
+	{
+		for (int i = 0; i < mPolygonNotes2D[path].size(); i++)
+		{
+			if (!mPolygonNotes2D[path][i]->checkRemoved())
+				notes.push_back(qMakePair(mPolygonNotes2D[path][i]->getContent(), NOTE2D));
+		}
+	}
+	//// TO BE TESTED
 	return notes;
 }
 
@@ -2000,12 +2627,19 @@ QVector<int> Information::getNoteNumber(const QString objectPath)
 		notes.push_back(mSurfaceNotes2D[path].size());
 	else
 		notes.push_back(0);
+
+	if (mPolygonNotes2D.find(path) != mPolygonNotes2D.end())
+		notes.push_back(mPolygonNotes2D[path].size());
+	else
+		notes.push_back(0);
+	//// TO BE TESTED
 	return notes;
 }
 
 QVector<QString> Information::getAllUsers()
 {
 	QVector<QString> mUsers;
+	//qDebug() << "getAllUsers() calls updateCurrentPath()\n";
 	if (!updateCurrentPath())
 		return mUsers;
 	std::vector<std::string> users;	// need to use std::unique to remove redundency
@@ -2039,6 +2673,13 @@ QVector<QString> Information::getAllUsers()
 		for (int j = 0; j < noteUser.size(); j++)
 			users.push_back(noteUser[j].toStdString());
 	}
+	for (int i = 0; i < mPolygonNotes2D[notePath].size(); ++i) 
+	{
+		QVector<QString> noteUser = mPolygonNotes2D[notePath][i]->getUser();
+		for (int j = 0; j < noteUser.size(); j++)
+			users.push_back(noteUser[j].toStdString());
+	}
+	//// TO BE TESTED
 	std::sort(users.begin(), users.end());
 	std::vector<std::string>::iterator end_unique = std::unique(users.begin(), users.end());
 	users.erase(end_unique, users.end());

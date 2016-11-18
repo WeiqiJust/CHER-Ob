@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -154,7 +155,7 @@ void ProjectClassifiedInfoTab::loadCHEInfo()
 	QDomNodeList list = mDoc.elementsByTagName("CHEROb.classified_information");
 	if (list.isEmpty())
 	{
-		QString message = mFile->fileName() + tr(" is not a valid CHEROb classified information file.");
+		QString message = mFile->fileName() + tr(" is not a valid CHEROb categorized information file.");
 		QMessageBox::critical(this, tr("Project Error"), message);
 		return;
 	}

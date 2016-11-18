@@ -5,8 +5,6 @@ CHER-Ob (CULTURAL HERITAGE-Object) is an open source platform developed in an at
 The development of CHER-Ob is intended to offer a flexible, expandable integrated platform for collaborative cultural heritage research. It is compatible with commonly used imaging data types (2D and 3D images, RTIs, CT) and textual information. 
 CHER-Ob offers an enhanced annotation framework and metadata schema, automatic report generation, different roles assigned to users, bookmark, screenshot, searching, sorting and filtering options.
 
-More details can be found in http://graphics.cs.yale.edu/site/cher-ob-open-source-platform-shared-analysis-cultural-heritage-research.
-
 ##Install
 
 CHER-Ob supports the platform of windows and Mac OS X, and user can run the executable file to finish installation. The executable files are named as `setup`  under specific folder for each platform in `software`.
@@ -28,7 +26,7 @@ CHER-Ob is currently supplied as pre-built binaries for windows and Mac OS X
 - vcglib
 - rtiwebmaker
 
-Note that the numbers in the round brackets indicate the versions of third-party libraries we used to compile the source code and that you may encounter compatibility issues when using lower/higher versions. Also note that the provided libraries were built with 64 bits using Visual Studio 2008 under `Release` mode, so you may need to re-compile if you are using 32 bits and a different compiler. 
+Note that the numbers in the round brackets indicate the versions of third-party libraries we used to compile the source code and that you may encounter compatibility issues when using lower/higher versions. Also note that the provided libraries were built with 64 bits using Visual Studio 2008, so you may need to re-compile if you are using 32 bits and a different compiler. 
 
 
 ###Windows
@@ -62,7 +60,7 @@ All the images and icons are registered in the file `Windows/CHEROb.qrc` and `Wi
 ###Mac OS X
 
 In order to compile the source code on Mac, you first need to install the third-party libraries. Since `itkvtkglue`, `clapack`, `armadillo`, `vcglib`, `rtiviewer` and `rtiwebmaker` include just a set of header files,
-you can directly use the files in `lib` folder, or you may download and place them into directories where you can locate them. For the other third-party libraries (`QT`, `VTK`, `ITK`, `QWT`, `openEXR`), you may first
+you can directly use the files in `lib` folder, or your may download and place them into directories where you can locate them. For the other third-party libraries (`QT`, `VTK`, `ITK`, `QWT`, `openEXR`), you may first
 download the source code from their respective official sites and then follow their provided instructions to carry out compilations and installations. 
 
 To facilitate compilation, an example QT project file (CHER-Ob.pro) is also provided, but you may have to modify some lines to include the correct paths to the required libraries.
@@ -78,6 +76,7 @@ GPL included in the packaging of this file. Please review the following informat
 **Yale Computer Graphics Group**<br />
 - Weiqi Shi (weiqi.shi@yale.edu)
 - Ying Yang (ying.yang.yy368@yale.edu)
+- Zeyu Wang (zeyu.wang@yale.edu)
 - Min H. Kim (minhkim@cs.yale.edu)
 - David Tidmarsh (tidmarsh@aya.yale.edu)
 - Eleni Kotoula (eleni.kotoula@yale.edu)

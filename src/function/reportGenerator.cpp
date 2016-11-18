@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -177,6 +178,7 @@ void ReportGenerator::generate()
 		QVector<QPair<QString, NoteMode> > contents;
 		QVector<QPair<int, int> > pointNote2D;
 		QVector<int*> surfaceNote2D;
+		QVector<QVector<QPair<int, int> > > polygonNote2D;
 		QVector<double*> pointNote3D;
 		QVector<QPair<double*, CTSurfaceCornerPoint> > surfaceNote3D_CT;
 		QVector<double*> surfaceNote3D;
@@ -236,6 +238,33 @@ void ReportGenerator::generate()
 						}
 						surfaceNote2D.push_back(points);
 						mode = SURFACENOTE;
+					}
+					else if (firstLine.split(" ")[0] == QString("Polygon"))
+					{
+						QVector<QPair<int, int> > polygon;
+						bool okNum;
+						int num = firstLine.split(" ")[4].toInt(&okNum);
+						if (!okNum)
+						{
+							qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+							continue;
+						}
+						for (int it = 1; it <= num; it++)
+						{
+							bool okImgX, okImgY;
+							int posImageX, posImageY;
+							posImageX = firstLine.split(" ")[2*it + 2*num + 6].split(",")[0].split("(")[1].toInt(&okImgX);
+							posImageY = firstLine.split(" ")[2*it + 2*num + 7].split(")")[0].toInt(&okImgY);
+							if (!okImgX || !okImgY)
+							{
+								qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
+								continue;
+							} 
+							polygon.push_back(QPair<int, int>(posImageX, posImageY));
+						}
+						polygonNote2D.push_back(polygon);
+						mode = POLYGONNOTE;
+						//// TO BE TESTED
 					}
 					else
 					{
@@ -613,6 +642,41 @@ void ReportGenerator::generate()
 				painter.setPen(QPen(Qt::black, 4));
 				painter.drawText(rectangle,  Qt::AlignCenter, QString::number(k+pointNote2D.size()+1));
 			}
+
+			for (int k = 0; k < polygonNote2D.size(); k++)
+			{
+				QVector<QPair<int, int> >::iterator it;
+				int maxX = 0, maxY = 0, minX = 0xFFFF, minY = 0xFFFF;
+				for (it = polygonNote2D[k].begin(); it != polygonNote2D[k].end(); it++)
+				{
+					if (it->first > maxX) maxX = it->first;
+					if (it->first < minX) minX = it->first;
+					if (it->second > maxY) maxY = it->second;
+					if (it->second < minY) minY = it->second;
+				}
+				int width = maxX - minX;
+				int height = maxY - minY;
+				minY = img.height() - maxY;
+				QRectF rectangle(minX, minY, width, height);
+
+				QVector<QPair<int, int> >::iterator it1 = polygonNote2D[k].begin();
+				QVector<QPair<int, int> >::iterator it2 = polygonNote2D[k].begin();
+				it2++;
+				painter.setPen(QPen(Qt::red, 4));
+				for (; it2 != polygonNote2D[k].end(); it1++, it2++)
+				{
+					QLineF line(it1->first, img.height() - it1->second, it2->first, img.height() - it2->second);
+					painter.drawLine(line);
+				}
+				it2 = polygonNote2D[k].begin();
+				QLineF lastLine(it1->first, img.height() - it1->second, it2->first, img.height() - it2->second);
+				painter.drawLine(lastLine);
+
+				painter.setPen(QPen(Qt::black, 4));
+				painter.drawText(rectangle,  Qt::AlignCenter, QString::number(k+pointNote2D.size()+surfaceNote2D.size()+1));
+				//// TO BE TESTED
+			}
+
 			font = painter.font();
 			pointSize = pointSize * 1.2;
 			//if (pointSize == 0)	pointSize = 1;
@@ -801,7 +865,7 @@ void ReportGenerator::generate()
 				}
 			}
 		}
-		//Add annotation and notes
+		// Add annotation and notes
 		if (!annotation.isEmpty())
 			html = html + QString("<p><font size=\"2\" face=\"Garamond\">") + annotation + QString("</font></p><hr>\n");
 		for (int j = 0; j < contents.size(); j++)
@@ -816,6 +880,7 @@ void ReportGenerator::generate()
 			{
 				case POINTNOTE:		html += QString("Point Note "); break;
 				case SURFACENOTE:	html += QString("Surface Note "); break;
+				case POLYGONNOTE:	html += QString("Polygon Note "); break;
 				case FRUSTUMNOTE:	html += QString("Frustum Note "); break;
 				default: continue;
 			}
@@ -866,6 +931,7 @@ void ReportGenerator::generate()
 			if (j != contents.size()-1)
 				html += QString("<hr>\n");
 		}
+		// delete allocated pointers
 		for (int j = 0; j < surfaceNote2D.size(); j++)
 		{
 			delete surfaceNote2D[j];

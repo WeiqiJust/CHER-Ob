@@ -3,6 +3,8 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
+			 Ying Yang (ying.yang.yy368@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -121,6 +123,12 @@ private:
 	 */
 	bool findObjectItem(const QString fileName, QTreeWidgetItem* &object);
 
+	/**
+	 * Added by Ying to copy annotations
+	 */
+	QString getPath(QTreeWidgetItem* item);
+	QString getImageFileNameInNote(QString fileName);
+
 private slots:
 	/**
 	 * @brief  If the item is note item, then open the note.
@@ -176,6 +184,11 @@ private slots:
 	 */
 	void showContextMenu(const QPoint& pos);
 
+	/**
+	 * Added by Ying to copy annotations
+	 */
+	void menuSelection(QAction* action);
+
 private:
 	QVBoxLayout* mVBox;
 	QString mName;
@@ -183,6 +196,12 @@ private:
 	QList<QTreeWidgetItem *> mItems;
 	bool isCurrentProject;
 
+	// Added by Ying to copy annotations
+	QString actionStr;
+	QString srcStr;
+	QString srcPath;
+	QString destStr;
+	QVector<QString> noteModeType;
 };
 
 #endif

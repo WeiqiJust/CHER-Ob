@@ -271,9 +271,9 @@ void SearchWidget::search()
 			list.append(fileList[i]);
 			QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)0, list);
 			mItems.append(item);
-			delete file;
 		}
 		file->close();
+		delete file; //// Modified by Zeyu Wang on Nov 3, 2016 to fix crash
 	}
 	setFilter(mMode);
 }
@@ -547,6 +547,7 @@ void SearchAllWidget::search()
 				mItems.append(item);
 			}
 			file->close();
+			delete file; //// Modified by Zeyu Wang on Nov 3, 2016 to fix crash
 		}
 	}
 	//search in project info

@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -96,6 +97,7 @@ SaveCHEAsDialog::SaveCHEAsDialog(const QString user, const CHEInfoBasic* info, c
     mDialog->setMinimumWidth(350);
     //mDialog->adjustSize();
 	mDialog->setLayout(mVBox);
+	isOk = false; // Modified by Zeyu Wang on Nov 13 to fix saveCHEAs bug
 }
 
 void SaveCHEAsDialog::locationBrowse()
