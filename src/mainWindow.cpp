@@ -1113,19 +1113,22 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 		  if(!list.isEmpty()) {
 			  contrast = list.at(0).toElement().text().toDouble();
 		  }
-
 		  list = elt.elementsByTagName("interpolation_on");
 		  if(!list.isEmpty()) {
 			  interpolationOn = list.at(0).toElement().text().toInt();
-			  qDebug() << interpolationOn;
 			  if(interpolationOn == INTERPOLATION_ON) {
+		  qDebug() << "566666\t1\t" << "\n\n";
 				  this->renderModeInterpolationAct->setChecked(true);
+		  qDebug() << "566666\t2\t" << "\n\n";
 				  gla->setInterpolateOn(true);
 			  } else {
 				  this->renderModeInterpolationAct->setChecked(false);
+		  qDebug() << "566666\t3\t" << "\n\n";
 				  gla->setInterpolateOn(false);
+		  qDebug() << "566666\t4\t" << "\n\n";
 			  }
 		  }
+		  qDebug() << "677777\t\t" << "\n\n";
 		  list = elt.elementsByTagName("display_mode");
 		  if(!list.isEmpty()) {
 			  mode3D = list.at(0).toElement().text().toInt();
@@ -1146,6 +1149,7 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 				  gla->setRenderMode3D(SURFACE3D);
 			  }
 		  }
+		  qDebug() << "788888\t\t" << "\n\n";
 		  list = elt.elementsByTagName("texture_on");
 		  if(!list.isEmpty()) {
 			  textureOn = list.at(0).toElement().text().toInt();
@@ -1160,7 +1164,7 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 			  }
 		  }
 		  this->mLightControl->restoreBookmarkLight(orientation, brightness, contrast, MODEL3D);
-
+		  
 	  } else if(filetype == CTSTACK) {
 		  list = elt.elementsByTagName("brightness");
 		  if(!list.isEmpty()) {
@@ -2048,6 +2052,30 @@ void MainWindow::createObjectFolder(QString path)
 	qDebug()<<"in create object folder"<<newObjectPath;
 	QFile::copy(filePath, newObjectPath);
 
+	// copy .mtl for .obj if existing
+	// Added by Zeyu Wang on 01/09/2017
+	QFile objFile(filePath);
+	objFile.open(QIODevice::ReadOnly | QIODevice::Text);
+	QTextStream objContent(&objFile);
+	QString mtlName, mtlPath, mtlPathNew;
+	bool mtlFlag = false;
+	while (objContent.status() == QTextStream::Ok) {
+		objContent >> mtlName;
+		if (mtlName == "mtllib") {
+			objContent >> mtlName;
+			mtlFlag = true;
+			break;
+		}
+	}
+	if (mtlFlag) {
+		for (int i = 0; i < nameElement.size() - 1; i++)
+			mtlPath.append(nameElement[i] + QDir::separator());
+		mtlPath.append(mtlName);
+		mtlPathNew = currentProjectFullName;
+		mtlPathNew.append(QDir::separator() + fileName + QDir::separator() + mtlName);
+		QFile::copy(mtlPath, mtlPathNew);
+	}
+
 	// we also copy texture file if existing
 	if (VTKA()->getIsTextureOn()) {
 		QString textureFileName = VTKA()->getmRgbTextureFilename();
@@ -2493,7 +2521,7 @@ void MainWindow::removeObject()
 OPENRESULT MainWindow::openImages(const QString& fileNameStart, const QString& CHEName, bool saveRecent, bool createFolder, bool import)
 {
 	QStringList filters;
-	filters.push_back("Images (*.ply *.obj *.wrl *.png *.jpg *.tif *.bmp *.exr *.dcm *rti *ptm *hsh *mview)");
+	filters.push_back("Images (*.ply *.obj *.wrl *.png *.jpg *.tif *.bmp *.exr *.dcm *.rti *.ptm *.hsh *.mview)");
 	filters.push_back("*.ply");
 	filters.push_back("*.obj");
 	filters.push_back("*.wrl");
@@ -2525,9 +2553,10 @@ OPENRESULT MainWindow::openImages(const QString& fileNameStart, const QString& C
 		QFileInfo fi(fileName);
 		if (!fi.isFile())
 		{
-			QMessageBox::critical(this, tr("Opening Object Error"), "Unable to open " + fi.fileName() + ": It is not a File!");
+			QMessageBox::critical(this, tr("Opening Error"), "Unable to open " + fi.fileName() + ": It is not a File!");
 			return FAILED;
 		}
+
 		QStringList nameElement = fileName.split(QDir::separator());
 		QString fileNameElement = nameElement[nameElement.size() - 1];
 		QString currentWindowPath = currentProjectFullName;
@@ -2544,6 +2573,50 @@ OPENRESULT MainWindow::openImages(const QString& fileNameStart, const QString& C
 		{
 			lastUsedDirectory.setPath(path);
 		}
+
+		// check if .obj file missing material or texture
+		// Added by Zeyu Wang on 01/09/2017
+		if (fileName.endsWith(".obj")) {
+			QFile objFile(fileName);
+			objFile.open(QIODevice::ReadOnly | QIODevice::Text);
+			QTextStream objContent(&objFile);
+			QString mtlName, mtlPath;
+			bool mtlFlag = false;
+			while (objContent.status() == QTextStream::Ok) {
+				objContent >> mtlName;
+				if(mtlName == "mtllib") {
+					objContent >> mtlName;
+					mtlFlag = true;
+					break;
+				}
+			}
+			if (mtlFlag) {
+				mtlPath = path + QDir::separator() + mtlName;
+				QFileInfo mtlInfo(mtlPath);
+				if (!mtlInfo.isFile()) {
+					QMessageBox::critical(this, tr("Opening Error"), ".obj file missing its material file!");
+					return FAILED;
+				}
+				QFile mtlFile(mtlPath);
+				mtlFile.open(QIODevice::ReadOnly | QIODevice::Text);
+				QTextStream mtlContent(&mtlFile);
+				QString tmpStr;
+				while (mtlContent.status() == QTextStream::Ok) {
+					mtlContent >> tmpStr;
+					bool isDouble = false;
+					double tmpDouble = tmpStr.toDouble(&isDouble);
+					if (!isDouble && tmpStr.contains(".")) {
+						QString texturePath = path + QDir::separator() + tmpStr;
+						QFileInfo textureInfo(texturePath);
+						if (!textureInfo.isFile()) {
+							QMessageBox::critical(this, tr("Opening Error"), ".obj file missing its texture file!");
+							return FAILED;
+						}
+					}
+				}
+			}
+		}
+
 
 		if (mObjectList.indexOf(fileNameElement) != -1)	// the object is already in the project/CHE
 		{
