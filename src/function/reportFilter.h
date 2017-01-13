@@ -74,7 +74,7 @@ public:
 	QVector<QString> getFilterList();
 
 	/**
-	 * @brief  Get the CHE categories of the given object
+	 * @brief  Get the CHE categories of the given object.
 	 * @param  object  The object absolute path.
 	 * @return The vector of categories encoded as int id.
 	 */

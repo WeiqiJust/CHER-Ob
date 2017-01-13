@@ -22,7 +22,7 @@ static const uint qt_meta_data_MainWindow[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-     113,   14, // methods
+     114,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -122,29 +122,30 @@ static const uint qt_meta_data_MainWindow[] = {
     2243,   11,   11,   11, 0x08,
     2260,   11,   11,   11, 0x08,
     2277,   11,   11,   11, 0x08,
-    2295,   11,   11,   11, 0x08,
-    2312,   11,   11,   11, 0x08,
-    2331,   11,   11,   11, 0x08,
-    2350,   11,   11,   11, 0x08,
-    2369,   11,   11,   11, 0x08,
-    2393,   11,   11,   11, 0x08,
-    2420,   11,   11,   11, 0x08,
-    2447,   11,   11,   11, 0x08,
-    2474,   11,   11,   11, 0x08,
-    2499,   11,   11,   11, 0x08,
-    2525,   11,   11,   11, 0x08,
-    2550,   11,   11,   11, 0x08,
-    2575,   11,   11,   11, 0x08,
-    2600,   11,   11,   11, 0x08,
-    2627,   11,   11,   11, 0x08,
-    2653,   11,   11,   11, 0x08,
-    2672,   11,   11,   11, 0x08,
-    2691,   11,   11,   11, 0x08,
-    2708,   11,   11,   11, 0x08,
-    2723,   11,   11,   11, 0x08,
-    2737,   11,   11,   11, 0x08,
-    2762,   11,   11,   11, 0x08,
-    2791,   11,   11,   11, 0x08,
+    2293,   11,   11,   11, 0x08,
+    2311,   11,   11,   11, 0x08,
+    2328,   11,   11,   11, 0x08,
+    2347,   11,   11,   11, 0x08,
+    2366,   11,   11,   11, 0x08,
+    2385,   11,   11,   11, 0x08,
+    2409,   11,   11,   11, 0x08,
+    2436,   11,   11,   11, 0x08,
+    2463,   11,   11,   11, 0x08,
+    2490,   11,   11,   11, 0x08,
+    2515,   11,   11,   11, 0x08,
+    2541,   11,   11,   11, 0x08,
+    2566,   11,   11,   11, 0x08,
+    2591,   11,   11,   11, 0x08,
+    2616,   11,   11,   11, 0x08,
+    2643,   11,   11,   11, 0x08,
+    2669,   11,   11,   11, 0x08,
+    2688,   11,   11,   11, 0x08,
+    2707,   11,   11,   11, 0x08,
+    2724,   11,   11,   11, 0x08,
+    2739,   11,   11,   11, 0x08,
+    2753,   11,   11,   11, 0x08,
+    2778,   11,   11,   11, 0x08,
+    2807,   11,   11,   11, 0x08,
 
        0        // eod
 };
@@ -211,9 +212,10 @@ static const char qt_meta_stringdata_MainWindow[] = {
     "viewFromLeft()\0viewFromRight()\0"
     "viewFromBottom()\0viewFromBack()\0"
     "viewSpinMotion()\0generateReport()\0"
-    "writeAnnotation()\0writePointNote()\0"
-    "writeSurfaceNote()\0writePolygonNote()\0"
-    "writeFrustumNote()\0setAnnotationColorRed()\0"
+    "generateVideo()\0writeAnnotation()\0"
+    "writePointNote()\0writeSurfaceNote()\0"
+    "writePolygonNote()\0writeFrustumNote()\0"
+    "setAnnotationColorRed()\0"
     "setAnnotationColorMarron()\0"
     "setAnnotationColorOrange()\0"
     "setAnnotationColorYellow()\0"
@@ -347,30 +349,31 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 86: _t->viewFromBack(); break;
         case 87: _t->viewSpinMotion(); break;
         case 88: _t->generateReport(); break;
-        case 89: _t->writeAnnotation(); break;
-        case 90: _t->writePointNote(); break;
-        case 91: _t->writeSurfaceNote(); break;
-        case 92: _t->writePolygonNote(); break;
-        case 93: _t->writeFrustumNote(); break;
-        case 94: _t->setAnnotationColorRed(); break;
-        case 95: _t->setAnnotationColorMarron(); break;
-        case 96: _t->setAnnotationColorOrange(); break;
-        case 97: _t->setAnnotationColorYellow(); break;
-        case 98: _t->setAnnotationColorLime(); break;
-        case 99: _t->setAnnotationColorGreen(); break;
-        case 100: _t->setAnnotationColorAqua(); break;
-        case 101: _t->setAnnotationColorBlue(); break;
-        case 102: _t->setAnnotationColorPink(); break;
-        case 103: _t->setAnnotationColorPurple(); break;
-        case 104: _t->setAnnotationColorWhite(); break;
-        case 105: _t->removeAnnotation(); break;
-        case 106: _t->filterAnnotation(); break;
-        case 107: _t->takeScreenshot(); break;
-        case 108: _t->makeBookmark(); break;
-        case 109: _t->flattenMesh(); break;
-        case 110: _t->setCameraModeTrackball(); break;
-        case 111: _t->setCameraModeSurfaceWalker(); break;
-        case 112: _t->toggleImageProvenanceFeature(); break;
+        case 89: _t->generateVideo(); break;
+        case 90: _t->writeAnnotation(); break;
+        case 91: _t->writePointNote(); break;
+        case 92: _t->writeSurfaceNote(); break;
+        case 93: _t->writePolygonNote(); break;
+        case 94: _t->writeFrustumNote(); break;
+        case 95: _t->setAnnotationColorRed(); break;
+        case 96: _t->setAnnotationColorMarron(); break;
+        case 97: _t->setAnnotationColorOrange(); break;
+        case 98: _t->setAnnotationColorYellow(); break;
+        case 99: _t->setAnnotationColorLime(); break;
+        case 100: _t->setAnnotationColorGreen(); break;
+        case 101: _t->setAnnotationColorAqua(); break;
+        case 102: _t->setAnnotationColorBlue(); break;
+        case 103: _t->setAnnotationColorPink(); break;
+        case 104: _t->setAnnotationColorPurple(); break;
+        case 105: _t->setAnnotationColorWhite(); break;
+        case 106: _t->removeAnnotation(); break;
+        case 107: _t->filterAnnotation(); break;
+        case 108: _t->takeScreenshot(); break;
+        case 109: _t->makeBookmark(); break;
+        case 110: _t->flattenMesh(); break;
+        case 111: _t->setCameraModeTrackball(); break;
+        case 112: _t->setCameraModeSurfaceWalker(); break;
+        case 113: _t->toggleImageProvenanceFeature(); break;
         default: ;
         }
     }
@@ -408,9 +411,9 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 113)
+        if (_id < 114)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 113;
+        _id -= 114;
     }
     return _id;
 }

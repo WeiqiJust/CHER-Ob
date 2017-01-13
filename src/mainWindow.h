@@ -53,6 +53,7 @@
 #include "CHE/mergeBackToCHEDialog.h"
 #include "CHE/importFromCHEDialog.h"
 #include "function/reportGenerator.h"
+#include "function/videoGenerator.h"
 #include "function/navigation.h"
 #include "function/projectCITab.h"
 
@@ -737,6 +738,11 @@ private slots:
 	void generateReport();
 
 	/**
+	 * @brief  Generate video.
+	 */
+	void generateVideo();
+
+	/**
 	 * @brief  Enable annotation.
 	 */
 	void writeAnnotation();
@@ -938,6 +944,7 @@ private:
 	QAction *viewBackAct;
 	QAction *viewSpinAct;
 	QAction *generateReportAct;
+	QAction *generateVideoAct;
 	QAction *measureDistanceAct;
 	QAction *removeDistanceAct;
 	QAction *writeAnnotationAct;

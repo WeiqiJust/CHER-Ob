@@ -96,7 +96,7 @@ public:
 };
 
 /**
- * This class is to generate a report based on users choose from reportFilter dialog.
+ * This class is to generate a report based on user's choice from reportFilter dialog.
  */
 
 class ReportGenerator : public QWidget

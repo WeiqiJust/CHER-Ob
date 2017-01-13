@@ -54,6 +54,7 @@
 #include "function/lightControlRTI.h"
 #include "function/renderingdialog.h"
 #include "function/reportFilter.h"
+#include "function/videoFilter.h"
 
 QProgressBar *MainWindow::qb;
 
@@ -3032,6 +3033,7 @@ void MainWindow::updateMenus()
 	renderModeInfoAct->setEnabled(activeDoc);
 	showPolyIndicateAct->setEnabled(activeDoc);
 	generateReportAct->setEnabled(projectOpen);
+	generateVideoAct->setEnabled(projectOpen);
 	measureDistanceAct->setEnabled(activeDoc);
 	removeDistanceAct->setEnabled(activeDoc);
 
@@ -4181,6 +4183,10 @@ void MainWindow::createActions()
 	generateReportAct = new QAction (tr("Generate Report"), this);
 	generateReportAct->setStatusTip(tr("Generate a report in pdf format"));
 	connect(generateReportAct, SIGNAL(triggered()), this, SLOT(generateReport()));
+	
+	generateVideoAct = new QAction (tr("Generate Video"), this);
+	generateVideoAct->setStatusTip(tr("Generate an introductory video"));
+	connect(generateVideoAct, SIGNAL(triggered()), this, SLOT(generateVideo()));
 
 	measureDistanceAct = new QAction(QIcon(":/images/ruler_off.png"), tr("Measuring Tool"), this);
     measureDistanceAct->setCheckable(true);
@@ -4359,6 +4365,7 @@ void MainWindow::createMenus()
 	// Menu Preferences
 	toolsMenu = menuBar->addMenu(tr("&Tools"));
 	toolsMenu->addAction(generateReportAct);
+	toolsMenu->addAction(generateVideoAct);
 	toolsMenu->addSeparator();
 	toolsMenu->addAction(measureDistanceAct);
 	toolsMenu->addAction(removeDistanceAct);
@@ -4812,6 +4819,71 @@ void MainWindow::generateReport()
 		object->mMode = wm;
 	}
 	report->generate();
+}
+
+// WORK IN PROGRESS by Zeyu Wang on Jan 13, 2017
+void MainWindow::generateVideo()
+{
+	QStringList filters;
+	filters.push_back("*.wmv");
+	filters.push_back("*.mov");
+	QString file = QFileDialog::getSaveFileName((QWidget* )0, "Export Video", QString(), filters.join(";;"));
+	if (file.isEmpty())
+		return;
+	file = QDir::toNativeSeparators(file);
+    if (QFileInfo(file).suffix().isEmpty()) return;
+	VideoGenerator* video;
+
+	if (!isCHE)
+	{
+		video = new VideoGenerator(file);
+		video->setKeyword(currentProjectKeyword);
+		video->setAffiliation(currentProjectAffiliation);
+		video->setDescription(currentProjectDescription);
+	}
+	else
+	{
+		video = new VideoGenerator(file, false);
+		video->setCHEInfo(mCHETab->getCHEInfo());
+	}
+	video->setProjectName(currentProjectName);
+	video->setUserName(mUserName);
+
+	QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
+	QMap<QString, QVector<QString> > objectsNotes;
+
+	VideoFilter *dialog = new VideoFilter(mObjectList);
+	dialog->exec();
+
+	if (!dialog->checkGenerate())
+		return;
+
+	QVector<QString> filterList = dialog->getFilterList();
+	
+    foreach(QMdiSubWindow *w, windows)
+	{
+        VtkView* mvc = qobject_cast<VtkView *>(w->widget());
+        VtkWidget* gla = mvc->currentView();
+        QString path = gla->mProjectPath;
+		QString file = gla->mFilename;
+		QStringList nameElement = file.split(QDir::separator());
+		QString name = nameElement[nameElement.size() - 1];
+		if (filterList.indexOf(name) != -1)	// object is filtered
+			continue;
+		VideoObject* object = new VideoObject();
+		
+		object->mName = name;
+		object->mNotesPath = path;
+		object->mNotesPath.append(QDir::separator() + QString("Note"));
+		object->mNotes = mInformation->getAllNotes(path);
+		object->mCategories = dialog->getCategories(name);
+		object->mGla = gla;
+		video->addObject(object);
+
+		WidgetMode wm = gla->getWidgetMode();
+		object->mMode = wm;
+	}
+	video->generate();
 }
 
 void MainWindow::writeAnnotation()

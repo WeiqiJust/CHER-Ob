@@ -48,7 +48,7 @@
 				HttpUrl=""
 				PDBPath=""
 				SQLDebugging=""
-				Environment="PATH=$(QTDIR)\bin;$(PATH);&#x0A;C:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\ITK\bin;&#x0A;C:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\VTK\bin;&#x0A;C:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\clapack-3.2.1\lib;&#x0A;C:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\openEXR-1.7.0\bin;&#x0A;C:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\qwt-6.1.0\lib"
+				Environment="PATH=$(QTDIR)\bin;$(PATH);&#x0A;C:\Users\zw274\Desktop\zw274\CHER-Ob\lib\ITK\bin;&#x0A;C:\Users\zw274\Desktop\zw274\CHER-Ob\lib\VTK\bin;&#x0A;C:\Users\zw274\Desktop\zw274\CHER-Ob\lib\clapack-3.2.1\lib;&#x0A;C:\Users\zw274\Desktop\zw274\CHER-Ob\lib\openEXR-1.7.0\bin;&#x0A;C:\Users\zw274\Desktop\zw274\CHER-Ob\lib\qwt-6.1.0\lib"
 				EnvironmentMerge="true"
 				DebuggerFlavor="0"
 				MPIRunCommand=""

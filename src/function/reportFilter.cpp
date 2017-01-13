@@ -158,5 +158,3 @@ void ReportFilter::itemChanged(QTreeWidgetItem * item, int column)
 		}
 	}
 }
-
-
