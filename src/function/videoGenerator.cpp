@@ -50,7 +50,7 @@
 #include "CTControl.h"
 
 
-std::string color2categoryFullName(const std::string str)
+std::string color2categoryFullName_(const std::string str)
 {
 	if (str == "MAROON")
 		return "Object / Work";
@@ -78,7 +78,7 @@ std::string color2categoryFullName(const std::string str)
 		return "Other";
 }
 
-ReportGenerator::ReportGenerator(QString path, bool project)
+VideoGenerator::VideoGenerator(QString path, bool project)
 {
 	isProject = project;
 	mLocation = path;
@@ -98,7 +98,7 @@ ReportGenerator::ReportGenerator(QString path, bool project)
 		isPdf = false;
 }
 
-void ReportGenerator::setCHEInfo(const CHEInfoBasic* info)
+void VideoGenerator::setCHEInfo(const CHEInfoBasic* info)
 {
 	mCHEInfo = new CHEInfoBasic();
 	mCHEInfo->object = info->object;
@@ -114,7 +114,7 @@ void ReportGenerator::setCHEInfo(const CHEInfoBasic* info)
 	mCHEInfo->other = info->other;
 }
 
-void ReportGenerator::generate()
+void VideoGenerator::generate()
 {
 	QString html;
 	html.append("<p><font size=\"9\" color=\"#033F81\" face=\"Times New Roman\"><div align=\"center\"><strong>\n" + mProjectName + "\n</strong></div></font></p>\n");
@@ -179,7 +179,7 @@ void ReportGenerator::generate()
 		QVector<int*> surfaceNote2D;
 		QVector<QVector<QPair<int, int> > > polygonNote2D;
 		QVector<double*> pointNote3D;
-		QVector<QPair<double*, CTSurfaceCornerPoint> > surfaceNote3D_CT;
+		QVector<QPair<double*, CTSurfaceCornerPoint_> > surfaceNote3D_CT;
 		QVector<double*> surfaceNote3D;
 		QVector<double*> frustumNote3D;
 		QVector<vtkSmartPointer<vtkDataSet> > dataset;
@@ -414,7 +414,7 @@ void ReportGenerator::generate()
 								break;
 						}
 						bool isParsingSuccess = true;
-						CTSurfaceCornerPoint cornerPoints;
+						CTSurfaceCornerPoint_ cornerPoints;
 						for (int i = 0; i < 4; i++)
 						{
 							QString pointLine = in.readLine();
@@ -450,13 +450,13 @@ void ReportGenerator::generate()
 		QString screenshot = tmp;
 		screenshot.append(QDir::separator() + mObjects[i]->mName);
 		QString screenshotDict;
-		// create images for report
+		// create images for report //// READ THIS
 		QVector<QPair<double, double> > pointNote3DFront, pointNote3DLeft, pointNote3DRight, pointNote3DTop, pointNote3DBottom, pointNote3DBack;
 		QVector<QPair<double, double> > surfaceNote3DFront, surfaceNote3DLeft, surfaceNote3DRight, surfaceNote3DTop, surfaceNote3DBottom, surfaceNote3DBack;
-		QVector<QPair<double*, CTSurfaceCornerPoint> > surfaceNote3DFront_CT, surfaceNote3DLeft_CT, surfaceNote3DRight_CT,
+		QVector<QPair<double*, CTSurfaceCornerPoint_> > surfaceNote3DFront_CT, surfaceNote3DLeft_CT, surfaceNote3DRight_CT,
 			surfaceNote3DTop_CT, surfaceNote3DBottom_CT, surfaceNote3DBack_CT;
 		QVector<QPair<double, double> > frustumNote3DFront, frustumNote3DLeft, frustumNote3DRight, frustumNote3DTop, frustumNote3DBottom, frustumNote3DBack;
-		WidgetInfo3D info;
+		WidgetInfo3D_ info;
 		QPixmap RTIScreenShot;
 		switch(mObjects[i]->mMode)
 		{
@@ -682,7 +682,7 @@ void ReportGenerator::generate()
 			font.setPointSize(pointSize);
 			painter.setFont(font);
 			QVector<QPair<double, double> > pointNote3DSelected, surfaceNote3DSelected, frustumNote3DSelected;
-			QVector<QPair<double*, CTSurfaceCornerPoint> > surfaceNote3DSelected_CT;
+			QVector<QPair<double*, CTSurfaceCornerPoint_> > surfaceNote3DSelected_CT;
 			switch(j)
 			{
 				case 0: 
@@ -885,7 +885,7 @@ void ReportGenerator::generate()
 			}
 
 			QString text = content.split("\nLinked Images:\n")[0].split("Note Start:\n")[1];
-			QString category = QString(color2categoryFullName(color.toStdString()).c_str());
+			QString category = QString(color2categoryFullName_(color.toStdString()).c_str());
 			QStringList imagePaths = content.split("\nLinked Images:\n")[1].split("\n", QString::SkipEmptyParts);
 			QDir dir(mObjects[i]->mNotesPath);
 			html += QString::number(j+1) + QString(": </font></p>\n")
@@ -1010,7 +1010,7 @@ void ReportGenerator::generate()
     painter.end();
 }
 
-void ReportGenerator::detectPointVisibility(vtkSmartPointer<vtkRenderer> render, QVector<double*> points, QVector<QPair<double, double> >& visiblePoints)
+void VideoGenerator::detectPointVisibility(vtkSmartPointer<vtkRenderer> render, QVector<double*> points, QVector<QPair<double, double> >& visiblePoints)
 {
 	for (int i = 0; i < points.size(); i++)
 	{
@@ -1038,7 +1038,7 @@ void ReportGenerator::detectPointVisibility(vtkSmartPointer<vtkRenderer> render,
 	}
 }
 
-void ReportGenerator::detectFrustumVisibility(const VtkWidget* gla, QVector<double*> center, 
+void VideoGenerator::detectFrustumVisibility(const VtkWidget* gla, QVector<double*> center, 
 											  QVector<QPair<double, double> >& visiblePoints,
 											  QVector<vtkSmartPointer<vtkDataSet> > dataset,
 											  OrthogonalView3D view)
@@ -1123,8 +1123,8 @@ void ReportGenerator::detectFrustumVisibility(const VtkWidget* gla, QVector<doub
 	}
 }
 
-void ReportGenerator::detectCTSurfaceVisibility(vtkSmartPointer<vtkRenderer> render, 
-		QVector<QPair<double*, CTSurfaceCornerPoint> > points, QVector<QPair<double*, CTSurfaceCornerPoint> >& visiblePoints)
+void VideoGenerator::detectCTSurfaceVisibility(vtkSmartPointer<vtkRenderer> render, 
+		QVector<QPair<double*, CTSurfaceCornerPoint_> > points, QVector<QPair<double*, CTSurfaceCornerPoint_> >& visiblePoints)
 {
 	for (int i = 0; i < points.size(); i++)
 	{
@@ -1141,7 +1141,7 @@ void ReportGenerator::detectCTSurfaceVisibility(vtkSmartPointer<vtkRenderer> ren
 		if (selectVisiblePoints->GetOutput()->GetNumberOfPoints() != 0)
 		{
 			vtkInteractorObserver::ComputeWorldToDisplay (render, points[i].first[0], points[i].first[1], points[i].first[2], displayPt);
-			CTSurfaceCornerPoint corners;
+			CTSurfaceCornerPoint_ corners;
 			for (int j = 0; j < 4; j++)
 			{
 				vtkInteractorObserver::ComputeWorldToDisplay (render, points[i].second.point[j][0],
@@ -1160,7 +1160,7 @@ void ReportGenerator::detectCTSurfaceVisibility(vtkSmartPointer<vtkRenderer> ren
 	}
 }
 
-MainWindow* ReportGenerator::mw()
+MainWindow* VideoGenerator::mw()
 {
   foreach (QWidget *widget, QApplication::topLevelWidgets()) {
     MainWindow* mainwindow = dynamic_cast<MainWindow*>(widget);
@@ -1172,7 +1172,7 @@ MainWindow* ReportGenerator::mw()
   return NULL;
 }
 
-void ReportGenerator::saveWidgetinfo(const VtkWidget* gla, WidgetInfo3D &info)
+void VideoGenerator::saveWidgetinfo(const VtkWidget* gla, WidgetInfo3D_ &info)
 {
 	info.infoStatus = gla->getDisplayInfoOn();
 	info.isMeasuring = gla->getUseRubberband();
@@ -1207,7 +1207,7 @@ void ReportGenerator::saveWidgetinfo(const VtkWidget* gla, WidgetInfo3D &info)
 		info.textureOn = -1;
 }
 
-void ReportGenerator::initWidget(VtkWidget* gla, bool isCTVolume)
+void VideoGenerator::initWidget(VtkWidget* gla, bool isCTVolume)
 {
 	gla->setDisplayInfoOn(false);
 	mw()->mLightControl->reset();
@@ -1228,7 +1228,7 @@ void ReportGenerator::initWidget(VtkWidget* gla, bool isCTVolume)
 	
 }
 
-void ReportGenerator::recoverWidget(VtkWidget* gla, WidgetInfo3D info, bool isCTVolume)
+void VideoGenerator::recoverWidget(VtkWidget* gla, WidgetInfo3D_ info, bool isCTVolume)
 {
 	gla->setDisplayInfoOn(info.infoStatus);
 	vtkSmartPointer<vtkCamera> camera = gla->mRenderer->GetActiveCamera();
@@ -1262,7 +1262,7 @@ void ReportGenerator::recoverWidget(VtkWidget* gla, WidgetInfo3D info, bool isCT
 	if(gla->mQVTKWidget) gla->mQVTKWidget->update();
 }
 
-void ReportGenerator::computeCenter(const VtkWidget* gla, QVector<int> cellIds, double* center)
+void VideoGenerator::computeCenter(const VtkWidget* gla, QVector<int> cellIds, double* center)
 {
 	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 	for (int i = 0; i < cellIds.size(); i++)
@@ -1300,7 +1300,7 @@ void ReportGenerator::computeCenter(const VtkWidget* gla, QVector<int> cellIds, 
 	cellLocator->FindClosestPoint(CoM, center, cellId, subId, closestPointDist2);
 }
 
-void ReportGenerator::computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, 
+void VideoGenerator::computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, 
 									double* center, vtkSmartPointer<vtkDataSet>& polyData)
 {
 	vtkSmartPointer<vtkPoints> newPoints = vtkSmartPointer<vtkPoints>::New();
@@ -1341,7 +1341,7 @@ void ReportGenerator::computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoi
 	cellLocator->FindClosestPoint(CoM, center, cellId, subId, closestPointDist2);
 }
 
-void ReportGenerator::computeCenter(CTSurfaceCornerPoint cornerPoints, double* center)
+void VideoGenerator::computeCenter(CTSurfaceCornerPoint_ cornerPoints, double* center)
 {
 	center[0] = 0;
 	center[1] = 0;

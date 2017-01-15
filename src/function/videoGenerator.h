@@ -44,7 +44,7 @@
 #include "../vtkEnums.h"
 #include "../visualization/vtkWidget.h"
 
-struct CTSurfaceCornerPoint
+struct CTSurfaceCornerPoint_
 {
 	double point[4][3];
 };
@@ -54,7 +54,7 @@ struct CTSurfaceCornerPoint
  * 3D object screenshot will change the view status. This class serves as a back-up.
  * After the screenshot, the status will be restored.
  */
-class WidgetInfo3D
+class WidgetInfo3D_
 {
 public:
 	bool infoStatus;
@@ -185,14 +185,14 @@ private:
 	 * @param  visiblePoints  The vector of visible points in image coordinate.
 	 */
 	void detectCTSurfaceVisibility(vtkSmartPointer<vtkRenderer> render, 
-		QVector<QPair<double*, CTSurfaceCornerPoint> > points, QVector<QPair<double*, CTSurfaceCornerPoint> >& visiblePoints);
+		QVector<QPair<double*, CTSurfaceCornerPoint_> > points, QVector<QPair<double*, CTSurfaceCornerPoint_> >& visiblePoints);
 
 	/**
 	 * @brief  Save the current vtkWidget info to prepare for the screenshot.
 	 * @param  gla   The vtkWidget of the 3D object.
 	 * @param  info  The saved widget info.
 	 */
-	void saveWidgetinfo(const VtkWidget* gla, WidgetInfo3D &info);
+	void saveWidgetinfo(const VtkWidget* gla, WidgetInfo3D_ &info);
 
 	/**
 	 * @brief  Init the vtkWidget for the screenshot.
@@ -207,7 +207,7 @@ private:
 	 * @param  info        The previous saved widget info.
 	 * @param  isCTVolume  If the widget is CT Volume.
 	 */
-	void recoverWidget(VtkWidget* gla, WidgetInfo3D info, bool isCTVolume);
+	void recoverWidget(VtkWidget* gla, WidgetInfo3D_ info, bool isCTVolume);
 
 	/**
 	 * @brief  Compute center point for surface note for 3D object.
@@ -233,7 +233,7 @@ private:
 	 * @param  cornerPoints  The vector of four corner points that define the surface.
 	 * @param  center        The center point in world coordinate.
 	 */
-	void computeCenter(CTSurfaceCornerPoint cornerPoints, double* center);
+	void computeCenter(CTSurfaceCornerPoint_ cornerPoints, double* center);
 
 private:
 	bool isProject;
