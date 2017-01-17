@@ -92,10 +92,9 @@ VideoGenerator::VideoGenerator(QString path, bool project)
 	QFile file(path);
 	file.close();
 
-	if (QFileInfo(mLocation).suffix() == QString("pdf"))
-		isPdf = true;
-	else
-		isPdf = false;
+	//if (QFileInfo(mLocation).suffix() == QString("pdf")) isPdf = true;
+	//else isPdf = false;
+	isPdf = false;
 }
 
 void VideoGenerator::setCHEInfo(const CHEInfoBasic* info)
@@ -468,16 +467,15 @@ void VideoGenerator::generate()
 			case MODEL3D:
 				saveWidgetinfo(mObjects[i]->mGla, info);
 				initWidget(mObjects[i]->mGla, false);
-				// generate front, left and top screenshot	
-				mObjects[i]->mGla->setOrthogonalView(FRONT3D);
-				screenshotDict = screenshot;
-				screenshotDict.append("_front");
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DFront);
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DFront);
-				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DFront, dataset, FRONT3D);
-	
-				mObjects[i]->mGla->setOrthogonalView(LEFT3D);
+				// generate screenshots from different angles
+				for (int angle = -179; angle <= 180; angle++)
+				{
+					mObjects[i]->mGla->setArbitraryView((double)angle);
+					screenshotDict = screenshot;
+					screenshotDict.append(QString::number(angle + 180));
+					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+				}
+				/*mObjects[i]->mGla->setOrthogonalView(LEFT3D);
 				screenshotDict = screenshot;
 				screenshotDict.append("_left");
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
@@ -515,15 +513,23 @@ void VideoGenerator::generate()
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DBack);
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DBack);
-				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DBack, dataset, BACK3D);
+				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DBack, dataset, BACK3D);*/
+				qDebug() << "23333333: Generating series ready!\n\n";
 				recoverWidget(mObjects[i]->mGla, info, false);
 				break;
 			case CTSTACK:
 			case CTVOLUME:
 				saveWidgetinfo(mObjects[i]->mGla, info);
 				initWidget(mObjects[i]->mGla, true);
-
-				mObjects[i]->mGla->setOrthogonalView(FRONT3D);
+				// generate screenshots from different angles
+				for (int angle = -179; angle <= 180; angle++)
+				{
+					mObjects[i]->mGla->setArbitraryView((double)angle);
+					screenshotDict = screenshot;
+					screenshotDict.append(QString::number(angle + 180));
+					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+				}
+				/*mObjects[i]->mGla->setOrthogonalView(FRONT3D);
 				screenshotDict = screenshot;
 				screenshotDict.append("_front");
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
@@ -563,7 +569,7 @@ void VideoGenerator::generate()
 				screenshotDict.append("_back");
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DBack);
-				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DBack_CT);
+				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DBack_CT);*/
 
 				recoverWidget(mObjects[i]->mGla, info, true);
 				break;
@@ -579,6 +585,7 @@ void VideoGenerator::generate()
 			default: break;
 		}
 
+		/*
 		// Switch back to origianl CT STACK mode.
 		if (isCTModeSwitched)
 			mw()->mCtControl->setCTStackView();
@@ -947,8 +954,10 @@ void VideoGenerator::generate()
 		{
 			delete frustumNote3D[j];
 		}
+		*/
 	}
 
+	/*
 	tmpFolder.setNameFilters(QStringList() << "*.*");
 	tmpFolder.setFilter(QDir::Files);
 	foreach(QString dirFile, tmpFolder.entryList())
@@ -1008,6 +1017,7 @@ void VideoGenerator::generate()
     }
     painter.restore();
     painter.end();
+	*/
 }
 
 void VideoGenerator::detectPointVisibility(vtkSmartPointer<vtkRenderer> render, QVector<double*> points, QVector<QPair<double, double> >& visiblePoints)

@@ -4,6 +4,7 @@
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
 			 Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -214,6 +215,7 @@ public:
   void setRenderMode3D(RenderMode3D mode) {mRenderMode3D = mode; refreshRenderMode3D();}
   RenderMode3D getRenderMode3D() const {return mRenderMode3D;}
   void setOrthogonalView(OrthogonalView3D view);
+  void setArbitraryView(double angle);
   void launchSpinView();
 
   void setFlattenedMesh(vtkPolyData *flatMesh);

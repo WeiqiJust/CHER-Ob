@@ -1118,18 +1118,13 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 		  if(!list.isEmpty()) {
 			  interpolationOn = list.at(0).toElement().text().toInt();
 			  if(interpolationOn == INTERPOLATION_ON) {
-		  qDebug() << "566666\t1\t" << "\n\n";
 				  this->renderModeInterpolationAct->setChecked(true);
-		  qDebug() << "566666\t2\t" << "\n\n";
 				  gla->setInterpolateOn(true);
 			  } else {
 				  this->renderModeInterpolationAct->setChecked(false);
-		  qDebug() << "566666\t3\t" << "\n\n";
 				  gla->setInterpolateOn(false);
-		  qDebug() << "566666\t4\t" << "\n\n";
 			  }
 		  }
-		  qDebug() << "677777\t\t" << "\n\n";
 		  list = elt.elementsByTagName("display_mode");
 		  if(!list.isEmpty()) {
 			  mode3D = list.at(0).toElement().text().toInt();
@@ -1150,7 +1145,6 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 				  gla->setRenderMode3D(SURFACE3D);
 			  }
 		  }
-		  qDebug() << "788888\t\t" << "\n\n";
 		  list = elt.elementsByTagName("texture_on");
 		  if(!list.isEmpty()) {
 			  textureOn = list.at(0).toElement().text().toInt();

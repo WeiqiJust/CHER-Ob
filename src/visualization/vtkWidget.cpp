@@ -4,6 +4,7 @@
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
              Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -695,6 +696,49 @@ void VtkWidget::setOrthogonalView(OrthogonalView3D view)
 
 //  mQVTKWidget->show(); // no Render() is required for 3D
   if(mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
+}
+
+void VtkWidget::setArbitraryView(double angle)
+{
+	if (mRenderer == NULL) return;
+	// move camera to the initial position
+	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
+	if (mWidgetMode == CTVOLUME)
+	{
+		camera->SetPosition(mInitCTCamPos);
+		camera->SetFocalPoint(mInitCTCamFoc);
+		camera->SetViewUp(mInitCTCamUp);
+	}
+	else
+	{
+		camera->SetPosition(mInitCamPos);
+		camera->SetFocalPoint(mInitCamFoc);
+		camera->SetViewUp(mInitCamUp);
+	}
+	mRenderer->ResetCamera();
+
+	// angle: front 0, right 90, back 180, left -90
+    camera->Roll(angle);
+    //camera->Yaw(angle);
+    //camera->Pitch(angle);
+	//camera->Azimuth(angle);
+	//camera->Elevation(angle);
+	//double vup[3];
+    //camera->GetViewUp(vup);
+    //camera->SetViewUp(-vup[0], -vup[1], -vup[2]);
+
+	mRenderer->ResetCamera();
+	mRenderer->ResetCameraClippingRange();
+	mRenderer->Modified();
+
+	// move light according to light
+	mCallback3D->updateLightingPosition();
+
+	mLight1->Modified();
+	mLight2->Modified();
+
+	// mQVTKWidget->show(); // no Render() is required for 3D
+	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
 }
 
 
