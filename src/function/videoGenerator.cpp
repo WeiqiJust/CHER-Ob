@@ -585,6 +585,8 @@ void VideoGenerator::generate()
 			default: break;
 		}
 
+		// Trying to use ffmpeg to generate the video based on a series of images
+
 		/*
 		// Switch back to origianl CT STACK mode.
 		if (isCTModeSwitched)
