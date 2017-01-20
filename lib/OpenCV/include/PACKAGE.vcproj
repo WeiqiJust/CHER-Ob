@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding = "UTF-8"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="PACKAGE"
+	ProjectGUID="{0A3F1C4B-FB48-38D3-8C0B-38BDD240B4C3}"
+	Keyword="Win32Proj">
+	<Platforms>
+		<Platform
+			Name="x64"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="Debug|x64"
+			IntermediateDirectory="PACKAGE.dir\Debug"
+			ConfigurationType="10"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="C:\OpenCV-3.0.0\sources\3rdparty\ippicv\unpack\ippicv_win\include;C:\OpenCV-3.0.0\build;"
+				AssemblerListingLocation="Debug/"
+				ExceptionHandling="0"
+				PreprocessorDefinitions="CMAKE_INTDIR=\&quot;Debug\&quot;"
+				ObjectFile="$(IntDir)\"
+/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="C:\OpenCV-3.0.0\sources\3rdparty\ippicv\unpack\ippicv_win\include;C:\OpenCV-3.0.0\build;"
+				PreprocessorDefinitions="CMAKE_INTDIR=\&quot;Debug\&quot;"/>
+			<Tool
+				Name="VCMIDLTool"
+				AdditionalIncludeDirectories="C:\OpenCV-3.0.0\sources\3rdparty\ippicv\unpack\ippicv_win\include;C:\OpenCV-3.0.0\build;"
+				MkTypLibCompatible="false"
+				TargetEnvironment="3"
+				GenerateStublessProxies="true"
+				TypeLibraryName="$(InputName).tlb"
+				OutputDirectory="$(IntDir)"
+				HeaderFileName="$(InputName).h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="$(InputName)_i.c"
+				ProxyFileName="$(InputName)_p.c"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+CommandLine="cd C:\OpenCV-3.0.0\build&#x0D;&#x0A;if errorlevel 1 goto :VCReportError&#x0D;&#x0A;C:&#x0D;&#x0A;if errorlevel 1 goto :VCReportError&#x0D;&#x0A;&quot;C:\Program Files\CMake\bin\cpack.exe&quot; -C $(ConfigurationName) --config ./CPackConfig.cmake&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			IntermediateDirectory="PACKAGE.dir\Release"
+			ConfigurationType="10"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="C:\OpenCV-3.0.0\sources\3rdparty\ippicv\unpack\ippicv_win\include;C:\OpenCV-3.0.0\build;"
+				AssemblerListingLocation="Release/"
+				ExceptionHandling="0"
+				PreprocessorDefinitions="CMAKE_INTDIR=\&quot;Release\&quot;"
+				ObjectFile="$(IntDir)\"
+/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="C:\OpenCV-3.0.0\sources\3rdparty\ippicv\unpack\ippicv_win\include;C:\OpenCV-3.0.0\build;"
+				PreprocessorDefinitions="CMAKE_INTDIR=\&quot;Release\&quot;"/>
+			<Tool
+				Name="VCMIDLTool"
+				AdditionalIncludeDirectories="C:\OpenCV-3.0.0\sources\3rdparty\ippicv\unpack\ippicv_win\include;C:\OpenCV-3.0.0\build;"
+				MkTypLibCompatible="false"
+				TargetEnvironment="3"
+				GenerateStublessProxies="true"
+				TypeLibraryName="$(InputName).tlb"
+				OutputDirectory="$(IntDir)"
+				HeaderFileName="$(InputName).h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="$(InputName)_i.c"
+				ProxyFileName="$(InputName)_p.c"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+CommandLine="cd C:\OpenCV-3.0.0\build&#x0D;&#x0A;if errorlevel 1 goto :VCReportError&#x0D;&#x0A;C:&#x0D;&#x0A;if errorlevel 1 goto :VCReportError&#x0D;&#x0A;&quot;C:\Program Files\CMake\bin\cpack.exe&quot; -C $(ConfigurationName) --config ./CPackConfig.cmake&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"/>
+		</Configuration>
+	</Configurations>
+	<Files>
+		<Filter
+			Name="CMake Rules"
+			Filter="">
+			<File
+				RelativePath="C:\OpenCV-3.0.0\build\include\CMakeFiles\PACKAGE_force.rule">
+				<FileConfiguration
+					Name="Debug|x64">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description=" "
+					CommandLine="cd .&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
+					AdditionalDependencies="C:\OpenCV-3.0.0\build\include\CMakeFiles\PACKAGE_force.rule"
+					Outputs="C:\OpenCV-3.0.0\build\include\CMakeFiles\PACKAGE_force"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description=" "
+					CommandLine="cd .&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
+					AdditionalDependencies="C:\OpenCV-3.0.0\build\include\CMakeFiles\PACKAGE_force.rule"
+					Outputs="C:\OpenCV-3.0.0\build\include\CMakeFiles\PACKAGE_force"/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

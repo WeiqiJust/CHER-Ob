@@ -467,6 +467,7 @@ void VideoGenerator::generate()
 			case MODEL3D:
 				saveWidgetinfo(mObjects[i]->mGla, info);
 				initWidget(mObjects[i]->mGla, false);
+
 				// generate screenshots from different angles
 				for (int angle = -179; angle <= 180; angle++)
 				{
@@ -474,6 +475,11 @@ void VideoGenerator::generate()
 					screenshotDict = screenshot;
 					screenshotDict.append(QString::number(angle + 180));
 					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+					cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+					std::vector<int> compression_params;
+					compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
+					compression_params.push_back(90);
+					cv::imwrite(screenshotDict.toStdString()+"-w-.jpg", frame, compression_params);
 				}
 				/*mObjects[i]->mGla->setOrthogonalView(LEFT3D);
 				screenshotDict = screenshot;
