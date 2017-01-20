@@ -457,6 +457,7 @@ void VideoGenerator::generate()
 		QVector<QPair<double, double> > frustumNote3DFront, frustumNote3DLeft, frustumNote3DRight, frustumNote3DTop, frustumNote3DBottom, frustumNote3DBack;
 		WidgetInfo3D_ info;
 		QPixmap RTIScreenShot;
+		cv::VideoWriter outputVideo(screenshot.toStdString() + ".wmv", cv::VideoWriter::fourcc('D','I','V','3'), 30, cv::Size(692, 687), true);
 		switch(mObjects[i]->mMode)
 		{
 			case EMPTYWIDGET:
@@ -468,6 +469,7 @@ void VideoGenerator::generate()
 				saveWidgetinfo(mObjects[i]->mGla, info);
 				initWidget(mObjects[i]->mGla, false);
 
+				
 				// generate screenshots from different angles
 				for (int angle = -179; angle <= 180; angle++)
 				{
@@ -476,11 +478,14 @@ void VideoGenerator::generate()
 					screenshotDict.append(QString::number(angle + 180));
 					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 					cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
-					std::vector<int> compression_params;
+					if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+					outputVideo.write(frame);
+					/*std::vector<int> compression_params;
 					compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
 					compression_params.push_back(90);
-					cv::imwrite(screenshotDict.toStdString()+"-w-.jpg", frame, compression_params);
+					cv::imwrite(screenshotDict.toStdString()+"-w-.jpg", frame, compression_params);*/
 				}
+				outputVideo.release();
 				/*mObjects[i]->mGla->setOrthogonalView(LEFT3D);
 				screenshotDict = screenshot;
 				screenshotDict.append("_left");
