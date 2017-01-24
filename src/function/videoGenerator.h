@@ -47,6 +47,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/videoio/videoio.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <vector>
 
 struct CTSurfaceCornerPoint_
@@ -240,9 +241,17 @@ private:
 	 */
 	void computeCenter(CTSurfaceCornerPoint_ cornerPoints, double* center);
 
+	/**
+	 * @brief  Resize screenshots to the size of video without changing aspect ratio.
+	 * @param  src		Source image.
+	 * @param  size		The size of video.
+	 * @return Resized frame for generating videos.
+	 */
+	cv::Mat resize2Video(cv::Mat& src, cv::Size size);
+
 private:
 	bool isProject;
-	bool isPdf;
+	bool isWmv;
 	QString mLocation;
 	QPrinter* mPrinter;
 	QTextDocument* mDoc;

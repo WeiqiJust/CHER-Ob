@@ -92,9 +92,8 @@ VideoGenerator::VideoGenerator(QString path, bool project)
 	QFile file(path);
 	file.close();
 
-	//if (QFileInfo(mLocation).suffix() == QString("pdf")) isPdf = true;
-	//else isPdf = false;
-	isPdf = false;
+	if (QFileInfo(mLocation).suffix() == QString("wmv")) isWmv = true;
+	else isWmv = false;
 }
 
 void VideoGenerator::setCHEInfo(const CHEInfoBasic* info)
@@ -115,59 +114,20 @@ void VideoGenerator::setCHEInfo(const CHEInfoBasic* info)
 
 void VideoGenerator::generate()
 {
-	QString html;
-	html.append("<p><font size=\"9\" color=\"#033F81\" face=\"Times New Roman\"><div align=\"center\"><strong>\n" + mProjectName + "\n</strong></div></font></p>\n");
-	html = html + QString("<p style=\"line-height:1\"><font size=\"3\" face=\"Garamond\"><div align=\"center\">\n") + mUserName + QString("\n</div></font></p>\n");
-	html = html + QString("<p style=\"line-height:1\"><font size=\"3\" face=\"Garamond\"><div align=\"center\">\n") + mAffiliation + QString("\n</div></font></p>\n");
-	html = html + QString("<br></br>");
-	if (isProject)
-	{
-		html = html	+ QString("<p><font size=\"3\" color=\"#033F81\" face=\"Garamond\">\nDescription:\n</font></p>")
-			+ QString("<p><font size=\"3\" face=\"Garamond\">\n") + mDescription + QString("\n</font></p><hr>\n")
-			+ QString("<p><font size=\"3\" color=\"#033F81\" face=\"Garamond\">\nKeyword:\n</font></p>\n")
-			+ QString("<p><font size=\"3\" face=\"Garamond\">\n") + mKeyword + QString("\n</font></p>\n");
-	}
-	else
-	{
-		html = html	+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nObject / Work:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->object + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nPhysical Dimensions / Measurements:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Garamond\">") +  mCHEInfo->measurement  + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nCreation:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->creation + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nMaterials and Techniques:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->material + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nStylistic Analysis and Descriptions:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->description + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nCondition and Conservation:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->conservation + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nAnalyses:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->analyses + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nRelated Works:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->related + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nExhibition / Loans and Legal Issues:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->administration + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nImage/Audio Documentation:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->documents + QString("</font></p><hr>\n")
-			+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\nOthers:</font></p>\n")
-			+ QString("<p><font size=\"2\" face=\"Garamond\">") + mCHEInfo->other + QString("</font></p>\n");
-	}
 	// create screenshot folder
 	QString location = mLocation;
 	location.truncate(location.lastIndexOf(QDir::separator()));
-	QString tmp = location;
-	tmp.append(QDir::separator() + QString("tmp"));
-	QDir().mkdir(tmp);
-	QDir tmpFolder(tmp);
-	QString htmlFolder = location;
-	if (!isPdf)
-	{
-		htmlFolder.append(QDir::separator() + QString("report"));
-		QDir().mkdir(htmlFolder);
-	}
+	QString videoFolder = location;
+	videoFolder.append(QDir::separator() + QString("video"));
+	QDir().mkdir(videoFolder);
+	QDir videoFolderDir(videoFolder);
+	cv::Size mysize(800, 600);
+	cv::VideoWriter outputVideo(mLocation.toStdString(), cv::VideoWriter::fourcc('D','I','V','3'), 30, mysize, true); // SIZE ISSUE
+
 	bool isCTModeSwitched = false;
 	for (int i = 0; i < mObjects.size(); i++)
 	{
+		/*
 		//html = html + QString("<br></br>");
 		html += QString("<div style=\"page-break-after:always\"></div>");
 		html = html + QString("<p><font size=\"3\" color=\"#033F81\" face=\"Garamond\"><strong>\nObject "
@@ -446,10 +406,11 @@ void VideoGenerator::generate()
 				
 			}
 		}
-		QString screenshot = tmp;
-		screenshot.append(QDir::separator() + mObjects[i]->mName);
+		*/
+		QString screenshotObj= videoFolder;
+		screenshotObj.append(QDir::separator() + mObjects[i]->mName);
 		QString screenshotDict;
-		// create images for report //// READ THIS
+		// create images for video //// READ THIS
 		QVector<QPair<double, double> > pointNote3DFront, pointNote3DLeft, pointNote3DRight, pointNote3DTop, pointNote3DBottom, pointNote3DBack;
 		QVector<QPair<double, double> > surfaceNote3DFront, surfaceNote3DLeft, surfaceNote3DRight, surfaceNote3DTop, surfaceNote3DBottom, surfaceNote3DBack;
 		QVector<QPair<double*, CTSurfaceCornerPoint_> > surfaceNote3DFront_CT, surfaceNote3DLeft_CT, surfaceNote3DRight_CT,
@@ -457,75 +418,36 @@ void VideoGenerator::generate()
 		QVector<QPair<double, double> > frustumNote3DFront, frustumNote3DLeft, frustumNote3DRight, frustumNote3DTop, frustumNote3DBottom, frustumNote3DBack;
 		WidgetInfo3D_ info;
 		QPixmap RTIScreenShot;
-		cv::VideoWriter outputVideo(screenshot.toStdString() + ".wmv", cv::VideoWriter::fourcc('D','I','V','3'), 30, cv::Size(692, 687), true);
 		switch(mObjects[i]->mMode)
 		{
 			case EMPTYWIDGET:
 				break;
 			case IMAGE2D:
 				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->mFilename);
+				for (int duration = 0; duration < 50; duration++)
+				{
+					cv::Mat frame = cv::imread(mObjects[i]->mGla->mFilename.toStdString(), CV_LOAD_IMAGE_COLOR);
+					cv::Mat resized = resize2Video(frame, mysize);
+					if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+					outputVideo.write(resized);
+				}
 				break;
 			case MODEL3D:
 				saveWidgetinfo(mObjects[i]->mGla, info);
 				initWidget(mObjects[i]->mGla, false);
 
-				
 				// generate screenshots from different angles
 				for (int angle = -179; angle <= 180; angle++)
 				{
 					mObjects[i]->mGla->setArbitraryView((double)angle);
-					screenshotDict = screenshot;
+					screenshotDict = screenshotObj;
 					screenshotDict.append(QString::number(angle + 180));
 					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 					cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+					cv::Mat resized = resize2Video(frame, mysize);
 					if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-					outputVideo.write(frame);
-					/*std::vector<int> compression_params;
-					compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
-					compression_params.push_back(90);
-					cv::imwrite(screenshotDict.toStdString()+"-w-.jpg", frame, compression_params);*/
+					outputVideo.write(resized);
 				}
-				outputVideo.release();
-				/*mObjects[i]->mGla->setOrthogonalView(LEFT3D);
-				screenshotDict = screenshot;
-				screenshotDict.append("_left");
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DLeft);
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DLeft);
-				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DLeft, dataset, LEFT3D);
-
-				mObjects[i]->mGla->setOrthogonalView(RIGHT3D);
-				screenshotDict = screenshot;
-				screenshotDict.append("_right");
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DRight);
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DRight);
-				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DRight, dataset, RIGHT3D);
-
-				mObjects[i]->mGla->setOrthogonalView(TOP3D);
-				screenshotDict = screenshot;
-				screenshotDict.append("_top");
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DTop);
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DTop);
-				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DTop, dataset, TOP3D);
-
-				mObjects[i]->mGla->setOrthogonalView(BOTTOM3D);
-				screenshotDict = screenshot;
-				screenshotDict.append("_bottom");
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DBottom);
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DBottom);
-				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DBottom, dataset, BOTTOM3D);
-
-				mObjects[i]->mGla->setOrthogonalView(BACK3D);
-				screenshotDict = screenshot;
-				screenshotDict.append("_back");
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DBack);
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D, surfaceNote3DBack);
-				detectFrustumVisibility(mObjects[i]->mGla, frustumNote3D, frustumNote3DBack, dataset, BACK3D);*/
-				qDebug() << "23333333: Generating series ready!\n\n";
 				recoverWidget(mObjects[i]->mGla, info, false);
 				break;
 			case CTSTACK:
@@ -536,67 +458,35 @@ void VideoGenerator::generate()
 				for (int angle = -179; angle <= 180; angle++)
 				{
 					mObjects[i]->mGla->setArbitraryView((double)angle);
-					screenshotDict = screenshot;
+					screenshotDict = screenshotObj;
 					screenshotDict.append(QString::number(angle + 180));
 					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+					cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+					cv::Mat resized = resize2Video(frame, mysize);
+					if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+					outputVideo.write(resized);
 				}
-				/*mObjects[i]->mGla->setOrthogonalView(FRONT3D);
-				screenshotDict = screenshot;
-				screenshotDict.append("_front");
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DFront);
-				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DFront_CT);
-
-				mObjects[i]->mGla->setOrthogonalView(LEFT3D);
-				screenshotDict = screenshot;
-				screenshotDict.append("_left");
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DLeft);
-				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DLeft_CT);
-
-				mObjects[i]->mGla->setOrthogonalView(RIGHT3D);
-				screenshotDict = screenshot;
-				screenshotDict.append("_right");
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DRight);
-				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DRight_CT);
-
-				mObjects[i]->mGla->setOrthogonalView(TOP3D);
-				screenshotDict = screenshot;
-				screenshotDict.append("_top");
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DTop);
-				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DTop_CT);
-
-				mObjects[i]->mGla->setOrthogonalView(BOTTOM3D);
-				screenshotDict = screenshot;
-				screenshotDict.append("_bottom");
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DBottom);
-				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DBottom_CT);
-
-				mObjects[i]->mGla->setOrthogonalView(BACK3D);
-				screenshotDict = screenshot;
-				screenshotDict.append("_back");
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-				detectPointVisibility(mObjects[i]->mGla->mRenderer, pointNote3D, pointNote3DBack);
-				detectCTSurfaceVisibility(mObjects[i]->mGla->mRenderer, surfaceNote3D_CT, surfaceNote3DBack_CT);*/
-
 				recoverWidget(mObjects[i]->mGla, info, true);
 				break;
 			case RTI2D:
 				RTIScreenShot = mObjects[i]->mGla->getRTIScreenShot();
 				if (!RTIScreenShot.isNull())
 				{
-					screenshot.append(".png");
-					RTIScreenShot.save(screenshot);
-					mObjects[i]->mPictures.push_back(screenshot);
+					screenshotObj.append(".png");
+					RTIScreenShot.save(screenshotObj);
+					mObjects[i]->mPictures.push_back(screenshotObj);
+					qDebug() << screenshotObj << "\n\n";
+					for (int duration = 0; duration < 50; duration++)
+					{
+						cv::Mat frame = cv::imread(screenshotObj.toStdString(), CV_LOAD_IMAGE_COLOR);
+						cv::Mat resized = resize2Video(frame, mysize);
+						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+						outputVideo.write(resized);
+					}
 				}
 				break;
 			default: break;
 		}
-
-		// Trying to use ffmpeg to generate the video based on a series of images
 
 		/*
 		// Switch back to origianl CT STACK mode.
@@ -849,7 +739,7 @@ void VideoGenerator::generate()
 			{
 				double height = 200, width = 300;
 				height = (double)width * imgHeight / imgWidth;
-				if (isPdf)
+				if (isWmv)
 					html = html + QString("<p><div align=\"center\"><img src=\"" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>\n");
 				else
 				{
@@ -863,7 +753,7 @@ void VideoGenerator::generate()
 			{
 				double height = 100, width = 150;
 				height = (double)width * imgHeight / imgWidth;
-				if (isPdf)
+				if (isWmv)
 				{
 					if (j == 0)
 						html += QString("<p><div align=\"center\">");
@@ -936,7 +826,7 @@ void VideoGenerator::generate()
 				QString name = mObjects[i]->mName;
 				name.insert(name.lastIndexOf("."), QString("_" + QString::number(j) + "_" + QString::number(k)));
 				mDoc->addResource(QTextDocument::ImageResource, QUrl(name), imgNote);
-				if (isPdf)
+				if (isWmv)
 					html += QString("<p><div align=\"center\"><img src=\"" + name + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>");
 				else
 				{
@@ -969,16 +859,17 @@ void VideoGenerator::generate()
 		}
 		*/
 	}
+	outputVideo.release();
+
+	videoFolderDir.setNameFilters(QStringList() << "*.*");
+	videoFolderDir.setFilter(QDir::Files);
+	foreach(QString dirFile, videoFolderDir.entryList())
+	{
+		videoFolderDir.remove(dirFile);
+	}
+	QDir().rmdir(videoFolder);
 
 	/*
-	tmpFolder.setNameFilters(QStringList() << "*.*");
-	tmpFolder.setFilter(QDir::Files);
-	foreach(QString dirFile, tmpFolder.entryList())
-	{
-		tmpFolder.remove(dirFile);
-	}
-	QDir().rmdir(tmp);
-
 	if (QFileInfo(mLocation).suffix() == QString("html"))
 	{
 		QFile file(mLocation);
@@ -1375,4 +1266,28 @@ void VideoGenerator::computeCenter(CTSurfaceCornerPoint_ cornerPoints, double* c
 		center[1] += cornerPoints.point[i][1]/4;
 		center[2] += cornerPoints.point[i][2]/4;
 	}
+}
+
+cv::Mat VideoGenerator::resize2Video(cv::Mat& src, cv::Size size)
+{
+	cv::Mat dst(size, src.type());
+	cv::Rect roi;
+	if (size.width / (double)size.height > src.size().width / (double)src.size().height)
+	{
+		double ratio = size.height / (double)src.size().height;
+		roi.width = (int)(src.size().width * ratio);
+		roi.height = size.height;
+		roi.x = (size.width - roi.width) / 2;
+		roi.y = 0;
+	}
+	else
+	{
+		double ratio = size.width / (double)src.size().width;
+		roi.width = size.width;
+		roi.height = (int)(src.size().height * ratio);
+		roi.x = 0;
+		roi.y = (size.height - roi.height) / 2;
+	}
+	cv::resize(src, dst(roi), roi.size());
+	return dst;
 }
