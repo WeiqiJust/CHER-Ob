@@ -517,6 +517,8 @@ private:
 	void exportProjectXML(const QString path, const QString name, const QString userName, const QString keyword, 
 	  const QString affiliation, const QString description);
 
+	///*** Geological information should be stored in XML ***///
+
 private slots:
 	/**
 	 * @brief  Functions related to corresponding QActions.
