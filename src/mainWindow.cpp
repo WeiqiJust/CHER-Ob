@@ -546,6 +546,8 @@ void MainWindow::updateXML()
 		CHEInfo.appendChild(documents);
 		CHEInfo.appendChild(other);
 	}
+
+	//// GEOINFO TO BE UPDATED
 	
 	bool isCTModeSwitched = false;
     QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
@@ -983,6 +985,9 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 		QFileInfo finfo(fn);
 		QDomNodeList ftlist = elt.elementsByTagName("filetype");
 		filetype = ftlist.at(0).toElement().text().toInt();
+		
+		//// GEOINFO TO BE READ
+
 		OPENRESULT result;
 		if (fn != QString())
 		{
@@ -1354,6 +1359,16 @@ void MainWindow::exportProjectXML(const QString path, const QString name, const 
         QDomElement filetype = doc.createElement("filetype");
         item.appendChild(filetype);
         filetype.appendChild(doc.createTextNode(QString::number(gla->getWidgetMode())));
+
+        QDomElement geoinfo = doc.createElement("geoinfo");
+        item.appendChild(geoinfo);
+		QDomElement latitude = doc.createElement("latitude");
+        QDomElement longitude = doc.createElement("longitude");
+        geoinfo.appendChild(latitude);
+        geoinfo.appendChild(longitude);
+		latitude.appendChild(doc.createTextNode(QString::number(39.9042)));
+		longitude.appendChild(doc.createTextNode(QString::number(116.4074)));
+		//// GEOINFO TO BE ADDED
 
         // Filetype-specific information
         switch(gla->getWidgetMode())
@@ -4402,7 +4417,7 @@ void MainWindow::createMenus()
 
 void MainWindow::helpOnline()
 {
-    QDesktopServices::openUrl(QUrl("http://sourceforge.net/projects/CHEROb/support"));
+    QDesktopServices::openUrl(QUrl("https://github.com/WeiqiJust/CHER-Ob"));
 }
 
 
