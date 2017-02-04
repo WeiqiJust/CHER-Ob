@@ -546,8 +546,6 @@ void MainWindow::updateXML()
 		CHEInfo.appendChild(documents);
 		CHEInfo.appendChild(other);
 	}
-
-	//// GEOINFO TO BE UPDATED
 	
 	bool isCTModeSwitched = false;
     QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
@@ -649,6 +647,16 @@ void MainWindow::updateXML()
         QDomElement filetype = doc.createElement("filetype");
         item.appendChild(filetype);
         filetype.appendChild(doc.createTextNode(QString::number(gla->getWidgetMode())));
+
+        QDomElement geoinfo = doc.createElement("geoinfo");
+        item.appendChild(geoinfo);
+		QDomElement latitude = doc.createElement("latitude");
+        QDomElement longitude = doc.createElement("longitude");
+        geoinfo.appendChild(latitude);
+        geoinfo.appendChild(longitude);
+		latitude.appendChild(doc.createTextNode(QString::number(39.9042)));
+		longitude.appendChild(doc.createTextNode(QString::number(116.4074)));
+		//// GEOINFO TO BE UPDATED
 
 		// Filetype-specific information
         switch(gla->getWidgetMode())
@@ -758,7 +766,7 @@ void MainWindow::updateXML()
 			}
 
 			case CTVOLUME:
-			{/*
+			{
 				vtkSmartPointer<vtkAssembly> assembly = this->mLightControl->GetAssembly();
 				double orientation[3];
 				assembly->GetOrientation(orientation);
@@ -785,7 +793,7 @@ void MainWindow::updateXML()
 
 				QDomElement resolution = doc.createElement("resolution");
 				item.appendChild(resolution);
-				resolution.appendChild(doc.createTextNode(QString::number(gla->getReductionFactor())));*/
+				resolution.appendChild(doc.createTextNode(QString::number(gla->getReductionFactor())));
 				break;
 			}
 
@@ -985,8 +993,8 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 		QFileInfo finfo(fn);
 		QDomNodeList ftlist = elt.elementsByTagName("filetype");
 		filetype = ftlist.at(0).toElement().text().toInt();
-		
-		//// GEOINFO TO BE READ
+	
+		//// GEOINFO TO BE READ: update information widget
 
 		OPENRESULT result;
 		if (fn != QString())
@@ -4658,6 +4666,7 @@ void MainWindow::createDockWindows()
 	  tabWidgetTop->addTab(mCtControl, tr("CT Image Control") );
 	  tabWidgetTop->addTab(mPlotView, tr("Spectrum") ); // test for API
 	  tabWidgetMid->addTab(mInformation, tr("Annotations") );
+	  //// tabWidgetMid->addTab(mGeoInfo, tr("GeoInfo") );
 	  tabWidgetMid->addTab(mBookmark, tr("Bookmarks") );
 	  tabWidgetMid->addTab(mSearch, tr("Search") );
 	  tabWidgetMid->addTab(mSearchAll, tr("SearchAll") );
@@ -4669,6 +4678,7 @@ void MainWindow::createDockWindows()
 	  tabWidgetMid->addTab(mCtControl, tr("CT Image Control") ); // CT rendering control
 	  tabWidgetMid->addTab(mPlotView, tr("Spectrum") ); // test for API
 	  tabWidgetBottom->addTab(mInformation, tr("Annotations") );
+	  //// tabWidgetBottom->addTab(mGeoInfo, tr("GeoInfo") );
 	  tabWidgetBottom->addTab(mBookmark, tr("Bookmarks") );
 	  tabWidgetBottom->addTab(mSearch, tr("Search") );
 	  tabWidgetBottom->addTab(mSearchAll, tr("SearchAll") );

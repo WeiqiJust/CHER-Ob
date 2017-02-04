@@ -161,7 +161,7 @@ void Navigation::loadObjectNote(QTreeWidgetItem *object, const QString path)
 				case 4: label = QString("PointNote2D_"); break;
 				case 5: label = QString("SurfaceNote2D_"); break;
 				case 6: label = QString("PolygonNote2D_"); break;
-				//// TO BE TESTED
+				
 			}
 			if (i == 0)
 			{
@@ -426,7 +426,7 @@ void Navigation::addNoteItem(const QString path, const NoteMode type, const Note
 			else
 				object->insertChild(point+surface+frustum+point2D+surface2D+polygon2D, newNote);
 		}
-		//// TO BE TESTED
+		
 		newNote->setText(1, objectPath);
 		newNote->setText(2, QString::number(1));
 	}
@@ -574,7 +574,7 @@ void Navigation::removeNoteItem(const QString path, const NoteMode type, const i
 				}
 			}
 		}
-		//// TO BE TESTED
+		
 	}
 }
 

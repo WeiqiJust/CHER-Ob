@@ -489,6 +489,7 @@ private:
 	QString notePath;
 	QString notePathPre;
 	QMap<QString, std::pair<QString, bool > > content;	// Annotation
+	QMap<QString, std::pair<double, double> > geoinfo;	// GeoInfo
     QMap<QString, QVector<PointNote*> > mPointNotes;
     QMap<QString, QVector<SurfaceNote*> > mSurfaceNotes;
     QMap<QString, QVector<FrustumNote*> > mFrustumNotes;

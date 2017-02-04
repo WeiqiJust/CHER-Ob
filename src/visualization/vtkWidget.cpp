@@ -208,7 +208,7 @@ VtkWidget::~VtkWidget(){
 }
 
 NoteMode VtkWidget::getNoteMode2D() const { return mCallback2D->GetNoteMode(); }
-NoteMode VtkWidget::getNoteMode3D() const { return mCallback3D->GetNoteMode(); } //// TO BE TESTED
+NoteMode VtkWidget::getNoteMode3D() const { return mCallback3D->GetNoteMode(); } 
 
 void VtkWidget::updateCurrentSlice(int index)
 {
@@ -585,7 +585,7 @@ void VtkWidget::removeSurfaceNote2DMark(double* point)
 void VtkWidget::removePolygonNote2DMark(std::vector<std::pair<double, double> >* polygon)
 {
 	mCallback2D->removePolygonNoteMark(polygon);
-	//// TO BE TESTED
+	
 }
 
 void VtkWidget::openPointNote2DMark(double* point)
@@ -601,7 +601,7 @@ void VtkWidget::openSurfaceNote2DMark(double* point)
 void VtkWidget::openPolygonNote2DMark(std::vector<std::pair<double, double> >* polygon)
 {
 	mCallback2D->openPolygonNoteMark(polygon);
-	//// TO BE TESTED
+	
 }
 
 void VtkWidget::loadPointNote2DMark(double* point, const ColorType color, bool isDisplay)
@@ -617,7 +617,7 @@ void VtkWidget::loadSurfaceNote2DMark(double* point, const ColorType color, bool
 void VtkWidget::loadPolygonNote2DMark(std::vector<std::pair<double, double> >* polygon, const ColorType color, bool isDisplay)
 {
 	mCallback2D->displayLoadPolygonNote(polygon, color, isDisplay);
-	//// TO BE TESTED
+	
 }
 
 void VtkWidget::setMeasureDistance(bool status)

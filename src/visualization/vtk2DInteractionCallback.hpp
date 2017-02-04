@@ -233,7 +233,7 @@ public:
 			  {
 				 mSelectedPolygon[i].second->VisibilityOn();
 			  }
-			  //// TO BE TESTED
+			  
 		  }
 		  mw()->mInformation->startAnnotation();
 		  mw()->VTKA()->update();
@@ -252,7 +252,7 @@ public:
 		  {
 			  mSelectedPolygon[i].second->VisibilityOff();
 		  }
-		  //// TO BE TESTED
+		  
 		  mw()->mInformation->finishAnnotation();
 		  finishNote();
 	  }
@@ -269,7 +269,6 @@ public:
   {
 	  vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
       vtkSmartPointer<vtkRenderer> renderer = interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
-	  //// TO BE IMPLEMENTED: HOW TO INITIALIZE POLYGON NOTE?
 	  if (mNoteMode == SURFACENOTE || mNoteMode == FRUSTUMNOTE)
 	  {
 		 // vtkSmartPointer<vtkInteractorStyleRubberBandPick> style 
@@ -578,7 +577,7 @@ public:
 			  renderer->AddActor(Actor.back());
 		  }
 	  }
-	  //// TO BE TESTED
+	  
   }
   void displayPointNote(vtkSmartPointer<vtkPolyDataMapper> mapper, double* select)
   {
@@ -679,7 +678,7 @@ public:
 	  PolyData->SetPoints(Points);
 	  PolyData->SetLines(CellArray);
 	  mapper->SetInput(PolyData);
-	  //// TO BE TESTED
+	  
   }
 
   void highlightPointNote(int id)
@@ -716,7 +715,7 @@ public:
 	  mPolygonNoteHighlight = id;
 	  mSelectedPolygon[mPolygonNoteHighlight].second->GetProperty()->GetColor(color);
 	  mSelectedPolygon[mPolygonNoteHighlight].second->GetProperty()->SetColor(1-color[0], 1-color[1], 1-color[2]);
-	  //// TO BE TESTED
+	  
   }
 
   void turnoffHighlight()
@@ -739,7 +738,7 @@ public:
 		   mSelectedPolygon[mPolygonNoteHighlight].second->GetProperty()->GetColor(color);		 
 		   mSelectedPolygon[mPolygonNoteHighlight].second->GetProperty()->SetColor(1-color[0], 1-color[1], 1-color[2]);		  
 		   mPolygonNoteHighlight = -1;		  
-	   } //// TO BE TESTED
+	   } 
   }
 
   bool choosePointNote()
@@ -863,7 +862,7 @@ public:
 		  }
 	  }
 	  return false;
-	  //// TO BE TESTED
+	  
   }
 
   void removePointNoteMark(double* point)
@@ -944,7 +943,7 @@ public:
 		  }
 	  }
 	  if (!erase)	qDebug() << "Cannot Find the Exact PolygonNote to remove!" << endl;
-	  //// TO BE TESTED
+	  
   }
 
   void openPointNoteMark(double* point)
@@ -1012,7 +1011,7 @@ public:
 			  break;
 		  }
 	  }
-	  //// TO BE TESTED
+	  
   }
 
   void displayLoadPointNote(double* point, const ColorType color, bool isDisplay = false)
@@ -1080,7 +1079,7 @@ public:
 
 	  displayPolygonNote(mapper, polygon);
 
-	  //// TO BE TESTED
+	  
   }
 
   void updateLightingPosition() {

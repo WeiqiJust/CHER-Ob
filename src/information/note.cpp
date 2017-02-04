@@ -1487,7 +1487,7 @@ PolygonNote2D::PolygonNote2D(QString path, const std::vector<std::pair<double, d
 	info.append(QString("\nNote Start:"));
 	this->setInfo(info);
 	qDebug() << "finish Polygon Note 2D instructor";
-	//// TO BE TESTED
+	
 }
 PolygonNote2D::PolygonNote2D(QString path, QString fileName, const int noteId, bool& isSucceed)
 	: Note(noteId)
@@ -1648,12 +1648,12 @@ PolygonNote2D::PolygonNote2D(QString path, QString fileName, const int noteId, b
 	qDebug() << "finish Polygon Note 2D instructor";
 	isSucceed = true;
 
-	//// TO BE TESTED
+	
 }
 void PolygonNote2D::removePolygonNote2D()
 {
 	qDebug() << "Remove Polygon Note 2D" << mFile->fileName();
 	mFile->remove();
 	this->hideNote();
-	//// TO BE TESTED
+	
 }

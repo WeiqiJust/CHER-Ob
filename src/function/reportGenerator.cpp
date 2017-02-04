@@ -264,7 +264,7 @@ void ReportGenerator::generate()
 						}
 						polygonNote2D.push_back(polygon);
 						mode = POLYGONNOTE;
-						//// TO BE TESTED
+						
 					}
 					else
 					{
@@ -674,7 +674,7 @@ void ReportGenerator::generate()
 
 				painter.setPen(QPen(Qt::black, 4));
 				painter.drawText(rectangle,  Qt::AlignCenter, QString::number(k+pointNote2D.size()+surfaceNote2D.size()+1));
-				//// TO BE TESTED
+				
 			}
 
 			font = painter.font();

@@ -299,6 +299,7 @@ public:
 	LightControlRTI *mLightControlRTI;  //YY
 	RenderingDialog* rendDlg; //YY /*!< Widget to choose the rendering mode to apply to RTI image. */
 	Information *mInformation;
+	//// QWidget *mGeoInfo;
 	BookmarkWidget *mBookmark;
 	SearchWidget *mSearch;
 	SearchAllWidget *mSearchAll;

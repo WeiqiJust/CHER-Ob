@@ -208,13 +208,14 @@ void Information::refresh()
 {
 	dText->clear();
 	content.clear();
+	geoinfo.clear();
 	mPointNotes.clear();
 	mSurfaceNotes.clear();
 	mFrustumNotes.clear();
 	mPointNotes2D.clear();
 	mSurfaceNotes2D.clear();
 	mPolygonNotes2D.clear();
-	//// TO BE TESTED
+	
 	hasNotesRemoved.clear();
 	removedAnnotation.clear();
 }
@@ -230,7 +231,7 @@ void Information::init(const QString path, bool isDisplayNoteMark)
 	loadPointNote2D(objectPath, true, isDisplayNoteMark);
 	loadSurfaceNote2D(objectPath, true, isDisplayNoteMark);
 	loadPolygonNote2D(objectPath, true, isDisplayNoteMark);
-	//// TO BE TESTED
+	
 	loadAnnotation(notePath);
 }
 
@@ -242,7 +243,7 @@ void Information::initCT2DRendering(const QString path, bool isDisplayNoteMark)
 	loadPointNote2D(objectPath, true, isDisplayNoteMark);
 	loadSurfaceNote2D(objectPath, true, isDisplayNoteMark);
 	loadPolygonNote2D(objectPath, true, isDisplayNoteMark);
-	//// TO BE TESTED
+	
 	loadPointNote(objectPath, false);
 	loadSurfaceNote(objectPath, false);
 	loadFrustumNote(objectPath, false);
@@ -257,7 +258,7 @@ void Information::initCTVolumeRendering(const QString path, bool isDisplayNoteMa
 	loadPointNote2D(objectPath, false);
 	loadSurfaceNote2D(objectPath, false);
 	loadPolygonNote2D(objectPath, false);
-	//// TO BE TESTED
+	
 	loadPointNote(objectPath, true, isDisplayNoteMark);
 	loadSurfaceNote(objectPath, true, isDisplayNoteMark);
 	loadFrustumNote(objectPath, true, isDisplayNoteMark);
@@ -473,7 +474,7 @@ void Information::createPolygonNote2D(std::vector<std::pair<double, double> >* p
 	connect(this, SIGNAL(closeAll()), mPolygonNotes2D[notePath][size], SLOT(close()));
 	connect(this, SIGNAL(replaceUserName(const QString, const QString)), mPolygonNotes2D[notePath][size], SLOT(replaceUserName(const QString, const QString)));
 	emit addNavigationItem(notePath, POLYGONNOTE, NOTE2D);
-	//// TO BE TESTED
+	
 }
 
 bool Information::loadPointNote(const QString path, bool isLoadNoteMark, bool isDisplayNoteMark)
@@ -1093,7 +1094,7 @@ void Information::openPolygonNote2D(std::vector<std::pair<double, double> >* pol
 			break;
 		}
 	}
-	//// TO BE TESTED
+	
 }
 
 void Information::setNotePath(QString path)
@@ -1220,7 +1221,7 @@ void Information::removePolygonNote2D(int noteId, QString* path)
 			break;
 		}
 	}
-	//// TO BE TESTED
+	
 }
 
 void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
@@ -1337,7 +1338,7 @@ void Information::openNoteFromTreeWidget(QTreeWidgetItem* item)
 					break;
 				}
 			}
-			//// TO BE TESTED
+			
 			break;
 		default: qDebug() << "Incorrect Note File!";
 	}
@@ -1483,7 +1484,7 @@ void Information::openNoteFromNavigation(QTreeWidgetItem* item)
 			{
 				qDebug()<<"Incorrect Notes!";
 			}
-			//// TO BE TESTED
+			
 			break;
 		default: qDebug() << "Incorrect Note File!";
 	}
@@ -1569,7 +1570,7 @@ void Information::openNotesByUsers(const QVector<QString> users)
 				break;
 			}
 		}
-		//// TO BE TESTED
+		
 	}
 }
 
@@ -1602,7 +1603,7 @@ void Information::draw2DNoteMark(const QString path)
 			mw()->VTKA(objectPath)->loadPolygonNote2DMark(mPolygonNotes2D[noteFolder][i]->getPolygon(), 
 				mPolygonNotes2D[noteFolder][i]->getColorType());
 		}
-		//// TO BE TESTED
+		
 	}
 }
 
@@ -1957,7 +1958,7 @@ void Information::undoRemoveNote(QTreeWidgetItem* item)
 			{
 				qDebug()<<"Incorrect Notes!";
 			}
-			//// TO BE TESTED
+			
 			break;
 		default: qDebug() << "Incorrect Note File!";
 	}
@@ -2003,7 +2004,7 @@ void Information::saveObjectNotes()
 	{
 		mPolygonNotes2D[notePath][i]->save();
 	}
-	//// TO BE TESTED
+	
 	saveAnnotation();
 	hasNotesRemoved[notePath] = false;
 }
@@ -2041,7 +2042,7 @@ void Information::closeObjectNotes()
 	{
 		mPolygonNotes2D[notePath][i]->hideNote();
 	}
-	//// TO BE TESTED
+	
 }
 
 void Information::removeAllNotes()
@@ -2111,7 +2112,7 @@ void Information::removeAllNotes()
 		emit removeNavigationItem(notePath, POLYGONNOTE, i, NOTE2D);
 	}
 	//mPolygonNotes2D.remove(notePath);
-	//// TO BE TESTED
+	
 }
 
 void Information::removeAllNotes(QString path)
@@ -2181,7 +2182,7 @@ void Information::removeAllNotes(QString path)
 		emit removeNavigationItem(removePath, POLYGONNOTE, i, NOTE2D);
 	}
 	//mPolygonNotes2D.remove(removePath);
-	//// TO BE TESTED
+	
 }
 
 void Information::removeUnSavedNotes()
@@ -2267,7 +2268,7 @@ void Information::removeUnSavedNotes()
 			//mPolygonNotes2D[notePath].remove(i);
 		}
 	}
-	//// TO BE TESTED
+	
 }
 
 void Information::removeAllNotesMark()
@@ -2318,7 +2319,7 @@ void Information::removeAllNotesMark()
 			if (mw()->VTKA(path)->getWidgetMode() != CTVOLUME)
 				mw()->VTKA(path)->removePolygonNote2DMark(mPolygonNotes2D[removePath][i]->getPolygon());
 		}
-		//// TO BE TESTED
+		
 	}
 }
 
@@ -2350,7 +2351,7 @@ void Information::hideNotes()
 	{
 		mPolygonNotes2D[notePath][i]->hideNote();
 	}
-	//// TO BE TESTED
+	
 }
 
 void Information::showNotes()
@@ -2381,7 +2382,7 @@ void Information::showNotes()
 	{
 		mPolygonNotes2D[notePath][i]->showNote();
 	}
-	//// TO BE TESTED
+	
 }
 
 bool Information::updateCurrentPath()
@@ -2457,7 +2458,7 @@ bool Information::checkAllSaved()
 				return false;
 			}
 		}
-		//// TO BE TESTED
+		
 		if (!content[path].second)
 		{
 			return false;
@@ -2518,7 +2519,7 @@ bool Information::checkObjectSaved()
 			return false;
 		}
 	}
-	//// TO BE TESTED
+	
 	if (!content[notePath].second)
 	{
 		qDebug()<<"content";
@@ -2585,7 +2586,7 @@ QVector<QPair<QString, NoteType> > Information::getAllNotes(const QString object
 				notes.push_back(qMakePair(mPolygonNotes2D[path][i]->getContent(), NOTE2D));
 		}
 	}
-	//// TO BE TESTED
+	
 	return notes;
 }
 
@@ -2632,7 +2633,7 @@ QVector<int> Information::getNoteNumber(const QString objectPath)
 		notes.push_back(mPolygonNotes2D[path].size());
 	else
 		notes.push_back(0);
-	//// TO BE TESTED
+	
 	return notes;
 }
 
@@ -2679,7 +2680,7 @@ QVector<QString> Information::getAllUsers()
 		for (int j = 0; j < noteUser.size(); j++)
 			users.push_back(noteUser[j].toStdString());
 	}
-	//// TO BE TESTED
+	
 	std::sort(users.begin(), users.end());
 	std::vector<std::string>::iterator end_unique = std::unique(users.begin(), users.end());
 	users.erase(end_unique, users.end());
