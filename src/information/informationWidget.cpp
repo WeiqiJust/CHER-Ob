@@ -1108,6 +1108,16 @@ void Information::recoverNotePath()
 	notePath = notePathPre;
 }
 
+void Information::setGeoInfo(const QString objectName, std::pair<double, double> latlong)
+{
+	geoinfo[objectName] = latlong;
+}
+
+std::pair<double, double> Information::getGeoInfo(const QString objectName)
+{
+	return geoinfo[objectName];
+}
+
 void Information::removePointNote(int noteId, QString* path)
 {
 	//qDebug() << "remove Note "<<noteId;

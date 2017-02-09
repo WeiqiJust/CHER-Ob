@@ -437,6 +437,16 @@ public:
 	void setNotePath(QString path);
 	void recoverNotePath();
 
+	/**
+	 * @brief  Set geographical information for an object
+	 */
+	void setGeoInfo(const QString objectName, std::pair<double, double> latlong);
+
+	/**
+	 * @brief  Get geographical information of an object
+	 */
+	std::pair<double, double> getGeoInfo(const QString objectName);
+
 private:
 	/**
 	 * @brief  Load Annotation from the absolute path.

@@ -656,6 +656,7 @@ void MainWindow::updateXML()
         geoinfo.appendChild(longitude);
 		latitude.appendChild(doc.createTextNode(QString::number(39.9042)));
 		longitude.appendChild(doc.createTextNode(QString::number(116.4074)));
+		//// cheObject???
 		//// GEOINFO TO BE UPDATED
 
 		// Filetype-specific information
@@ -994,7 +995,9 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 		QDomNodeList ftlist = elt.elementsByTagName("filetype");
 		filetype = ftlist.at(0).toElement().text().toInt();
 	
+		//// read from XML
 		//// GEOINFO TO BE READ: update information widget
+		mInformation->setGeoInfo(cheObject, std::make_pair(39.9042, 116.4074));
 
 		OPENRESULT result;
 		if (fn != QString())
@@ -1376,6 +1379,7 @@ void MainWindow::exportProjectXML(const QString path, const QString name, const 
         geoinfo.appendChild(longitude);
 		latitude.appendChild(doc.createTextNode(QString::number(39.9042)));
 		longitude.appendChild(doc.createTextNode(QString::number(116.4074)));
+		//// cheObject???
 		//// GEOINFO TO BE ADDED
 
         // Filetype-specific information
