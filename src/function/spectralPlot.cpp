@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -103,10 +104,10 @@ void SpectralPlot::exportPlot() {
   QPixmap px(this->frameRect().size());
   this->render(&px,QPoint(),this->frameRect());
   QString spectral_image_fname = basename + "_" + QString::number(mSpectralCoords[0]) + "_" + QString::number(mSpectralCoords[1]) + normalized_fname + ".png";
-  QString image_fname = dir + "/" + spectral_image_fname;
+  QString image_fname = dir + QDir::separator() + spectral_image_fname;
   px.save(image_fname);
   //----- Export Annotation -----//
-  QString annotation_fname = dir + "/" + basename + "_" + QString::number(mSpectralCoords[0]) + "_" + QString::number(mSpectralCoords[1]) + normalized_fname + ".msa";
+  QString annotation_fname = dir + QDir::separator() + basename + "_" + QString::number(mSpectralCoords[0]) + "_" + QString::number(mSpectralCoords[1]) + normalized_fname + ".msa";
   std::fstream of(annotation_fname.toStdString().c_str(),std::fstream::out);
   of << "{" << std::endl;
   of << "\"originalImage\" :  \"" << fi.fileName().toStdString() << "\"," << std::endl;

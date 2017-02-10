@@ -440,12 +440,12 @@ public:
 	/**
 	 * @brief  Set geographical information for an object
 	 */
-	void setGeoInfo(const QString objectName, std::pair<double, double> latlong);
+	void setGeoInfo(const QString objectName, QPair<double, double> latlong);
 
 	/**
 	 * @brief  Get geographical information of an object
 	 */
-	std::pair<double, double> getGeoInfo(const QString objectName);
+	QPair<double, double> getGeoInfo(const QString objectName);
 
 private:
 	/**
@@ -499,7 +499,7 @@ private:
 	QString notePath;
 	QString notePathPre;
 	QMap<QString, std::pair<QString, bool > > content;	// Annotation
-	QMap<QString, std::pair<double, double> > geoinfo;	// GeoInfo
+	QMap<QString, QPair<double, double> > geoinfo;	// GeoInfo
     QMap<QString, QVector<PointNote*> > mPointNotes;
     QMap<QString, QVector<SurfaceNote*> > mSurfaceNotes;
     QMap<QString, QVector<FrustumNote*> > mFrustumNotes;

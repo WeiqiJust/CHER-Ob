@@ -648,16 +648,18 @@ void MainWindow::updateXML()
         item.appendChild(filetype);
         filetype.appendChild(doc.createTextNode(QString::number(gla->getWidgetMode())));
 
+		// update geoinfo to XML
+		QStringList objectPath = file.split("/");
+		QString objectName = objectPath[objectPath.size() - 1];
+		QPair<double, double> latlong = mInformation->getGeoInfo(objectName);
         QDomElement geoinfo = doc.createElement("geoinfo");
         item.appendChild(geoinfo);
 		QDomElement latitude = doc.createElement("latitude");
         QDomElement longitude = doc.createElement("longitude");
         geoinfo.appendChild(latitude);
         geoinfo.appendChild(longitude);
-		latitude.appendChild(doc.createTextNode(QString::number(39.9042)));
-		longitude.appendChild(doc.createTextNode(QString::number(116.4074)));
-		//// cheObject???
-		//// GEOINFO TO BE UPDATED
+		latitude.appendChild(doc.createTextNode(QString::number(latlong.first)));
+		longitude.appendChild(doc.createTextNode(QString::number(latlong.second)));
 
 		// Filetype-specific information
         switch(gla->getWidgetMode())
@@ -845,6 +847,7 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 	double clip[2]; // clipping range
 	double scale; // parallel scale
 	int filetype;
+	double latlong[2] = {0}; // geoinfo
 	double brightness = this->mLightControl->GetIntensityL1();
 	double contrast = this->mLightControl->GetIntensityL2();
 	int directionalLightOn;
@@ -995,9 +998,14 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 		QDomNodeList ftlist = elt.elementsByTagName("filetype");
 		filetype = ftlist.at(0).toElement().text().toInt();
 	
-		//// read from XML
-		//// GEOINFO TO BE READ: update information widget
-		mInformation->setGeoInfo(cheObject, std::make_pair(39.9042, 116.4074));
+		// read geoinfo from XML
+		QDomNodeList geoInfoList = elt.elementsByTagName("geoinfo");
+		if (!geoInfoList.isEmpty())
+		{
+			latlong[0] = geoInfoList.at(0).toElement().elementsByTagName("latitude").at(0).toElement().text().toDouble();
+			latlong[1] = geoInfoList.at(0).toElement().elementsByTagName("longitude").at(0).toElement().text().toDouble();
+		}
+		mInformation->setGeoInfo(cheObject, qMakePair(latlong[0], latlong[1]));
 
 		OPENRESULT result;
 		if (fn != QString())
@@ -1371,16 +1379,18 @@ void MainWindow::exportProjectXML(const QString path, const QString name, const 
         item.appendChild(filetype);
         filetype.appendChild(doc.createTextNode(QString::number(gla->getWidgetMode())));
 
+		// add geoinfo to XML
+		QStringList objectPath = file.split("/");
+		QString objectName = objectPath[objectPath.size() - 1];
+		QPair<double, double> latlong = mInformation->getGeoInfo(objectName);
         QDomElement geoinfo = doc.createElement("geoinfo");
         item.appendChild(geoinfo);
 		QDomElement latitude = doc.createElement("latitude");
         QDomElement longitude = doc.createElement("longitude");
         geoinfo.appendChild(latitude);
         geoinfo.appendChild(longitude);
-		latitude.appendChild(doc.createTextNode(QString::number(39.9042)));
-		longitude.appendChild(doc.createTextNode(QString::number(116.4074)));
-		//// cheObject???
-		//// GEOINFO TO BE ADDED
+		latitude.appendChild(doc.createTextNode(QString::number(latlong.first)));
+		longitude.appendChild(doc.createTextNode(QString::number(latlong.second)));
 
         // Filetype-specific information
         switch(gla->getWidgetMode())
