@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="qtmapkit"
-	ProjectGUID="{7A72A667-06BD-3B6A-903B-779644F5A55A}"
+	ProjectGUID="{9D5138E2-D4EB-3405-9B52-30C09853F5C6}"
 	RootNamespace="qtmapkit"
 	Keyword="Qt4VSv1.0"
 	TargetFrameworkVersion="0"

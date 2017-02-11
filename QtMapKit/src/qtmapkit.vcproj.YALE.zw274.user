@@ -34,7 +34,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release|Win32"
+			Name="Debug|x64"
 			>
 			<DebugSettings
 				Command=""
@@ -48,7 +48,7 @@
 				HttpUrl=""
 				PDBPath=""
 				SQLDebugging=""
-				Environment="PATH=$(QTDIR)\bin;$(PATH)"
+				Environment="PATH=&quot;$(QTDIR)\bin;$(PATH)"
 				EnvironmentMerge="true"
 				DebuggerFlavor=""
 				MPIRunCommand=""
@@ -62,7 +62,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug|x64"
+			Name="Release|Win32"
 			>
 			<DebugSettings
 				Command=""
@@ -104,7 +104,7 @@
 				HttpUrl=""
 				PDBPath=""
 				SQLDebugging=""
-				Environment="PATH=$(QTDIR)\bin;$(PATH)"
+				Environment="PATH=&quot;$(QTDIR)\bin;$(PATH)"
 				EnvironmentMerge="true"
 				DebuggerFlavor=""
 				MPIRunCommand=""

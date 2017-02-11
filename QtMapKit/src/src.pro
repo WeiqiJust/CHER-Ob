@@ -4,9 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += webkit
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webkitwidgets
+QT       += core gui webkit widgets webkitwidgets
 
 TARGET = qtmapkit
 TEMPLATE = lib
