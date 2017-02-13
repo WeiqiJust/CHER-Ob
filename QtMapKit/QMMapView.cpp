@@ -52,8 +52,7 @@ public:
     {
         webView = new QWebView();
         webView->setPage(new CustomWebPage());
-		webView->load(QUrl("qrc:///gmap_.html"));
-        //webView->load(QUrl("qrc:///qtmapkit/gmap/gmap.html"));
+		webView->load(QUrl("qrc:///gmap.html"));
     }
     ~QMMapViewPrivate() {}
     QMMapView *q_ptr;
@@ -149,6 +148,7 @@ void QMMapView::initializeMap()
 
     d->loaded = true;
     emit mapLoaded();
+	qDebug() << "23333: mapLoaded mapLoaded\n";
 }
 
 void QMMapView::resizeEvent(QResizeEvent *)
@@ -268,16 +268,19 @@ void QMMapView::mapTypeDidChangeTo(QString typeString)
 void QMMapView::mouseDidClickAt(qreal latitude, qreal longitude)
 {
     emit mouseClicked(QMCoordinate(latitude, longitude));
+	qDebug() << "23333: mouseClicked mouseClicked\n";
 }
 
 void QMMapView::mouseDidDoubleClickAt(qreal latitude, qreal longitude)
 {
     emit mouseDoubleClicked(QMCoordinate(latitude, longitude));
+	qDebug() << "23333: mouseDoubleClicked mouseDoubleClicked\n";
 }
 
 void QMMapView::mouseDidRightClickAt(qreal latitude, qreal longitude)
 {
     emit mouseRightClicked(QMCoordinate(latitude, longitude));
+	qDebug() << "23333: mouseRightClicked mouseRightClicked\n";
 }
 
 void QMMapView::cursorDidMoveTo(qreal latitude, qreal longitude)
