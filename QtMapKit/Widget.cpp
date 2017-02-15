@@ -21,21 +21,24 @@
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QtDebug>
+#include <QPushButton>
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
 {
     QHBoxLayout *mainLayout = new QHBoxLayout();
-    _mapView = new QMMapView(QMMapView::Hybrid,
+    _mapView = new QMMapView(QMMapView::RoadMap,
                              QMCoordinate(41.313129, -72.925033),
                              12);
     _controls = new QWidget();
     buildControls();
+	QPushButton *button = new QPushButton("Mark");
     mainLayout->addWidget(_mapView, 1);
     mainLayout->addWidget(_controls, 1);
+    mainLayout->addWidget(button, 0.1);
     setLayout(mainLayout);
 
-    resize(1200, 600);
+	connect(button, SIGNAL(clicked()), this, SLOT(createMark()));
     connect(_mapView, SIGNAL(mapLoaded()), this, SLOT(onMapLoaded()));
 	connect(_mapView, SIGNAL(mouseClicked(QMCoordinate)), this, SLOT(onMouseClicked(QMCoordinate)));
     connect(_mapView, SIGNAL(regionChanged(QMCoordinateRegion)),
@@ -69,6 +72,15 @@ void Widget::log(const char *text, QString delimiter)
     log(QString(text), delimiter);
 }
 
+void Widget::createMark()
+{
+	_mapView->markCenter(QString("'test'"), _mapView->center());
+	log(QString("Center marked: (%1, %2)").arg(
+		QString::number(_mapView->center().latitude()),
+		QString::number(_mapView->center().longitude())),
+		"\n");
+}
+
 void Widget::onMapLoaded()
 {
     log("Loaded:");
@@ -83,7 +95,8 @@ void Widget::onMapLoaded()
 void Widget::onMouseClicked(QMCoordinate latlong)
 {
 	log(QString("Mouse click at: (%1, %2)").arg(
-		latlong.latitude(), latlong.longitude()),
+		QString::number(latlong.latitude()),
+		QString::number(latlong.longitude())),
 		" ");
 }
 

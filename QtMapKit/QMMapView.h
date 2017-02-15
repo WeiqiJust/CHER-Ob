@@ -56,6 +56,7 @@ public:
 
     void makeRegionVisible(QMCoordinateRegion &region);
     void fitRegion(QMCoordinateRegion &region);
+	void markCenter(QString name, QMCoordinate center);
 //    void pan(int x, int y);
 //    void setHeading(qreal heading);
 //    void setTilt(qreal tile);

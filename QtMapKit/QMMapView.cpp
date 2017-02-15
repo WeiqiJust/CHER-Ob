@@ -148,7 +148,6 @@ void QMMapView::initializeMap()
 
     d->loaded = true;
     emit mapLoaded();
-	qDebug() << "23333: mapLoaded mapLoaded\n";
 }
 
 void QMMapView::resizeEvent(QResizeEvent *)
@@ -248,6 +247,16 @@ void QMMapView::fitRegion(QMCoordinateRegion &region)
     d->evaluateJavaScript(js);
 }
 
+void QMMapView::markCenter(QString name, QMCoordinate center) {
+	Q_D(QMMapView);
+    QString format = QString("appendMarker(%1, %2, %3);");
+    QString js = format
+            .arg(name)
+            .arg(center.latitude())
+            .arg(center.longitude());
+    d->evaluateJavaScript(js);
+}
+
 void QMMapView::regionDidChangeTo(qreal north, qreal south,
                                   qreal east, qreal west)
 {
@@ -268,19 +277,16 @@ void QMMapView::mapTypeDidChangeTo(QString typeString)
 void QMMapView::mouseDidClickAt(qreal latitude, qreal longitude)
 {
     emit mouseClicked(QMCoordinate(latitude, longitude));
-	qDebug() << "23333: mouseClicked mouseClicked\n";
 }
 
 void QMMapView::mouseDidDoubleClickAt(qreal latitude, qreal longitude)
 {
     emit mouseDoubleClicked(QMCoordinate(latitude, longitude));
-	qDebug() << "23333: mouseDoubleClicked mouseDoubleClicked\n";
 }
 
 void QMMapView::mouseDidRightClickAt(qreal latitude, qreal longitude)
 {
     emit mouseRightClicked(QMCoordinate(latitude, longitude));
-	qDebug() << "23333: mouseRightClicked mouseRightClicked\n";
 }
 
 void QMMapView::cursorDidMoveTo(qreal latitude, qreal longitude)

@@ -37,6 +37,7 @@ public slots:
     void log(const char *text, QString delimiter = QString("\n"));
 
 private slots:
+	void createMark();
     void onMapLoaded();
 	void onMouseClicked(QMCoordinate latlong);
     void onMapBecameIdle();

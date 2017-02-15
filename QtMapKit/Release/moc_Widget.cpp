@@ -22,7 +22,7 @@ static const uint qt_meta_data_Widget[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-       8,   14, // methods
+       9,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -35,9 +35,10 @@ static const uint qt_meta_data_Widget[] = {
       62,    8,    7,    7, 0x0a,
       87,   44,    7,    7, 0x2a,
      104,    7,    7,    7, 0x08,
-     126,  118,    7,    7, 0x08,
-     155,    7,    7,    7, 0x08,
-     180,  173,    7,    7, 0x08,
+     117,    7,    7,    7, 0x08,
+     139,  131,    7,    7, 0x08,
+     168,    7,    7,    7, 0x08,
+     193,  186,    7,    7, 0x08,
 
        0        // eod
 };
@@ -45,7 +46,8 @@ static const uint qt_meta_data_Widget[] = {
 static const char qt_meta_stringdata_Widget[] = {
     "Widget\0\0text,delimiter\0log(QString,QString)\0"
     "text\0log(QString)\0log(const char*,QString)\0"
-    "log(const char*)\0onMapLoaded()\0latlong\0"
+    "log(const char*)\0createMark()\0"
+    "onMapLoaded()\0latlong\0"
     "onMouseClicked(QMCoordinate)\0"
     "onMapBecameIdle()\0region\0"
     "onRegionChanged(QMCoordinateRegion)\0"
@@ -61,10 +63,11 @@ void Widget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         case 1: _t->log((*reinterpret_cast< QString(*)>(_a[1]))); break;
         case 2: _t->log((*reinterpret_cast< const char*(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
         case 3: _t->log((*reinterpret_cast< const char*(*)>(_a[1]))); break;
-        case 4: _t->onMapLoaded(); break;
-        case 5: _t->onMouseClicked((*reinterpret_cast< QMCoordinate(*)>(_a[1]))); break;
-        case 6: _t->onMapBecameIdle(); break;
-        case 7: _t->onRegionChanged((*reinterpret_cast< QMCoordinateRegion(*)>(_a[1]))); break;
+        case 4: _t->createMark(); break;
+        case 5: _t->onMapLoaded(); break;
+        case 6: _t->onMouseClicked((*reinterpret_cast< QMCoordinate(*)>(_a[1]))); break;
+        case 7: _t->onMapBecameIdle(); break;
+        case 8: _t->onRegionChanged((*reinterpret_cast< QMCoordinateRegion(*)>(_a[1]))); break;
         default: ;
         }
     }
@@ -102,9 +105,9 @@ int Widget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 8)
+        if (_id < 9)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 8;
+        _id -= 9;
     }
     return _id;
 }

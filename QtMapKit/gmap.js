@@ -23,6 +23,7 @@ function initialize(lng, lat, type, zoom)
     });
     google.maps.event.addListener(map, "click", function(e) {
         var p = e.latLng();
+        window.alert("boom!");
         qMapView.mouseDidClickAt(p.lat(), p.lng());
     });
     google.maps.event.addListener(map, "dblclick", function(e) {
@@ -76,6 +77,11 @@ function initialize(lng, lat, type, zoom)
 
 function appendMarker(name, latitude, longitude)
 {
+    for (var old in markers) {
+        if (markers[old].title == name) {
+            markers[old].setMap(null);
+        }
+    }
     var marker = new google.maps.Marker({
         position: new google.maps.LatLng(latitude, longitude),
         map: map,
@@ -83,18 +89,18 @@ function appendMarker(name, latitude, longitude)
         animation: google.maps.Animation.DROP
     });
 
-     google.maps.event.addListener(marker, "click", function() {
-         var index = -1;
-         for (var key in markers)
-         {
-             if (markers[key] === marker)
-             {
-                 index = key;
-                 break;
-             }
-         }
-         qMapView.onMarkerClicked(index);
-     });
+    google.maps.event.addListener(marker, "click", function() {
+        var index = -1;
+        for (var key in markers)
+        {
+            if (markers[key] === marker)
+            {
+                index = key;
+                break;
+            }
+        }
+        qMapView.onMarkerClicked(index);
+    });
 
     markers[markerIndex] = marker;
     markerIndex++;
