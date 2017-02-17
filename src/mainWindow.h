@@ -56,6 +56,7 @@
 #include "function/videoGenerator.h"
 #include "function/navigation.h"
 #include "function/projectCITab.h"
+#include "QtMapKit/QtMapWidget.h"
 
 #define MAXRECENTFILES 8
 
@@ -299,7 +300,7 @@ public:
 	LightControlRTI *mLightControlRTI;  //YY
 	RenderingDialog* rendDlg; //YY /*!< Widget to choose the rendering mode to apply to RTI image. */
 	Information *mInformation;
-	//// QWidget *mGeoInfo;
+	QtMapWidget *mGeoInfo;
 	BookmarkWidget *mBookmark;
 	SearchWidget *mSearch;
 	SearchAllWidget *mSearchAll;

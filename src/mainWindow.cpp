@@ -4668,6 +4668,7 @@ void MainWindow::createDockWindows()
 	connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode)), mCtControl, SLOT( updateCtControlWidgetMode(WidgetMode) ) );
 	emit currentWidgetModeChanged(EMPTYWIDGET);
 	mInformation = new Information(this);
+	mGeoInfo = new QtMapWidget(this);
 	mBookmark = new BookmarkWidget(this);
 	mSearch = new SearchWidget(this);
 	QDockWidget *dockBot = new QDockWidget(this);
@@ -4680,7 +4681,7 @@ void MainWindow::createDockWindows()
 	  tabWidgetTop->addTab(mCtControl, tr("CT Image Control") );
 	  tabWidgetTop->addTab(mPlotView, tr("Spectrum") ); // test for API
 	  tabWidgetMid->addTab(mInformation, tr("Annotations") );
-	  //// tabWidgetMid->addTab(mGeoInfo, tr("GeoInfo") );
+	  tabWidgetMid->addTab(mGeoInfo, tr("GeoInfo") );
 	  tabWidgetMid->addTab(mBookmark, tr("Bookmarks") );
 	  tabWidgetMid->addTab(mSearch, tr("Search") );
 	  tabWidgetMid->addTab(mSearchAll, tr("SearchAll") );
@@ -4692,7 +4693,7 @@ void MainWindow::createDockWindows()
 	  tabWidgetMid->addTab(mCtControl, tr("CT Image Control") ); // CT rendering control
 	  tabWidgetMid->addTab(mPlotView, tr("Spectrum") ); // test for API
 	  tabWidgetBottom->addTab(mInformation, tr("Annotations") );
-	  //// tabWidgetBottom->addTab(mGeoInfo, tr("GeoInfo") );
+	  tabWidgetBottom->addTab(mGeoInfo, tr("GeoInfo") );
 	  tabWidgetBottom->addTab(mBookmark, tr("Bookmarks") );
 	  tabWidgetBottom->addTab(mSearch, tr("Search") );
 	  tabWidgetBottom->addTab(mSearchAll, tr("SearchAll") );

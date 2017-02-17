@@ -1,7 +1,0 @@
-build/
-lib/
-*.app
-*.o
-Makefile
-*.pro.user
-demo/moc_*.cpp

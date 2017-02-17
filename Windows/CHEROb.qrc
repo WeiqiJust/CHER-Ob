@@ -65,5 +65,7 @@
         <file>../images/polygon.png</file>
         <file>../images/frustum.png</file>
         <file>../images/palette.png</file>
+        <file>gmap.html</file>
+        <file>gmap.js</file>
     </qresource>
 </RCC>
