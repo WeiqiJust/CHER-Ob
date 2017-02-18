@@ -30,15 +30,17 @@ QtMapWidget::QtMapWidget(QWidget *parent)
     _mapView = new QMMapView(QMMapView::RoadMap,
                              QMCoordinate(41.313129, -72.925033),
                              12);
+	_mapView->setEnabled(false);
     _controls = new QWidget();
     buildControls();
-	QPushButton *button = new QPushButton("Mark");
+	QPushButton *markButton = new QPushButton("Mark");
+	markButton->setEnabled(false);
     mainLayout->addWidget(_mapView, 1);
-    mainLayout->addWidget(_controls, 1);
-    mainLayout->addWidget(button, 0.1);
+    // mainLayout->addWidget(_controls, 1);
+    mainLayout->addWidget(markButton, 1);
     setLayout(mainLayout);
 
-	connect(button, SIGNAL(clicked()), this, SLOT(createMark()));
+	connect(markButton, SIGNAL(clicked()), this, SLOT(createMark()));
     connect(_mapView, SIGNAL(mapLoaded()), this, SLOT(onMapLoaded()));
 	connect(_mapView, SIGNAL(mouseClicked(QMCoordinate)), this, SLOT(onMouseClicked(QMCoordinate)));
     connect(_mapView, SIGNAL(regionChanged(QMCoordinateRegion)),
