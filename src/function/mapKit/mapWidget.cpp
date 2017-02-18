@@ -1,5 +1,5 @@
 /*****************************************************************************
- * QtMapWidget.cpp
+ * mapWidget.cpp
  *
  * Created: 08/7 2013 by uranusjr
  *
@@ -16,24 +16,26 @@
  * this file belongs to.
  *****************************************************************************/
 
-#include "QtMapWidget.h"
-#include <QVBoxLayout>
+#include "mapWidget.h"
 #include <QScrollBar>
-#include <QVBoxLayout>
 #include <QtDebug>
-#include <QPushButton>
+#include "../../information/informationWidget.h"
+#include "../../mainWindow.h"
 
-QtMapWidget::QtMapWidget(QWidget *parent)
+MapWidget::MapWidget(QWidget *parent, Information *mInformation)
     : QWidget(parent)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout();
-    _mapView = new QMMapView(QMMapView::RoadMap,
-                             QMCoordinate(41.313129, -72.925033),
-                             12);
+	refInformation = mInformation;
+	isLoaded = false;
+
+    mainLayout = new QVBoxLayout();
+    _mapView = new mapView(mapView::RoadMap,
+                             mapCoordinate(41.313129, -72.925033),
+                             15);
 	_mapView->setEnabled(false);
     _controls = new QWidget();
     buildControls();
-	QPushButton *markButton = new QPushButton("Mark");
+	markButton = new QPushButton("Mark");
 	markButton->setEnabled(false);
     mainLayout->addWidget(_mapView, 1);
     // mainLayout->addWidget(_controls, 1);
@@ -42,18 +44,18 @@ QtMapWidget::QtMapWidget(QWidget *parent)
 
 	connect(markButton, SIGNAL(clicked()), this, SLOT(createMark()));
     connect(_mapView, SIGNAL(mapLoaded()), this, SLOT(onMapLoaded()));
-	connect(_mapView, SIGNAL(mouseClicked(QMCoordinate)), this, SLOT(onMouseClicked(QMCoordinate)));
-    connect(_mapView, SIGNAL(regionChanged(QMCoordinateRegion)),
-            this, SLOT(onRegionChanged(QMCoordinateRegion)));
+	connect(_mapView, SIGNAL(mouseClicked(mapCoordinate)), this, SLOT(onMouseClicked(mapCoordinate)));
+    connect(_mapView, SIGNAL(regionChanged(mapCoordinateRegion)),
+            this, SLOT(onRegionChanged(mapCoordinateRegion)));
     connect(_mapView, SIGNAL(mapBecameIdle()), this, SLOT(onMapBecameIdle()));
 }
 
-QtMapWidget::~QtMapWidget()
+MapWidget::~MapWidget()
 {
 
 }
 
-void QtMapWidget::buildControls()
+void MapWidget::buildControls()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     _logger = new QTextEdit();
@@ -62,28 +64,32 @@ void QtMapWidget::buildControls()
     _controls->setLayout(mainLayout);
 }
 
-void QtMapWidget::log(QString text, QString delimiter)
+void MapWidget::log(QString text, QString delimiter)
 {
     _logger->setPlainText(_logger->toPlainText() + delimiter + text);
     _logger->verticalScrollBar()->setSliderPosition(    // Scroll to bottom
                 _logger->verticalScrollBar()->maximum());
 }
 
-void QtMapWidget::log(const char *text, QString delimiter)
+void MapWidget::log(const char *text, QString delimiter)
 {
     log(QString(text), delimiter);
 }
 
-void QtMapWidget::createMark()
+void MapWidget::createMark()
 {
-	_mapView->markCenter(QString("'test'"), _mapView->center());
-	log(QString("Center marked: (%1, %2)").arg(
-		QString::number(_mapView->center().latitude()),
-		QString::number(_mapView->center().longitude())),
-		"\n");
+	QString markName = refInformation->getNotePath();
+	QStringList markNameList = markName.split(QDir::separator());
+	markName = markNameList[markNameList.size() - 2];
+	refInformation->setGeoInfo(markName, _mapView->center());
+
+	QString arg = "'";
+	arg.append(markName).append("'");
+	_mapView->markCenter(arg, _mapView->center());
+	refInformation->mw()->updateXML4Map();
 }
 
-void QtMapWidget::onMapLoaded()
+void MapWidget::onMapLoaded()
 {
     log("Loaded:");
     log(QString("Type %1 at (%2, %3) , zoom %4").arg(
@@ -94,7 +100,7 @@ void QtMapWidget::onMapLoaded()
         " ");
 }
 
-void QtMapWidget::onMouseClicked(QMCoordinate latlong)
+void MapWidget::onMouseClicked(mapCoordinate latlong)
 {
 	log(QString("Mouse click at: (%1, %2)").arg(
 		QString::number(latlong.latitude()),
@@ -102,12 +108,12 @@ void QtMapWidget::onMouseClicked(QMCoordinate latlong)
 		" ");
 }
 
-void QtMapWidget::onMapBecameIdle()
+void MapWidget::onMapBecameIdle()
 {
     log("Idle");
 }
 
-void QtMapWidget::onRegionChanged(QMCoordinateRegion region)
+void MapWidget::onRegionChanged(mapCoordinateRegion region)
 {
     log("Region changed:");
     log(QString("((%1, %2), (%3, %4))").arg(
@@ -116,4 +122,39 @@ void QtMapWidget::onRegionChanged(QMCoordinateRegion region)
             QString::number(region.south()),
             QString::number(region.southEast().longitude())),
         " ");
+}
+
+void MapWidget::startGeoMarking()
+{
+	if (!isLoaded)
+	{
+		_mapView->setCenter(refInformation->centerMarkers());
+		_mapView->setZoomLevel(5);
+		isLoaded = true;
+	}
+	_mapView->setEnabled(true);
+	markButton->setEnabled(true);
+
+	if (refInformation != NULL)
+	{
+		QString markName = refInformation->getNotePath();
+		QStringList markNameList = markName.split(QDir::separator());
+		markName = markNameList[markNameList.size() - 2];
+		QString arg = "'";
+		arg.append(markName).append("'");
+		_mapView->bounceMarker(arg);
+	}
+}
+
+void MapWidget::finishGeoMarking()
+{
+	_mapView->setEnabled(false);
+	markButton->setEnabled(false);
+}
+
+void MapWidget::loadMark(QString name, mapCoordinate coord)
+{
+	QString arg = "'";
+	arg.append(name).append("'");
+	_mapView->markCenter(arg, coord);
 }

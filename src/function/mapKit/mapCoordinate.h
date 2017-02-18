@@ -1,5 +1,5 @@
 /*****************************************************************************
- * QMCoordinate.cpp
+ * mapCoordinate.h
  *
  * Created: 08/7 2013 by uranusjr
  *
@@ -16,39 +16,29 @@
  * this file belongs to.
  *****************************************************************************/
 
-#include "QMCoordinate.h"
+#ifndef QMCOORDINATE_H
+#define QMCOORDINATE_H
 
-QMCoordinate::QMCoordinate() : _latitude(0.0), _longitude(0.0)
-{
-}
+#include <QtCore/QtGlobal>
 
-QMCoordinate::QMCoordinate(qreal latitude, qreal longitude) :
-    _latitude(latitude), _longitude(longitude)
-{
-}
+// TODO: Add documentation to specify lat/lng ranges.
+//       Latitude is in [-90, 90], and longitude is in [-180, 180]
 
-qreal QMCoordinate::latitude() const
+class mapCoordinate
 {
-    return _latitude;
-}
+public:
+    mapCoordinate();
+    mapCoordinate(qreal latitude, qreal longitude);
+    qreal latitude() const;
+    qreal longitude() const;
+    void setLatitude(qreal latitude);
+    void setLongitude(qreal longitude);
 
-void QMCoordinate::setLatitude(qreal latitude)
-{
-    _latitude = latitude;
-}
+    bool operator==(const mapCoordinate &other);
 
-qreal QMCoordinate::longitude() const
-{
-    return _longitude;
-}
+private:
+    qreal _latitude;
+    qreal _longitude;
+};
 
-void QMCoordinate::setLongitude(qreal longitude)
-{
-    _longitude = longitude;
-}
-
-bool QMCoordinate::operator==(const QMCoordinate &other)
-{
-    return (latitude() == other.latitude())
-           && (longitude() == other.longitude());
-}
+#endif // QMCOORDINATE_H

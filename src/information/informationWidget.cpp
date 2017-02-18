@@ -28,6 +28,7 @@
 
 #include "informationWidget.h"
 #include "../mainWindow.h"
+#include "../function/mapKit/mapCoordinate.h"
 
 DTextEdit::DTextEdit(QWidget *parent)
     : QWidget(parent)
@@ -1108,14 +1109,26 @@ void Information::recoverNotePath()
 	notePath = notePathPre;
 }
 
-void Information::setGeoInfo(const QString objectName, QPair<double, double> latlong)
+void Information::setGeoInfo(const QString objectName, mapCoordinate latlong)
 {
 	geoinfo[objectName] = latlong;
 }
 
-QPair<double, double> Information::getGeoInfo(const QString objectName)
+mapCoordinate Information::getGeoInfo(const QString objectName)
 {
 	return geoinfo[objectName];
+}
+
+mapCoordinate Information::centerMarkers()
+{
+	double centerLat = 0, centerLong = 0;
+	QMap<QString, mapCoordinate>::iterator geoit;
+	for (geoit = geoinfo.begin(); geoit != geoinfo.end(); geoit++)
+	{
+		centerLat += geoit.value().latitude();
+		centerLong += geoit.value().longitude();
+	}
+	return mapCoordinate(centerLat / (double)geoinfo.size(), centerLong / (double)geoinfo.size());
 }
 
 void Information::removePointNote(int noteId, QString* path)

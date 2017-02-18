@@ -1,5 +1,5 @@
 /*****************************************************************************
- * QMCoordinateSpan.cpp
+ * mapCoordinateSpan.cpp
  *
  * Created: 08/7 2013 by uranusjr
  *
@@ -16,38 +16,38 @@
  * this file belongs to.
  *****************************************************************************/
 
-#include "QMCoordinateSpan.h"
+#include "mapCoordinateSpan.h"
 
-QMCoordinateSpan::QMCoordinateSpan() : _latitudeDelta(0.0), _longitudeDelta(0.0)
+mapCoordinateSpan::mapCoordinateSpan() : _latitudeDelta(0.0), _longitudeDelta(0.0)
 {
 }
 
-QMCoordinateSpan::QMCoordinateSpan(qreal latitudeDelta, qreal longitudeDelta) :
+mapCoordinateSpan::mapCoordinateSpan(qreal latitudeDelta, qreal longitudeDelta) :
     _latitudeDelta(latitudeDelta), _longitudeDelta(longitudeDelta)
 {
 }
 
-qreal QMCoordinateSpan::latitudeDelta() const
+qreal mapCoordinateSpan::latitudeDelta() const
 {
     return _latitudeDelta;
 }
 
-void QMCoordinateSpan::setLatitudeDelta(qreal latitudeDelta)
+void mapCoordinateSpan::setLatitudeDelta(qreal latitudeDelta)
 {
     _latitudeDelta = latitudeDelta;
 }
 
-qreal QMCoordinateSpan::longitudeDelta() const
+qreal mapCoordinateSpan::longitudeDelta() const
 {
     return _longitudeDelta;
 }
 
-void QMCoordinateSpan::setLongitudeDelta(qreal longitudeDelta)
+void mapCoordinateSpan::setLongitudeDelta(qreal longitudeDelta)
 {
     _longitudeDelta = longitudeDelta;
 }
 
-bool QMCoordinateSpan::operator==(const QMCoordinateSpan &other)
+bool mapCoordinateSpan::operator==(const mapCoordinateSpan &other)
 {
     return (latitudeDelta() == other.latitudeDelta())
            && (longitudeDelta() == other.longitudeDelta());

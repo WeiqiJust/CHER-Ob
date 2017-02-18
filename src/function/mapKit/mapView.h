@@ -1,5 +1,5 @@
 /*****************************************************************************
- * QMMapView.h
+ * mapView.h
  *
  * Created: 08/7 2013 by uranusjr
  *
@@ -16,19 +16,19 @@
  * this file belongs to.
  *****************************************************************************/
 
-#ifndef QMMAPVIEW_H
-#define QMMAPVIEW_H
+#ifndef MAPVIEW_H
+#define MAPVIEW_H
 
 #include <QWidget>
-#include "QtMapKit.h"
-#include "QMCoordinate.h"
-#include "QMCoordinateRegion.h"
-class QMMapViewPrivate;
+#include "mapKit.h"
+#include "mapCoordinate.h"
+#include "mapCoordinateRegion.h"
+class mapViewPrivate;
 
-class QMMapView : public QWidget
+class mapView : public QWidget
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QMMapView)
+    Q_DECLARE_PRIVATE(mapView)
 
 public:
     enum MapType {
@@ -38,12 +38,12 @@ public:
         Terrain
     };
 
-    QMMapView(MapType mapType, QMCoordinate center, uint zoomLevel,
+    mapView(MapType mapType, mapCoordinate center, uint zoomLevel,
               QWidget *parent = 0);
     MapType mapType() const;
 
-    QMCoordinateRegion region() const;
-    QMCoordinate center() const;
+    mapCoordinateRegion region() const;
+    mapCoordinate center() const;
 
     uint zoomLevel() const;
     qreal heading() const;
@@ -51,12 +51,13 @@ public:
 
     void setMapType(MapType type);
 
-    void setCenter(QMCoordinate center, bool animated = true);
+    void setCenter(mapCoordinate center, bool animated = true);
     void setZoomLevel(uint zoom);
 
-    void makeRegionVisible(QMCoordinateRegion &region);
-    void fitRegion(QMCoordinateRegion &region);
-	void markCenter(QString name, QMCoordinate center);
+    void makeRegionVisible(mapCoordinateRegion &region);
+    void fitRegion(mapCoordinateRegion &region);
+	void markCenter(QString name, mapCoordinate center);
+	void bounceMarker(QString name);
 //    void pan(int x, int y);
 //    void setHeading(qreal heading);
 //    void setTilt(qreal tile);
@@ -73,17 +74,17 @@ protected:
 signals:
     void mapLoaded();
     void mapBecameIdle();
-    void regionChanged(QMCoordinateRegion region);
-    void centerChanged(QMCoordinate center);
-    void mouseClicked(QMCoordinate coordinate);
-    void mouseDoubleClicked(QMCoordinate coordinate);
-    void mouseRightClicked(QMCoordinate coordinate);
+    void regionChanged(mapCoordinateRegion region);
+    void centerChanged(mapCoordinate center);
+    void mouseClicked(mapCoordinate coordinate);
+    void mouseDoubleClicked(mapCoordinate coordinate);
+    void mouseRightClicked(mapCoordinate coordinate);
     void mouseDragged();
     void mouseDragStarted();
     void mouseDragEnded();
-    void cursorMoved(QMCoordinate coordinate);
-    void cursorEntered(QMCoordinate coordinate);
-    void cursorLeaved(QMCoordinate coordinate);
+    void cursorMoved(mapCoordinate coordinate);
+    void cursorEntered(mapCoordinate coordinate);
+    void cursorLeaved(mapCoordinate coordinate);
     void headingChanged();
     void mapTypeChanged(MapType type);
 //    void projectionChanged();
@@ -105,7 +106,7 @@ protected slots:
     void cursorDidLeaveFrom(qreal latitude, qreal longitude);
 
 private:
-    QMMapViewPrivate *d_ptr;
+    mapViewPrivate *d_ptr;
 };
 
 #endif // QMMAPVIEW_H

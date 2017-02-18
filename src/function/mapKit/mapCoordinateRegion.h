@@ -1,5 +1,5 @@
 /*****************************************************************************
- * QMCoordinateSpan.h
+ * mapCoordinateSpan.h
  *
  * Created: 08/7 2013 by uranusjr
  *
@@ -19,23 +19,23 @@
 #ifndef QMCOORDINATEREGION_H
 #define QMCOORDINATEREGION_H
 
-#include "QMCoordinate.h"
-#include "QMCoordinateSpan.h"
+#include "mapCoordinate.h"
+#include "mapCoordinateSpan.h"
 
-class QMCoordinateRegion
+class mapCoordinateRegion
 {
 public:
-    QMCoordinateRegion();
-    QMCoordinateRegion(QMCoordinate southWest, QMCoordinate northEast);
-    QMCoordinateRegion(qreal north, qreal south, qreal east, qreal west);
-    QMCoordinateRegion(QMCoordinate center, QMCoordinateSpan span);
+    mapCoordinateRegion();
+    mapCoordinateRegion(mapCoordinate southWest, mapCoordinate northEast);
+    mapCoordinateRegion(qreal north, qreal south, qreal east, qreal west);
+    mapCoordinateRegion(mapCoordinate center, mapCoordinateSpan span);
 
-    bool contains(QMCoordinate &point, bool proper = false) const;
-    bool intersects(QMCoordinateRegion &span) const;
+    bool contains(mapCoordinate &point, bool proper = false) const;
+    bool intersects(mapCoordinateRegion &span) const;
     bool isEmpty() const;
 
-    void extend(const QMCoordinate &point);
-    void unite(const QMCoordinateRegion &other);
+    void extend(const mapCoordinate &point);
+    void unite(const mapCoordinateRegion &other);
 
     qreal east() const;
     qreal west() const;
@@ -47,15 +47,15 @@ public:
     void setNorth(qreal value);
     void setSouth(qreal value);
 
-    QMCoordinate southWest() const;
-    QMCoordinate northEast() const;
-    QMCoordinate southEast() const;
-    QMCoordinate northWest() const;
+    mapCoordinate southWest() const;
+    mapCoordinate northEast() const;
+    mapCoordinate southEast() const;
+    mapCoordinate northWest() const;
 
-    QMCoordinate center() const;
-    QMCoordinateSpan span() const;
+    mapCoordinate center() const;
+    mapCoordinateSpan span() const;
 
-    bool operator ==(const QMCoordinateRegion &other);
+    bool operator ==(const mapCoordinateRegion &other);
 
 private:
     qreal _east;

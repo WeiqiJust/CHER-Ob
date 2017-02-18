@@ -56,7 +56,7 @@
 #include "function/videoGenerator.h"
 #include "function/navigation.h"
 #include "function/projectCITab.h"
-#include "QtMapKit/QtMapWidget.h"
+#include "function/mapKit/mapWidget.h"
 
 #define MAXRECENTFILES 8
 
@@ -300,7 +300,7 @@ public:
 	LightControlRTI *mLightControlRTI;  //YY
 	RenderingDialog* rendDlg; //YY /*!< Widget to choose the rendering mode to apply to RTI image. */
 	Information *mInformation;
-	QtMapWidget *mGeoInfo;
+	MapWidget *mGeoInfo;
 	BookmarkWidget *mBookmark;
 	SearchWidget *mSearch;
 	SearchAllWidget *mSearchAll;
@@ -309,6 +309,8 @@ public:
 	QDir lastSavedDirectory; // DT: Keeps track of screenshot/project saved location
 	QString mUserName;
 	bool isSaved;
+
+	void updateXML4Map() { updateXML(); }
 
 public slots:
 	/**

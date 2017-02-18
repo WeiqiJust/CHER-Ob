@@ -1,5 +1,5 @@
 /*****************************************************************************
- * QtMapWidget.h
+ * mapCoordinate.cpp
  *
  * Created: 08/7 2013 by uranusjr
  *
@@ -16,38 +16,39 @@
  * this file belongs to.
  *****************************************************************************/
 
-#ifndef WIDGET_H
-#define WIDGET_H
+#include "mapCoordinate.h"
 
-#include <QWidget>
-#include <QTextEdit>
-#include "QMMapView.h"
-#include "QMCoordinateRegion.h"
-
-class QtMapWidget : public QWidget
+mapCoordinate::mapCoordinate() : _latitude(0.0), _longitude(0.0)
 {
-    Q_OBJECT
+}
 
-public:
-    QtMapWidget(QWidget *parent = 0);
-    ~QtMapWidget();
+mapCoordinate::mapCoordinate(qreal latitude, qreal longitude) :
+    _latitude(latitude), _longitude(longitude)
+{
+}
 
-public slots:
-    void log(QString text, QString delimiter = QString("\n"));
-    void log(const char *text, QString delimiter = QString("\n"));
+qreal mapCoordinate::latitude() const
+{
+    return _latitude;
+}
 
-private slots:
-	void createMark();
-    void onMapLoaded();
-	void onMouseClicked(QMCoordinate latlong);
-    void onMapBecameIdle();
-    void onRegionChanged(QMCoordinateRegion region);
+void mapCoordinate::setLatitude(qreal latitude)
+{
+    _latitude = latitude;
+}
 
-private:
-    QMMapView *_mapView;
-    QWidget *_controls;
-    QTextEdit *_logger;
-    void buildControls();
-};
+qreal mapCoordinate::longitude() const
+{
+    return _longitude;
+}
 
-#endif // WIDGET_H
+void mapCoordinate::setLongitude(qreal longitude)
+{
+    _longitude = longitude;
+}
+
+bool mapCoordinate::operator==(const mapCoordinate &other)
+{
+    return (latitude() == other.latitude())
+           && (longitude() == other.longitude());
+}

@@ -55,6 +55,7 @@
 #include "function/renderingdialog.h"
 #include "function/reportFilter.h"
 #include "function/videoFilter.h"
+#include "function/mapKit/mapCoordinate.h"
 
 QProgressBar *MainWindow::qb;
 
@@ -651,15 +652,15 @@ void MainWindow::updateXML()
 		// update geoinfo to XML
 		QStringList objectPath = file.split("/");
 		QString objectName = objectPath[objectPath.size() - 1];
-		QPair<double, double> latlong = mInformation->getGeoInfo(objectName);
+		mapCoordinate latlong = mInformation->getGeoInfo(objectName);
         QDomElement geoinfo = doc.createElement("geoinfo");
         item.appendChild(geoinfo);
 		QDomElement latitude = doc.createElement("latitude");
         QDomElement longitude = doc.createElement("longitude");
         geoinfo.appendChild(latitude);
         geoinfo.appendChild(longitude);
-		latitude.appendChild(doc.createTextNode(QString::number(latlong.first)));
-		longitude.appendChild(doc.createTextNode(QString::number(latlong.second)));
+		latitude.appendChild(doc.createTextNode(QString::number(latlong.latitude())));
+		longitude.appendChild(doc.createTextNode(QString::number(latlong.longitude())));
 
 		// Filetype-specific information
         switch(gla->getWidgetMode())
@@ -1005,7 +1006,8 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 			latlong[0] = geoInfoList.at(0).toElement().elementsByTagName("latitude").at(0).toElement().text().toDouble();
 			latlong[1] = geoInfoList.at(0).toElement().elementsByTagName("longitude").at(0).toElement().text().toDouble();
 		}
-		mInformation->setGeoInfo(cheObject, qMakePair(latlong[0], latlong[1]));
+		mInformation->setGeoInfo(cheObject, mapCoordinate(latlong[0], latlong[1]));
+		mGeoInfo->loadMark(cheObject, mapCoordinate(latlong[0], latlong[1]));
 
 		OPENRESULT result;
 		if (fn != QString())
@@ -1382,15 +1384,15 @@ void MainWindow::exportProjectXML(const QString path, const QString name, const 
 		// add geoinfo to XML
 		QStringList objectPath = file.split("/");
 		QString objectName = objectPath[objectPath.size() - 1];
-		QPair<double, double> latlong = mInformation->getGeoInfo(objectName);
+		mapCoordinate latlong = mInformation->getGeoInfo(objectName);
         QDomElement geoinfo = doc.createElement("geoinfo");
         item.appendChild(geoinfo);
 		QDomElement latitude = doc.createElement("latitude");
         QDomElement longitude = doc.createElement("longitude");
         geoinfo.appendChild(latitude);
         geoinfo.appendChild(longitude);
-		latitude.appendChild(doc.createTextNode(QString::number(latlong.first)));
-		longitude.appendChild(doc.createTextNode(QString::number(latlong.second)));
+		latitude.appendChild(doc.createTextNode(QString::number(latlong.latitude())));
+		longitude.appendChild(doc.createTextNode(QString::number(latlong.longitude())));
 
         // Filetype-specific information
         switch(gla->getWidgetMode())
@@ -3078,6 +3080,7 @@ void MainWindow::updateMenus()
 	if (writeAnnotationAct->isChecked())
 	{
 	  this->mInformation->startAnnotation();
+	  this->mGeoInfo->startGeoMarking();
 	  this->updateNoteMode();
 	  if (!pointNote->isChecked() && !surfaceNote->isChecked() && !polygonNote->isChecked() && !frustumNote->isChecked())
 		  pointNote->setChecked(true);
@@ -3085,6 +3088,7 @@ void MainWindow::updateMenus()
 	else
 	{
 	  this->mInformation->finishAnnotation();
+	  this->mGeoInfo->finishGeoMarking();
 	}
 	annotationModeMenu->setEnabled(activeDoc);
 	removeAnnotationAct->setEnabled(activeDoc);
@@ -4668,7 +4672,7 @@ void MainWindow::createDockWindows()
 	connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode)), mCtControl, SLOT( updateCtControlWidgetMode(WidgetMode) ) );
 	emit currentWidgetModeChanged(EMPTYWIDGET);
 	mInformation = new Information(this);
-	mGeoInfo = new QtMapWidget(this);
+	mGeoInfo = new MapWidget(this, mInformation);
 	mBookmark = new BookmarkWidget(this);
 	mSearch = new SearchWidget(this);
 	QDockWidget *dockBot = new QDockWidget(this);

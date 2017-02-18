@@ -44,6 +44,7 @@
 
 // Class list
 class MainWindow;
+class mapCoordinate;
 
 // DT: DTextEdit class extends QTextEdit to provide basic rich text editing capabilities.
 
@@ -350,6 +351,8 @@ public:
 	 * @return The vector of all users.
 	 */
 	QVector<QString> getAllUsers();
+
+	QString getNotePath() { return notePath; }
 	
 	/**
 	 * Added by Ying to copy annotations
@@ -440,12 +443,17 @@ public:
 	/**
 	 * @brief  Set geographical information for an object
 	 */
-	void setGeoInfo(const QString objectName, QPair<double, double> latlong);
+	void setGeoInfo(const QString objectName, mapCoordinate latlong);
 
 	/**
 	 * @brief  Get geographical information of an object
 	 */
-	QPair<double, double> getGeoInfo(const QString objectName);
+	mapCoordinate getGeoInfo(const QString objectName);
+
+	/**
+	 * @brief  Get center coordinates of all the object markers
+	 */
+	mapCoordinate centerMarkers();
 
 private:
 	/**
@@ -499,7 +507,7 @@ private:
 	QString notePath;
 	QString notePathPre;
 	QMap<QString, std::pair<QString, bool > > content;	// Annotation
-	QMap<QString, QPair<double, double> > geoinfo;	// GeoInfo
+	QMap<QString, mapCoordinate> geoinfo;	// GeoInfo
     QMap<QString, QVector<PointNote*> > mPointNotes;
     QMap<QString, QVector<SurfaceNote*> > mSurfaceNotes;
     QMap<QString, QVector<FrustumNote*> > mFrustumNotes;

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * QMCoordinateRegion.cpp
+ * mapCoordinateRegion.cpp
  *
  * Created: 08/7 2013 by uranusjr
  *
@@ -16,16 +16,16 @@
  * this file belongs to.
  *****************************************************************************/
 
-#include "QMCoordinateRegion.h"
+#include "mapCoordinateRegion.h"
 #include <QtDebug>
 
-QMCoordinateRegion::QMCoordinateRegion() :
+mapCoordinateRegion::mapCoordinateRegion() :
     _east(0.0), _west(0.0), _north(0.0), _south(0.0)
 {
 }
 
-QMCoordinateRegion::QMCoordinateRegion(QMCoordinate southWest,
-                                       QMCoordinate northEast) :
+mapCoordinateRegion::mapCoordinateRegion(mapCoordinate southWest,
+                                       mapCoordinate northEast) :
     _east(northEast.longitude()),
     _west(southWest.longitude()),
     _north(northEast.latitude()),
@@ -33,14 +33,14 @@ QMCoordinateRegion::QMCoordinateRegion(QMCoordinate southWest,
 {
 }
 
-QMCoordinateRegion::QMCoordinateRegion(qreal north, qreal south,
+mapCoordinateRegion::mapCoordinateRegion(qreal north, qreal south,
                                        qreal east, qreal west) :
     _east(east), _west(west), _north(north), _south(south)
 {
 }
 
-QMCoordinateRegion::QMCoordinateRegion(QMCoordinate center,
-                                       QMCoordinateSpan span) :
+mapCoordinateRegion::mapCoordinateRegion(mapCoordinate center,
+                                       mapCoordinateSpan span) :
     _east(center.longitude() + span.longitudeDelta() / 2),
     _west(center.longitude() - span.longitudeDelta() / 2),
     _north(center.latitude() + span.latitudeDelta() / 2),
@@ -48,7 +48,7 @@ QMCoordinateRegion::QMCoordinateRegion(QMCoordinate center,
 {
 }
 
-bool QMCoordinateRegion::contains(QMCoordinate &point, bool proper) const
+bool mapCoordinateRegion::contains(mapCoordinate &point, bool proper) const
 {
     qreal lng = point.longitude();
     qreal lat = point.latitude();
@@ -62,89 +62,89 @@ bool QMCoordinateRegion::contains(QMCoordinate &point, bool proper) const
     return r;
 }
 
-bool QMCoordinateRegion::intersects(QMCoordinateRegion &span) const
+bool mapCoordinateRegion::intersects(mapCoordinateRegion &span) const
 {
     Q_UNUSED(span)
-    qWarning("QMCoordinateRegion::intersects not implemented; false returned");
+    qWarning("mapCoordinateRegion::intersects not implemented; false returned");
     return false;
 }
 
-bool QMCoordinateRegion::isEmpty() const
+bool mapCoordinateRegion::isEmpty() const
 {
     return (east() == west()) || (north() == south());
 }
 
-qreal QMCoordinateRegion::east() const
+qreal mapCoordinateRegion::east() const
 {
     return _east;
 }
 
-qreal QMCoordinateRegion::west() const
+qreal mapCoordinateRegion::west() const
 {
     return _west;
 }
 
-qreal QMCoordinateRegion::north() const
+qreal mapCoordinateRegion::north() const
 {
     return _north;
 }
 
-qreal QMCoordinateRegion::south() const
+qreal mapCoordinateRegion::south() const
 {
     return _south;
 }
 
-void QMCoordinateRegion::setEast(qreal value)
+void mapCoordinateRegion::setEast(qreal value)
 {
     _east = value;
 }
 
-void QMCoordinateRegion::setWest(qreal value)
+void mapCoordinateRegion::setWest(qreal value)
 {
     _west = value;
 }
 
-void QMCoordinateRegion::setNorth(qreal value)
+void mapCoordinateRegion::setNorth(qreal value)
 {
     _north = value;
 }
 
-void QMCoordinateRegion::setSouth(qreal value)
+void mapCoordinateRegion::setSouth(qreal value)
 {
     _south = value;
 }
 
-QMCoordinate QMCoordinateRegion::southWest() const
+mapCoordinate mapCoordinateRegion::southWest() const
 {
-    return QMCoordinate(south(), west());
+    return mapCoordinate(south(), west());
 }
 
-QMCoordinate QMCoordinateRegion::northEast() const
+mapCoordinate mapCoordinateRegion::northEast() const
 {
-    return QMCoordinate(north(), east());
+    return mapCoordinate(north(), east());
 }
 
-QMCoordinate QMCoordinateRegion::southEast() const
+mapCoordinate mapCoordinateRegion::southEast() const
 {
-    return QMCoordinate(south(), east());
+    return mapCoordinate(south(), east());
 }
 
-QMCoordinate QMCoordinateRegion::northWest() const
+mapCoordinate mapCoordinateRegion::northWest() const
 {
-    return QMCoordinate(north(), west());
+    return mapCoordinate(north(), west());
 }
 
-QMCoordinate QMCoordinateRegion::center() const
+mapCoordinate mapCoordinateRegion::center() const
 {
-    return QMCoordinate((north() + south()) / 2, (east() + west()) / 2);
+    return mapCoordinate((north() + south()) / 2, (east() + west()) / 2);
 }
 
-QMCoordinateSpan QMCoordinateRegion::span() const
+mapCoordinateSpan mapCoordinateRegion::span() const
 {
-    return QMCoordinateSpan(north() - south(), east() - west());
+    return mapCoordinateSpan(north() - south(), east() - west());
 }
 
-bool QMCoordinateRegion::operator ==(const QMCoordinateRegion &other)
+bool mapCoordinateRegion::operator ==(const mapCoordinateRegion &other)
 {
     return (east() == other.east())
             && (west() == other.west())

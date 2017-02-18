@@ -1,5 +1,5 @@
 /*****************************************************************************
- * QMCoordinate.h
+ * mapCoordinateSpan.h
  *
  * Created: 08/7 2013 by uranusjr
  *
@@ -16,29 +16,26 @@
  * this file belongs to.
  *****************************************************************************/
 
-#ifndef QMCOORDINATE_H
-#define QMCOORDINATE_H
+#ifndef QMCOORDINATESPAN_H
+#define QMCOORDINATESPAN_H
 
 #include <QtCore/QtGlobal>
 
-// TODO: Add documentation to specify lat/lng ranges.
-//       Latitude is in [-90, 90], and longitude is in [-180, 180]
-
-class QMCoordinate
+class mapCoordinateSpan
 {
 public:
-    QMCoordinate();
-    QMCoordinate(qreal latitude, qreal longitude);
-    qreal latitude() const;
-    qreal longitude() const;
-    void setLatitude(qreal latitude);
-    void setLongitude(qreal longitude);
+    mapCoordinateSpan();
+    mapCoordinateSpan(qreal latitudeDelta, qreal longitudeDelta);
+    qreal latitudeDelta() const;
+    qreal longitudeDelta() const;
+    void setLatitudeDelta(qreal latitudeDelta);
+    void setLongitudeDelta(qreal longitudeDelta);
 
-    bool operator==(const QMCoordinate &other);
+    bool operator==(const mapCoordinateSpan &other);
 
 private:
-    qreal _latitude;
-    qreal _longitude;
+    qreal _latitudeDelta;
+    qreal _longitudeDelta;
 };
 
-#endif // QMCOORDINATE_H
+#endif // QMCOORDINATESPAN_H

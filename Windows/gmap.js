@@ -1,6 +1,7 @@
 var map = null;
 var markers = {};
 var markerIndex = 0;
+var markerBounceIndex = 0;
 
 function initialize(lng, lat, type, zoom)
 {
@@ -30,10 +31,10 @@ function initialize(lng, lat, type, zoom)
         var p = e.latLng();
         qMapView.mouseDidDoubleClickAt(p.lat(), p.lng());
     });
-    google.maps.event.addListener(map, "rightclick", function(e) {
-        var p = e.latLng();
-        qMapView.mouseDidRightClickAt(p.lat(), p.lng());
-    });
+    // google.maps.event.addListener(map, "rightclick", function(e) {
+    //     var p = e.latLng();
+    //     qMapView.mouseDidRightClickAt(p.lat(), p.lng());
+    // });
     google.maps.event.addListener(map, "drag", function() {
         qMapView.mouseDragged();
     });
@@ -77,8 +78,10 @@ function initialize(lng, lat, type, zoom)
 
 function appendMarker(name, latitude, longitude)
 {
-    for (var old in markers) {
-        if (markers[old].title == name) {
+    for (var old in markers)
+    {
+        if (markers[old].title == name)
+        {
             markers[old].setMap(null);
         }
     }
@@ -86,7 +89,7 @@ function appendMarker(name, latitude, longitude)
         position: new google.maps.LatLng(latitude, longitude),
         map: map,
         title: name,
-        animation: google.maps.Animation.DROP
+        animation: google.maps.Animation.BOUNCE
     });
 
     google.maps.event.addListener(marker, "click", function() {
@@ -106,6 +109,20 @@ function appendMarker(name, latitude, longitude)
     markerIndex++;
 
     return markerIndex - 1;
+}
+
+function bounceMarkerJS(name)
+{
+    markers[markerBounceIndex].setAnimation(null);
+    for (var i = markerIndex - 1; i >= 0; i--)
+    {
+        if (markers[i].title == name)
+        {
+            markers[i].setAnimation(google.maps.Animation.BOUNCE);
+            markerBounceIndex = i;
+            break;
+        }
+    }
 }
 
 function getMapBounds()

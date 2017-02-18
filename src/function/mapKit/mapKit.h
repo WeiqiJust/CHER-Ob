@@ -1,5 +1,5 @@
 /*****************************************************************************
- * QMCoordinateSpan.h
+ * mapKit.h
  *
  * Created: 08/7 2013 by uranusjr
  *
@@ -16,26 +16,27 @@
  * this file belongs to.
  *****************************************************************************/
 
-#ifndef QMCOORDINATESPAN_H
-#define QMCOORDINATESPAN_H
+#ifndef MAPKIT_H
+#define MAPKIT_H
 
-#include <QtCore/QtGlobal>
-
-class QMCoordinateSpan
+namespace mapKit
 {
-public:
-    QMCoordinateSpan();
-    QMCoordinateSpan(qreal latitudeDelta, qreal longitudeDelta);
-    qreal latitudeDelta() const;
-    qreal longitudeDelta() const;
-    void setLatitudeDelta(qreal latitudeDelta);
-    void setLongitudeDelta(qreal longitudeDelta);
 
-    bool operator==(const QMCoordinateSpan &other);
-
-private:
-    qreal _latitudeDelta;
-    qreal _longitudeDelta;
+enum ControlPosition {
+    BottomCenter,
+    BottomLeft,
+    BottomRight,
+    LeftBottom,
+    LeftCenter,
+    LeftTop,
+    RightBottom,
+    RightCenter,
+    RightTop,
+    TopCenter,
+    TopLeft,
+    TopRight
 };
 
-#endif // QMCOORDINATESPAN_H
+}       // namespace mapKit
+
+#endif  // QTMAPKIT_H
