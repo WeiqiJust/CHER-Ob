@@ -84,7 +84,7 @@ GPL included in the packaging of this file. Please review the following informat
 - Holly Rushmeier (holly.rushmeier@yale.edu)
 
 ## Contact
-If you have any problem or suggestion related to the software, please send email to cher_ob@cs.yale.edu.
+If you have any problem or suggestion related to the software, please send an email to cher_ob@cs.yale.edu.
 
 ## Acknowledgments
 Some portions of this file are based on the example codes of ITK/VTK library from Kitware, QT API from Nokia, RTIViewer from Visual Computing Lab and Meshlab VCG library from ISTI CNR. 
