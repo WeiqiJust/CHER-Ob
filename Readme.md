@@ -1,19 +1,19 @@
-#CHER-Ob  
+# CHER-Ob  
 
 CHER-Ob (CULTURAL HERITAGE-Object) is an open source platform developed in an attempt to enhance analysis, evaluation, documentation, sharing and management of 3D and 2D visualizations as well as textual and conservation science data.
 
 The development of CHER-Ob is intended to offer a flexible, expandable integrated platform for collaborative cultural heritage research. It is compatible with commonly used imaging data types (2D and 3D images, RTIs, CT) and textual information. 
 CHER-Ob offers an enhanced annotation framework and metadata schema, automatic report generation, different roles assigned to users, bookmark, screenshot, searching, sorting and filtering options.
 
-##Install
+## Install
 
 CHER-Ob supports the platform of windows and Mac OS X, and user can run the executable file to finish installation. The executable files are named as `setup`  under specific folder for each platform in `software`.
 
-##Build
+## Build
 
 CHER-Ob is currently supplied as pre-built binaries for windows and Mac OS X
 
-###Prerequisites
+### Prerequisites
 - Qt (4.8.5)
 - VTK (5.10)
 - ITK (4.4)
@@ -29,7 +29,7 @@ CHER-Ob is currently supplied as pre-built binaries for windows and Mac OS X
 Note that the numbers in the round brackets indicate the versions of third-party libraries we used to compile the source code and that you may encounter compatibility issues when using lower/higher versions. Also note that the provided libraries were built with 64 bits using Visual Studio 2008, so you may need to re-compile if you are using 32 bits and a different compiler. 
 
 
-###Windows
+### Windows
 
 To compile the software from source, please first add following path in system environment "Path" variable (`Control Panel->System->Advanced System Settings->advanced tab->Environment Variables->System Varible->Path`): <br />
 
@@ -44,7 +44,7 @@ $(QTDir)\bin
 `$(ProjectPath)` is where the lib folder locate. 
 `$(QTDir)` is where your QT is installed.
 
-####Optional:
+#### Optional:
 The .sln file under Windows folder has already loaded all the include files and .lib files under lib folder.<br />
 If you want to recompile the libraries, please follow the instructions below to link the libraries to the solution:<br />
 - Put all the compiled libraries in different separte folders with the library's name. Each library should include an include/src, lib and bin(optional) folder.<br />
@@ -57,7 +57,7 @@ If you want to recompile the libraries, please follow the instructions below to 
 
 All the images and icons are registered in the file `Windows/CHEROb.qrc` and `Windows/CHEROb.rc` in relative path. If you move the images or icon folder, please modify the .qrc and .rc file to correctly load images.
 
-###Mac OS X
+### Mac OS X
 
 In order to compile the source code on Mac, you first need to install the third-party libraries. Since `itkvtkglue`, `clapack`, `armadillo`, `vcglib`, `rtiviewer` and `rtiwebmaker` include just a set of header files,
 you can directly use the files in `lib` folder, or your may download and place them into directories where you can locate them. For the other third-party libraries (`QT`, `VTK`, `ITK`, `QWT`, `openEXR`), you may first
@@ -65,15 +65,15 @@ download the source code from their respective official sites and then follow th
 
 To facilitate compilation, an example QT project file (CHER-Ob.pro) is also provided, but you may have to modify some lines to include the correct paths to the required libraries.
 
-##License
+## License
 GNU General Public License Usage
 Alternatively, this file may be used under the terms of the GNU General Public License version 3.0 as published by the Free Software Foundation and appearing in the file LICENSE.
 GPL included in the packaging of this file. Please review the following information to ensure the GNU General Public License version 3.0 requirements will be met:
 * http://www.gnu.org/copyleft/gpl.html.
 
 
-##Contributor
-**Yale Computer Graphics Group**<br />
+## Contributor
+**Yale Computer Graphics Group**<br>
 - Weiqi Shi (weiqi.shi@yale.edu)
 - Ying Yang (ying.yang.yy368@yale.edu)
 - Zeyu Wang (zeyu.wang@yale.edu)
@@ -83,9 +83,9 @@ GPL included in the packaging of this file. Please review the following informat
 - Kiraz Akoglu (goze.akoglu@yale.edu)
 - Holly Rushmeier (holly.rushmeier@yale.edu)
 
-##Contact
+## Contact
 If you have any problem or suggestion related to the software, please send email to cher_ob@cs.yale.edu.
 
-##Acknowledgments
+## Acknowledgments
 Some portions of this file are based on the example codes of ITK/VTK library from Kitware, QT API from Nokia, RTIViewer from Visual Computing Lab and Meshlab VCG library from ISTI CNR. 
 We would like to thank anonymous help by various software engineering communities.
