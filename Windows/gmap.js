@@ -89,7 +89,7 @@ function appendMarker(name, latitude, longitude)
         position: new google.maps.LatLng(latitude, longitude),
         map: map,
         title: name,
-        animation: google.maps.Animation.BOUNCE
+        animation: null
     });
 
     google.maps.event.addListener(marker, "click", function() {
