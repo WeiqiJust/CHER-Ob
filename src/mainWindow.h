@@ -377,7 +377,7 @@ signals:
 	 * @brief  Emit the signal when current widget mode changes.
 	 * @param  The new changed mode.
 	 */
-	void currentWidgetModeChanged(WidgetMode widgetmode);
+	void currentWidgetModeChanged(WidgetMode widgetmode, bool isDirectionalLight);
 
 protected:
 	/**

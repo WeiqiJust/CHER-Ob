@@ -245,7 +245,7 @@ signals:
   void currentSliceVisualizationChanged(CTVisualization ctVisualization);
   void currentVolumeRenderModeChanged(CTVolumeRenderMode volrendermode);
   void currentReductionFactorChanged(float reductionFactor);
-  void currentWidgetModeChanged(WidgetMode widgetmode);
+  void currentWidgetModeChanged(WidgetMode widgetmode, bool isDirectionalLight);
 
   void updateMainWindowMenus(); //updates the menus of the MainWindow
 

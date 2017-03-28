@@ -4,6 +4,7 @@
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
 			 Weiqi Shi (weiqi.shi@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -113,7 +114,7 @@ public slots:
   void updateSliceVisualization(CTVisualization ctVisualization);
   void updateVolumeRenderMode(CTVolumeRenderMode ctVolumeRenderMode);
   void updateReductionFactor(float reductionFactor);
-  void updateCtControlWidgetMode(WidgetMode widgetmode);
+  void updateCtControlWidgetMode(WidgetMode widgetmode, bool isDirectionalLight);
 
   void setCTStackView();
   void setVTvolumeGPU();

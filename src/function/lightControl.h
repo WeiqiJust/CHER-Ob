@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
+			 Zeyu Wang (zeyu.wang@cs.yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -69,8 +70,8 @@ private:
   QPushButton* resetbut;
   QPushButton* light1but;
 
-  Knob *mLitControl2dial;
   Knob *mLitControl1dial;
+  Knob *mLitControl2dial;
   QLCDNumber *mLitControl1lcd;
   QLCDNumber *mLitControl2lcd;
 
@@ -100,7 +101,7 @@ public slots:
 private slots:
   void getLitVectorControl(vtkObject*, unsigned long, void*, void*);
   void updateLightingVector();
-  void updateLightControl(WidgetMode widgetmode);
+  void updateLightControl(WidgetMode widgetmode, bool isDirectionalLight);
   void changeBrightnessLocal(double intensity);
   void changeContrastLocal(double intensity);
 

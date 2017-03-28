@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
+			 Zeyu Wang (zeyu.wang@cs.yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -319,7 +320,7 @@ LightControl::LightControl(QWidget *parent)
 
   connect(resetbut,SIGNAL(clicked()),this,SLOT(reset()));
 
-  updateLightControl(EMPTYWIDGET);
+  updateLightControl(EMPTYWIDGET, false);
 }
 
 vtkTransform* LightControl::GetCamVec() {
@@ -371,22 +372,31 @@ void LightControl::changeContrastLocal(double intensity2) {
 void LightControl::updateLightingVector()
 {
 	//----------------Begin. By YY-------------------//
-  double *lightPosVec = LightControl::GetLightPositionVec();
-  emit signalLightPositionChanged(lightPosVec[0], lightPosVec[1], lightPosVec[2]);
-  emit signalLitCamPosChanged(LightControl::GetCamVec());
-  //----------------End. By YY-------------------//
+	double *lightPosVec = LightControl::GetLightPositionVec();
+	emit signalLightPositionChanged(lightPosVec[0], lightPosVec[1], lightPosVec[2]);
+	emit signalLitCamPosChanged(LightControl::GetCamVec());
+	//----------------End. By YY-------------------//
 
-
-  // emit signalLitCamPosChanged(mCallback->GetCamVec());
+	// emit signalLitCamPosChanged(mCallback->GetCamVec());
 }
 
-void LightControl::updateLightControl(WidgetMode widgetmode)
+void LightControl::updateLightControl(WidgetMode widgetmode, bool isDirectionalLight)
 {
     QPalette pal( Qt::black );
     pal.setColor( QPalette::WindowText, Qt::green );
 
     QPalette paldisabled( Qt::black );
     paldisabled.setColor( QPalette::WindowText, Qt::black );
+
+	if (!isDirectionalLight) {
+		mLitControl1lcd->setPalette( paldisabled );
+        mLitControl2lcd->setPalette( paldisabled );
+        mLitControl1dial->setEnabled(false);
+        mLitControl2dial->setEnabled(false);
+        mQvtkWidget->setEnabled(false);
+        resetbut->setEnabled(false);
+        return;
+	}
 
     switch (widgetmode) {
     case EMPTYWIDGET:
@@ -408,6 +418,7 @@ void LightControl::updateLightControl(WidgetMode widgetmode)
     case MODEL3D:
         mLitControl1lcd->setPalette( pal );
         mLitControl2lcd->setPalette( pal );
+        mLitControl1dial->setEnabled(true);
         mLitControl1dial->setEnabled(true);
         mLitControl2dial->setEnabled(true);
         mQvtkWidget->setEnabled(true);
@@ -550,7 +561,7 @@ void LightControl::drawVtkObject()
   interactor->SetInteractorStyle(style);
 
   // create new customized callback
-  mCallback =  vtkSmartPointer<vtk3DLightInteractionCallback>::New();
+  mCallback = vtkSmartPointer<vtk3DLightInteractionCallback>::New();
   mCallback->SetInteractor(interactor); // set the callback to the interactor
   mCallback->SetAssemblyActor(mAssembly);
   mCallback->GetCamVec();
@@ -589,7 +600,7 @@ void LightControl::reset()
 
   mQvtkWidget->update();
 
-  updateLightingVector();// update main window
+  updateLightingVector(); // update main window
 }
 
 void LightControl::setDirectionalLight(bool isDirectionalLight)
@@ -598,20 +609,13 @@ void LightControl::setDirectionalLight(bool isDirectionalLight)
   if (isDirectionalLight) {
     mLitControl1dial->setValue(DEFAULTVALUE1*mPreviousL1);
     mLitControl2dial->setValue(DEFAULTVALUE2*mPreviousL2);
-
-    mLitControl1dial->setEnabled(true);
-    mLitControl2dial->setEnabled(true);
   } else {
     mPreviousL1 = mIntensityL1;
     mPreviousL2 = mIntensityL2;
-
-    mLitControl1dial->setValue(DEFAULTVALUE1*2);
+    mLitControl1dial->setValue(0); // DEFAULTVALUE1*2
     mLitControl2dial->setValue(0); // DEFAULTVALUE2
-
-    mLitControl1dial->setEnabled(false);
-    mLitControl2dial->setEnabled(false);
   }
-  updateLightingVector();// update main window
+  updateLightingVector(); // update main window
 }
 
 void LightControl::restoreBookmarkLight(double orientation[3], double brightness, double contrast, int filetype)

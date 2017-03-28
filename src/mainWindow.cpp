@@ -3135,7 +3135,7 @@ void MainWindow::updateMenus()
 		}
 
 		const WidgetMode &wm = VTKA()->getWidgetMode();
-		emit currentWidgetModeChanged(wm);
+		emit currentWidgetModeChanged(wm, VTKA()->getIsDirectionalLight());
 
 		renderModeInterpolationAct->setChecked( VTKA()->getIsInterpolationOn() );
 		renderModeInfoAct->setChecked( VTKA()->getDisplayInfoOn() );
@@ -3264,7 +3264,7 @@ void MainWindow::updateMenus()
 	}
 	else
 	{
-		emit currentWidgetModeChanged(EMPTYWIDGET);
+		emit currentWidgetModeChanged(EMPTYWIDGET, false);
 	}
 }
 
@@ -4671,16 +4671,16 @@ void MainWindow::createDockWindows()
 	windowTemp->setLayout(layout);
 	tabWidgetTop->addTab(windowTemp, tr("Light Control RTI") );
 
-	connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode)), mLightControl, SLOT( updateLightControl(WidgetMode) ) );
-	emit currentWidgetModeChanged(EMPTYWIDGET);
+	connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode, bool)), mLightControl, SLOT( updateLightControl(WidgetMode, bool) ) );
+	emit currentWidgetModeChanged(EMPTYWIDGET, false);
 
 	tabWidgetTop->show();
 
 	mCtControl = new CTControl;
 	mPlotView = new PlotView;
 
-	connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode)), mCtControl, SLOT( updateCtControlWidgetMode(WidgetMode) ) );
-	emit currentWidgetModeChanged(EMPTYWIDGET);
+	connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode, bool)), mCtControl, SLOT( updateCtControlWidgetMode(WidgetMode, bool) ) );
+	emit currentWidgetModeChanged(EMPTYWIDGET, false);
 	mInformation = new Information(this);
 	mGeoInfo = new MapWidget(this, mInformation);
 	mBookmark = new BookmarkWidget(this);

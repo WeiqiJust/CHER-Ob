@@ -456,13 +456,13 @@ void VtkWidget::connectSignals()
   // (2) build connections from the VtkWidget to the CTController
   connect(this, SIGNAL(currentSliceMaxChanged(int)), mw()->mCtControl, SLOT(updateSliceMax(int)));
   connect(this, SIGNAL(currentSliceCurrentChanged(int)), mw()->mCtControl, SLOT(updateSliceCurrent(int)));
-  connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode)), mw()->mCtControl, SLOT( updateCtControlWidgetMode(WidgetMode) ) );
+  connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode, bool)), mw()->mCtControl, SLOT( updateCtControlWidgetMode(WidgetMode, bool) ) );
   connect(this, SIGNAL(currentSliceOrientationChanged(CTOrientation)), mw()->mCtControl, SLOT(updateSliceOrientation(CTOrientation)));
   connect(this, SIGNAL(currentSliceVisualizationChanged(CTVisualization)), mw()->mCtControl, SLOT(updateSliceVisualization(CTVisualization)));
   connect(this, SIGNAL(currentReductionFactorChanged(float)), mw()->mCtControl, SLOT(updateReductionFactor(float)) );
   connect(this, SIGNAL(currentVolumeRenderModeChanged(CTVolumeRenderMode)), mw()->mCtControl, SLOT(updateVolumeRenderMode(CTVolumeRenderMode)) );
   connect(this, SIGNAL(currentImageChanged()), mw()->mLightControl, SLOT( updateLightingVector() ) ); // update light of the current object by taking the light coordinate
-  connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode)), mw()->mLightControl, SLOT( updateLightControl(WidgetMode) ) );
+  connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode, bool)), mw()->mLightControl, SLOT( updateLightControl(WidgetMode, bool) ) );
   connect(this, SIGNAL(resetLightControl()), mw()->mLightControl, SLOT( reset() ) );
   connect(this, SIGNAL(currentHyperPixelsChanged(std::vector<float>, std::vector<float>, const int*, const std::string*)), mw()->mPlotView, SLOT(updateSpectralPlot(std::vector<float>, std::vector<float>, const int*, const std::string*)) );
 
@@ -1335,6 +1335,7 @@ void VtkWidget::setIsDirectionalLight(bool input)
   mIsDirectionalLight = input;
   if (mCallback3D != NULL)
     mCallback3D->SetIsDirectLight( input );
+  refreshGeometry3D();
 }
 
 void VtkWidget::setDisplayPolyIndicateOn(bool input)
@@ -1415,7 +1416,7 @@ void VtkWidget::Rendering3D()
 	loop.exec();
 
     mWidgetMode = MODEL3D;
-    emit currentWidgetModeChanged(mWidgetMode);
+    emit currentWidgetModeChanged(mWidgetMode, getIsDirectionalLight());
 
   if (mQVTKWidget != NULL)
     delete mQVTKWidget;
@@ -1680,6 +1681,13 @@ void VtkWidget::refreshGeometry3D()
   mActor = vtkSmartPointer<vtkActor>::New();
   mActor->SetMapper(mMapper);
   mActor->GetProperty()->SetInterpolationToFlat();
+  //// Zeyu testing ambient lighting on March 28, 2017
+  if (!getIsDirectionalLight()) {
+	  mActor->GetProperty()->SetAmbient(1);
+	  mActor->GetProperty()->SetDiffuse(0);
+	  qDebug() << "23333\n";
+  }
+  qDebug() << "34444\n";
 
   mNumberOfPoints = mVtkPolyData->GetNumberOfPoints();
   mNumberOfPolys = mVtkPolyData->GetNumberOfPolys();
@@ -2081,7 +2089,7 @@ void VtkWidget::Rendering2D()
       mWidgetMode = IMAGE2D;
       flipITKtoVTKy(mVtkImageData); // left-right flip bug fix (2013-07-14)
   }
-  emit currentWidgetModeChanged(mWidgetMode);
+  emit currentWidgetModeChanged(mWidgetMode, getIsDirectionalLight());
 //  mkDebug md; md.qDebugImageData(mVtkImageData); // fine
 //    imagedata1:  626   832   1 :  3
 //    imagedata2:  626   832   1 :  8
@@ -2278,7 +2286,7 @@ void VtkWidget::RenderingVolume(int blendType, float reductionFactor, CTVolumeRe
     return;
 
   mWidgetMode = CTVOLUME;
-  emit currentWidgetModeChanged(mWidgetMode);
+  emit currentWidgetModeChanged(mWidgetMode, getIsDirectionalLight());
 
   int count = 1;
   char *dirname = NULL;
@@ -3054,7 +3062,7 @@ void VtkWidget::RenderingRTIData()
   //}
   mWidgetMode = RTI2D;
   flipITKtoVTKy(mVtkImageData); // left-right flip bug fix (2013-07-14)
-  emit currentWidgetModeChanged(mWidgetMode);
+  emit currentWidgetModeChanged(mWidgetMode, getIsDirectionalLight());
 
 //  mkDebug md; md.qDebugImageData(mVtkImageData); // fine
 //    imagedata1:  626   832   1 :  3

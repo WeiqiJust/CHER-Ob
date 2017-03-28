@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -489,7 +490,7 @@ void CTControl::updateCTControl()
     if (mw()->VTKA())
 	{
 		WidgetMode wm = mw()->VTKA()->getWidgetMode();
-		updateCtControlWidgetMode(wm); // this part is buggy
+		updateCtControlWidgetMode(wm, mw()->VTKA()->getIsDirectionalLight()); // this part is buggy
     }
 	else
 	{
@@ -581,7 +582,7 @@ void CTControl::updateCTControl()
 }
 
 // this part is buggy
-void CTControl::updateCtControlWidgetMode(WidgetMode widgetmode)
+void CTControl::updateCtControlWidgetMode(WidgetMode widgetmode, bool isDirectionalLight)
 {
     QPalette pal( Qt::black );
     pal.setColor( QPalette::WindowText, Qt::green );
@@ -591,6 +592,21 @@ void CTControl::updateCtControlWidgetMode(WidgetMode widgetmode)
 
 //    qDebug() << "widgetmode: " << widgetmode; // {EMPTYWIDGET=0, IMAGE2D, MODEL3D, CTSTACK, CTVOLUME, RTI2D};
 
+	if (!isDirectionalLight) {
+		currentslidelcd->setPalette( paldisabled );
+        endslidelcd->setPalette( paldisabled );
+        sliceimageradio->setEnabled(false);
+        volumegpuradio->setEnabled(false);
+        sliceSlider->setEnabled(false);
+        frontbutton->setEnabled(false);
+        topbutton->setEnabled(false);
+        sidebutton->setEnabled(false);
+        updownbutton->setEnabled(false);
+        resolutionCombo->setEnabled(false);
+        blendTypeCombo->setEnabled(false);
+        volumeRenderMode->setEnabled(false);
+        return;
+	}
     switch (widgetmode) {
     case EMPTYWIDGET:
         currentslidelcd->setPalette( paldisabled );
