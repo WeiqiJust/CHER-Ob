@@ -150,6 +150,7 @@ public:
   void zoomIn();
   void zoomOut();
   void zoomReset();
+  void changeBGColor();
 
   VtkView * mvc();
   MainWindow * mw();

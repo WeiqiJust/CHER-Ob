@@ -1948,6 +1948,16 @@ void VtkWidget::zoomReset()
     if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
 }
 
+void VtkWidget::changeBGColor()
+{
+	double backgroundRGB[3];
+	mRenderer->GetBackground(backgroundRGB[0], backgroundRGB[1], backgroundRGB[2]);
+	if (backgroundRGB[0] > 0) mRenderer->SetBackground(0, 0, 0);
+	else mRenderer->SetBackground(0.5, 0.5, 0.5);
+	if (mQVTKWidget) mQVTKWidget->show();
+    if (mQVTKWidget) mQVTKWidget->update();
+}
+
 void VtkWidget::updateDisplayPanel()
 {
   if(mCallback2D) mCallback2D->displayInfoAnnotation(true); //this screws up camera position

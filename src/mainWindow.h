@@ -530,6 +530,7 @@ private slots:
 	void zoomIn();
 	void zoomOut();
 	void zoomReset();
+	void changeBGColor();
 	void save();
 	void saveAs();
 	void removeObject();
@@ -926,6 +927,7 @@ private:
 	QAction *zoomResetAct;
 	QAction *zoomInAct;
 	QAction *zoomOutAct;
+	QAction *changeBGColorAct;
 
 	QAction *setSplitHAct;
 	QAction *setSplitVAct;

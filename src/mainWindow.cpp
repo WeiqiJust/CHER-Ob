@@ -186,6 +186,11 @@ void MainWindow::zoomReset()
     if (VTKA()) VTKA()->zoomReset();
 }
 
+void MainWindow::changeBGColor()
+{
+    if (VTKA()) VTKA()->changeBGColor();
+}
+
 void MainWindow::flattenMesh()
 {
     if (VTKA()) VTKA()->flattenMesh();
@@ -3102,6 +3107,7 @@ void MainWindow::updateMenus()
 	zoomInAct->setEnabled(activeDoc);
 	zoomOutAct->setEnabled(activeDoc);
 	zoomResetAct->setEnabled(activeDoc);
+	changeBGColorAct->setEnabled(activeDoc);
 
 	showToolbarStandardAct->setChecked(mainToolBar->isVisible());
 	showToolbarRenderAct->setChecked(renderToolBar->isVisible());
@@ -4079,6 +4085,9 @@ void MainWindow::createActions()
     zoomResetAct->setShortcut(Qt::CTRL+Qt::Key_0);
     connect(zoomResetAct, SIGNAL(triggered()), this, SLOT(zoomReset()));
 
+    changeBGColorAct = new QAction(tr("Change Background Color"), this);
+    connect(changeBGColorAct, SIGNAL(triggered()), this, SLOT(changeBGColor()));
+
     //===================================================================================================
     //MK: Window Actions
 
@@ -4388,6 +4397,7 @@ void MainWindow::createMenus()
 	viewMenu->addAction(zoomResetAct);
 	viewMenu->addAction(zoomInAct);
 	viewMenu->addAction(zoomOutAct);
+	viewMenu->addAction(changeBGColorAct);
 	viewMenu->addSeparator();
 
 	// View From SUBmenu
