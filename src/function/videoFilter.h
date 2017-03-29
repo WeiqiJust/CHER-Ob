@@ -51,6 +51,18 @@
 #include <QTreeView>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QDropEvent>
+
+class dragTreeWidget : public QTreeWidget
+{
+private:
+	virtual void  dropEvent(QDropEvent * event)
+	{
+		QModelIndex droppedIndex = indexAt( event->pos() );
+		if (!droppedIndex.isValid()) return;
+		QTreeWidget::dropEvent(event);
+	}
+};
 
 /**
  * This class is the dialog help user to select contents that would appear
@@ -128,7 +140,7 @@ private:
 
 	QLabel *mLabel;
 
-	QTreeWidget* mTreeWidget;
+	dragTreeWidget* mTreeWidget;
 	QList<QTreeWidgetItem *> mItems;
 	QVector<QString> mObject;
 	QMap<QString, QVector<int> > mSelected;
