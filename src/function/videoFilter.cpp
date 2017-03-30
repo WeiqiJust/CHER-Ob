@@ -26,6 +26,7 @@
 *****************************************************************************/
 #include "videoFilter.h"
 #include "../CHE/exportToProjectDialog.h"
+#include <QDebug>
 
 VideoFilter::VideoFilter(QVector<QString> objects)
 {
@@ -109,6 +110,17 @@ void VideoFilter::generate()
 {
 	for (int i = 0; i < mItems.size(); i++)
 	{
+		for (int k = 0; k < mItems.size(); k++)
+		{
+			if (mTreeWidget->topLevelItem(i)->text(0) == mItems[k]->text(0))
+			{
+				dragPermutation.push_back(k);
+				break;
+			}
+		}
+	}
+	for (int i = 0; i < mItems.size(); i++)
+	{
 		if (mItems[i]->checkState(0) == Qt::Checked)
 		{
 			QVector<int> categories;
@@ -144,7 +156,7 @@ void VideoFilter::selectAll()
 	}
 }
 
-void VideoFilter::itemChanged(QTreeWidgetItem * item, int column)
+void VideoFilter::itemChanged(QTreeWidgetItem* item, int column)
 {
 	if (mItems.indexOf(item) != -1)
 	{

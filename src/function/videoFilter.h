@@ -56,7 +56,7 @@
 class dragTreeWidget : public QTreeWidget
 {
 private:
-	virtual void  dropEvent(QDropEvent * event)
+	virtual void dropEvent(QDropEvent* event)
 	{
 		QModelIndex droppedIndex = indexAt( event->pos() );
 		if (!droppedIndex.isValid()) return;
@@ -102,6 +102,9 @@ public:
 	 * @return If Generate button is pressed then return true, otherwise return false.
 	 */
 	bool checkGenerate() {return isGenerate;}
+	
+	QVector<int> dragPermutation;
+
 
 private slots:
 	/**
@@ -126,7 +129,7 @@ private slots:
 	 * @param  item    item that is checked.
 	 * @param  column  checked column number to match the signal, useless here.
 	 */
-	void itemChanged(QTreeWidgetItem * item, int column);
+	void itemChanged(QTreeWidgetItem* item, int column);
 
 private:
 	QDialog* mDialog;
@@ -138,10 +141,10 @@ private:
 	QPushButton* mCancelButton;
 	QPushButton* mSelectAllButton;
 
-	QLabel *mLabel;
+	QLabel* mLabel;
 
 	dragTreeWidget* mTreeWidget;
-	QList<QTreeWidgetItem *> mItems;
+	QList<QTreeWidgetItem*> mItems;
 	QVector<QString> mObject;
 	QMap<QString, QVector<int> > mSelected;
 	bool isGenerate;

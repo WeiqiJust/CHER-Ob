@@ -4908,8 +4908,9 @@ void MainWindow::generateVideo()
 
 	QVector<QString> filterList = dialog->getFilterList();
 	
-    foreach(QMdiSubWindow *w, windows)
+	for (int winit = 0; winit < windows.size(); winit++)
 	{
+		QMdiSubWindow *w = windows.at(dialog->dragPermutation[winit]);
         VtkView* mvc = qobject_cast<VtkView *>(w->widget());
         VtkWidget* gla = mvc->currentView();
         QString path = gla->mProjectPath;
