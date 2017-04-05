@@ -717,15 +717,8 @@ void VtkWidget::setArbitraryView(double angle)
 	}
 	mRenderer->ResetCamera();
 
-	// angle: front 0, right 90, back 180, left -90
-    camera->Roll(angle);
-    //camera->Yaw(angle);
-    //camera->Pitch(angle);
-	//camera->Azimuth(angle);
-	//camera->Elevation(angle);
-	//double vup[3];
-    //camera->GetViewUp(vup);
-    //camera->SetViewUp(-vup[0], -vup[1], -vup[2]);
+	// set azimuth to circle around the vertical axis of the object
+	camera->Azimuth(angle);
 
 	mRenderer->ResetCamera();
 	mRenderer->ResetCameraClippingRange();

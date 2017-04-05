@@ -437,14 +437,20 @@ void VideoGenerator::generate()
 				initWidget(mObjects[i]->mGla, false);
 
 				// generate screenshots from different angles
-				for (int angle = -179; angle <= 180; angle++)
+				for (int angle = 0; angle < 360; angle++)
 				{
 					mObjects[i]->mGla->setArbitraryView((double)angle);
 					screenshotDict = screenshotObj;
-					screenshotDict.append(QString::number(angle + 180));
+					screenshotDict.append(QString::number(angle));
 					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 					cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
 					cv::Mat resized = resize2Video(frame, mysize);
+					// blending
+					int blendingFrames = 20;
+					if (angle < blendingFrames)
+						cv::addWeighted(resized, 0.1*angle, resized, 0, 0, resized);
+					else if (angle >= 360 - blendingFrames)
+						cv::addWeighted(resized, 0.1*(359-angle), resized, 0, 0, resized);
 					if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 					outputVideo.write(resized);
 				}
@@ -455,11 +461,11 @@ void VideoGenerator::generate()
 				saveWidgetinfo(mObjects[i]->mGla, info);
 				initWidget(mObjects[i]->mGla, true);
 				// generate screenshots from different angles
-				for (int angle = -179; angle <= 180; angle++)
+				for (int angle = 0; angle < 360; angle++)
 				{
 					mObjects[i]->mGla->setArbitraryView((double)angle);
 					screenshotDict = screenshotObj;
-					screenshotDict.append(QString::number(angle + 180));
+					screenshotDict.append(QString::number(angle));
 					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 					cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
 					cv::Mat resized = resize2Video(frame, mysize);
