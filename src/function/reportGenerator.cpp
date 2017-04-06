@@ -260,15 +260,14 @@ void ReportGenerator::generate()
 								qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
 								continue;
 							} 
-							polygon.push_back(QPair<int, int>(posImageX, posImageY));
+							polygon.push_back(qMakePair(posImageX, posImageY));
 						}
 						polygonNote2D.push_back(polygon);
 						mode = POLYGONNOTE;
-						
 					}
 					else
 					{
-						qDebug()<<"Parsing Error in report generation: Note Type Error!"<<firstLine;
+						qDebug() << "Parsing Error in report generation: Note Type Error!" << firstLine;
 						continue;
 					}
 					note.remove(0, index+13);	// Remove note header for the convenience of further parsing

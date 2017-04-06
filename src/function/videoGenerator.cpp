@@ -127,11 +127,6 @@ void VideoGenerator::generate()
 	bool isCTModeSwitched = false;
 	for (int i = 0; i < mObjects.size(); i++)
 	{
-		/*
-		//html = html + QString("<br></br>");
-		html += QString("<div style=\"page-break-after:always\"></div>");
-		html = html + QString("<p><font size=\"3\" color=\"#033F81\" face=\"Garamond\"><strong>\nObject "
-			+ QString::number(i+1) + QString(": ") + mObjects[i]->mName + QString("\n</strong></font></p>\n"));
 		QString annotation;
 		QVector<QPair<QString, NoteMode> > contents;
 		QVector<QPair<int, int> > pointNote2D;
@@ -218,15 +213,14 @@ void VideoGenerator::generate()
 								qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
 								continue;
 							} 
-							polygon.push_back(QPair<int, int>(posImageX, posImageY));
+							polygon.push_back(qMakePair(posImageX, posImageY));
 						}
 						polygonNote2D.push_back(polygon);
 						mode = POLYGONNOTE;
-						
 					}
 					else
 					{
-						qDebug()<<"Parsing Error in report generation: Note Type Error!"<<firstLine;
+						qDebug() << "Parsing Error in report generation: Note Type Error!" << firstLine;
 						continue;
 					}
 					note.remove(0, index+13);	// Remove note header for the convenience of further parsing
@@ -247,7 +241,6 @@ void VideoGenerator::generate()
 						{
 							qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
 						}
-						//qDebug()<<"report generation"<<worldPosition[0]<<worldPosition[1]<<worldPosition[2];
 						pointNote3D.push_back(worldPosition);
 						mode = POINTNOTE;
 					}
@@ -406,8 +399,8 @@ void VideoGenerator::generate()
 				
 			}
 		}
-		*/
-		QString screenshotObj= videoFolder;
+		
+		QString screenshotObj = videoFolder;
 		screenshotObj.append(QDir::separator() + mObjects[i]->mName);
 		QString screenshotDict;
 		// create images for video //// READ THIS
@@ -423,19 +416,35 @@ void VideoGenerator::generate()
 			case EMPTYWIDGET:
 				break;
 			case IMAGE2D:
-				mObjects[i]->mPictures.push_back(mObjects[i]->mGla->mFilename);
-				for (int duration = 0; duration < 50; duration++)
 				{
+					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->mFilename);
 					cv::Mat frame = cv::imread(mObjects[i]->mGla->mFilename.toStdString(), CV_LOAD_IMAGE_COLOR);
 					cv::Mat resized = resize2Video(frame, mysize);
-					if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-					outputVideo.write(resized);
+
+	// std::vector<int> compression_params;
+    // compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+    // compression_params.push_back(9);
+	// cv::imwrite("C:\\Users\\zw274\\Desktop\\zw274\\CHER-Ob-Longmen\\test.png", resized, compression_params);
+
+					// put general annotation, effect to be refined
+					cv::Mat annotated = putSubtitle(resized, annotation.toStdString(), mysize);
+					for (int duration = 0; duration < 160; duration++)
+					{
+						cv::Mat currFrame = annotated.clone();
+						// blending
+						int blendingFrames = 20;
+						if (duration < blendingFrames)
+							cv::addWeighted(currFrame, duration/(double)blendingFrames, currFrame, 0, 0, currFrame);
+						else if (duration >= 160 - blendingFrames)
+							cv::addWeighted(currFrame, (159-duration)/(double)blendingFrames, currFrame, 0, 0, currFrame);
+						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+						outputVideo.write(currFrame);
+					}
 				}
 				break;
 			case MODEL3D:
 				saveWidgetinfo(mObjects[i]->mGla, info);
 				initWidget(mObjects[i]->mGla, false);
-
 				// generate screenshots from different angles
 				for (int angle = 0; angle < 360; angle++)
 				{
@@ -448,9 +457,9 @@ void VideoGenerator::generate()
 					// blending
 					int blendingFrames = 20;
 					if (angle < blendingFrames)
-						cv::addWeighted(resized, 0.1*angle, resized, 0, 0, resized);
+						cv::addWeighted(resized, angle/(double)blendingFrames, resized, 0, 0, resized);
 					else if (angle >= 360 - blendingFrames)
-						cv::addWeighted(resized, 0.1*(359-angle), resized, 0, 0, resized);
+						cv::addWeighted(resized, (359-angle)/(double)blendingFrames, resized, 0, 0, resized);
 					if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 					outputVideo.write(resized);
 				}
@@ -469,6 +478,12 @@ void VideoGenerator::generate()
 					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 					cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
 					cv::Mat resized = resize2Video(frame, mysize);
+					// blending
+					int blendingFrames = 20;
+					if (angle < blendingFrames)
+						cv::addWeighted(resized, angle/(double)blendingFrames, resized, 0, 0, resized);
+					else if (angle >= 360 - blendingFrames)
+						cv::addWeighted(resized, (359-angle)/(double)blendingFrames, resized, 0, 0, resized);
 					if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 					outputVideo.write(resized);
 				}
@@ -482,10 +497,16 @@ void VideoGenerator::generate()
 					RTIScreenShot.save(screenshotObj);
 					mObjects[i]->mPictures.push_back(screenshotObj);
 					qDebug() << screenshotObj << "\n\n";
-					for (int duration = 0; duration < 50; duration++)
+					for (int duration = 0; duration < 160; duration++)
 					{
 						cv::Mat frame = cv::imread(screenshotObj.toStdString(), CV_LOAD_IMAGE_COLOR);
 						cv::Mat resized = resize2Video(frame, mysize);
+						// blending
+						int blendingFrames = 20;
+						if (duration < blendingFrames)
+							cv::addWeighted(resized, duration/(double)blendingFrames, resized, 0, 0, resized);
+						else if (duration >= 160 - blendingFrames)
+							cv::addWeighted(resized, (159-duration)/(double)blendingFrames, resized, 0, 0, resized);
 						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 						outputVideo.write(resized);
 					}
@@ -1274,26 +1295,142 @@ void VideoGenerator::computeCenter(CTSurfaceCornerPoint_ cornerPoints, double* c
 	}
 }
 
-cv::Mat VideoGenerator::resize2Video(cv::Mat& src, cv::Size size)
+cv::Mat VideoGenerator::resize2Video(cv::Mat& src, cv::Size mysize)
 {
-	cv::Mat dst(size, src.type());
+	cv::Mat dst(mysize, src.type());
 	cv::Rect roi;
-	if (size.width / (double)size.height > src.size().width / (double)src.size().height)
+	if (mysize.width / (double)mysize.height > src.size().width / (double)src.size().height)
 	{
-		double ratio = size.height / (double)src.size().height;
+		double ratio = mysize.height / (double)src.size().height;
 		roi.width = (int)(src.size().width * ratio);
-		roi.height = size.height;
-		roi.x = (size.width - roi.width) / 2;
+		roi.height = mysize.height;
+		roi.x = (mysize.width - roi.width) / 2;
 		roi.y = 0;
 	}
 	else
 	{
-		double ratio = size.width / (double)src.size().width;
-		roi.width = size.width;
+		double ratio = mysize.width / (double)src.size().width;
+		roi.width = mysize.width;
 		roi.height = (int)(src.size().height * ratio);
 		roi.x = 0;
-		roi.y = (size.height - roi.height) / 2;
+		roi.y = (mysize.height - roi.height) / 2;
 	}
 	cv::resize(src, dst(roi), roi.size());
 	return dst;
+}
+
+cv::Mat VideoGenerator::putSubtitle(cv::Mat& src, std::string mystr, cv::Size mysize)
+{
+	cv::Mat annotated = src.clone();
+	cv::Mat blackImg(mysize, CV_8UC3, cv::Scalar(0, 0, 0));
+	cv::Rect roi(0, 480, 800, 120);
+	cv::Mat subtitle1 = annotated(roi);
+	cv::Mat subtitle2 = blackImg(roi);
+	cv::addWeighted(subtitle1, 0.7, subtitle2, 0.3, 0, subtitle1);
+
+	int lineLen = 85, eps = 0;
+	for (int i = 0; i < 5; i++)
+	{
+		if (mystr.size() <= i * lineLen) break;
+		// line break rules to be refined
+		std::string line = mystr.substr(i * lineLen + eps, lineLen);
+		if (mystr.size() > (i + 1) * lineLen)
+		{
+			if (mystr[(i + 1) * lineLen + eps] == ' ') eps++;
+			else
+			{
+				int spacePos = line.rfind(' ', line.size());
+				line = line.substr(0, spacePos);
+				eps -= lineLen - spacePos - 1;
+			}
+		}
+		cv::putText(annotated, line, cv::Point(50, 500 + i * 20), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+	}
+	return annotated;
+}
+
+
+cv::Mat VideoGenerator::emphasizeNote(cv::Mat& src, cv::Rect roi)
+{
+	if (roi.x < 0) roi.x = 0;
+	if (roi.y < 0) roi.y = 0;
+	if (roi.x + roi.width > src.size().width) roi.width = src.size().width - roi.x;
+	if (roi.y + roi.height > src.size().height) roi.height = src.size().height - roi.y;
+	cv::Mat emphasized;
+	cv::bilateralFilter(src, emphasized, 15, 80, 80);
+	cv::addWeighted(emphasized, 0.7, emphasized, 0, 0, emphasized);
+	// smoother boundary
+	cv::Mat noteRegion = src.clone();
+	noteRegion = noteRegion(roi);
+	int smoother = 10;
+	if (noteRegion.size().width < 2 * smoother) smoother = noteRegion.size().width / 2;
+	if (noteRegion.size().height < 2 * smoother) smoother = noteRegion.size().height / 2;
+	for (int k = 0; k < smoother; k++)
+	{
+		for (int i = k + 1; i < noteRegion.size().height - k - 1; i++)
+		{
+			noteRegion.at<cv::Vec3b>(i, k)[0] *= (0.7 + 0.03 * k);
+			noteRegion.at<cv::Vec3b>(i, k)[1] *= (0.7 + 0.03 * k);
+			noteRegion.at<cv::Vec3b>(i, k)[2] *= (0.7 + 0.03 * k);
+			noteRegion.at<cv::Vec3b>(i, noteRegion.size().width - k - 1)[0] *= (0.7 + 0.03 * k);
+			noteRegion.at<cv::Vec3b>(i, noteRegion.size().width - k - 1)[1] *= (0.7 + 0.03 * k);
+			noteRegion.at<cv::Vec3b>(i, noteRegion.size().width - k - 1)[2] *= (0.7 + 0.03 * k);
+		}
+		for (int j = k + 1; j < noteRegion.size().width - k - 1; j++)
+		{
+			noteRegion.at<cv::Vec3b>(k, j)[0] *= (0.7 + 0.03 * k);
+			noteRegion.at<cv::Vec3b>(k, j)[1] *= (0.7 + 0.03 * k);
+			noteRegion.at<cv::Vec3b>(k, j)[2] *= (0.7 + 0.03 * k);
+			noteRegion.at<cv::Vec3b>(noteRegion.size().height - k - 1, j)[0] *= (0.7 + 0.03 * k);
+			noteRegion.at<cv::Vec3b>(noteRegion.size().height - k - 1, j)[1] *= (0.7 + 0.03 * k);
+			noteRegion.at<cv::Vec3b>(noteRegion.size().height - k - 1, j)[2] *= (0.7 + 0.03 * k);
+		}
+		noteRegion.at<cv::Vec3b>(k, k)[0] *= (0.7 + 0.03 * k);
+		noteRegion.at<cv::Vec3b>(k, k)[1] *= (0.7 + 0.03 * k);
+		noteRegion.at<cv::Vec3b>(k, k)[2] *= (0.7 + 0.03 * k);
+		noteRegion.at<cv::Vec3b>(k, noteRegion.size().width - k - 1)[0] *= (0.7 + 0.03 * k);
+		noteRegion.at<cv::Vec3b>(k, noteRegion.size().width - k - 1)[1] *= (0.7 + 0.03 * k);
+		noteRegion.at<cv::Vec3b>(k, noteRegion.size().width - k - 1)[2] *= (0.7 + 0.03 * k);
+		noteRegion.at<cv::Vec3b>(noteRegion.size().height - k - 1, k)[0] *= (0.7 + 0.03 * k);
+		noteRegion.at<cv::Vec3b>(noteRegion.size().height - k - 1, k)[1] *= (0.7 + 0.03 * k);
+		noteRegion.at<cv::Vec3b>(noteRegion.size().height - k - 1, k)[2] *= (0.7 + 0.03 * k);
+		noteRegion.at<cv::Vec3b>(noteRegion.size().height - k - 1, noteRegion.size().width - k - 1)[0] *= (0.7 + 0.03 * k);
+		noteRegion.at<cv::Vec3b>(noteRegion.size().height - k - 1, noteRegion.size().width - k - 1)[1] *= (0.7 + 0.03 * k);
+		noteRegion.at<cv::Vec3b>(noteRegion.size().height - k - 1, noteRegion.size().width - k - 1)[2] *= (0.7 + 0.03 * k);
+	}
+	noteRegion.copyTo(emphasized.colRange(roi.x, roi.x + roi.width).rowRange(roi.y, roi.y + roi.height));
+	return emphasized;
+}
+
+	
+cv::Mat VideoGenerator::emphasizeNote(cv::Mat& src, cv::Point center, int radius)
+{
+	if (center.x - radius < 0) radius = center.x;
+	if (center.y - radius < 0) radius = center.y;
+	if (center.x + radius >= src.size().width) radius = src.size().width - center.x - 1;
+	if (center.y + radius >= src.size().height) radius = src.size().height - center.y - 1;
+	cv::Mat emphasized;
+	cv::bilateralFilter(src, emphasized, 15, 80, 80);
+	cv::addWeighted(emphasized, 0.7, emphasized, 0, 0, emphasized);
+	// smoother boundary
+	cv::Mat mask = cv::Mat::zeros(src.size(), CV_8UC1);
+	cv::circle(mask, center, radius, CV_RGB(255, 255, 255), -1);
+	cv::Mat noteRegion = src.clone();
+	int smoother = 10;
+	for (int i = center.y - radius; i <= center.y + radius; i++)
+	{
+		for (int j = center.x - radius; j <= center.x + radius; j++)
+		{
+			double dist = sqrt((double)((i - center.y) * (i - center.y) + (j - center.x) * (j - center.x)));
+			if (dist <= radius && dist >= radius - smoother)
+			{
+				double ratio = (radius - dist) / smoother;
+				noteRegion.at<cv::Vec3b>(i, j)[0] *= (0.7 + 0.3 * ratio);
+				noteRegion.at<cv::Vec3b>(i, j)[1] *= (0.7 + 0.3 * ratio);
+				noteRegion.at<cv::Vec3b>(i, j)[2] *= (0.7 + 0.3 * ratio);
+			}
+		}
+	}
+	noteRegion.copyTo(emphasized, mask);
+	return emphasized;
 }

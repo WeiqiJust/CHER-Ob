@@ -244,10 +244,36 @@ private:
 	/**
 	 * @brief  Resize screenshots to the size of video without changing aspect ratio.
 	 * @param  src		Source image.
-	 * @param  size		The size of video.
+	 * @param  mysize	The size of video.
 	 * @return Resized frame for generating videos.
 	 */
-	cv::Mat resize2Video(cv::Mat& src, cv::Size size);
+	cv::Mat resize2Video(cv::Mat& src, cv::Size mysize);
+
+	/**
+	 * @brief  Put annotations in the subtitle.
+	 * @param  src		Source image.
+	 * @param  mystr	The annotation of object.
+	 * @param  mysize	The size of video.
+	 * @return New image with annotation in the subtitle.
+	 */
+	cv::Mat putSubtitle(cv::Mat& src, std::string mystr, cv::Size mysize);
+
+	/**
+	 * @brief  Emphasize the note region (rectangle), other parts blurred and darkened
+	 * @param  src		Source image.
+	 * @param  roi		The region of interest.
+	 * @return New image with the emphasized note.
+	 */
+	cv::Mat emphasizeNote(cv::Mat& src, cv::Rect roi);
+
+	/**
+	 * @brief  Emphasize the note region (circle), other parts blurred and darkened
+	 * @param  src		Source image.
+	 * @param  center	The center of circle.
+	 * @param  radius	The radius of circle.
+	 * @return New image with the emphasized note.
+	 */
+	cv::Mat emphasizeNote(cv::Mat& src, cv::Point center, int radius);
 
 private:
 	bool isProject;
