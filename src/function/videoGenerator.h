@@ -283,6 +283,14 @@ private:
 	 */
 	QPair<QString, QString> parseTextAndImg(QString content);
 
+	/**
+	 * @brief  Blender two images to make smooth transition
+	 * @param  img1			The first image.
+	 * @param  img2			The second image.
+	 * @param  outputVideo	The video writer.
+	 */
+	void blend2Video(cv::Mat& img1, cv::Mat& img2, cv::VideoWriter& outputVideo);
+
 private:
 	bool isProject;
 	bool isWmv;
