@@ -254,9 +254,10 @@ private:
 	 * @param  src		Source image.
 	 * @param  mystr	The annotation of object.
 	 * @param  mysize	The size of video.
+	 * @param  img		The path of associated image.
 	 * @return New image with annotation in the subtitle.
 	 */
-	cv::Mat putSubtitle(cv::Mat& src, std::string mystr, cv::Size mysize);
+	cv::Mat putSubtitle(cv::Mat& src, std::string mystr, cv::Size mysize, std::string img = "");
 
 	/**
 	 * @brief  Emphasize the note region (rectangle), other parts blurred and darkened
@@ -274,6 +275,13 @@ private:
 	 * @return New image with the emphasized note.
 	 */
 	cv::Mat emphasizeNote(cv::Mat& src, cv::Point center, int radius);
+
+	/**
+	 * @brief  Extract note content and the first associated image
+	 * @param  content	Note body with header omitted.
+	 * @return Note content (first) and the path of associated image (second).
+	 */
+	QPair<QString, QString> parseTextAndImg(QString content);
 
 private:
 	bool isProject;

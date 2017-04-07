@@ -129,9 +129,9 @@ void VideoGenerator::generate()
 	{
 		QString annotation;
 		QVector<QPair<QString, NoteMode> > contents;
-		QVector<QPair<int, int> > pointNote2D;
-		QVector<int*> surfaceNote2D;
-		QVector<QVector<QPair<int, int> > > polygonNote2D;
+		QVector<QPair<QPair<int, int>, QString> > pointNote2D;
+		QVector<QPair<int*, QString> > surfaceNote2D;
+		QVector<QPair<QVector<QPair<int, int> >, QString> > polygonNote2D;
 		QVector<double*> pointNote3D;
 		QVector<QPair<double*, CTSurfaceCornerPoint_> > surfaceNote3D_CT;
 		QVector<double*> surfaceNote3D;
@@ -172,7 +172,8 @@ void VideoGenerator::generate()
 							qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
 							continue;
 						}
-						pointNote2D.push_back(qMakePair(x, y));
+						note.remove(0, index+13);
+						pointNote2D.push_back(qMakePair(qMakePair(x, y), note));
 						mode = POINTNOTE;
 					}
 					else if (firstLine.split(" ")[0] == QString("Surface"))
@@ -189,7 +190,8 @@ void VideoGenerator::generate()
 							qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
 							continue;
 						}
-						surfaceNote2D.push_back(points);
+						note.remove(0, index+13);
+						surfaceNote2D.push_back(qMakePair(points, note));
 						mode = SURFACENOTE;
 					}
 					else if (firstLine.split(" ")[0] == QString("Polygon"))
@@ -215,7 +217,8 @@ void VideoGenerator::generate()
 							} 
 							polygon.push_back(qMakePair(posImageX, posImageY));
 						}
-						polygonNote2D.push_back(polygon);
+						note.remove(0, index+13);
+						polygonNote2D.push_back(qMakePair(polygon, note));
 						mode = POLYGONNOTE;
 					}
 					else
@@ -223,7 +226,7 @@ void VideoGenerator::generate()
 						qDebug() << "Parsing Error in report generation: Note Type Error!" << firstLine;
 						continue;
 					}
-					note.remove(0, index+13);	// Remove note header for the convenience of further parsing
+					// note.remove(0, index+13);	// Remove note header for the convenience of further parsing
 					contents.push_back(qMakePair(note, mode));
 				}
 				else if (mObjects[i]->mMode == MODEL3D && mObjects[i]->mNotes[j].second == NOTE3D)
@@ -419,7 +422,6 @@ void VideoGenerator::generate()
 				{
 					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->mFilename);
 					cv::Mat frame = cv::imread(mObjects[i]->mGla->mFilename.toStdString(), CV_LOAD_IMAGE_COLOR);
-					cv::Mat resized = resize2Video(frame, mysize);
 
 	// std::vector<int> compression_params;
     // compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
@@ -427,6 +429,7 @@ void VideoGenerator::generate()
 	// cv::imwrite("C:\\Users\\zw274\\Desktop\\zw274\\CHER-Ob-Longmen\\test.png", resized, compression_params);
 
 					// put general annotation, effect to be refined
+					cv::Mat resized = resize2Video(frame, mysize);
 					cv::Mat annotated = putSubtitle(resized, annotation.toStdString(), mysize);
 					for (int duration = 0; duration < 160; duration++)
 					{
@@ -435,10 +438,72 @@ void VideoGenerator::generate()
 						int blendingFrames = 20;
 						if (duration < blendingFrames)
 							cv::addWeighted(currFrame, duration/(double)blendingFrames, currFrame, 0, 0, currFrame);
-						else if (duration >= 160 - blendingFrames)
-							cv::addWeighted(currFrame, (159-duration)/(double)blendingFrames, currFrame, 0, 0, currFrame);
+						//else if (duration >= 160 - blendingFrames)
+						//	cv::addWeighted(currFrame, (159-duration)/(double)blendingFrames, currFrame, 0, 0, currFrame);
 						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 						outputVideo.write(currFrame);
+					}
+					for (int noteid = 0; noteid < pointNote2D.size(); noteid++)
+					{
+						cv::Point notePos(pointNote2D[noteid].first.first, frame.size().height - pointNote2D[noteid].first.second);
+						cv::Mat currNote = emphasizeNote(frame, notePos, 20);
+						// put subtitle and associated image
+						QPair<QString, QString> textAndImg = parseTextAndImg(pointNote2D[noteid].second);
+						cv::Mat currFrame = resize2Video(currNote, mysize);
+						cv::Mat currFrameSub = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+						for (int duration = 0; duration < 160; duration++)
+						{
+							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							outputVideo.write(currFrameSub);
+						}
+					}
+					for (int noteid = 0; noteid < surfaceNote2D.size(); noteid++)
+					{
+						cv::Rect myroi;
+						myroi.x = std::min(surfaceNote2D[noteid].first[0], surfaceNote2D[noteid].first[2]);
+						myroi.y = frame.size().height - std::max(surfaceNote2D[noteid].first[1], surfaceNote2D[noteid].first[3]);
+						myroi.width = abs(surfaceNote2D[noteid].first[0] - surfaceNote2D[noteid].first[2]);
+						myroi.height = abs(surfaceNote2D[noteid].first[1] - surfaceNote2D[noteid].first[3]);
+						cv::Mat currNote = emphasizeNote(frame, myroi);
+						// put subtitle and associated image
+						QPair<QString, QString> textAndImg = parseTextAndImg(surfaceNote2D[noteid].second);
+						cv::Mat currFrame = resize2Video(currNote, mysize);
+						cv::Mat currFrameSub = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+						for (int duration = 0; duration < 160; duration++)
+						{
+							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							outputVideo.write(currFrameSub);
+						}
+					}
+					for (int noteid = 0; noteid < polygonNote2D.size(); noteid++)
+					{
+						cv::Point center(0, 0); 
+						for (int vid = 0; vid < polygonNote2D[noteid].first.size() - 1; vid++)
+						{
+							center.x += polygonNote2D[noteid].first[vid].first;
+							center.y += polygonNote2D[noteid].first[vid].second;
+						}
+						center.x = center.x / (polygonNote2D[noteid].first.size() - 1);
+						center.y = center.y / (polygonNote2D[noteid].first.size() - 1);
+						int radius = 20;
+						for (int vid = 0; vid < polygonNote2D[noteid].first.size() - 1; vid++)
+						{
+							int dx2 = (center.x - polygonNote2D[noteid].first[vid].first) * (center.x - polygonNote2D[noteid].first[vid].first);
+							int dy2 = (center.y - polygonNote2D[noteid].first[vid].second) * (center.y - polygonNote2D[noteid].first[vid].second);
+							int tmpR = (int)sqrt((double)(dx2 + dy2));
+							radius = std::max(radius, tmpR);
+						}
+						center.y = frame.size().height - center.y;
+						cv::Mat currNote = emphasizeNote(frame, center, radius);
+						// put subtitle and associated image
+						QPair<QString, QString> textAndImg = parseTextAndImg(polygonNote2D[noteid].second);
+						cv::Mat currFrame = resize2Video(currNote, mysize);
+						cv::Mat currFrameSub = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+						for (int duration = 0; duration < 160; duration++)
+						{
+							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							outputVideo.write(currFrameSub);
+						}
 					}
 				}
 				break;
@@ -801,7 +866,9 @@ void VideoGenerator::generate()
 				}
 			}
 		}
+		*/
 		// Add annotation and notes
+		/*
 		if (!annotation.isEmpty())
 			html = html + QString("<p><font size=\"2\" face=\"Garamond\">") + annotation + QString("</font></p><hr>\n");
 		for (int j = 0; j < contents.size(); j++)
@@ -867,10 +934,11 @@ void VideoGenerator::generate()
 			if (j != contents.size()-1)
 				html += QString("<hr>\n");
 		}
+		*/
 		// delete allocated pointers
 		for (int j = 0; j < surfaceNote2D.size(); j++)
 		{
-			delete surfaceNote2D[j];
+			delete surfaceNote2D[j].first;
 		}
 		for (int j = 0; j < pointNote3D.size(); j++)
 		{
@@ -884,7 +952,6 @@ void VideoGenerator::generate()
 		{
 			delete frustumNote3D[j];
 		}
-		*/
 	}
 	outputVideo.release();
 
@@ -1319,7 +1386,7 @@ cv::Mat VideoGenerator::resize2Video(cv::Mat& src, cv::Size mysize)
 	return dst;
 }
 
-cv::Mat VideoGenerator::putSubtitle(cv::Mat& src, std::string mystr, cv::Size mysize)
+cv::Mat VideoGenerator::putSubtitle(cv::Mat& src, std::string mystr, cv::Size mysize, std::string img)
 {
 	cv::Mat annotated = src.clone();
 	cv::Mat blackImg(mysize, CV_8UC3, cv::Scalar(0, 0, 0));
@@ -1327,8 +1394,8 @@ cv::Mat VideoGenerator::putSubtitle(cv::Mat& src, std::string mystr, cv::Size my
 	cv::Mat subtitle1 = annotated(roi);
 	cv::Mat subtitle2 = blackImg(roi);
 	cv::addWeighted(subtitle1, 0.7, subtitle2, 0.3, 0, subtitle1);
-
-	int lineLen = 85, eps = 0;
+	int lineLen = (img == "" ? 85 : 60);
+	int eps = 0;
 	for (int i = 0; i < 5; i++)
 	{
 		if (mystr.size() <= i * lineLen) break;
@@ -1345,6 +1412,13 @@ cv::Mat VideoGenerator::putSubtitle(cv::Mat& src, std::string mystr, cv::Size my
 			}
 		}
 		cv::putText(annotated, line, cv::Point(50, 500 + i * 20), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+	}
+	if (img != "")
+	{
+		cv::Mat assoImg = cv::imread(img, CV_LOAD_IMAGE_COLOR);
+		assoImg = resize2Video(assoImg, cv::Size(120, 120));
+		qDebug() << "23333\t" << assoImg.size().width << "\t" << assoImg.size().width << "\n";
+		assoImg.copyTo(annotated.colRange(680, 680 + assoImg.size().width).rowRange(480, 480 + assoImg.size().height));
 	}
 	return annotated;
 }
@@ -1433,4 +1507,17 @@ cv::Mat VideoGenerator::emphasizeNote(cv::Mat& src, cv::Point center, int radius
 	}
 	noteRegion.copyTo(emphasized, mask);
 	return emphasized;
+}
+
+QPair<QString, QString> VideoGenerator::parseTextAndImg(QString content)
+{
+	QString color = content.split("\nNote Start:\n")[0];
+	int type = color2type(color.toStdString());
+	QString text = content.split("\nLinked Images:\n")[0].split("Note Start:\n")[1];
+	QString category = QString(color2categoryFullName_(color.toStdString()).c_str());
+	QStringList imagePaths = content.split("\nLinked Images:\n")[1].split("\n", QString::SkipEmptyParts);
+	if (imagePaths.size() > 0)
+		return qMakePair(text, imagePaths[0]);
+	QString emptyPath;
+	return qMakePair(text, emptyPath);
 }
