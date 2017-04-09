@@ -734,6 +734,84 @@ void VtkWidget::setArbitraryView(double angle)
 	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
 }
 
+void VtkWidget::setPointNoteView()
+{
+	if (mRenderer == NULL) return;
+	// move camera to the initial position
+	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
+
+	//// QAQ
+	camera->SetPosition(0, 0, 1);
+	//camera->SetPosition(0.127478 - 10*0.01265, 0.787391 - 10*0.11635, 2.03515 + 10*0.99313);
+	//camera->SetFocalPoint(0.127478, 0.787391, 2.03515);
+	//camera->SetViewUp(0.1309, 0.3458, 0.0422);
+	mRenderer->ResetCamera();
+	camera->Dolly(1.6);
+	mRenderer->ResetCameraClippingRange();
+	mRenderer->Modified();
+
+	// move light according to light
+	mCallback3D->updateLightingPosition();
+
+	mLight1->Modified();
+	mLight2->Modified();
+
+	// mQVTKWidget->show(); // no Render() is required for 3D
+	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
+}
+
+void VtkWidget::setSurfaceNoteView()
+{
+	if (mRenderer == NULL) return;
+	// move camera to the initial position
+	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
+
+	//// QAQ
+	camera->SetPosition(0, 1, 0);
+	//camera->SetPosition(0.127478 - 10*0.01265, 0.787391 - 10*0.11635, 2.03515 + 10*0.99313);
+	//camera->SetFocalPoint(0.127478, 0.787391, 2.03515);
+	//camera->SetViewUp(0.1309, 0.3458, 0.0422);
+	mRenderer->ResetCamera();
+	camera->Dolly(1.2);
+	mRenderer->ResetCameraClippingRange();
+	mRenderer->Modified();
+
+	// move light according to light
+	mCallback3D->updateLightingPosition();
+
+	mLight1->Modified();
+	mLight2->Modified();
+
+	// mQVTKWidget->show(); // no Render() is required for 3D
+	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
+}
+
+void VtkWidget::setFrustumNoteView()
+{
+	if (mRenderer == NULL) return;
+	// move camera to the initial position
+	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
+
+	//// QAQ
+	camera->SetPosition(1, 0, 0);
+	//camera->SetPosition(0.127478 - 10*0.01265, 0.787391 - 10*0.11635, 2.03515 + 10*0.99313);
+	//camera->SetFocalPoint(0.127478, 0.787391, 2.03515);
+	//camera->SetViewUp(0.1309, 0.3458, 0.0422);
+	mRenderer->ResetCamera();
+	camera->Dolly(0.8);
+	mRenderer->ResetCameraClippingRange();
+	mRenderer->Modified();
+
+	// move light according to light
+	mCallback3D->updateLightingPosition();
+
+	mLight1->Modified();
+	mLight2->Modified();
+
+	// mQVTKWidget->show(); // no Render() is required for 3D
+	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
+}
+
 
 void VtkWidget::launchSpinView()
 {

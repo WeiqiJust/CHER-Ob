@@ -419,14 +419,14 @@ void VideoGenerator::generate()
 				break;
 			case IMAGE2D:
 				{
-					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->mFilename);
-					cv::Mat frame = cv::imread(mObjects[i]->mGla->mFilename.toStdString(), CV_LOAD_IMAGE_COLOR);
-					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
-
 	// std::vector<int> compression_params;
     // compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
     // compression_params.push_back(9);
-	// cv::imwrite("C:\\Users\\zw274\\Desktop\\zw274\\CHER-Ob-Longmen\\test.png", resized, compression_params);
+	// cv::imwrite("C:\\Users\\zw274\\Desktop\\zw274\\CHER-Ob-Longmen\\test.png", debugImg, compression_params);
+
+					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->mFilename);
+					cv::Mat frame = cv::imread(mObjects[i]->mGla->mFilename.toStdString(), CV_LOAD_IMAGE_COLOR);
+					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
 
 					// put general annotation, effect to be refined
 					cv::Mat resized = resize2Video(frame, mysize);
@@ -508,28 +508,71 @@ void VideoGenerator::generate()
 				}
 				break;
 			case MODEL3D:
-				saveWidgetinfo(mObjects[i]->mGla, info);
-				initWidget(mObjects[i]->mGla, false);
-				// generate screenshots from different angles
-				for (int angle = 0; angle < 360; angle++)
 				{
-					mObjects[i]->mGla->setArbitraryView((double)angle);
-					screenshotDict = screenshotObj;
-					screenshotDict.append(QString::number(angle));
-					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-					cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
-					cv::Mat resized = resize2Video(frame, mysize);
-					// blending
-					int blendingFrames = 20;
-					if (angle < blendingFrames)
-						cv::addWeighted(resized, angle/(double)blendingFrames, resized, 0, 0, resized);
-					else if (angle >= 360 - blendingFrames)
-						cv::addWeighted(resized, (359-angle)/(double)blendingFrames, resized, 0, 0, resized);
-					if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-					outputVideo.write(resized);
+					saveWidgetinfo(mObjects[i]->mGla, info);
+					initWidget(mObjects[i]->mGla, false);
+					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
+					// generate screenshots from different angles
+					for (int angle = 0; angle < 360; angle++)
+					{
+						mObjects[i]->mGla->setArbitraryView((double)angle);
+						screenshotDict = screenshotObj;
+						screenshotDict.append(QString::number(angle));
+						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+						cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+						cv::Mat resized = resize2Video(frame, mysize);
+						currFrame = putSubtitle(resized, annotation.toStdString(), mysize);
+						// blending
+						if (angle == 0)
+							blend2Video(prevFrame, currFrame, outputVideo);
+						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+						outputVideo.write(currFrame);
+					}
+					for (int noteid = 0; noteid < pointNote3D.size(); noteid++)
+					{
+						mObjects[i]->mGla->setPointNoteView();
+						screenshotDict = screenshotObj;
+						screenshotDict.append("PointNote" + QString::number(noteid));
+						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+						cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+						cv::Mat resized = resize2Video(frame, mysize);
+						for (int duration = 0; duration < 60; duration++)
+						{
+							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							outputVideo.write(resized);
+						}
+					}
+					for (int noteid = 0; noteid < surfaceNote3D.size(); noteid++)
+					{
+						mObjects[i]->mGla->setSurfaceNoteView();
+						screenshotDict = screenshotObj;
+						screenshotDict.append("SurfaceNote" + QString::number(noteid));
+						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+						cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+						cv::Mat resized = resize2Video(frame, mysize);
+						for (int duration = 0; duration < 60; duration++)
+						{
+							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							outputVideo.write(resized);
+						}
+					}
+					for (int noteid = 0; noteid < frustumNote3D.size(); noteid++)
+					{
+						mObjects[i]->mGla->setFrustumNoteView();
+						screenshotDict = screenshotObj;
+						screenshotDict.append("FrustumNote" + QString::number(noteid));
+						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+						cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+						cv::Mat resized = resize2Video(frame, mysize);
+						for (int duration = 0; duration < 60; duration++)
+						{
+							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							outputVideo.write(resized);
+						}
+					}
+					recoverWidget(mObjects[i]->mGla, info, false);
+					break;
 				}
-				recoverWidget(mObjects[i]->mGla, info, false);
-				break;
 			case CTSTACK:
 			case CTVOLUME:
 				saveWidgetinfo(mObjects[i]->mGla, info);

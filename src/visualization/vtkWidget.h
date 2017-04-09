@@ -217,6 +217,10 @@ public:
   RenderMode3D getRenderMode3D() const {return mRenderMode3D;}
   void setOrthogonalView(OrthogonalView3D view);
   void setArbitraryView(double angle);
+  // TO DO: VIDEO GENERATION FOR 3D OBJECTS
+  void setPointNoteView();
+  void setSurfaceNoteView();
+  void setFrustumNoteView();
   void launchSpinView();
 
   void setFlattenedMesh(vtkPolyData *flatMesh);
