@@ -505,8 +505,8 @@ void VideoGenerator::generate()
 							outputVideo.write(currFrame);
 						}
 					}
+					break;
 				}
-				break;
 			case MODEL3D:
 				{
 					saveWidgetinfo(mObjects[i]->mGla, info);
@@ -528,7 +528,7 @@ void VideoGenerator::generate()
 						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 						outputVideo.write(currFrame);
 					}
-					for (int noteid = 0; noteid < pointNote3D.size(); noteid++)
+					/*for (int noteid = 0; noteid < pointNote3D.size(); noteid++)
 					{
 						mObjects[i]->mGla->setPointNoteView();
 						screenshotDict = screenshotObj;
@@ -569,7 +569,7 @@ void VideoGenerator::generate()
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 							outputVideo.write(resized);
 						}
-					}
+					}*/
 					recoverWidget(mObjects[i]->mGla, info, false);
 					break;
 				}
@@ -598,28 +598,95 @@ void VideoGenerator::generate()
 				recoverWidget(mObjects[i]->mGla, info, true);
 				break;
 			case RTI2D:
-				RTIScreenShot = mObjects[i]->mGla->getRTIScreenShot();
-				if (!RTIScreenShot.isNull())
 				{
-					screenshotObj.append(".png");
-					RTIScreenShot.save(screenshotObj);
-					mObjects[i]->mPictures.push_back(screenshotObj);
-					qDebug() << screenshotObj << "\n\n";
-					for (int duration = 0; duration < 160; duration++)
+					RTIScreenShot = mObjects[i]->mGla->getRTIScreenShot();
+					if (!RTIScreenShot.isNull())
 					{
+						screenshotObj.append(".png");
+						RTIScreenShot.save(screenshotObj);
+						mObjects[i]->mPictures.push_back(screenshotObj);
 						cv::Mat frame = cv::imread(screenshotObj.toStdString(), CV_LOAD_IMAGE_COLOR);
+						cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
+						// put general annotation, effect to be refined
 						cv::Mat resized = resize2Video(frame, mysize);
-						// blending
-						int blendingFrames = 20;
-						if (duration < blendingFrames)
-							cv::addWeighted(resized, duration/(double)blendingFrames, resized, 0, 0, resized);
-						else if (duration >= 160 - blendingFrames)
-							cv::addWeighted(resized, (159-duration)/(double)blendingFrames, resized, 0, 0, resized);
-						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-						outputVideo.write(resized);
+						currFrame = putSubtitle(resized, annotation.toStdString(), mysize);
+						blend2Video(prevFrame, currFrame, outputVideo);
+						for (int duration = 0; duration < 120; duration++)
+						{
+							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							outputVideo.write(currFrame);
+						}
+						for (int noteid = 0; noteid < pointNote2D.size(); noteid++)
+						{
+							cv::Point notePos(pointNote2D[noteid].first.first, frame.size().height - pointNote2D[noteid].first.second);
+							cv::Mat currNote = emphasizeNote(frame, notePos, 20);
+							// put subtitle and associated image
+							QPair<QString, QString> textAndImg = parseTextAndImg(pointNote2D[noteid].second);
+							prevFrame = currFrame;
+							currFrame = resize2Video(currNote, mysize);
+							currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+							blend2Video(prevFrame, currFrame, outputVideo);
+							for (int duration = 0; duration < 120; duration++)
+							{
+								if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+								outputVideo.write(currFrame);
+							}
+						}
+						for (int noteid = 0; noteid < surfaceNote2D.size(); noteid++)
+						{
+							cv::Rect myroi;
+							myroi.x = std::min(surfaceNote2D[noteid].first[0], surfaceNote2D[noteid].first[2]);
+							myroi.y = frame.size().height - std::max(surfaceNote2D[noteid].first[1], surfaceNote2D[noteid].first[3]);
+							myroi.width = abs(surfaceNote2D[noteid].first[0] - surfaceNote2D[noteid].first[2]);
+							myroi.height = abs(surfaceNote2D[noteid].first[1] - surfaceNote2D[noteid].first[3]);
+							cv::Mat currNote = emphasizeNote(frame, myroi);
+							// put subtitle and associated image
+							QPair<QString, QString> textAndImg = parseTextAndImg(surfaceNote2D[noteid].second);
+							prevFrame = currFrame;
+							currFrame = resize2Video(currNote, mysize);
+							currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+							blend2Video(prevFrame, currFrame, outputVideo);
+							for (int duration = 0; duration < 120; duration++)
+							{
+								if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+								outputVideo.write(currFrame);
+							}
+						}
+						for (int noteid = 0; noteid < polygonNote2D.size(); noteid++)
+						{
+							cv::Point center(0, 0); 
+							for (int vid = 0; vid < polygonNote2D[noteid].first.size() - 1; vid++)
+							{
+								center.x += polygonNote2D[noteid].first[vid].first;
+								center.y += polygonNote2D[noteid].first[vid].second;
+							}
+							center.x = center.x / (polygonNote2D[noteid].first.size() - 1);
+							center.y = center.y / (polygonNote2D[noteid].first.size() - 1);
+							int radius = 20;
+							for (int vid = 0; vid < polygonNote2D[noteid].first.size() - 1; vid++)
+							{
+								int dx2 = (center.x - polygonNote2D[noteid].first[vid].first) * (center.x - polygonNote2D[noteid].first[vid].first);
+								int dy2 = (center.y - polygonNote2D[noteid].first[vid].second) * (center.y - polygonNote2D[noteid].first[vid].second);
+								int tmpR = (int)sqrt((double)(dx2 + dy2));
+								radius = std::max(radius, tmpR);
+							}
+							center.y = frame.size().height - center.y;
+							cv::Mat currNote = emphasizeNote(frame, center, radius);
+							// put subtitle and associated image
+							QPair<QString, QString> textAndImg = parseTextAndImg(polygonNote2D[noteid].second);
+							prevFrame = currFrame;
+							currFrame = resize2Video(currNote, mysize);
+							currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+							blend2Video(prevFrame, currFrame, outputVideo);
+							for (int duration = 0; duration < 120; duration++)
+							{
+								if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+								outputVideo.write(currFrame);
+							}
+						}
 					}
+					break;
 				}
-				break;
 			default: break;
 		}
 
