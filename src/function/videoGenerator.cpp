@@ -528,7 +528,7 @@ void VideoGenerator::generate()
 						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 						outputVideo.write(currFrame);
 					}
-					/*for (int noteid = 0; noteid < pointNote3D.size(); noteid++)
+					for (int noteid = 0; noteid < pointNote3D.size(); noteid++)
 					{
 						mObjects[i]->mGla->setPointNoteView();
 						screenshotDict = screenshotObj;
@@ -542,6 +542,7 @@ void VideoGenerator::generate()
 							outputVideo.write(resized);
 						}
 					}
+					/*
 					for (int noteid = 0; noteid < surfaceNote3D.size(); noteid++)
 					{
 						mObjects[i]->mGla->setSurfaceNoteView();

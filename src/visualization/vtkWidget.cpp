@@ -740,15 +740,25 @@ void VtkWidget::setPointNoteView()
 	// move camera to the initial position
 	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
 
-	//// QAQ
-	camera->SetPosition(0, 0, 1);
-	//camera->SetPosition(0.127478 - 10*0.01265, 0.787391 - 10*0.11635, 2.03515 + 10*0.99313);
-	//camera->SetFocalPoint(0.127478, 0.787391, 2.03515);
+	//camera->SetPosition(0, 0, 1);
+	//camera->SetFocalPoint(0, 1, 1);
+	camera->SetPosition(0.127478 - 10*0.01265, 0.787391 - 10*0.11635, 2.03515 + 10*0.99313);
+	camera->SetFocalPoint(0.127478, 0.787391, 2.03515);
+	//double x, y, z;
+	//camera->GetPosition(x, y, z);
+	//qDebug() << "23333:\t" << x << "\t" << y << "\t" << z << "\n";
+	//camera->GetFocalPoint(x, y, z);
+	//qDebug() << "34444:\t" << x << "\t" << y << "\t" << z << "\n";
 	//camera->SetViewUp(0.1309, 0.3458, 0.0422);
-	mRenderer->ResetCamera();
-	camera->Dolly(1.6);
+	//mRenderer->ResetCamera(); // this line makes SetPosition() and SetFocalPoint() invalid
+	//camera->Dolly(1);
 	mRenderer->ResetCameraClippingRange();
 	mRenderer->Modified();
+	//camera = mRenderer->GetActiveCamera();
+	//camera->GetPosition(x, y, z);
+	//qDebug() << "23333:\t" << x << "\t" << y << "\t" << z << "\n";
+	//camera->GetFocalPoint(x, y, z);
+	//qDebug() << "34444:\t" << x << "\t" << y << "\t" << z << "\n";
 
 	// move light according to light
 	mCallback3D->updateLightingPosition();
