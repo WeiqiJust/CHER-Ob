@@ -218,7 +218,8 @@ public:
   void setOrthogonalView(OrthogonalView3D view);
   void setArbitraryView(double angle);
   // TO DO: VIDEO GENERATION FOR 3D OBJECTS
-  void setPointNoteView();
+  void computeNormals3D();
+  void setPointNoteView(int polygonID, double x, double y, double z);
   void setSurfaceNoteView();
   void setFrustumNoteView();
   void launchSpinView();
@@ -385,6 +386,7 @@ private:
   vtkTexture* mRgbTexture;
   vtkDataArray* mTCoords;
   vtkDataArray* mNormals;
+  vtkSmartPointer<vtkPolyData> tmpPolyData; // a deep copy of mVtkPolyData to compute normals
 
   // for 2/3D rendering
   QString mTFilename;

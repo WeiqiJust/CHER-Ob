@@ -132,7 +132,7 @@ void VideoGenerator::generate()
 		QVector<QPair<QPair<int, int>, QString> > pointNote2D;
 		QVector<QPair<int*, QString> > surfaceNote2D;
 		QVector<QPair<QVector<QPair<int, int> >, QString> > polygonNote2D;
-		QVector<double*> pointNote3D;
+		QVector<QPair<QPair<int, double*>, QString> > pointNote3D;
 		QVector<QPair<double*, CTSurfaceCornerPoint_> > surfaceNote3D_CT;
 		QVector<double*> surfaceNote3D;
 		QVector<double*> frustumNote3D;
@@ -223,7 +223,7 @@ void VideoGenerator::generate()
 					}
 					else
 					{
-						qDebug() << "Parsing Error in report generation: Note Type Error!" << firstLine;
+						qDebug() << "Parsing Error in video generation: Note Type Error!" << firstLine;
 						continue;
 					}
 					contents.push_back(qMakePair(note, mode));
@@ -234,16 +234,19 @@ void VideoGenerator::generate()
 					QString firstLine = lines[0];
 					if (firstLine.split(" ")[0] == QString("Point"))
 					{
-						bool ok0, ok1, ok2;
+						bool okID, ok0, ok1, ok2;
+						int polygonID;
 						double *worldPosition = new double[3];
+						polygonID = firstLine.split(" ")[4].split(")")[0].split("(")[1].toInt(&okID);
 						worldPosition[0] = firstLine.split(" ")[6].split(",")[0].split("(")[1].toDouble(&ok0);
 						worldPosition[1] = firstLine.split(" ")[7].split(",")[0].toDouble(&ok1);
 						worldPosition[2] = firstLine.split(" ")[8].split(")")[0].toDouble(&ok2);
-						if (!ok0 || !ok1 || !ok2)
+						if (!okID || !ok0 || !ok1 || !ok2)
 						{
 							qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
 						}
-						pointNote3D.push_back(worldPosition);
+						note.remove(0, index+13); // remove note header for the convenience of further parsing
+						pointNote3D.push_back(qMakePair(qMakePair(polygonID, worldPosition), note));
 						mode = POINTNOTE;
 					}
 					else if (firstLine.split(" ")[0] == QString("Surface"))
@@ -331,10 +334,10 @@ void VideoGenerator::generate()
 					}
 					else
 					{
-						qDebug()<<"Parsing Error in report generation: Note Type Error!"<<firstLine;
+						qDebug()<<"Parsing Error in video generation: Note Type Error!"<<firstLine;
 						continue;
 					}
-					note.remove(0, index+13);	// Remove note header for the convenience of further parsing
+					//note.remove(0, index+13);	// Remove note header for the convenience of further parsing
 					contents.push_back(qMakePair(note, mode));
 				}
 				else if ((mObjects[i]->mMode == CTSTACK || mObjects[i]->mMode == CTVOLUME) && mObjects[i]->mNotes[j].second == NOTE3D)
@@ -344,17 +347,19 @@ void VideoGenerator::generate()
 					QString firstLine = lines[0];
 					if (firstLine.split(" ")[0] == QString("Point"))
 					{
-						bool ok0, ok1, ok2;
+						bool okID, ok0, ok1, ok2;
+						int polygonID;
 						double *worldPosition = new double[3];
+						polygonID = firstLine.split(" ")[4].split(")")[0].split("(")[1].toInt(&okID);
 						worldPosition[0] = firstLine.split(" ")[6].split(",")[0].split("(")[1].toDouble(&ok0);
 						worldPosition[1] = firstLine.split(" ")[7].split(",")[0].toDouble(&ok1);
 						worldPosition[2] = firstLine.split(" ")[8].split(")")[0].toDouble(&ok2);
-						if (!ok0 || !ok1 || !ok2)
+						if (!okID || !ok0 || !ok1 || !ok2)
 						{
 							qDebug() << "The Syntax of First Line is incorrect. The First Line is " << firstLine;
 						}
-						//qDebug()<<"report generation"<<worldPosition[0]<<worldPosition[1]<<worldPosition[2];
-						pointNote3D.push_back(worldPosition);
+						note.remove(0, index+13); // remove note header for the convenience of further parsing
+						pointNote3D.push_back(qMakePair(qMakePair(polygonID, worldPosition), note));
 						mode = POINTNOTE;
 					}
 					else if (firstLine.split(" ")[0] == QString("Surface"))
@@ -392,10 +397,10 @@ void VideoGenerator::generate()
 					}
 					else
 					{
-						qDebug()<<"Parsing Error in report generation: Note Type Error!"<<firstLine;
+						qDebug()<<"Parsing Error in video generation: Note Type Error!"<<firstLine;
 						continue;
 					}
-					note.remove(0, index+13);	// Remove note header for the convenience of further parsing
+					//note.remove(0, index+13);	// Remove note header for the convenience of further parsing
 					contents.push_back(qMakePair(note, mode));
 				}
 				
@@ -513,7 +518,7 @@ void VideoGenerator::generate()
 					initWidget(mObjects[i]->mGla, false);
 					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
 					// generate screenshots from different angles
-					for (int angle = 0; angle < 360; angle++)
+					for (int angle = 0; angle < 360; angle+=10)
 					{
 						mObjects[i]->mGla->setArbitraryView((double)angle);
 						screenshotDict = screenshotObj;
@@ -528,18 +533,24 @@ void VideoGenerator::generate()
 						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 						outputVideo.write(currFrame);
 					}
+					mObjects[i]->mGla->computeNormals3D();
 					for (int noteid = 0; noteid < pointNote3D.size(); noteid++)
 					{
-						mObjects[i]->mGla->setPointNoteView();
+						mObjects[i]->mGla->setPointNoteView(pointNote3D[noteid].first.first,
+							pointNote3D[noteid].first.second[0], pointNote3D[noteid].first.second[1], pointNote3D[noteid].first.second[2]);
 						screenshotDict = screenshotObj;
 						screenshotDict.append("PointNote" + QString::number(noteid));
 						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 						cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
 						cv::Mat resized = resize2Video(frame, mysize);
+						// put subtitle and associated image
+						QPair<QString, QString> textAndImg = parseTextAndImg(pointNote3D[noteid].second);
+						prevFrame = currFrame;
+						currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
 						for (int duration = 0; duration < 60; duration++)
 						{
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(resized);
+							outputVideo.write(currFrame);
 						}
 					}
 					/*
@@ -949,7 +960,7 @@ void VideoGenerator::generate()
 					QString fileName = htmlFolder;
 					fileName.append(QDir::separator() + url);
 					img.save(fileName);
-					html = html + QString("<p><div align=\"center\"><img src=\"report/" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>\n");
+					html = html + QString("<p><div align=\"center\"><img src=\"video/" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>\n");
 				}
 			}
 			else if (mObjects[i]->mMode == MODEL3D || mObjects[i]->mMode == CTSTACK || mObjects[i]->mMode == CTVOLUME)
@@ -971,7 +982,7 @@ void VideoGenerator::generate()
 					img.save(fileName);
 					if (j == 0)
 						html += QString("<p><div align=\"center\">");
-					html += QString("<img src=\"report/" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\">");
+					html += QString("<img src=\"video/" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\">");
 					if (j == mObjects[i]->mPictures.size() - 1)
 						html += QString("</div></p>\n");
 				}
@@ -1038,7 +1049,7 @@ void VideoGenerator::generate()
 					QString fileName = htmlFolder;
 					fileName.append(QDir::separator() + name);
 					imgNote.save(fileName);
-					html += QString("<p><div align=\"center\"><img src=\"report/" + name + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>");
+					html += QString("<p><div align=\"center\"><img src=\"video/" + name + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>");
 				}
 			}
 			html += QString("<p><font size=\"2\" face=\"Garamond\">") + text + QString("</font></p>");
@@ -1053,7 +1064,7 @@ void VideoGenerator::generate()
 		}
 		for (int j = 0; j < pointNote3D.size(); j++)
 		{
-			delete pointNote3D[j];
+			delete pointNote3D[j].first.second;
 		}
 		for (int j = 0; j < surfaceNote3D.size(); j++)
 		{

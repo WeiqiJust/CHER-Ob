@@ -190,13 +190,11 @@ VtkWidget::~VtkWidget(){
   // Widgets
   mQVTKWidget = NULL;
   mLayout = NULL;
-  
-
 
   // Data Array => Crash
-//  if (mVtkPolyData) mVtkPolyData->Delete();
-//  if (mRgbTexture) mRgbTexture->Delete();
-//  if (mHyperImageData) mHyperImageData->Delete();
+  //  if (mVtkPolyData) mVtkPolyData->Delete();
+  //  if (mRgbTexture) mRgbTexture->Delete();
+  //  if (mHyperImageData) mHyperImageData->Delete();
 
   mWavelengths.clear();
   mHyperPixels.clear();
@@ -734,16 +732,23 @@ void VtkWidget::setArbitraryView(double angle)
 	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
 }
 
-void VtkWidget::setPointNoteView()
+void VtkWidget::setPointNoteView(int polygonID, double x, double y, double z)
 {
 	if (mRenderer == NULL) return;
 	// move camera to the initial position
 	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
-
+	if (mNormals) {
+		int dolly = 10;
+		double normalsXYZ[3];
+		mNormals->GetTuple(polygonID, normalsXYZ);
+		//mNormals->GetTuple(68719, testDouble);
+		camera->SetPosition(x + dolly*normalsXYZ[0], y + dolly*normalsXYZ[1], z + dolly*normalsXYZ[2]);
+	}
 	//camera->SetPosition(0, 0, 1);
 	//camera->SetFocalPoint(0, 1, 1);
-	camera->SetPosition(0.127478 - 10*0.01265, 0.787391 - 10*0.11635, 2.03515 + 10*0.99313);
-	camera->SetFocalPoint(0.127478, 0.787391, 2.03515);
+	//camera->SetPosition(0.127478 - 10*0.01265, 0.787391 - 10*0.11635, 2.03515 + 10*0.99313);
+	//camera->SetFocalPoint(0.127478, 0.787391, 2.03515);
+	camera->SetFocalPoint(x, y, z);
 	//double x, y, z;
 	//camera->GetPosition(x, y, z);
 	//qDebug() << "23333:\t" << x << "\t" << y << "\t" << z << "\n";
@@ -1489,6 +1494,49 @@ void VtkWidget::toggleImageProvenanceFeature()
     mCallback3D->toggleImageProvenanceFeature();
 }
 
+void VtkWidget::computeNormals3D()
+{
+	tmpPolyData = vtkSmartPointer<vtkPolyData>::New();
+	tmpPolyData->DeepCopy(mVtkPolyData);
+	// qDebug() << "Looking for cell normals..." << "\n";
+	// Count cells
+	// vtkIdType numCells = tmpPolyData->GetNumberOfCells();
+	// qDebug() << "There are " << numCells << " cells." << "\n";
+	// Count triangles
+	// vtkIdType numPolys = tmpPolyData->GetNumberOfPolys();
+	// qDebug() << "There are " << numPolys << " polys." << "\n";
+	mNormals = tmpPolyData->GetCellData()->GetNormals();
+	if (mNormals) {
+		// qDebug() << "There are " << mNormals->GetNumberOfTuples() << " normals in mNormals" << "\n";
+		// double testDouble[3];
+		// mNormals->GetTuple(0, testDouble);
+		// qDebug() << "Double: " << testDouble[0] << " " << testDouble[1] << " " << testDouble[2] << "\n";
+	} else {
+		// qDebug() << "No cell normals were found. Computing normals...\n";
+		vtkSmartPointer<vtkPolyDataNormals> normalGenerator = vtkSmartPointer<vtkPolyDataNormals>::New();
+#if VTK_MAJOR_VERSION <= 5
+		normalGenerator->SetInput(tmpPolyData);
+#else
+		normalGenerator->SetInputData(tmpPolyData);
+#endif
+		normalGenerator->ComputePointNormalsOff();
+		normalGenerator->ComputeCellNormalsOn();
+		normalGenerator->Update();
+		tmpPolyData = normalGenerator->GetOutput();
+		// Try to read normals again
+		mNormals = tmpPolyData->GetCellData()->GetNormals();
+	}
+	if (mNormals) {
+		// qDebug() << "There are " << mNormals->GetNumberOfTuples() << " normals in mNormals" << "\n";
+		// double testDouble[3];
+		// mNormals->GetTuple(0, testDouble);
+		// qDebug() << "Double: " << testDouble[0] << " " << testDouble[1] << " " << testDouble[2] << "\n";
+	} else {
+		qDebug() << "Normals not found! Normals computation error! \n";
+	}
+}
+
+
 void VtkWidget::Rendering3D()
 {
     mw()->activateTabWidgetTop(static_cast<int>(Model3DLIGHTCONTROL));
@@ -1557,62 +1605,60 @@ void VtkWidget::Rendering3D()
   // disable interpolation, so we can see each pixel
 
   if (this->mIsInterpolateOn)
-    if (mRgbTexture) mRgbTexture->InterpolateOn();
-  else
-    if (mRgbTexture) mRgbTexture->InterpolateOff();
-
+	  if (mRgbTexture) mRgbTexture->InterpolateOn();
+	  else if (mRgbTexture) mRgbTexture->InterpolateOff();
 
   //mRgbTexture->RepeatOff(); // by default repeat is on
 
   if (!mMaterials.empty() && mMaterials[0].fileType != EMPTYFILE) {
-    int i=0;
-    std::string texscfn = mMaterials[i].textureFilename;
-    QString texfn = texscfn.c_str();
-    //qDebug() << "texture filename: " << texfn;
+	  int i=0;
+	  std::string texscfn = mMaterials[i].textureFilename;
+	  QString texfn = texscfn.c_str();
+	  //qDebug() << "texture filename: " << texfn;
 
-      vtkSmartPointer<vtkProperty> property = vtkSmartPointer<vtkProperty>::New();
-      property = mActor->GetProperty();
-      double ambient[3];    ambient[0] = mMaterials[i].Ka[0];     ambient[1] = mMaterials[i].Ka[1];     ambient[2] = mMaterials[i].Ka[2];
-      property->SetAmbientColor(ambient); // for surface
-      double diffuse[3];    diffuse[0] = mMaterials[i].Kd[0];     diffuse[1] = mMaterials[i].Kd[1];     diffuse[2] = mMaterials[i].Kd[2];
-      property->SetDiffuseColor(diffuse); // for surface
+	  vtkSmartPointer<vtkProperty> property = vtkSmartPointer<vtkProperty>::New();
+	  property = mActor->GetProperty();
+	  double ambient[3];    ambient[0] = mMaterials[i].Ka[0];     ambient[1] = mMaterials[i].Ka[1];     ambient[2] = mMaterials[i].Ka[2];
+	  property->SetAmbientColor(ambient); // for surface
+	  double diffuse[3];    diffuse[0] = mMaterials[i].Kd[0];     diffuse[1] = mMaterials[i].Kd[1];     diffuse[2] = mMaterials[i].Kd[2];
+	  property->SetDiffuseColor(diffuse); // for surface
 
-      double specular[3];    specular[0] = mMaterials[i].Ks[0];     specular[1] = mMaterials[i].Ks[1];     specular[2] = mMaterials[i].Ks[2];
-      property->SetSpecularColor(specular); // for surface
+	  double specular[3];    specular[0] = mMaterials[i].Ks[0];     specular[1] = mMaterials[i].Ks[1];     specular[2] = mMaterials[i].Ks[2];
+	  property->SetSpecularColor(specular); // for surface
   } // if there is materials, otherwise
   else {
-    vtkSmartPointer<vtkProperty> property = vtkSmartPointer<vtkProperty>::New();
-    property = mActor->GetProperty();
-    double ambient[3] = {0.2, 0.2, 0.2};
-    property->SetAmbientColor(ambient); // for surface
-    double diffuse[3] = {1., 1., 1.};
-    property->SetDiffuseColor(diffuse); // for surface
-    double specular[3] = {1., 1., 1.};
-    property->SetSpecularColor(specular); // for surface
+	  vtkSmartPointer<vtkProperty> property = vtkSmartPointer<vtkProperty>::New();
+	  property = mActor->GetProperty();
+	  double ambient[3] = {0.2, 0.2, 0.2};
+	  property->SetAmbientColor(ambient); // for surface
+	  double diffuse[3] = {1., 1., 1.};
+	  property->SetDiffuseColor(diffuse); // for surface
+	  double specular[3] = {1., 1., 1.};
+	  property->SetSpecularColor(specular); // for surface
   }// end of if
 
-    //=============================================================================
-    // This part cause a problem in the deploy mode.
-    //texture
-    if (mIsTextureOn && !mRgbTextureFilename.isEmpty())
-    { qDebug() << "rendering mRgbTextureFilename = " << mRgbTextureFilename;
-        mActor->SetTexture(mRgbTexture);
-    }
-    else
-        mActor->SetTexture(NULL);
+  //=============================================================================
+  // This part cause a problem in the deploy mode.
+  //texture
+  if (mIsTextureOn && !mRgbTextureFilename.isEmpty())
+  { qDebug() << "rendering mRgbTextureFilename = " << mRgbTextureFilename;
+  mActor->SetTexture(mRgbTexture);
+  }
+  else
+	  mActor->SetTexture(NULL);
 
-    // if texture coordinates are wrong
-    if (mVtkPolyData->GetPointData()) {
-        if (mVtkPolyData->GetPointData()->GetTCoords()) {
-         int numC = mVtkPolyData->GetPointData()->GetTCoords()->GetNumberOfComponents();
-         int numT = mVtkPolyData->GetPointData()->GetTCoords()->GetNumberOfTuples();
+  // if texture coordinates are wrong
+  if (mVtkPolyData->GetPointData()) {
+	  if (mVtkPolyData->GetPointData()->GetTCoords()) {
+		  int numC = mVtkPolyData->GetPointData()->GetTCoords()->GetNumberOfComponents();
+		  int numT = mVtkPolyData->GetPointData()->GetTCoords()->GetNumberOfTuples();
 
-         if ((numC != 2) || !(numT > 0))
-             mActor->SetTexture(NULL);
-        }
-    }
+		  if ((numC != 2) || !(numT > 0))
+			  mActor->SetTexture(NULL);
+	  }
+  }
 
-    //=============================================================================
+  //=============================================================================
 
     setRenderMode3D(mRenderMode3D);
 //  qDebug() << "mRenderMode3D " << mRenderMode3D;
@@ -1762,13 +1808,11 @@ void VtkWidget::refreshGeometry3D()
   mActor = vtkSmartPointer<vtkActor>::New();
   mActor->SetMapper(mMapper);
   mActor->GetProperty()->SetInterpolationToFlat();
-  //// Zeyu testing ambient lighting on March 28, 2017
+  // set ambient light when directional light is off, by Zeyu Wang on March 28, 2017
   if (!getIsDirectionalLight()) {
 	  mActor->GetProperty()->SetAmbient(1);
 	  mActor->GetProperty()->SetDiffuse(0);
-	  qDebug() << "23333\n";
   }
-  qDebug() << "34444\n";
 
   mNumberOfPoints = mVtkPolyData->GetNumberOfPoints();
   mNumberOfPolys = mVtkPolyData->GetNumberOfPolys();
