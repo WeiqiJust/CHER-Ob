@@ -220,8 +220,8 @@ public:
   // TO DO: VIDEO GENERATION FOR 3D OBJECTS
   void computeNormals3D();
   void setPointNoteView(int polygonID, double x, double y, double z);
-  void setSurfaceNoteView();
-  void setFrustumNoteView();
+  void setSurfaceNoteView(int polygonID, double x, double y, double z);
+  void setFrustumNoteView(double angle, double x, double y, double z);
   void launchSpinView();
 
   void setFlattenedMesh(vtkPolyData *flatMesh);

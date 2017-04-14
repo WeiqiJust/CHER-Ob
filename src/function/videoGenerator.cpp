@@ -134,8 +134,8 @@ void VideoGenerator::generate()
 		QVector<QPair<QVector<QPair<int, int> >, QString> > polygonNote2D;
 		QVector<QPair<QPair<int, double*>, QString> > pointNote3D;
 		QVector<QPair<double*, CTSurfaceCornerPoint_> > surfaceNote3D_CT;
-		QVector<double*> surfaceNote3D;
-		QVector<double*> frustumNote3D;
+		QVector<QPair<QPair<int, double*>, QString> > surfaceNote3D;
+		QVector<QPair<double*, QString> > frustumNote3D;
 		QVector<vtkSmartPointer<vtkDataSet> > dataset;
 		if (mObjects[i]->mMode == CTSTACK)
 		{
@@ -272,8 +272,10 @@ void VideoGenerator::generate()
 							ids.push_back(cellId);
 						}
 						double *center = new double[3];
-						computeCenter(mObjects[i]->mGla, ids, center);
-						surfaceNote3D.push_back(center);
+						vtkIdType centerCellId = 0;
+						computeCenter(mObjects[i]->mGla, ids, center, &centerCellId);
+						note.remove(0, index+13); // remove note header for the convenience of further parsing
+						surfaceNote3D.push_back(qMakePair(qMakePair((int)centerCellId, center), note));
 						mode = SURFACENOTE;
 					}
 					else if (firstLine.split(" ")[0] == QString("Frustum"))
@@ -329,7 +331,8 @@ void VideoGenerator::generate()
 						vtkSmartPointer<vtkDataSet> data = vtkSmartPointer<vtkStructuredPoints>::New(); 
 						computeCenter(mObjects[i]->mGla, points, normals, center, data);
 						dataset.push_back(data);
-						frustumNote3D.push_back(center);
+						note.remove(0, index+13); // remove note header for the convenience of further parsing
+						frustumNote3D.push_back(qMakePair(center, note));
 						mode = FRUSTUMNOTE;
 					}
 					else
@@ -337,7 +340,6 @@ void VideoGenerator::generate()
 						qDebug()<<"Parsing Error in video generation: Note Type Error!"<<firstLine;
 						continue;
 					}
-					//note.remove(0, index+13);	// Remove note header for the convenience of further parsing
 					contents.push_back(qMakePair(note, mode));
 				}
 				else if ((mObjects[i]->mMode == CTSTACK || mObjects[i]->mMode == CTVOLUME) && mObjects[i]->mNotes[j].second == NOTE3D)
@@ -518,7 +520,7 @@ void VideoGenerator::generate()
 					initWidget(mObjects[i]->mGla, false);
 					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
 					// generate screenshots from different angles
-					for (int angle = 0; angle < 360; angle+=10)
+					for (int angle = 0; angle < 360; angle++)
 					{
 						mObjects[i]->mGla->setArbitraryView((double)angle);
 						screenshotDict = screenshotObj;
@@ -547,41 +549,50 @@ void VideoGenerator::generate()
 						QPair<QString, QString> textAndImg = parseTextAndImg(pointNote3D[noteid].second);
 						prevFrame = currFrame;
 						currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
-						for (int duration = 0; duration < 60; duration++)
+						for (int duration = 0; duration < 120; duration++)
 						{
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 							outputVideo.write(currFrame);
 						}
 					}
-					/*
 					for (int noteid = 0; noteid < surfaceNote3D.size(); noteid++)
 					{
-						mObjects[i]->mGla->setSurfaceNoteView();
+						mObjects[i]->mGla->setSurfaceNoteView(surfaceNote3D[noteid].first.first,
+							surfaceNote3D[noteid].first.second[0], surfaceNote3D[noteid].first.second[1], surfaceNote3D[noteid].first.second[2]);
 						screenshotDict = screenshotObj;
 						screenshotDict.append("SurfaceNote" + QString::number(noteid));
 						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 						cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
 						cv::Mat resized = resize2Video(frame, mysize);
-						for (int duration = 0; duration < 60; duration++)
+						// put subtitle and associated image
+						QPair<QString, QString> textAndImg = parseTextAndImg(surfaceNote3D[noteid].second);
+						prevFrame = currFrame;
+						currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+						for (int duration = 0; duration < 120; duration++)
 						{
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(resized);
+							outputVideo.write(currFrame);
 						}
 					}
 					for (int noteid = 0; noteid < frustumNote3D.size(); noteid++)
 					{
-						mObjects[i]->mGla->setFrustumNoteView();
-						screenshotDict = screenshotObj;
-						screenshotDict.append("FrustumNote" + QString::number(noteid));
-						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-						cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
-						cv::Mat resized = resize2Video(frame, mysize);
-						for (int duration = 0; duration < 60; duration++)
+						for (int angle = 0; angle < 360; angle++)
 						{
+							mObjects[i]->mGla->setFrustumNoteView((double)angle,
+								frustumNote3D[noteid].first[0], frustumNote3D[noteid].first[1], frustumNote3D[noteid].first[2]);
+							screenshotDict = screenshotObj;
+							screenshotDict.append("FrustumNote" + QString::number(noteid) + "_" + QString::number(angle));
+							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+							cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+							cv::Mat resized = resize2Video(frame, mysize);
+							// put subtitle and associated image
+							QPair<QString, QString> textAndImg = parseTextAndImg(frustumNote3D[noteid].second);
+							prevFrame = currFrame;
+							currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(resized);
+							outputVideo.write(currFrame);
 						}
-					}*/
+					}
 					recoverWidget(mObjects[i]->mGla, info, false);
 					break;
 				}
@@ -1068,11 +1079,11 @@ void VideoGenerator::generate()
 		}
 		for (int j = 0; j < surfaceNote3D.size(); j++)
 		{
-			delete surfaceNote3D[j];
+			delete surfaceNote3D[j].first.second;
 		}
 		for (int j = 0; j < frustumNote3D.size(); j++)
 		{
-			delete frustumNote3D[j];
+			delete frustumNote3D[j].first;
 		}
 	}
 	outputVideo.release();
@@ -1392,7 +1403,7 @@ void VideoGenerator::recoverWidget(VtkWidget* gla, WidgetInfo3D_ info, bool isCT
 	if(gla->mQVTKWidget) gla->mQVTKWidget->update();
 }
 
-void VideoGenerator::computeCenter(const VtkWidget* gla, QVector<int> cellIds, double* center)
+void VideoGenerator::computeCenter(const VtkWidget* gla, QVector<int> cellIds, double* center, vtkIdType* centerCellId)
 {
 	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 	for (int i = 0; i < cellIds.size(); i++)
@@ -1425,9 +1436,8 @@ void VideoGenerator::computeCenter(const VtkWidget* gla, QVector<int> cellIds, d
 	cellLocator->SetDataSet(gla->get3DPolyData());
 	cellLocator->BuildLocator();
 	double closestPointDist2;
-	vtkIdType cellId;
 	int subId;
-	cellLocator->FindClosestPoint(CoM, center, cellId, subId, closestPointDist2);
+	cellLocator->FindClosestPoint(CoM, center, *centerCellId, subId, closestPointDist2);
 }
 
 void VideoGenerator::computeCenter(const VtkWidget* gla, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkDataArray> normals, 

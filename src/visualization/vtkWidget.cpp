@@ -741,53 +741,10 @@ void VtkWidget::setPointNoteView(int polygonID, double x, double y, double z)
 		int dolly = 10;
 		double normalsXYZ[3];
 		mNormals->GetTuple(polygonID, normalsXYZ);
-		//mNormals->GetTuple(68719, testDouble);
 		camera->SetPosition(x + dolly*normalsXYZ[0], y + dolly*normalsXYZ[1], z + dolly*normalsXYZ[2]);
 	}
-	//camera->SetPosition(0, 0, 1);
-	//camera->SetFocalPoint(0, 1, 1);
-	//camera->SetPosition(0.127478 - 10*0.01265, 0.787391 - 10*0.11635, 2.03515 + 10*0.99313);
-	//camera->SetFocalPoint(0.127478, 0.787391, 2.03515);
 	camera->SetFocalPoint(x, y, z);
-	//double x, y, z;
-	//camera->GetPosition(x, y, z);
-	//qDebug() << "23333:\t" << x << "\t" << y << "\t" << z << "\n";
-	//camera->GetFocalPoint(x, y, z);
-	//qDebug() << "34444:\t" << x << "\t" << y << "\t" << z << "\n";
-	//camera->SetViewUp(0.1309, 0.3458, 0.0422);
 	//mRenderer->ResetCamera(); // this line makes SetPosition() and SetFocalPoint() invalid
-	//camera->Dolly(1);
-	mRenderer->ResetCameraClippingRange();
-	mRenderer->Modified();
-	//camera = mRenderer->GetActiveCamera();
-	//camera->GetPosition(x, y, z);
-	//qDebug() << "23333:\t" << x << "\t" << y << "\t" << z << "\n";
-	//camera->GetFocalPoint(x, y, z);
-	//qDebug() << "34444:\t" << x << "\t" << y << "\t" << z << "\n";
-
-	// move light according to light
-	mCallback3D->updateLightingPosition();
-
-	mLight1->Modified();
-	mLight2->Modified();
-
-	// mQVTKWidget->show(); // no Render() is required for 3D
-	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
-}
-
-void VtkWidget::setSurfaceNoteView()
-{
-	if (mRenderer == NULL) return;
-	// move camera to the initial position
-	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
-
-	//// QAQ
-	camera->SetPosition(0, 1, 0);
-	//camera->SetPosition(0.127478 - 10*0.01265, 0.787391 - 10*0.11635, 2.03515 + 10*0.99313);
-	//camera->SetFocalPoint(0.127478, 0.787391, 2.03515);
-	//camera->SetViewUp(0.1309, 0.3458, 0.0422);
-	mRenderer->ResetCamera();
-	camera->Dolly(1.2);
 	mRenderer->ResetCameraClippingRange();
 	mRenderer->Modified();
 
@@ -801,19 +758,53 @@ void VtkWidget::setSurfaceNoteView()
 	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
 }
 
-void VtkWidget::setFrustumNoteView()
+void VtkWidget::setSurfaceNoteView(int polygonID, double x, double y, double z)
 {
 	if (mRenderer == NULL) return;
 	// move camera to the initial position
 	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
+	if (mNormals) {
+		int dolly = 10;
+		double normalsXYZ[3];
+		mNormals->GetTuple(polygonID, normalsXYZ);
+		camera->SetPosition(x + dolly*normalsXYZ[0], y + dolly*normalsXYZ[1], z + dolly*normalsXYZ[2]);
+	}
+	camera->SetFocalPoint(x, y, z);
+	//mRenderer->ResetCamera(); // this line makes SetPosition() and SetFocalPoint() invalid
+	mRenderer->ResetCameraClippingRange();
+	mRenderer->Modified();
 
-	//// QAQ
-	camera->SetPosition(1, 0, 0);
-	//camera->SetPosition(0.127478 - 10*0.01265, 0.787391 - 10*0.11635, 2.03515 + 10*0.99313);
-	//camera->SetFocalPoint(0.127478, 0.787391, 2.03515);
-	//camera->SetViewUp(0.1309, 0.3458, 0.0422);
+	// move light according to light
+	mCallback3D->updateLightingPosition();
+
+	mLight1->Modified();
+	mLight2->Modified();
+
+	// mQVTKWidget->show(); // no Render() is required for 3D
+	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
+}
+
+void VtkWidget::setFrustumNoteView(double angle, double x, double y, double z)
+{
+	if (mRenderer == NULL) return;
+	// move camera to the initial position
+	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
+	if (mWidgetMode == CTVOLUME)
+	{
+		camera->SetPosition(mInitCTCamPos);
+		camera->SetFocalPoint(mInitCTCamFoc);
+		camera->SetViewUp(mInitCTCamUp);
+	}
+	else
+	{
+		camera->SetPosition(mInitCamPos);
+		camera->SetFocalPoint(mInitCamFoc);
+		camera->SetViewUp(mInitCamUp);
+	}
 	mRenderer->ResetCamera();
-	camera->Dolly(0.8);
+	camera->Azimuth(angle);
+	camera->SetFocalPoint(x, y, z);
+	camera->Dolly(2);
 	mRenderer->ResetCameraClippingRange();
 	mRenderer->Modified();
 

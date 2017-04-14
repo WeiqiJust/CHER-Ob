@@ -217,11 +217,12 @@ private:
 
 	/**
 	 * @brief  Compute center point for surface note for 3D object.
-	 * @param  gla      The vtkWidget of the 3D object.
-	 * @param  cellIds  The selected cell ids in the surface.
-	 * @param  center   The center point in world coordinate.
+	 * @param  gla			The vtkWidget of the 3D object.
+	 * @param  cellIds		The selected cell ids in the surface.
+	 * @param  center		The center point in world coordinate.
+	 * @param  centerCellId	The cell ID that contains the computed center.
 	 */
-	void computeCenter(const VtkWidget* gla, QVector<int> cellIds, double* center);
+	void computeCenter(const VtkWidget* gla, QVector<int> cellIds, double* center, vtkIdType* centerCellId);
 
 	/**
 	 * @brief  Compute center point for frustum note for 3D object.
