@@ -732,6 +732,34 @@ void VtkWidget::setArbitraryView(double angle)
 	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
 }
 
+void VtkWidget::getCameraPos(double *campos)
+{
+	if (mRenderer == NULL) return;
+	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
+	camera->GetPosition(campos[0], campos[1], campos[2]);
+	camera->GetFocalPoint(campos[3], campos[4], campos[5]);
+}
+
+void VtkWidget::setCameraPos(double *campos)
+{
+	if (mRenderer == NULL) return;
+	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
+	camera->SetPosition(campos[0], campos[1], campos[2]);
+	camera->SetFocalPoint(campos[3], campos[4], campos[5]);
+	
+	mRenderer->ResetCameraClippingRange();
+	mRenderer->Modified();
+
+	// move light according to light
+	mCallback3D->updateLightingPosition();
+
+	mLight1->Modified();
+	mLight2->Modified();
+
+	// mQVTKWidget->show(); // no Render() is required for 3D
+	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
+}
+
 void VtkWidget::setPointNoteView(int polygonID, double x, double y, double z)
 {
 	if (mRenderer == NULL) return;

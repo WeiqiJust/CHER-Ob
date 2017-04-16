@@ -216,8 +216,10 @@ public:
   void setRenderMode3D(RenderMode3D mode) {mRenderMode3D = mode; refreshRenderMode3D();}
   RenderMode3D getRenderMode3D() const {return mRenderMode3D;}
   void setOrthogonalView(OrthogonalView3D view);
+  // video generator for 3D objects
   void setArbitraryView(double angle);
-  // TO DO: VIDEO GENERATION FOR 3D OBJECTS
+  void getCameraPos(double *campos);
+  void setCameraPos(double *campos);
   void computeNormals3D();
   void setPointNoteView(int polygonID, double x, double y, double z);
   void setSurfaceNoteView(int polygonID, double x, double y, double z);

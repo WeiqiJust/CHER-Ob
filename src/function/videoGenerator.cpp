@@ -519,6 +519,7 @@ void VideoGenerator::generate()
 					saveWidgetinfo(mObjects[i]->mGla, info);
 					initWidget(mObjects[i]->mGla, false);
 					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
+					double prevCam[6], currCam[6]; // 0..2 camera position x y z, 3..5 camera focal point x y z
 					// generate screenshots from different angles
 					for (int angle = 0; angle < 360; angle++)
 					{
@@ -535,11 +536,34 @@ void VideoGenerator::generate()
 						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 						outputVideo.write(currFrame);
 					}
+					mObjects[i]->mGla->getCameraPos(currCam);
 					mObjects[i]->mGla->computeNormals3D();
 					for (int noteid = 0; noteid < pointNote3D.size(); noteid++)
 					{
+						prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
+						prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
 						mObjects[i]->mGla->setPointNoteView(pointNote3D[noteid].first.first,
 							pointNote3D[noteid].first.second[0], pointNote3D[noteid].first.second[1], pointNote3D[noteid].first.second[2]);
+						mObjects[i]->mGla->getCameraPos(currCam);
+						for (int duration = 0; duration < 60; duration++)
+						{
+							double tempCam[6];
+							tempCam[0] = prevCam[0] * (1 - duration / (double)60) + currCam[0] * duration / (double)60;
+							tempCam[1] = prevCam[1] * (1 - duration / (double)60) + currCam[1] * duration / (double)60;
+							tempCam[2] = prevCam[2] * (1 - duration / (double)60) + currCam[2] * duration / (double)60;
+							tempCam[3] = prevCam[3] * (1 - duration / (double)60) + currCam[3] * duration / (double)60;
+							tempCam[4] = prevCam[4] * (1 - duration / (double)60) + currCam[4] * duration / (double)60;
+							tempCam[5] = prevCam[5] * (1 - duration / (double)60) + currCam[5] * duration / (double)60;
+							mObjects[i]->mGla->setCameraPos(tempCam);
+							screenshotDict = screenshotObj;
+							screenshotDict.append("PointNote" + QString::number(noteid) + "_" + QString::number(duration));
+							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+							cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+							cv::Mat resized = resize2Video(frame, mysize);
+							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							outputVideo.write(resized);
+						}
+						mObjects[i]->mGla->setCameraPos(currCam);
 						screenshotDict = screenshotObj;
 						screenshotDict.append("PointNote" + QString::number(noteid));
 						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
@@ -547,7 +571,6 @@ void VideoGenerator::generate()
 						cv::Mat resized = resize2Video(frame, mysize);
 						// put subtitle and associated image
 						QPair<QString, QString> textAndImg = parseTextAndImg(pointNote3D[noteid].second);
-						prevFrame = currFrame;
 						currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
 						for (int duration = 0; duration < 120; duration++)
 						{
@@ -557,8 +580,30 @@ void VideoGenerator::generate()
 					}
 					for (int noteid = 0; noteid < surfaceNote3D.size(); noteid++)
 					{
+						prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
+						prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
 						mObjects[i]->mGla->setSurfaceNoteView(surfaceNote3D[noteid].first.first,
 							surfaceNote3D[noteid].first.second[0], surfaceNote3D[noteid].first.second[1], surfaceNote3D[noteid].first.second[2]);
+						mObjects[i]->mGla->getCameraPos(currCam);
+						for (int duration = 0; duration < 60; duration++)
+						{
+							double tempCam[6];
+							tempCam[0] = prevCam[0] * (1 - duration / (double)60) + currCam[0] * duration / (double)60;
+							tempCam[1] = prevCam[1] * (1 - duration / (double)60) + currCam[1] * duration / (double)60;
+							tempCam[2] = prevCam[2] * (1 - duration / (double)60) + currCam[2] * duration / (double)60;
+							tempCam[3] = prevCam[3] * (1 - duration / (double)60) + currCam[3] * duration / (double)60;
+							tempCam[4] = prevCam[4] * (1 - duration / (double)60) + currCam[4] * duration / (double)60;
+							tempCam[5] = prevCam[5] * (1 - duration / (double)60) + currCam[5] * duration / (double)60;
+							mObjects[i]->mGla->setCameraPos(tempCam);
+							screenshotDict = screenshotObj;
+							screenshotDict.append("SurfaceNote" + QString::number(noteid) + "_" + QString::number(duration));
+							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+							cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+							cv::Mat resized = resize2Video(frame, mysize);
+							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							outputVideo.write(resized);
+						}
+						mObjects[i]->mGla->setCameraPos(currCam);
 						screenshotDict = screenshotObj;
 						screenshotDict.append("SurfaceNote" + QString::number(noteid));
 						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
@@ -566,7 +611,6 @@ void VideoGenerator::generate()
 						cv::Mat resized = resize2Video(frame, mysize);
 						// put subtitle and associated image
 						QPair<QString, QString> textAndImg = parseTextAndImg(surfaceNote3D[noteid].second);
-						prevFrame = currFrame;
 						currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
 						for (int duration = 0; duration < 120; duration++)
 						{
@@ -576,6 +620,28 @@ void VideoGenerator::generate()
 					}
 					for (int noteid = 0; noteid < frustumNote3D.size(); noteid++)
 					{
+						prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
+						prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
+						mObjects[i]->mGla->setFrustumNoteView(0, frustumNote3D[noteid].first[0], frustumNote3D[noteid].first[1], frustumNote3D[noteid].first[2]);
+						mObjects[i]->mGla->getCameraPos(currCam);
+						for (int duration = 0; duration < 60; duration++)
+						{
+							double tempCam[6];
+							tempCam[0] = prevCam[0] * (1 - duration / (double)60) + currCam[0] * duration / (double)60;
+							tempCam[1] = prevCam[1] * (1 - duration / (double)60) + currCam[1] * duration / (double)60;
+							tempCam[2] = prevCam[2] * (1 - duration / (double)60) + currCam[2] * duration / (double)60;
+							tempCam[3] = prevCam[3] * (1 - duration / (double)60) + currCam[3] * duration / (double)60;
+							tempCam[4] = prevCam[4] * (1 - duration / (double)60) + currCam[4] * duration / (double)60;
+							tempCam[5] = prevCam[5] * (1 - duration / (double)60) + currCam[5] * duration / (double)60;
+							mObjects[i]->mGla->setCameraPos(tempCam);
+							screenshotDict = screenshotObj;
+							screenshotDict.append("FrustumNote" + QString::number(noteid) + "_" + QString::number(duration));
+							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+							cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+							cv::Mat resized = resize2Video(frame, mysize);
+							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							outputVideo.write(resized);
+						}
 						for (int angle = 0; angle < 360; angle++)
 						{
 							mObjects[i]->mGla->setFrustumNoteView((double)angle,
@@ -587,11 +653,11 @@ void VideoGenerator::generate()
 							cv::Mat resized = resize2Video(frame, mysize);
 							// put subtitle and associated image
 							QPair<QString, QString> textAndImg = parseTextAndImg(frustumNote3D[noteid].second);
-							prevFrame = currFrame;
 							currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 							outputVideo.write(currFrame);
 						}
+						mObjects[i]->mGla->getCameraPos(currCam);
 					}
 					recoverWidget(mObjects[i]->mGla, info, false);
 					break;
