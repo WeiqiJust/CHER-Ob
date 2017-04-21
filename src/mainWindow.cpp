@@ -2623,7 +2623,7 @@ OPENRESULT MainWindow::openImages(const QString& fileNameStart, const QString& C
 			bool mtlFlag = false;
 			while (objContent.status() == QTextStream::Ok) {
 				objContent >> mtlName;
-				if(mtlName == "mtllib") {
+				if (mtlName == "mtllib") {
 					objContent >> mtlName;
 					mtlFlag = true;
 					break;
@@ -2639,19 +2639,21 @@ OPENRESULT MainWindow::openImages(const QString& fileNameStart, const QString& C
 				QFile mtlFile(mtlPath);
 				mtlFile.open(QIODevice::ReadOnly | QIODevice::Text);
 				QTextStream mtlContent(&mtlFile);
-				QString tmpStr;
-				while (mtlContent.status() == QTextStream::Ok) {
-					mtlContent >> tmpStr;
-					bool isDouble = false;
-					double tmpDouble = tmpStr.toDouble(&isDouble);
-					if (!isDouble && tmpStr.contains(".")) {
-						QString texturePath = path + QDir::separator() + tmpStr;
+				QString tmpStr = mtlContent.readLine();
+				while (!tmpStr.isNull()) {
+					if (tmpStr[0] == '#') {
+						tmpStr = mtlContent.readLine();
+						continue;
+					}
+					if (tmpStr[0] == 'm' && tmpStr[1] == 'a' && tmpStr[2] == 'p') {
+						QString texturePath = path + QDir::separator() + tmpStr.split(" ")[1];
 						QFileInfo textureInfo(texturePath);
 						if (!textureInfo.isFile()) {
 							QMessageBox::critical(this, tr("Opening Error"), ".obj file missing its texture file!");
 							return FAILED;
 						}
 					}
+					tmpStr = mtlContent.readLine();
 				}
 			}
 		}
