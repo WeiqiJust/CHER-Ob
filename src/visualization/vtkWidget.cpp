@@ -792,7 +792,7 @@ void VtkWidget::setSurfaceNoteView(int polygonID, double x, double y, double z)
 	// move camera to the initial position
 	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
 	if (mNormals) {
-		int dolly = 10;
+		int dolly = 30;
 		double normalsXYZ[3];
 		mNormals->GetTuple(polygonID, normalsXYZ);
 		camera->SetPosition(x + dolly*normalsXYZ[0], y + dolly*normalsXYZ[1], z + dolly*normalsXYZ[2]);

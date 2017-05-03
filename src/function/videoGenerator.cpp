@@ -521,7 +521,7 @@ void VideoGenerator::generate()
 					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
 					double prevCam[6], currCam[6]; // 0..2 camera position x y z, 3..5 camera focal point x y z
 					// generate screenshots from different angles
-					for (int angle = 0; angle < 360; angle++)
+					for (int angle = -180; angle < 180; angle++)
 					{
 						mObjects[i]->mGla->setArbitraryView((double)angle);
 						screenshotDict = screenshotObj;
@@ -531,7 +531,7 @@ void VideoGenerator::generate()
 						cv::Mat resized = resize2Video(frame, mysize);
 						currFrame = putSubtitle(resized, annotation.toStdString(), mysize);
 						// blending
-						if (angle == 0)
+						if (angle == -180)
 							blend2Video(prevFrame, currFrame, outputVideo);
 						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 						outputVideo.write(currFrame);
