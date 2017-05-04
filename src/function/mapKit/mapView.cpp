@@ -127,6 +127,17 @@ mapView::mapView(MapType mapType, mapCoordinate center, uint zoomLevel,
             this, SLOT(initializeMap()));
 }
 
+// make a screenshot of QWebView
+void mapView::makeScreenshotView(QString path)
+{
+	// QImage image(d_ptr->frame()->contentsSize(), QImage::Format_ARGB32);
+	QImage image(QSize(480, 480), QImage::Format_ARGB32);
+	QPainter painter(&image);
+	d_ptr->frame()->render(&painter);
+	painter.end();
+	image.save(path);
+}
+
 void mapView::insertNativeObject()
 {
     Q_D(mapView);

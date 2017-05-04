@@ -38,6 +38,7 @@ public:
 	void startGeoMarking();
 	void finishGeoMarking();
 	void loadMark(QString name, mapCoordinate coord);
+	void makeScreenshot(QString path);
 	//// refresh() to be implemented! e.g. close and open another
 
 public slots:

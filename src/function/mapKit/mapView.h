@@ -58,6 +58,8 @@ public:
     void fitRegion(mapCoordinateRegion &region);
 	void markCenter(QString name, mapCoordinate center);
 	void bounceMarker(QString name);
+
+	void makeScreenshotView(QString path);
 //    void pan(int x, int y);
 //    void setHeading(qreal heading);
 //    void setTilt(qreal tile);

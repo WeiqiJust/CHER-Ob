@@ -158,3 +158,8 @@ void MapWidget::loadMark(QString name, mapCoordinate coord)
 	arg.append(name).append("'");
 	_mapView->markCenter(arg, coord);
 }
+
+void MapWidget::makeScreenshot(QString path)
+{
+	_mapView->makeScreenshotView(path);
+}

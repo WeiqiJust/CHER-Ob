@@ -124,6 +124,18 @@ void VideoGenerator::generate()
 	cv::Size mysize(800, 600);
 	cv::VideoWriter outputVideo(mLocation.toStdString(), cv::VideoWriter::fourcc('D','I','V','3'), 30, mysize, true); // SIZE ISSUE
 
+	// create title frame
+	cv::Mat titleFrame = cv::Mat::zeros(mysize, CV_8UC3);
+	cv::putText(titleFrame, mProjectName.toStdString(), cv::Point(50, 200), cv::FONT_HERSHEY_DUPLEX, 1.0, cv::Scalar(255, 255, 255), 1, CV_AA);
+	cv::putText(titleFrame, mUserName.toStdString(), cv::Point(50, 350), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+	cv::putText(titleFrame, mAffiliation.toStdString(), cv::Point(50, 400), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+	cv::putText(titleFrame, "Powered by CHER-Ob", cv::Point(550, 550), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+	for (int duration = 0; duration < 120; duration++)
+	{
+		if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+		outputVideo.write(titleFrame);
+	}
+
 	bool isCTModeSwitched = false;
 	for (int i = 0; i < mObjects.size(); i++)
 	{
@@ -420,6 +432,7 @@ void VideoGenerator::generate()
 		QVector<QPair<double, double> > frustumNote3DFront, frustumNote3DLeft, frustumNote3DRight, frustumNote3DTop, frustumNote3DBottom, frustumNote3DBack;
 		WidgetInfo3D_ info;
 		QPixmap RTIScreenShot;
+	
 		switch(mObjects[i]->mMode)
 		{
 			case EMPTYWIDGET:
@@ -437,7 +450,11 @@ void VideoGenerator::generate()
 
 					// put general annotation, effect to be refined
 					cv::Mat resized = resize2Video(frame, mysize);
-					currFrame = putSubtitle(resized, annotation.toStdString(), mysize);
+					screenshotDict = screenshotObj;
+					screenshotDict.append("_geo.png");
+					//// TODO: need to set google map JavaScript to relocate current object
+					mw()->mGeoInfo->makeScreenshot(screenshotDict); // save google map screenshot
+					currFrame = putSubtitle(resized, annotation.toStdString(), mysize, screenshotDict.toStdString());
 					blend2Video(prevFrame, currFrame, outputVideo);
 					for (int duration = 0; duration < 120; duration++)
 					{
