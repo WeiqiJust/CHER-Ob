@@ -683,6 +683,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\function\videoNoteFilter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\function\videoSetup.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\visualization\vtkInteractorStyleSurfaceWalkerCamera.cpp"
 				>
 			</File>
@@ -3345,6 +3353,102 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\function\videoNoteFilter.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing videoNoteFilter.h..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_WINDOWS -DUNICODE -DWIN64 -DQT_LARGEFILE_SUPPORT -DWIN32 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS -DNOMINMAX -DQWT_DLL -DQT_THREAD_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_WEBKIT_LIB -DQT_SCRIPT_LIB -DQT_SQL_LIB -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DNDEBUG &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtNetwork&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include\QtSql&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I$(QTDIR)\include\QtWebKit&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\..\thirdparties\itkvtkglue&quot; &quot;-Ic:\usr\local\win32\include\ITK-4.0&quot; &quot;-I.\..\thirdparties\vtk&quot; &quot;-Ic:\usr\local\win32\include\vtk-5.8&quot; &quot;-Ic:\libraries\boost\boost_1_47_0&quot; &quot;-Ic:\usr\local\win32\include&quot; &quot;-Ic:\usr\local\win32\include\clapack-3.2.1&quot; &quot;-Ic:\usr\local\win32\include\armadillo_bits&quot; &quot;-Ic:\usr\local\win32\include\OpenEXR-1.7&quot; &quot;-Ic:\usr\local\win32\include\qwt-6.0&quot; &quot;-I$(QTDIR)\include\ActiveQt&quot; &quot;-I.\release&quot; &quot;-I.\..\Qt_4.8.5_x64\mkspecs\win32-msvc2008&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\armadillo-3.920.1\include&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\clapack-3.2.1\include&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\ITK\include\ITK-4.4&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\itkvtkglue&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\openEXR-1.7.0\include&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\qwt-6.1.0\include&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\VTK\include\vtk-5.10&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\vcglib&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\rtiwebmaker&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\rtiviewer_1_1_source&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing videoNoteFilter.h..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS -D_WINDOWS -DNDEBUG -DNOMINMAX -DQT_CORE_LIB -DQT_DLL -DQT_GUI_LIB -DQT_HAVE_3DNOW -DQT_HAVE_MMX -DQT_HAVE_MMXEXT -DQT_HAVE_SSE -DQT_HAVE_SSE2 -DQT_LARGEFILE_SUPPORT -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -DQT_SQL_LIB -DQT_THREAD_SUPPORT -DQT_WEBKIT_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB -DQWT_DLL -DUNICODE -DWIN32 -DWIN64 &quot;-I.\..\lib\OpenCV\include&quot; &quot;-I.\..\lib\VTK\include\vtk-5.10&quot; &quot;-I.\..\lib\vcglib&quot; &quot;-I.\..\lib\rtiwebmaker\src&quot; &quot;-I.\..\lib\rtiviewer_1_1_source&quot; &quot;-I.\..\lib\qwt-6.1.0\include&quot; &quot;-I.\..\lib\openEXR-1.7.0\include&quot; &quot;-I.\..\lib\itkvtkglue&quot; &quot;-I.\..\lib\ITK\include\ITK-4.4&quot; &quot;-I.\..\lib\clapack-3.2.1\include&quot; &quot;-I.\..\lib\armadillo-3.920.1\include&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtNetwork&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include\QtSql&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I$(QTDIR)\include\QtWebKit&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I$(QTDIR)\include\ActiveQt&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing videoNoteFilter.h..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_WINDOWS -DUNICODE -DWIN64 -DQT_LARGEFILE_SUPPORT -DWIN32 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS -DNOMINMAX -DQWT_DLL -DQT_THREAD_SUPPORT -DQT_DLL -DQT_WEBKIT_LIB -DQT_SCRIPT_LIB -DQT_SQL_LIB -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtNetwork&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include\QtSql&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I$(QTDIR)\include\QtWebKit&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\..\thirdparties\itkvtkglue&quot; &quot;-Ic:\usr\local\win32\include\ITK-4.0&quot; &quot;-I.\..\thirdparties\vtk&quot; &quot;-Ic:\usr\local\win32\include\vtk-5.8&quot; &quot;-Ic:\libraries\boost\boost_1_47_0&quot; &quot;-Ic:\usr\local\win32\include&quot; &quot;-Ic:\usr\local\win32\include\clapack-3.2.1&quot; &quot;-Ic:\usr\local\win32\include\armadillo_bits&quot; &quot;-Ic:\usr\local\win32\include\OpenEXR-1.7&quot; &quot;-Ic:\usr\local\win32\include\qwt-6.0&quot; &quot;-I$(QTDIR)\include\ActiveQt&quot; &quot;-I.\debug&quot; &quot;-I.\..\Qt_4.8.5_x64\mkspecs\win32-msvc2008&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing videoNoteFilter.h..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS -D_WINDOWS -DNOMINMAX -DQT_CORE_LIB -DQT_DLL -DQT_GUI_LIB -DQT_HAVE_3DNOW -DQT_HAVE_MMX -DQT_HAVE_MMXEXT -DQT_HAVE_SSE -DQT_HAVE_SSE2 -DQT_LARGEFILE_SUPPORT -DQT_NETWORK_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -DQT_SQL_LIB -DQT_THREAD_SUPPORT -DQT_WEBKIT_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB -DQWT_DLL -DUNICODE -DWIN32 -DWIN64 &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtNetwork&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include\QtSql&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I$(QTDIR)\include\QtWebKit&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\..\thirdparties\itkvtkglue&quot; &quot;-Ic:\usr\local\win32\include\ITK-4.0&quot; &quot;-I.\..\thirdparties\vtk&quot; &quot;-Ic:\usr\local\win32\include\vtk-5.8&quot; &quot;-Ic:\libraries\boost\boost_1_47_0&quot; &quot;-Ic:\usr\local\win32\include&quot; &quot;-Ic:\usr\local\win32\include\clapack-3.2.1&quot; &quot;-Ic:\usr\local\win32\include\armadillo_bits&quot; &quot;-Ic:\usr\local\win32\include\OpenEXR-1.7&quot; &quot;-Ic:\usr\local\win32\include\qwt-6.0&quot; &quot;-I$(QTDIR)\include\ActiveQt&quot; &quot;-I.\debug&quot; &quot;-I.\..\Qt_4.8.5_x64\mkspecs\win32-msvc2008&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\function\videoSetup.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing videoSetup.h..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_WINDOWS -DUNICODE -DWIN64 -DQT_LARGEFILE_SUPPORT -DWIN32 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS -DNOMINMAX -DQWT_DLL -DQT_THREAD_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_WEBKIT_LIB -DQT_SCRIPT_LIB -DQT_SQL_LIB -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DNDEBUG &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtNetwork&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include\QtSql&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I$(QTDIR)\include\QtWebKit&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\..\thirdparties\itkvtkglue&quot; &quot;-Ic:\usr\local\win32\include\ITK-4.0&quot; &quot;-I.\..\thirdparties\vtk&quot; &quot;-Ic:\usr\local\win32\include\vtk-5.8&quot; &quot;-Ic:\libraries\boost\boost_1_47_0&quot; &quot;-Ic:\usr\local\win32\include&quot; &quot;-Ic:\usr\local\win32\include\clapack-3.2.1&quot; &quot;-Ic:\usr\local\win32\include\armadillo_bits&quot; &quot;-Ic:\usr\local\win32\include\OpenEXR-1.7&quot; &quot;-Ic:\usr\local\win32\include\qwt-6.0&quot; &quot;-I$(QTDIR)\include\ActiveQt&quot; &quot;-I.\release&quot; &quot;-I.\..\Qt_4.8.5_x64\mkspecs\win32-msvc2008&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\armadillo-3.920.1\include&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\clapack-3.2.1\include&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\ITK\include\ITK-4.4&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\itkvtkglue&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\openEXR-1.7.0\include&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\qwt-6.1.0\include&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\VTK\include\vtk-5.10&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\vcglib&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\rtiwebmaker&quot; &quot;-IC:\Users\zw274\Desktop\zw274\CHER-Ob-master\lib\rtiviewer_1_1_source&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing videoSetup.h..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS -D_WINDOWS -DNDEBUG -DNOMINMAX -DQT_CORE_LIB -DQT_DLL -DQT_GUI_LIB -DQT_HAVE_3DNOW -DQT_HAVE_MMX -DQT_HAVE_MMXEXT -DQT_HAVE_SSE -DQT_HAVE_SSE2 -DQT_LARGEFILE_SUPPORT -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -DQT_SQL_LIB -DQT_THREAD_SUPPORT -DQT_WEBKIT_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB -DQWT_DLL -DUNICODE -DWIN32 -DWIN64 &quot;-I.\..\lib\OpenCV\include&quot; &quot;-I.\..\lib\VTK\include\vtk-5.10&quot; &quot;-I.\..\lib\vcglib&quot; &quot;-I.\..\lib\rtiwebmaker\src&quot; &quot;-I.\..\lib\rtiviewer_1_1_source&quot; &quot;-I.\..\lib\qwt-6.1.0\include&quot; &quot;-I.\..\lib\openEXR-1.7.0\include&quot; &quot;-I.\..\lib\itkvtkglue&quot; &quot;-I.\..\lib\ITK\include\ITK-4.4&quot; &quot;-I.\..\lib\clapack-3.2.1\include&quot; &quot;-I.\..\lib\armadillo-3.920.1\include&quot; &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtNetwork&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include\QtSql&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I$(QTDIR)\include\QtWebKit&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I$(QTDIR)\include\ActiveQt&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing videoSetup.h..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_WINDOWS -DUNICODE -DWIN64 -DQT_LARGEFILE_SUPPORT -DWIN32 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS -DNOMINMAX -DQWT_DLL -DQT_THREAD_SUPPORT -DQT_DLL -DQT_WEBKIT_LIB -DQT_SCRIPT_LIB -DQT_SQL_LIB -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtNetwork&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include\QtSql&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I$(QTDIR)\include\QtWebKit&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\..\thirdparties\itkvtkglue&quot; &quot;-Ic:\usr\local\win32\include\ITK-4.0&quot; &quot;-I.\..\thirdparties\vtk&quot; &quot;-Ic:\usr\local\win32\include\vtk-5.8&quot; &quot;-Ic:\libraries\boost\boost_1_47_0&quot; &quot;-Ic:\usr\local\win32\include&quot; &quot;-Ic:\usr\local\win32\include\clapack-3.2.1&quot; &quot;-Ic:\usr\local\win32\include\armadillo_bits&quot; &quot;-Ic:\usr\local\win32\include\OpenEXR-1.7&quot; &quot;-Ic:\usr\local\win32\include\qwt-6.0&quot; &quot;-I$(QTDIR)\include\ActiveQt&quot; &quot;-I.\debug&quot; &quot;-I.\..\Qt_4.8.5_x64\mkspecs\win32-msvc2008&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing videoSetup.h..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS -D_WINDOWS -DNOMINMAX -DQT_CORE_LIB -DQT_DLL -DQT_GUI_LIB -DQT_HAVE_3DNOW -DQT_HAVE_MMX -DQT_HAVE_MMXEXT -DQT_HAVE_SSE -DQT_HAVE_SSE2 -DQT_LARGEFILE_SUPPORT -DQT_NETWORK_LIB -DQT_OPENGL_LIB -DQT_SCRIPT_LIB -DQT_SQL_LIB -DQT_THREAD_SUPPORT -DQT_WEBKIT_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB -DQWT_DLL -DUNICODE -DWIN32 -DWIN64 &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtNetwork&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtOpenGL&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include\QtSql&quot; &quot;-I$(QTDIR)\include\QtScript&quot; &quot;-I$(QTDIR)\include\QtWebKit&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.\..\thirdparties\itkvtkglue&quot; &quot;-Ic:\usr\local\win32\include\ITK-4.0&quot; &quot;-I.\..\thirdparties\vtk&quot; &quot;-Ic:\usr\local\win32\include\vtk-5.8&quot; &quot;-Ic:\libraries\boost\boost_1_47_0&quot; &quot;-Ic:\usr\local\win32\include&quot; &quot;-Ic:\usr\local\win32\include\clapack-3.2.1&quot; &quot;-Ic:\usr\local\win32\include\armadillo_bits&quot; &quot;-Ic:\usr\local\win32\include\OpenEXR-1.7&quot; &quot;-Ic:\usr\local\win32\include\qwt-6.0&quot; &quot;-I$(QTDIR)\include\ActiveQt&quot; &quot;-I.\debug&quot; &quot;-I.\..\Qt_4.8.5_x64\mkspecs\win32-msvc2008&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\src\visualization\vtk2DInteractionCallback.hpp"
 				>
 			</File>
@@ -4576,6 +4680,46 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\GeneratedFiles\Release\moc_videoNoteFilter.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\GeneratedFiles\Release\moc_videoSetup.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath=".\GeneratedFiles\Release\moc_vtkView.cpp"
 					>
 					<FileConfiguration
@@ -5663,6 +5807,46 @@
 				</File>
 				<File
 					RelativePath=".\GeneratedFiles\Debug\moc_videoGenerator.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\GeneratedFiles\Debug\moc_videoNoteFilter.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\GeneratedFiles\Debug\moc_videoSetup.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"

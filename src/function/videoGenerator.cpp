@@ -96,6 +96,22 @@ VideoGenerator::VideoGenerator(QString path, bool project)
 	else isWmv = false;
 }
 
+void VideoGenerator::setUpdateSetup(const QString project, const QString userName, const QString affiliation, const int videoFormat, const int resolutionOption,
+		const int frameDuration2D, const int transDuration2D, const int frameDuration3D, const int transDuration3D, const int dolly3D, const bool isShowGeneral)
+{
+	mProjectName = project;
+	mUserName = userName;
+	mAffiliation = affiliation;
+	mVideoFormat = videoFormat;
+	mResolutionOption = resolutionOption;
+	mFrameDuration2D = frameDuration2D;
+	mTransDuration2D = transDuration2D;
+	mFrameDuration3D = frameDuration3D;
+	mTransDuration3D = transDuration3D;
+	mDolly3D = dolly3D;
+	mShowGeneral = isShowGeneral;
+}
+
 void VideoGenerator::setCHEInfo(const CHEInfoBasic* info)
 {
 	mCHEInfo = new CHEInfoBasic();
@@ -128,9 +144,12 @@ void VideoGenerator::generate()
 	cv::Mat titleFrame = cv::Mat::zeros(mysize, CV_8UC3);
 	cv::putText(titleFrame, mProjectName.toStdString(), cv::Point(50, 200), cv::FONT_HERSHEY_DUPLEX, 1.0, cv::Scalar(255, 255, 255), 1, CV_AA);
 	cv::putText(titleFrame, mUserName.toStdString(), cv::Point(50, 350), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
-	cv::putText(titleFrame, mAffiliation.toStdString(), cv::Point(50, 400), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+	if (mAffiliation != "")
+	{
+		cv::putText(titleFrame, mAffiliation.toStdString(), cv::Point(50, 400), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+	}
 	cv::putText(titleFrame, "Powered by CHER-Ob", cv::Point(550, 550), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
-	for (int duration = 0; duration < 120; duration++)
+	for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
 	{
 		if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 		outputVideo.write(titleFrame);
@@ -456,7 +475,7 @@ void VideoGenerator::generate()
 					mw()->mGeoInfo->makeScreenshot(screenshotDict); // save google map screenshot
 					currFrame = putSubtitle(resized, annotation.toStdString(), mysize, screenshotDict.toStdString());
 					blend2Video(prevFrame, currFrame, outputVideo);
-					for (int duration = 0; duration < 120; duration++)
+					for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
 					{
 						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 						outputVideo.write(currFrame);
@@ -471,7 +490,7 @@ void VideoGenerator::generate()
 						currFrame = resize2Video(currNote, mysize);
 						currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
 						blend2Video(prevFrame, currFrame, outputVideo);
-						for (int duration = 0; duration < 120; duration++)
+						for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
 						{
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 							outputVideo.write(currFrame);
@@ -491,7 +510,7 @@ void VideoGenerator::generate()
 						currFrame = resize2Video(currNote, mysize);
 						currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
 						blend2Video(prevFrame, currFrame, outputVideo);
-						for (int duration = 0; duration < 120; duration++)
+						for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
 						{
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 							outputVideo.write(currFrame);
@@ -523,7 +542,7 @@ void VideoGenerator::generate()
 						currFrame = resize2Video(currNote, mysize);
 						currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
 						blend2Video(prevFrame, currFrame, outputVideo);
-						for (int duration = 0; duration < 120; duration++)
+						for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
 						{
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 							outputVideo.write(currFrame);
@@ -538,7 +557,7 @@ void VideoGenerator::generate()
 					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
 					double prevCam[6], currCam[6]; // 0..2 camera position x y z, 3..5 camera focal point x y z
 					// generate screenshots from different angles
-					for (int angle = -180; angle < 180; angle++)
+					for (int angle = 0; angle < 360; angle++)
 					{
 						mObjects[i]->mGla->setArbitraryView((double)angle);
 						screenshotDict = screenshotObj;
@@ -548,7 +567,7 @@ void VideoGenerator::generate()
 						cv::Mat resized = resize2Video(frame, mysize);
 						currFrame = putSubtitle(resized, annotation.toStdString(), mysize);
 						// blending
-						if (angle == -180)
+						if (angle == 0)
 							blend2Video(prevFrame, currFrame, outputVideo);
 						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 						outputVideo.write(currFrame);
@@ -560,24 +579,24 @@ void VideoGenerator::generate()
 						prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
 						prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
 						mObjects[i]->mGla->setPointNoteView(pointNote3D[noteid].first.first,
-							pointNote3D[noteid].first.second[0], pointNote3D[noteid].first.second[1], pointNote3D[noteid].first.second[2]);
+							pointNote3D[noteid].first.second[0], pointNote3D[noteid].first.second[1], pointNote3D[noteid].first.second[2], mDolly3D);
 						mObjects[i]->mGla->getCameraPos(currCam);
-						for (int duration = 0; duration < 60; duration++)
+						for (int duration = 0; duration < 30*mTransDuration3D; duration++)
 						{
 							double tempCam[6];
-							tempCam[0] = prevCam[0] * (1 - duration / (double)60) + currCam[0] * duration / (double)60;
-							tempCam[1] = prevCam[1] * (1 - duration / (double)60) + currCam[1] * duration / (double)60;
-							tempCam[2] = prevCam[2] * (1 - duration / (double)60) + currCam[2] * duration / (double)60;
-							tempCam[3] = prevCam[3] * (1 - duration / (double)60) + currCam[3] * duration / (double)60;
-							tempCam[4] = prevCam[4] * (1 - duration / (double)60) + currCam[4] * duration / (double)60;
-							tempCam[5] = prevCam[5] * (1 - duration / (double)60) + currCam[5] * duration / (double)60;
+							tempCam[0] = prevCam[0] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[0] * duration / (double)(30*mTransDuration3D);
+							tempCam[1] = prevCam[1] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[1] * duration / (double)(30*mTransDuration3D);
+							tempCam[2] = prevCam[2] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[2] * duration / (double)(30*mTransDuration3D);
+							tempCam[3] = prevCam[3] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[3] * duration / (double)(30*mTransDuration3D);
+							tempCam[4] = prevCam[4] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[4] * duration / (double)(30*mTransDuration3D);
+							tempCam[5] = prevCam[5] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[5] * duration / (double)(30*mTransDuration3D);
 							mObjects[i]->mGla->setCameraPos(tempCam);
 							screenshotDict = screenshotObj;
 							screenshotDict.append("PointNote" + QString::number(noteid) + "_" + QString::number(duration));
 							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 							cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
 							cv::Mat resized = resize2Video(frame, mysize);
-							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							if (!outputVideo.isOpened()) qDebug()  << "ERROR: outputVideo not opened!\n\n";
 							outputVideo.write(resized);
 						}
 						mObjects[i]->mGla->setCameraPos(currCam);
@@ -589,7 +608,7 @@ void VideoGenerator::generate()
 						// put subtitle and associated image
 						QPair<QString, QString> textAndImg = parseTextAndImg(pointNote3D[noteid].second);
 						currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
-						for (int duration = 0; duration < 120; duration++)
+						for (int duration = 0; duration < 30*mFrameDuration3D; duration++)
 						{
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 							outputVideo.write(currFrame);
@@ -600,17 +619,17 @@ void VideoGenerator::generate()
 						prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
 						prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
 						mObjects[i]->mGla->setSurfaceNoteView(surfaceNote3D[noteid].first.first,
-							surfaceNote3D[noteid].first.second[0], surfaceNote3D[noteid].first.second[1], surfaceNote3D[noteid].first.second[2]);
+							surfaceNote3D[noteid].first.second[0], surfaceNote3D[noteid].first.second[1], surfaceNote3D[noteid].first.second[2], mDolly3D);
 						mObjects[i]->mGla->getCameraPos(currCam);
-						for (int duration = 0; duration < 60; duration++)
+						for (int duration = 0; duration < 30*mTransDuration3D; duration++)
 						{
 							double tempCam[6];
-							tempCam[0] = prevCam[0] * (1 - duration / (double)60) + currCam[0] * duration / (double)60;
-							tempCam[1] = prevCam[1] * (1 - duration / (double)60) + currCam[1] * duration / (double)60;
-							tempCam[2] = prevCam[2] * (1 - duration / (double)60) + currCam[2] * duration / (double)60;
-							tempCam[3] = prevCam[3] * (1 - duration / (double)60) + currCam[3] * duration / (double)60;
-							tempCam[4] = prevCam[4] * (1 - duration / (double)60) + currCam[4] * duration / (double)60;
-							tempCam[5] = prevCam[5] * (1 - duration / (double)60) + currCam[5] * duration / (double)60;
+							tempCam[0] = prevCam[0] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[0] * duration / (double)(30*mTransDuration3D);
+							tempCam[1] = prevCam[1] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[1] * duration / (double)(30*mTransDuration3D);
+							tempCam[2] = prevCam[2] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[2] * duration / (double)(30*mTransDuration3D);
+							tempCam[3] = prevCam[3] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[3] * duration / (double)(30*mTransDuration3D);
+							tempCam[4] = prevCam[4] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[4] * duration / (double)(30*mTransDuration3D);
+							tempCam[5] = prevCam[5] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[5] * duration / (double)(30*mTransDuration3D);
 							mObjects[i]->mGla->setCameraPos(tempCam);
 							screenshotDict = screenshotObj;
 							screenshotDict.append("SurfaceNote" + QString::number(noteid) + "_" + QString::number(duration));
@@ -629,7 +648,7 @@ void VideoGenerator::generate()
 						// put subtitle and associated image
 						QPair<QString, QString> textAndImg = parseTextAndImg(surfaceNote3D[noteid].second);
 						currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
-						for (int duration = 0; duration < 120; duration++)
+						for (int duration = 0; duration < 30*mFrameDuration3D; duration++)
 						{
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 							outputVideo.write(currFrame);
@@ -639,17 +658,17 @@ void VideoGenerator::generate()
 					{
 						prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
 						prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
-						mObjects[i]->mGla->setFrustumNoteView(0, frustumNote3D[noteid].first[0], frustumNote3D[noteid].first[1], frustumNote3D[noteid].first[2]);
+						mObjects[i]->mGla->setFrustumNoteView(0, frustumNote3D[noteid].first[0], frustumNote3D[noteid].first[1], frustumNote3D[noteid].first[2], mDolly3D);
 						mObjects[i]->mGla->getCameraPos(currCam);
-						for (int duration = 0; duration < 60; duration++)
+						for (int duration = 0; duration < 30*mTransDuration3D; duration++)
 						{
 							double tempCam[6];
-							tempCam[0] = prevCam[0] * (1 - duration / (double)60) + currCam[0] * duration / (double)60;
-							tempCam[1] = prevCam[1] * (1 - duration / (double)60) + currCam[1] * duration / (double)60;
-							tempCam[2] = prevCam[2] * (1 - duration / (double)60) + currCam[2] * duration / (double)60;
-							tempCam[3] = prevCam[3] * (1 - duration / (double)60) + currCam[3] * duration / (double)60;
-							tempCam[4] = prevCam[4] * (1 - duration / (double)60) + currCam[4] * duration / (double)60;
-							tempCam[5] = prevCam[5] * (1 - duration / (double)60) + currCam[5] * duration / (double)60;
+							tempCam[0] = prevCam[0] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[0] * duration / (double)(30*mTransDuration3D);
+							tempCam[1] = prevCam[1] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[1] * duration / (double)(30*mTransDuration3D);
+							tempCam[2] = prevCam[2] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[2] * duration / (double)(30*mTransDuration3D);
+							tempCam[3] = prevCam[3] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[3] * duration / (double)(30*mTransDuration3D);
+							tempCam[4] = prevCam[4] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[4] * duration / (double)(30*mTransDuration3D);
+							tempCam[5] = prevCam[5] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[5] * duration / (double)(30*mTransDuration3D);
 							mObjects[i]->mGla->setCameraPos(tempCam);
 							screenshotDict = screenshotObj;
 							screenshotDict.append("FrustumNote" + QString::number(noteid) + "_" + QString::number(duration));
@@ -662,7 +681,7 @@ void VideoGenerator::generate()
 						for (int angle = 0; angle < 360; angle++)
 						{
 							mObjects[i]->mGla->setFrustumNoteView((double)angle,
-								frustumNote3D[noteid].first[0], frustumNote3D[noteid].first[1], frustumNote3D[noteid].first[2]);
+								frustumNote3D[noteid].first[0], frustumNote3D[noteid].first[1], frustumNote3D[noteid].first[2], mDolly3D);
 							screenshotDict = screenshotObj;
 							screenshotDict.append("FrustumNote" + QString::number(noteid) + "_" + QString::number(angle));
 							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
@@ -693,7 +712,7 @@ void VideoGenerator::generate()
 					cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
 					cv::Mat resized = resize2Video(frame, mysize);
 					// blending
-					int blendingFrames = 20;
+					int blendingFrames = 30*mTransDuration3D;
 					if (angle < blendingFrames)
 						cv::addWeighted(resized, angle/(double)blendingFrames, resized, 0, 0, resized);
 					else if (angle >= 360 - blendingFrames)
@@ -717,7 +736,7 @@ void VideoGenerator::generate()
 						cv::Mat resized = resize2Video(frame, mysize);
 						currFrame = putSubtitle(resized, annotation.toStdString(), mysize);
 						blend2Video(prevFrame, currFrame, outputVideo);
-						for (int duration = 0; duration < 120; duration++)
+						for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
 						{
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 							outputVideo.write(currFrame);
@@ -732,7 +751,7 @@ void VideoGenerator::generate()
 							currFrame = resize2Video(currNote, mysize);
 							currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
 							blend2Video(prevFrame, currFrame, outputVideo);
-							for (int duration = 0; duration < 120; duration++)
+							for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
 							{
 								if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 								outputVideo.write(currFrame);
@@ -752,7 +771,7 @@ void VideoGenerator::generate()
 							currFrame = resize2Video(currNote, mysize);
 							currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
 							blend2Video(prevFrame, currFrame, outputVideo);
-							for (int duration = 0; duration < 120; duration++)
+							for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
 							{
 								if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 								outputVideo.write(currFrame);
@@ -784,7 +803,7 @@ void VideoGenerator::generate()
 							currFrame = resize2Video(currNote, mysize);
 							currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
 							blend2Video(prevFrame, currFrame, outputVideo);
-							for (int duration = 0; duration < 120; duration++)
+							for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
 							{
 								if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 								outputVideo.write(currFrame);
@@ -1738,7 +1757,7 @@ QPair<QString, QString> VideoGenerator::parseTextAndImg(QString content)
 
 void VideoGenerator::blend2Video(cv::Mat& img1, cv::Mat& img2, cv::VideoWriter& outputVideo)
 {
-	int blendFrames = 20;
+	int blendFrames = 30*mTransDuration2D;
 	if (!outputVideo.isOpened())
 	{
 		qDebug() << "ERROR: outputVideo not opened!\n\n";

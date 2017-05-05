@@ -123,6 +123,8 @@ public:
 	void setKeyword(const QString keyword)	{mKeyword = keyword;}
 	void setAffiliation(const QString affiliation)	{mAffiliation = affiliation;}
 	void setDescription(const QString description)	{mDescription = description;}
+	void setUpdateSetup(const QString project, const QString userName, const QString affiliation, const int videoFormat, const int resolutionOption,
+		const int frameDuration2D, const int transDuration2D, const int frameDuration3D, const int transDuration3D, const int dolly3D, const bool isShowGeneral);
 
 	/**
 	 * @brief  Set CHE text information for the video if it is a CHE.
@@ -304,6 +306,15 @@ private:
 	CHEInfoBasic* mCHEInfo;
 	QVector<VideoObject*> mObjects;
 
+	// user preferences from videoSetup
+	int mVideoFormat;
+	int mResolutionOption;
+	int mFrameDuration2D;
+	int mTransDuration2D;
+	int mFrameDuration3D;
+	int mTransDuration3D;
+	int mDolly3D;
+	bool mShowGeneral;
 };
 
 #endif // VIDEO_GENERATOR

@@ -221,9 +221,9 @@ public:
   void getCameraPos(double *campos);
   void setCameraPos(double *campos);
   void computeNormals3D();
-  void setPointNoteView(int polygonID, double x, double y, double z);
-  void setSurfaceNoteView(int polygonID, double x, double y, double z);
-  void setFrustumNoteView(double angle, double x, double y, double z);
+  void setPointNoteView(int polygonID, double x, double y, double z, int dolly);
+  void setSurfaceNoteView(int polygonID, double x, double y, double z, int dolly);
+  void setFrustumNoteView(double angle, double x, double y, double z, int dolly);
   void launchSpinView();
 
   void setFlattenedMesh(vtkPolyData *flatMesh);

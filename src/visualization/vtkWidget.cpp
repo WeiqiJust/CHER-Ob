@@ -760,13 +760,12 @@ void VtkWidget::setCameraPos(double *campos)
 	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
 }
 
-void VtkWidget::setPointNoteView(int polygonID, double x, double y, double z)
+void VtkWidget::setPointNoteView(int polygonID, double x, double y, double z, int dolly)
 {
 	if (mRenderer == NULL) return;
 	// move camera to the initial position
 	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
 	if (mNormals) {
-		int dolly = 10;
 		double normalsXYZ[3];
 		mNormals->GetTuple(polygonID, normalsXYZ);
 		camera->SetPosition(x + dolly*normalsXYZ[0], y + dolly*normalsXYZ[1], z + dolly*normalsXYZ[2]);
@@ -786,13 +785,12 @@ void VtkWidget::setPointNoteView(int polygonID, double x, double y, double z)
 	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
 }
 
-void VtkWidget::setSurfaceNoteView(int polygonID, double x, double y, double z)
+void VtkWidget::setSurfaceNoteView(int polygonID, double x, double y, double z, int dolly)
 {
 	if (mRenderer == NULL) return;
 	// move camera to the initial position
 	vtkSmartPointer<vtkCamera> camera = mRenderer->GetActiveCamera();
 	if (mNormals) {
-		int dolly = 30;
 		double normalsXYZ[3];
 		mNormals->GetTuple(polygonID, normalsXYZ);
 		camera->SetPosition(x + dolly*normalsXYZ[0], y + dolly*normalsXYZ[1], z + dolly*normalsXYZ[2]);
@@ -812,7 +810,7 @@ void VtkWidget::setSurfaceNoteView(int polygonID, double x, double y, double z)
 	if (mQVTKWidget) mQVTKWidget->update(); //MK: this is important!
 }
 
-void VtkWidget::setFrustumNoteView(double angle, double x, double y, double z)
+void VtkWidget::setFrustumNoteView(double angle, double x, double y, double z, int dolly)
 {
 	if (mRenderer == NULL) return;
 	// move camera to the initial position
@@ -832,7 +830,7 @@ void VtkWidget::setFrustumNoteView(double angle, double x, double y, double z)
 	mRenderer->ResetCamera();
 	camera->Azimuth(angle);
 	camera->SetFocalPoint(x, y, z);
-	camera->Dolly(2);
+	camera->Dolly(dolly);
 	mRenderer->ResetCameraClippingRange();
 	mRenderer->Modified();
 

@@ -54,6 +54,7 @@
 #include "function/lightControlRTI.h"
 #include "function/renderingdialog.h"
 #include "function/reportFilter.h"
+#include "function/videoSetup.h"
 #include "function/videoFilter.h"
 #include "function/mapKit/mapCoordinate.h"
 
@@ -4895,6 +4896,7 @@ void MainWindow::generateVideo()
 	{
 		video = new VideoGenerator(file, false);
 		video->setCHEInfo(mCHETab->getCHEInfo());
+		video->setAffiliation("");
 	}
 	video->setProjectName(currentProjectName);
 	video->setUserName(mUserName);
@@ -4902,9 +4904,21 @@ void MainWindow::generateVideo()
 	QList<QMdiSubWindow*> windows = mdiArea->subWindowList();
 	QMap<QString, QVector<QString> > objectsNotes;
 
+	VideoSetup *dialogSetup = new VideoSetup(currentProjectName, mUserName, isCHE ? currentProjectAffiliation : "");
+	dialogSetup->exec();
+	if (!dialogSetup->checkNext())
+		return;
+	// update setup information to video generator
+	QString newProjectName, newUserName, newAffiliation;
+	int setupVideoFormat, setupResolution, setupFrameDuration2D, setupTransDuration2D, setupFrameDuration3D, setupTransDuration3D, setupDolly3D;
+	bool setupShowGeneral;
+	dialogSetup->updateSetup(&newProjectName, &newUserName, &newAffiliation, &setupVideoFormat, &setupResolution,
+		&setupFrameDuration2D, &setupTransDuration2D, &setupFrameDuration3D, &setupTransDuration3D, &setupDolly3D, &setupShowGeneral);
+	video->setUpdateSetup(newProjectName, newUserName, newAffiliation, setupVideoFormat, setupResolution,
+		setupFrameDuration2D, setupTransDuration2D, setupFrameDuration3D, setupTransDuration3D, setupDolly3D, setupShowGeneral);
+
 	VideoFilter *dialog = new VideoFilter(mObjectList);
 	dialog->exec();
-
 	if (!dialog->checkGenerate())
 		return;
 
