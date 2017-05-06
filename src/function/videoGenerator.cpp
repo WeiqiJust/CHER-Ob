@@ -137,7 +137,7 @@ void VideoGenerator::generate()
 	videoFolder.append(QDir::separator() + QString("video"));
 	QDir().mkdir(videoFolder);
 	QDir videoFolderDir(videoFolder);
-	cv::Size mysize(800, 600);
+	mysize = cv::Size(800, 600);
 	cv::VideoWriter outputVideo(mLocation.toStdString(), cv::VideoWriter::fourcc('D','I','V','3'), 30, mysize, true); // SIZE ISSUE
 
 	// create title frame
@@ -469,9 +469,9 @@ void VideoGenerator::generate()
 
 					// put general annotation, effect to be refined
 					cv::Mat resized = resize2Video(frame, mysize);
+					//// TODO: need to set google map JavaScript to relocate current object
 					screenshotDict = screenshotObj;
 					screenshotDict.append("_geo.png");
-					//// TODO: need to set google map JavaScript to relocate current object
 					mw()->mGeoInfo->makeScreenshot(screenshotDict); // save google map screenshot
 					currFrame = putSubtitle(resized, annotation.toStdString(), mysize, screenshotDict.toStdString());
 					blend2Video(prevFrame, currFrame, outputVideo);
@@ -480,74 +480,34 @@ void VideoGenerator::generate()
 						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 						outputVideo.write(currFrame);
 					}
-					for (int noteid = 0; noteid < pointNote2D.size(); noteid++)
+					for (int new_noteid = 0; new_noteid < mObjects[i]->mNotes.size() - 1; new_noteid++)
 					{
-						cv::Point notePos(pointNote2D[noteid].first.first, frame.size().height - pointNote2D[noteid].first.second);
-						cv::Mat currNote = emphasizeNote(frame, notePos, 20);
-						// put subtitle and associated image
-						QPair<QString, QString> textAndImg = parseTextAndImg(pointNote2D[noteid].second);
-						prevFrame = currFrame;
-						currFrame = resize2Video(currNote, mysize);
-						currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
-						blend2Video(prevFrame, currFrame, outputVideo);
-						for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
+						int noteid =  mObjects[i]->mNoteReorder[new_noteid];
+						if (noteid < pointNote2D.size())
 						{
-							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(currFrame);
+							generatePointNote2D(noteid, outputVideo, frame, prevFrame, currFrame, pointNote2D);
 						}
+						else if (noteid < pointNote2D.size() + surfaceNote2D.size())
+						{
+							generateSurfaceNote2D(noteid - pointNote2D.size(), outputVideo, frame, prevFrame, currFrame, surfaceNote2D);
+						}
+						else
+						{
+							generatePolygonNote2D(noteid - pointNote2D.size() - surfaceNote2D.size(), outputVideo, frame, prevFrame, currFrame, polygonNote2D);
+						}
+					}
+					/*for (int noteid = 0; noteid < pointNote2D.size(); noteid++)
+					{
+						generatePointNote2D(noteid, outputVideo, frame, prevFrame, currFrame, pointNote2D);
 					}
 					for (int noteid = 0; noteid < surfaceNote2D.size(); noteid++)
 					{
-						cv::Rect myroi;
-						myroi.x = std::min(surfaceNote2D[noteid].first[0], surfaceNote2D[noteid].first[2]);
-						myroi.y = frame.size().height - std::max(surfaceNote2D[noteid].first[1], surfaceNote2D[noteid].first[3]);
-						myroi.width = abs(surfaceNote2D[noteid].first[0] - surfaceNote2D[noteid].first[2]);
-						myroi.height = abs(surfaceNote2D[noteid].first[1] - surfaceNote2D[noteid].first[3]);
-						cv::Mat currNote = emphasizeNote(frame, myroi);
-						// put subtitle and associated image
-						QPair<QString, QString> textAndImg = parseTextAndImg(surfaceNote2D[noteid].second);
-						prevFrame = currFrame;
-						currFrame = resize2Video(currNote, mysize);
-						currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
-						blend2Video(prevFrame, currFrame, outputVideo);
-						for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
-						{
-							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(currFrame);
-						}
+						generateSurfaceNote2D(noteid, outputVideo, frame, prevFrame, currFrame, surfaceNote2D);
 					}
 					for (int noteid = 0; noteid < polygonNote2D.size(); noteid++)
 					{
-						cv::Point center(0, 0); 
-						for (int vid = 0; vid < polygonNote2D[noteid].first.size() - 1; vid++)
-						{
-							center.x += polygonNote2D[noteid].first[vid].first;
-							center.y += polygonNote2D[noteid].first[vid].second;
-						}
-						center.x = center.x / (polygonNote2D[noteid].first.size() - 1);
-						center.y = center.y / (polygonNote2D[noteid].first.size() - 1);
-						int radius = 20;
-						for (int vid = 0; vid < polygonNote2D[noteid].first.size() - 1; vid++)
-						{
-							int dx2 = (center.x - polygonNote2D[noteid].first[vid].first) * (center.x - polygonNote2D[noteid].first[vid].first);
-							int dy2 = (center.y - polygonNote2D[noteid].first[vid].second) * (center.y - polygonNote2D[noteid].first[vid].second);
-							int tmpR = (int)sqrt((double)(dx2 + dy2));
-							radius = std::max(radius, tmpR);
-						}
-						center.y = frame.size().height - center.y;
-						cv::Mat currNote = emphasizeNote(frame, center, radius);
-						// put subtitle and associated image
-						QPair<QString, QString> textAndImg = parseTextAndImg(polygonNote2D[noteid].second);
-						prevFrame = currFrame;
-						currFrame = resize2Video(currNote, mysize);
-						currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
-						blend2Video(prevFrame, currFrame, outputVideo);
-						for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
-						{
-							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(currFrame);
-						}
-					}
+						generatePolygonNote2D(noteid, outputVideo, frame, prevFrame, currFrame, polygonNote2D);
+					}*/
 					break;
 				}
 			case MODEL3D:
@@ -556,6 +516,10 @@ void VideoGenerator::generate()
 					initWidget(mObjects[i]->mGla, false);
 					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
 					double prevCam[6], currCam[6]; // 0..2 camera position x y z, 3..5 camera focal point x y z
+					//// TODO: need to set google map JavaScript to relocate current object
+					QString geoScreenshot = screenshotObj;
+					geoScreenshot.append("_geo.png");
+					mw()->mGeoInfo->makeScreenshot(geoScreenshot); // save google map screenshot
 					// generate screenshots from different angles
 					for (int angle = 0; angle < 360; angle++)
 					{
@@ -565,7 +529,7 @@ void VideoGenerator::generate()
 						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 						cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
 						cv::Mat resized = resize2Video(frame, mysize);
-						currFrame = putSubtitle(resized, annotation.toStdString(), mysize);
+						currFrame = putSubtitle(resized, annotation.toStdString(), mysize, geoScreenshot.toStdString());
 						// blending
 						if (angle == 0)
 							blend2Video(prevFrame, currFrame, outputVideo);
@@ -576,124 +540,15 @@ void VideoGenerator::generate()
 					mObjects[i]->mGla->computeNormals3D();
 					for (int noteid = 0; noteid < pointNote3D.size(); noteid++)
 					{
-						prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
-						prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
-						mObjects[i]->mGla->setPointNoteView(pointNote3D[noteid].first.first,
-							pointNote3D[noteid].first.second[0], pointNote3D[noteid].first.second[1], pointNote3D[noteid].first.second[2], mDolly3D);
-						mObjects[i]->mGla->getCameraPos(currCam);
-						for (int duration = 0; duration < 30*mTransDuration3D; duration++)
-						{
-							double tempCam[6];
-							tempCam[0] = prevCam[0] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[0] * duration / (double)(30*mTransDuration3D);
-							tempCam[1] = prevCam[1] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[1] * duration / (double)(30*mTransDuration3D);
-							tempCam[2] = prevCam[2] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[2] * duration / (double)(30*mTransDuration3D);
-							tempCam[3] = prevCam[3] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[3] * duration / (double)(30*mTransDuration3D);
-							tempCam[4] = prevCam[4] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[4] * duration / (double)(30*mTransDuration3D);
-							tempCam[5] = prevCam[5] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[5] * duration / (double)(30*mTransDuration3D);
-							mObjects[i]->mGla->setCameraPos(tempCam);
-							screenshotDict = screenshotObj;
-							screenshotDict.append("PointNote" + QString::number(noteid) + "_" + QString::number(duration));
-							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-							cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
-							cv::Mat resized = resize2Video(frame, mysize);
-							if (!outputVideo.isOpened()) qDebug()  << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(resized);
-						}
-						mObjects[i]->mGla->setCameraPos(currCam);
-						screenshotDict = screenshotObj;
-						screenshotDict.append("PointNote" + QString::number(noteid));
-						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-						cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
-						cv::Mat resized = resize2Video(frame, mysize);
-						// put subtitle and associated image
-						QPair<QString, QString> textAndImg = parseTextAndImg(pointNote3D[noteid].second);
-						currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
-						for (int duration = 0; duration < 30*mFrameDuration3D; duration++)
-						{
-							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(currFrame);
-						}
+						generatePointNote3D(i, noteid, outputVideo, prevCam, currCam, currFrame, screenshotObj, screenshotDict, pointNote3D);
 					}
 					for (int noteid = 0; noteid < surfaceNote3D.size(); noteid++)
 					{
-						prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
-						prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
-						mObjects[i]->mGla->setSurfaceNoteView(surfaceNote3D[noteid].first.first,
-							surfaceNote3D[noteid].first.second[0], surfaceNote3D[noteid].first.second[1], surfaceNote3D[noteid].first.second[2], mDolly3D);
-						mObjects[i]->mGla->getCameraPos(currCam);
-						for (int duration = 0; duration < 30*mTransDuration3D; duration++)
-						{
-							double tempCam[6];
-							tempCam[0] = prevCam[0] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[0] * duration / (double)(30*mTransDuration3D);
-							tempCam[1] = prevCam[1] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[1] * duration / (double)(30*mTransDuration3D);
-							tempCam[2] = prevCam[2] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[2] * duration / (double)(30*mTransDuration3D);
-							tempCam[3] = prevCam[3] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[3] * duration / (double)(30*mTransDuration3D);
-							tempCam[4] = prevCam[4] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[4] * duration / (double)(30*mTransDuration3D);
-							tempCam[5] = prevCam[5] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[5] * duration / (double)(30*mTransDuration3D);
-							mObjects[i]->mGla->setCameraPos(tempCam);
-							screenshotDict = screenshotObj;
-							screenshotDict.append("SurfaceNote" + QString::number(noteid) + "_" + QString::number(duration));
-							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-							cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
-							cv::Mat resized = resize2Video(frame, mysize);
-							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(resized);
-						}
-						mObjects[i]->mGla->setCameraPos(currCam);
-						screenshotDict = screenshotObj;
-						screenshotDict.append("SurfaceNote" + QString::number(noteid));
-						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-						cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
-						cv::Mat resized = resize2Video(frame, mysize);
-						// put subtitle and associated image
-						QPair<QString, QString> textAndImg = parseTextAndImg(surfaceNote3D[noteid].second);
-						currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
-						for (int duration = 0; duration < 30*mFrameDuration3D; duration++)
-						{
-							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(currFrame);
-						}
+						generateSurfaceNote3D(i, noteid, outputVideo, prevCam, currCam, currFrame, screenshotObj, screenshotDict, surfaceNote3D);
 					}
 					for (int noteid = 0; noteid < frustumNote3D.size(); noteid++)
 					{
-						prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
-						prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
-						mObjects[i]->mGla->setFrustumNoteView(0, frustumNote3D[noteid].first[0], frustumNote3D[noteid].first[1], frustumNote3D[noteid].first[2], mDolly3D);
-						mObjects[i]->mGla->getCameraPos(currCam);
-						for (int duration = 0; duration < 30*mTransDuration3D; duration++)
-						{
-							double tempCam[6];
-							tempCam[0] = prevCam[0] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[0] * duration / (double)(30*mTransDuration3D);
-							tempCam[1] = prevCam[1] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[1] * duration / (double)(30*mTransDuration3D);
-							tempCam[2] = prevCam[2] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[2] * duration / (double)(30*mTransDuration3D);
-							tempCam[3] = prevCam[3] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[3] * duration / (double)(30*mTransDuration3D);
-							tempCam[4] = prevCam[4] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[4] * duration / (double)(30*mTransDuration3D);
-							tempCam[5] = prevCam[5] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[5] * duration / (double)(30*mTransDuration3D);
-							mObjects[i]->mGla->setCameraPos(tempCam);
-							screenshotDict = screenshotObj;
-							screenshotDict.append("FrustumNote" + QString::number(noteid) + "_" + QString::number(duration));
-							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-							cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
-							cv::Mat resized = resize2Video(frame, mysize);
-							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(resized);
-						}
-						for (int angle = 0; angle < 360; angle++)
-						{
-							mObjects[i]->mGla->setFrustumNoteView((double)angle,
-								frustumNote3D[noteid].first[0], frustumNote3D[noteid].first[1], frustumNote3D[noteid].first[2], mDolly3D);
-							screenshotDict = screenshotObj;
-							screenshotDict.append("FrustumNote" + QString::number(noteid) + "_" + QString::number(angle));
-							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-							cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
-							cv::Mat resized = resize2Video(frame, mysize);
-							// put subtitle and associated image
-							QPair<QString, QString> textAndImg = parseTextAndImg(frustumNote3D[noteid].second);
-							currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
-							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(currFrame);
-						}
-						mObjects[i]->mGla->getCameraPos(currCam);
+						generateFrustumNote3D(i, noteid, outputVideo, prevCam, currCam, currFrame, screenshotObj, screenshotDict, frustumNote3D);
 					}
 					recoverWidget(mObjects[i]->mGla, info, false);
 					break;
@@ -736,6 +591,7 @@ void VideoGenerator::generate()
 						cv::Mat resized = resize2Video(frame, mysize);
 						currFrame = putSubtitle(resized, annotation.toStdString(), mysize);
 						blend2Video(prevFrame, currFrame, outputVideo);
+						//// TODO: play with RTI lighting tricks
 						for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
 						{
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
@@ -743,71 +599,15 @@ void VideoGenerator::generate()
 						}
 						for (int noteid = 0; noteid < pointNote2D.size(); noteid++)
 						{
-							cv::Point notePos(pointNote2D[noteid].first.first, frame.size().height - pointNote2D[noteid].first.second);
-							cv::Mat currNote = emphasizeNote(frame, notePos, 20);
-							// put subtitle and associated image
-							QPair<QString, QString> textAndImg = parseTextAndImg(pointNote2D[noteid].second);
-							prevFrame = currFrame;
-							currFrame = resize2Video(currNote, mysize);
-							currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
-							blend2Video(prevFrame, currFrame, outputVideo);
-							for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
-							{
-								if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-								outputVideo.write(currFrame);
-							}
+							generatePointNote2D(noteid, outputVideo, frame, prevFrame, currFrame, pointNote2D);
 						}
 						for (int noteid = 0; noteid < surfaceNote2D.size(); noteid++)
 						{
-							cv::Rect myroi;
-							myroi.x = std::min(surfaceNote2D[noteid].first[0], surfaceNote2D[noteid].first[2]);
-							myroi.y = frame.size().height - std::max(surfaceNote2D[noteid].first[1], surfaceNote2D[noteid].first[3]);
-							myroi.width = abs(surfaceNote2D[noteid].first[0] - surfaceNote2D[noteid].first[2]);
-							myroi.height = abs(surfaceNote2D[noteid].first[1] - surfaceNote2D[noteid].first[3]);
-							cv::Mat currNote = emphasizeNote(frame, myroi);
-							// put subtitle and associated image
-							QPair<QString, QString> textAndImg = parseTextAndImg(surfaceNote2D[noteid].second);
-							prevFrame = currFrame;
-							currFrame = resize2Video(currNote, mysize);
-							currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
-							blend2Video(prevFrame, currFrame, outputVideo);
-							for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
-							{
-								if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-								outputVideo.write(currFrame);
-							}
+							generateSurfaceNote2D(noteid, outputVideo, frame, prevFrame, currFrame, surfaceNote2D);
 						}
 						for (int noteid = 0; noteid < polygonNote2D.size(); noteid++)
 						{
-							cv::Point center(0, 0); 
-							for (int vid = 0; vid < polygonNote2D[noteid].first.size() - 1; vid++)
-							{
-								center.x += polygonNote2D[noteid].first[vid].first;
-								center.y += polygonNote2D[noteid].first[vid].second;
-							}
-							center.x = center.x / (polygonNote2D[noteid].first.size() - 1);
-							center.y = center.y / (polygonNote2D[noteid].first.size() - 1);
-							int radius = 20;
-							for (int vid = 0; vid < polygonNote2D[noteid].first.size() - 1; vid++)
-							{
-								int dx2 = (center.x - polygonNote2D[noteid].first[vid].first) * (center.x - polygonNote2D[noteid].first[vid].first);
-								int dy2 = (center.y - polygonNote2D[noteid].first[vid].second) * (center.y - polygonNote2D[noteid].first[vid].second);
-								int tmpR = (int)sqrt((double)(dx2 + dy2));
-								radius = std::max(radius, tmpR);
-							}
-							center.y = frame.size().height - center.y;
-							cv::Mat currNote = emphasizeNote(frame, center, radius);
-							// put subtitle and associated image
-							QPair<QString, QString> textAndImg = parseTextAndImg(polygonNote2D[noteid].second);
-							prevFrame = currFrame;
-							currFrame = resize2Video(currNote, mysize);
-							currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
-							blend2Video(prevFrame, currFrame, outputVideo);
-							for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
-							{
-								if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-								outputVideo.write(currFrame);
-							}
+							generatePolygonNote2D(noteid, outputVideo, frame, prevFrame, currFrame, polygonNote2D);
 						}
 					}
 					break;
@@ -815,361 +615,6 @@ void VideoGenerator::generate()
 			default: break;
 		}
 
-		/*
-		// Switch back to origianl CT STACK mode.
-		if (isCTModeSwitched)
-			mw()->mCtControl->setCTStackView();
-
-		//Process and add image
-		for (int j = 0; j < mObjects[i]->mPictures.size(); j++)
-		{
-			QString path = QDir::toNativeSeparators(mObjects[i]->mPictures[j]);
-			QImage img(path); 
-			if (img == QImage())
-			{
-				QString message = QString("Cannot find image: ").append(mObjects[i]->mPictures[j]);
-				QMessageBox::critical(this, tr("Project Error"), message);
-				continue;
-			}
-			int imgHeight = img.height();
-			int imgWidth = img.width();
-			QStringList nameElements = mObjects[i]->mPictures[j].split(QDir::separator());
-			QString url = nameElements[nameElements.size() - 1];
-			QPainter painter(&img);
-			QFont font = painter.font();
-			int pointSize = font.pointSize();
-			pointSize = pointSize*2 + 3.5*imgWidth / 400;
-			font.setPointSize(pointSize);
-			painter.setFont(font);
-			painter.setRenderHint(QPainter::Antialiasing);
-			painter.setPen(QPen(Qt::black, 20, Qt::DashDotLine, Qt::RoundCap));
-			for (int k = 0; k < pointNote2D.size(); k++)
-			{
-				int x = pointNote2D[k].first, y = img.height() - pointNote2D[k].second;
-				int x1 = x - pointSize/2, y1 = y - pointSize/2;
-				if (x1 <= 0)
-					x1 = 1;
-				else if (x1 + pointSize >= imgWidth)
-					x1 = imgWidth - pointSize - 1;
-				if (y1 <= 0)
-					y1 = 1;
-				else if (y1 + pointSize >= imgHeight)
-					y1 = imgHeight - pointSize - 1;
-
-				QRectF rectangle(x1, y1, pointSize, pointSize);
-				painter.setPen(QPen(Qt::red, 4));
-				painter.drawRect(rectangle);
-				painter.setPen(QPen(Qt::black, 4));
-				painter.drawText(rectangle,  Qt::AlignCenter, QString::number(k+1));
-			}
-			
-			for (int k = 0; k < surfaceNote2D.size(); k++)
-			{
-				int x1 = surfaceNote2D[k][0];
-				int y1 = surfaceNote2D[k][1];
-				int x2 = surfaceNote2D[k][2];
-				int y2 = surfaceNote2D[k][3];
-				int width = abs(x2 - x1);
-				int height = abs(y2 - y1);
-				y1 = img.height() - y1;
-				QRectF rectangle(x1, y1, width, height);
-				painter.setPen(QPen(Qt::red, 4));
-				painter.drawRect(rectangle);
-				painter.setPen(QPen(Qt::black, 4));
-				painter.drawText(rectangle,  Qt::AlignCenter, QString::number(k+pointNote2D.size()+1));
-			}
-
-			for (int k = 0; k < polygonNote2D.size(); k++)
-			{
-				QVector<QPair<int, int> >::iterator it;
-				int maxX = 0, maxY = 0, minX = 0xFFFF, minY = 0xFFFF;
-				for (it = polygonNote2D[k].begin(); it != polygonNote2D[k].end(); it++)
-				{
-					if (it->first > maxX) maxX = it->first;
-					if (it->first < minX) minX = it->first;
-					if (it->second > maxY) maxY = it->second;
-					if (it->second < minY) minY = it->second;
-				}
-				int width = maxX - minX;
-				int height = maxY - minY;
-				minY = img.height() - maxY;
-				QRectF rectangle(minX, minY, width, height);
-
-				QVector<QPair<int, int> >::iterator it1 = polygonNote2D[k].begin();
-				QVector<QPair<int, int> >::iterator it2 = polygonNote2D[k].begin();
-				it2++;
-				painter.setPen(QPen(Qt::red, 4));
-				for (; it2 != polygonNote2D[k].end(); it1++, it2++)
-				{
-					QLineF line(it1->first, img.height() - it1->second, it2->first, img.height() - it2->second);
-					painter.drawLine(line);
-				}
-				it2 = polygonNote2D[k].begin();
-				QLineF lastLine(it1->first, img.height() - it1->second, it2->first, img.height() - it2->second);
-				painter.drawLine(lastLine);
-
-				painter.setPen(QPen(Qt::black, 4));
-				painter.drawText(rectangle,  Qt::AlignCenter, QString::number(k+pointNote2D.size()+surfaceNote2D.size()+1));
-				
-			}
-
-			font = painter.font();
-			pointSize = pointSize * 1.2;
-			//if (pointSize == 0)	pointSize = 1;
-			font.setPointSize(pointSize);
-			painter.setFont(font);
-			QVector<QPair<double, double> > pointNote3DSelected, surfaceNote3DSelected, frustumNote3DSelected;
-			QVector<QPair<double*, CTSurfaceCornerPoint_> > surfaceNote3DSelected_CT;
-			switch(j)
-			{
-				case 0: 
-					pointNote3DSelected = pointNote3DFront;
-					surfaceNote3DSelected = surfaceNote3DFront;
-					frustumNote3DSelected = frustumNote3DFront;
-					surfaceNote3DSelected_CT = surfaceNote3DFront_CT;
-					break;
-				case 1: 
-					pointNote3DSelected = pointNote3DLeft;
-					surfaceNote3DSelected = surfaceNote3DLeft;
-					frustumNote3DSelected = frustumNote3DLeft;
-					surfaceNote3DSelected_CT = surfaceNote3DLeft_CT;
-					break;
-				case 2: 
-					pointNote3DSelected = pointNote3DRight;
-					surfaceNote3DSelected = surfaceNote3DRight;
-					frustumNote3DSelected = frustumNote3DRight;
-					surfaceNote3DSelected_CT = surfaceNote3DRight_CT;
-					break;
-				case 3: 
-					pointNote3DSelected = pointNote3DTop;
-					surfaceNote3DSelected = surfaceNote3DTop;
-					frustumNote3DSelected = frustumNote3DTop;
-					surfaceNote3DSelected_CT = surfaceNote3DTop_CT;
-					break;
-				case 4: 
-					pointNote3DSelected = pointNote3DBottom;
-					surfaceNote3DSelected = surfaceNote3DBottom;
-					frustumNote3DSelected = frustumNote3DBottom;
-					surfaceNote3DSelected_CT = surfaceNote3DBottom_CT;
-					break;
-				case 5: 
-					pointNote3DSelected = pointNote3DBack;
-					surfaceNote3DSelected = surfaceNote3DBack;
-					frustumNote3DSelected = frustumNote3DBack;
-					surfaceNote3DSelected_CT = surfaceNote3DBack_CT;
-					break;
-				default:break;
-			}
-
-			for (int k = 0; k < pointNote3DSelected.size(); k++)
-			{
-				double x = pointNote3DSelected[k].first, y = img.height() - pointNote3DSelected[k].second;
-				if (x == -1 || y == -1)
-					continue;
-				double x1 = x - pointSize/2, y1 = y - pointSize/2;
-				if (x1 <= 0)
-					x1 = 1;
-				else if (x1 + pointSize >= imgWidth)
-					x1 = imgWidth - pointSize - 1;
-				if (y1 <= 0)
-					y1 = 1;
-				else if (y1 + pointSize >= imgHeight)
-					y1 = imgHeight - pointSize - 1;
-
-				QRectF rectangle(x1, y1, pointSize, pointSize);
-				painter.setPen(QPen(Qt::red, 4));
-				painter.drawRect(rectangle);
-				painter.setPen(QPen(Qt::black, 4));
-				painter.drawText(rectangle,  Qt::AlignCenter, QString::number(k+1));
-			}
-			for (int k = 0; k < surfaceNote3DSelected.size(); k++)
-			{
-				double x = surfaceNote3DSelected[k].first, y = img.height() - surfaceNote3DSelected[k].second;
-				if (x == -1 || y == -1)
-					continue;
-				double x1 = x - pointSize/2, y1 = y - pointSize/2;
-				if (x1 <= 0)
-					x1 = 1;
-				else if (x1 + pointSize >= imgWidth)
-					x1 = imgWidth - pointSize - 1;
-				if (y1 <= 0)
-					y1 = 1;
-				else if (y1 + pointSize >= imgHeight)
-					y1 = imgHeight - pointSize - 1;
-
-				QRectF rectangle(x1, y1, pointSize, pointSize);
-				painter.setPen(QPen(Qt::red, 4));
-				painter.drawRect(rectangle);
-				painter.setPen(QPen(Qt::black, 4));
-				painter.drawText(rectangle, Qt::AlignCenter, QString::number(k+1+pointNote3DSelected.size()));
-			}
-			for (int k = 0; k < frustumNote3DSelected.size(); k++)
-			{
-				double x = frustumNote3DSelected[k].first, y = img.height() - frustumNote3DSelected[k].second;
-				if (x == -1 || y == -1)
-					continue;
-				double x1 = x - pointSize/2, y1 = y - pointSize/2;
-				if (x1 <= 0)
-					x1 = 1;
-				else if (x1 + pointSize >= imgWidth)
-					x1 = imgWidth - pointSize - 1;
-				if (y1 <= 0)
-					y1 = 1;
-				else if (y1 + pointSize >= imgHeight)
-					y1 = imgHeight - pointSize - 1;
-
-				QRectF rectangle(x1, y1, pointSize, pointSize);
-				painter.setPen(QPen(Qt::red, 4));
-				painter.drawRect(rectangle);
-				painter.setPen(QPen(Qt::black, 4));
-				painter.drawText(rectangle,  Qt::AlignCenter, QString::number(k+1+pointNote3DSelected.size()+surfaceNote3DSelected.size()));
-			}
-			for (int k = 0; k < surfaceNote3DSelected_CT.size(); k++)
-			{
-				double x = surfaceNote3DSelected_CT[k].first[0], y = img.height() - surfaceNote3DSelected_CT[k].first[1];
-				if (x == -1 || y == -1)
-					continue;
-				double x1 = x - pointSize/2, y1 = y - pointSize/2;
-				if (x1 <= 0)
-					x1 = 1;
-				else if (x1 + pointSize >= imgWidth)
-					x1 = imgWidth - pointSize - 1;
-				if (y1 <= 0)
-					y1 = 1;
-				else if (y1 + pointSize >= imgHeight)
-					y1 = imgHeight - pointSize - 1;
-
-
-				QPolygon polygon;
-				polygon << QPoint(surfaceNote3DSelected_CT[k].second.point[0][0], img.height() - surfaceNote3DSelected_CT[k].second.point[0][1])
-					<< QPoint(surfaceNote3DSelected_CT[k].second.point[1][0], img.height() - surfaceNote3DSelected_CT[k].second.point[1][1])
-					<< QPoint(surfaceNote3DSelected_CT[k].second.point[2][0], img.height() - surfaceNote3DSelected_CT[k].second.point[2][1])
-					<< QPoint(surfaceNote3DSelected_CT[k].second.point[3][0], img.height() - surfaceNote3DSelected_CT[k].second.point[3][1])
-					<< QPoint(surfaceNote3DSelected_CT[k].second.point[0][0], img.height() - surfaceNote3DSelected_CT[k].second.point[0][1]);
-
-				qDebug()<<"point 0"<<surfaceNote3DSelected_CT[k].second.point[0][0]<<surfaceNote3DSelected_CT[k].second.point[0][1];
-				qDebug()<<"point 1"<<surfaceNote3DSelected_CT[k].second.point[1][0]<<surfaceNote3DSelected_CT[k].second.point[1][1];
-				qDebug()<<"point 2"<<surfaceNote3DSelected_CT[k].second.point[2][0]<<surfaceNote3DSelected_CT[k].second.point[2][1];
-				qDebug()<<"point 3"<<surfaceNote3DSelected_CT[k].second.point[3][0]<<surfaceNote3DSelected_CT[k].second.point[3][1];
-
-				QRectF rectangle(x1, y1, pointSize, pointSize);
-				painter.setPen(QPen(Qt::red, 4));
-				painter.drawPolygon(polygon);
-				painter.setPen(QPen(Qt::black, 4));
-				painter.drawText(rectangle, Qt::AlignCenter, QString::number(k+1+pointNote3DSelected.size()));
-			}
-			
-			painter.end(); 
-		    mDoc->addResource(QTextDocument::ImageResource, QUrl(url), img);
-			
-			if (mObjects[i]->mMode == IMAGE2D || mObjects[i]->mMode == RTI2D)
-			{
-				double height = 200, width = 300;
-				height = (double)width * imgHeight / imgWidth;
-				if (isWmv)
-					html = html + QString("<p><div align=\"center\"><img src=\"" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>\n");
-				else
-				{
-					QString fileName = htmlFolder;
-					fileName.append(QDir::separator() + url);
-					img.save(fileName);
-					html = html + QString("<p><div align=\"center\"><img src=\"video/" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>\n");
-				}
-			}
-			else if (mObjects[i]->mMode == MODEL3D || mObjects[i]->mMode == CTSTACK || mObjects[i]->mMode == CTVOLUME)
-			{
-				double height = 100, width = 150;
-				height = (double)width * imgHeight / imgWidth;
-				if (isWmv)
-				{
-					if (j == 0)
-						html += QString("<p><div align=\"center\">");
-					html += QString("<img src=\"" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\">");
-					if (j == mObjects[i]->mPictures.size() - 1)
-						html += QString("</div></p>\n");
-				}
-				else
-				{
-					QString fileName = htmlFolder;
-					fileName.append(QDir::separator() + url);
-					img.save(fileName);
-					if (j == 0)
-						html += QString("<p><div align=\"center\">");
-					html += QString("<img src=\"video/" + url + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\">");
-					if (j == mObjects[i]->mPictures.size() - 1)
-						html += QString("</div></p>\n");
-				}
-			}
-		}
-		*/
-		// Add annotation and notes
-		/*
-		if (!annotation.isEmpty())
-			html = html + QString("<p><font size=\"2\" face=\"Garamond\">") + annotation + QString("</font></p><hr>\n");
-		for (int j = 0; j < contents.size(); j++)
-		{
-			QString content = contents[j].first;
-			QString color = content.split("\nNote Start:\n")[0];
-			int type = color2type(color.toStdString());
-			if (mObjects[i]->mCategories.indexOf(type) == -1)
-				continue;
-			html += QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">\n");
-			switch(contents[j].second)
-			{
-				case POINTNOTE:		html += QString("Point Note "); break;
-				case SURFACENOTE:	html += QString("Surface Note "); break;
-				case POLYGONNOTE:	html += QString("Polygon Note "); break;
-				case FRUSTUMNOTE:	html += QString("Frustum Note "); break;
-				default: continue;
-			}
-
-			QString text = content.split("\nLinked Images:\n")[0].split("Note Start:\n")[1];
-			QString category = QString(color2categoryFullName_(color.toStdString()).c_str());
-			QStringList imagePaths = content.split("\nLinked Images:\n")[1].split("\n", QString::SkipEmptyParts);
-			QDir dir(mObjects[i]->mNotesPath);
-			html += QString::number(j+1) + QString(": </font></p>\n")
-				+ QString("<p><font size=\"2\" color=\"#033F81\" face=\"Garamond\">Category: ") + category + QString("</font></p>");
-			for (int k = 0; k < imagePaths.size(); k++)
-			{
-				QImage imgNote(dir.absoluteFilePath(imagePaths[k]));
-				int imgNoteHeight = imgNote.height();
-				int imgNoteWidth = imgNote.width();
-				if (imgNoteHeight == 0 || imgNoteWidth == 0)
-					continue;
-				int height, width;
-				if (imgNoteWidth/imgNoteHeight >= 3)
-				{	
-					width = 300;
-					height = (double)width * imgNoteHeight / imgNoteWidth;
-				}
-				else if (imgNoteWidth/imgNoteHeight >= 0.5)
-				{
-					width = 150;
-					height = (double)width * imgNoteHeight / imgNoteWidth;
-				}
-				else
-				{
-					height = 250;
-					width = (double)height * imgNoteWidth / imgNoteHeight;
-				}
-				QString name = mObjects[i]->mName;
-				name.insert(name.lastIndexOf("."), QString("_" + QString::number(j) + "_" + QString::number(k)));
-				mDoc->addResource(QTextDocument::ImageResource, QUrl(name), imgNote);
-				if (isWmv)
-					html += QString("<p><div align=\"center\"><img src=\"" + name + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>");
-				else
-				{
-					QString fileName = htmlFolder;
-					fileName.append(QDir::separator() + name);
-					imgNote.save(fileName);
-					html += QString("<p><div align=\"center\"><img src=\"video/" + name + "\"width=\"" + QString::number(width) + "\" height=\"" + QString::number(height) + "\"></div></p>");
-				}
-			}
-			html += QString("<p><font size=\"2\" face=\"Garamond\">") + text + QString("</font></p>");
-			if (j != contents.size()-1)
-				html += QString("<hr>\n");
-		}
-		*/
 		// delete allocated pointers
 		for (int j = 0; j < surfaceNote2D.size(); j++)
 		{
@@ -1197,60 +642,6 @@ void VideoGenerator::generate()
 		videoFolderDir.remove(dirFile);
 	}
 	QDir().rmdir(videoFolder);
-
-	/*
-	if (QFileInfo(mLocation).suffix() == QString("html"))
-	{
-		QFile file(mLocation);
-		  if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-		{
-			qDebug() << "Cannot write to file " << mLocation; 
-			return;
-		}
-		QTextStream out(&file);
-		out << html;
-		file.close();
-		return;
-	}
-
-	mDoc->setHtml(html);
-	mPrinter->setPageMargins(10, 10, 5, 20, QPrinter::Millimeter);
-	mDoc->setPageSize(mPrinter->pageRect().size());
-
-	QRect innerRect = mPrinter->pageRect();
-    innerRect.setTop(innerRect.top());
-    innerRect.setBottom(innerRect.bottom());
-    QRect contentRect = QRect(QPoint(0,0), mDoc->size().toSize());
-    QRect currentRect = QRect(QPoint(0,0), innerRect.size());
-	
-
-    QPainter painter(mPrinter);
-	QDate date = QDate::currentDate();
-	
-    int count = 0;
-    painter.save();
-    painter.translate(0, 20);
-    while (currentRect.intersects(contentRect)) 
-	{
-        mDoc->drawContents(&painter, currentRect);
-        count++;
-        currentRect.translate(0, currentRect.height());
-        painter.restore();
-		painter.setPen(QColor(3,63,129));
-		painter.setFont(QFont("Garamond", 12, QFont::Bold));
-        painter.drawText(mPrinter->pageRect().right() - 100, 10, QString("CHER-Ob"));
-		painter.setPen(Qt::black);
-		painter.setFont(QFont("Garamond", 8));
-		painter.drawText(mPrinter->pageRect().left(), mPrinter->pageRect().bottom()+12, date.toString("MM/dd/yyyy"));
-        painter.drawText(mPrinter->pageRect().right() - 70, mPrinter->pageRect().bottom()+12, QString("Page %1").arg(count));
-        painter.save();
-        painter.translate(0, -currentRect.height() * count+20);
-        if (currentRect.intersects(contentRect))
-            mPrinter->newPage();
-    }
-    painter.restore();
-    painter.end();
-	*/
 }
 
 void VideoGenerator::detectPointVisibility(vtkSmartPointer<vtkRenderer> render, QVector<double*> points, QVector<QPair<double, double> >& visiblePoints)
@@ -1709,7 +1100,6 @@ cv::Mat VideoGenerator::emphasizeNote(cv::Mat& src, cv::Rect roi)
 	return emphasized;
 }
 
-	
 cv::Mat VideoGenerator::emphasizeNote(cv::Mat& src, cv::Point center, int radius)
 {
 	if (center.x - radius < 0) radius = center.x;
@@ -1769,4 +1159,196 @@ void VideoGenerator::blend2Video(cv::Mat& img1, cv::Mat& img2, cv::VideoWriter& 
 		cv::addWeighted(img1, (blendFrames-i)/(double)blendFrames, img2, i/(double)blendFrames, 0, blended);
 		outputVideo.write(blended);
 	}
+}
+
+
+void VideoGenerator::generatePointNote2D(int noteid, cv::VideoWriter& outputVideo, cv::Mat& frame, cv::Mat& prevFrame, cv::Mat& currFrame, QVector<QPair<QPair<int, int>, QString> >& pointNote2D)
+{
+	cv::Point notePos(pointNote2D[noteid].first.first, frame.size().height - pointNote2D[noteid].first.second);
+	cv::Mat currNote = emphasizeNote(frame, notePos, 20);
+	// put subtitle and associated image
+	QPair<QString, QString> textAndImg = parseTextAndImg(pointNote2D[noteid].second);
+	prevFrame = currFrame;
+	currFrame = resize2Video(currNote, mysize);
+	currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+	blend2Video(prevFrame, currFrame, outputVideo);
+	for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
+	{
+		if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+		outputVideo.write(currFrame);
+	}
+}
+void VideoGenerator::generateSurfaceNote2D(int noteid, cv::VideoWriter& outputVideo, cv::Mat& frame, cv::Mat& prevFrame, cv::Mat& currFrame, QVector<QPair<int*, QString> >& surfaceNote2D)
+{
+	cv::Rect myroi;
+	myroi.x = std::min(surfaceNote2D[noteid].first[0], surfaceNote2D[noteid].first[2]);
+	myroi.y = frame.size().height - std::max(surfaceNote2D[noteid].first[1], surfaceNote2D[noteid].first[3]);
+	myroi.width = abs(surfaceNote2D[noteid].first[0] - surfaceNote2D[noteid].first[2]);
+	myroi.height = abs(surfaceNote2D[noteid].first[1] - surfaceNote2D[noteid].first[3]);
+	cv::Mat currNote = emphasizeNote(frame, myroi);
+	// put subtitle and associated image
+	QPair<QString, QString> textAndImg = parseTextAndImg(surfaceNote2D[noteid].second);
+	prevFrame = currFrame;
+	currFrame = resize2Video(currNote, mysize);
+	currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+	blend2Video(prevFrame, currFrame, outputVideo);
+	for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
+	{
+		if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+		outputVideo.write(currFrame);
+	}
+}
+void VideoGenerator::generatePolygonNote2D(int noteid, cv::VideoWriter& outputVideo, cv::Mat& frame, cv::Mat& prevFrame, cv::Mat& currFrame, QVector<QPair<QVector<QPair<int, int> >, QString> >& polygonNote2D)
+{
+	cv::Point center(0, 0); 
+	for (int vid = 0; vid < polygonNote2D[noteid].first.size() - 1; vid++)
+	{
+		center.x += polygonNote2D[noteid].first[vid].first;
+		center.y += polygonNote2D[noteid].first[vid].second;
+	}
+	center.x = center.x / (polygonNote2D[noteid].first.size() - 1);
+	center.y = center.y / (polygonNote2D[noteid].first.size() - 1);
+	int radius = 20;
+	for (int vid = 0; vid < polygonNote2D[noteid].first.size() - 1; vid++)
+	{
+		int dx2 = (center.x - polygonNote2D[noteid].first[vid].first) * (center.x - polygonNote2D[noteid].first[vid].first);
+		int dy2 = (center.y - polygonNote2D[noteid].first[vid].second) * (center.y - polygonNote2D[noteid].first[vid].second);
+		int tmpR = (int)sqrt((double)(dx2 + dy2));
+		radius = std::max(radius, tmpR);
+	}
+	center.y = frame.size().height - center.y;
+	cv::Mat currNote = emphasizeNote(frame, center, radius);
+	// put subtitle and associated image
+	QPair<QString, QString> textAndImg = parseTextAndImg(polygonNote2D[noteid].second);
+	prevFrame = currFrame;
+	currFrame = resize2Video(currNote, mysize);
+	currFrame = putSubtitle(currFrame, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+	blend2Video(prevFrame, currFrame, outputVideo);
+	for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
+	{
+		if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+		outputVideo.write(currFrame);
+	}
+}
+
+void VideoGenerator::generatePointNote3D(int i, int noteid, cv::VideoWriter& outputVideo, double* prevCam, double* currCam, cv::Mat& currFrame, QString& screenshotObj, QString& screenshotDict, QVector<QPair<QPair<int, double*>, QString> >& pointNote3D)
+{
+	prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
+	prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
+	mObjects[i]->mGla->setPointNoteView(pointNote3D[noteid].first.first,
+		pointNote3D[noteid].first.second[0], pointNote3D[noteid].first.second[1], pointNote3D[noteid].first.second[2], mDolly3D);
+	mObjects[i]->mGla->getCameraPos(currCam);
+	for (int duration = 0; duration < 30*mTransDuration3D; duration++)
+	{
+		double tempCam[6];
+		tempCam[0] = prevCam[0] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[0] * duration / (double)(30*mTransDuration3D);
+		tempCam[1] = prevCam[1] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[1] * duration / (double)(30*mTransDuration3D);
+		tempCam[2] = prevCam[2] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[2] * duration / (double)(30*mTransDuration3D);
+		tempCam[3] = prevCam[3] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[3] * duration / (double)(30*mTransDuration3D);
+		tempCam[4] = prevCam[4] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[4] * duration / (double)(30*mTransDuration3D);
+		tempCam[5] = prevCam[5] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[5] * duration / (double)(30*mTransDuration3D);
+		mObjects[i]->mGla->setCameraPos(tempCam);
+		screenshotDict = screenshotObj;
+		screenshotDict.append("PointNote" + QString::number(noteid) + "_" + QString::number(duration));
+		mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+		cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+		cv::Mat resized = resize2Video(frame, mysize);
+		if (!outputVideo.isOpened()) qDebug()  << "ERROR: outputVideo not opened!\n\n";
+		outputVideo.write(resized);
+	}
+	mObjects[i]->mGla->setCameraPos(currCam);
+	screenshotDict = screenshotObj;
+	screenshotDict.append("PointNote" + QString::number(noteid));
+	mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+	cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+	cv::Mat resized = resize2Video(frame, mysize);
+	// put subtitle and associated image
+	QPair<QString, QString> textAndImg = parseTextAndImg(pointNote3D[noteid].second);
+	currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+	for (int duration = 0; duration < 30*mFrameDuration3D; duration++)
+	{
+		if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+		outputVideo.write(currFrame);
+	}
+}
+void VideoGenerator::generateSurfaceNote3D(int i, int noteid, cv::VideoWriter& outputVideo, double* prevCam, double* currCam, cv::Mat& currFrame, QString& screenshotObj, QString& screenshotDict, QVector<QPair<QPair<int, double*>, QString> >& surfaceNote3D)
+{
+	prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
+	prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
+	mObjects[i]->mGla->setSurfaceNoteView(surfaceNote3D[noteid].first.first,
+		surfaceNote3D[noteid].first.second[0], surfaceNote3D[noteid].first.second[1], surfaceNote3D[noteid].first.second[2], mDolly3D);
+	mObjects[i]->mGla->getCameraPos(currCam);
+	for (int duration = 0; duration < 30*mTransDuration3D; duration++)
+	{
+		double tempCam[6];
+		tempCam[0] = prevCam[0] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[0] * duration / (double)(30*mTransDuration3D);
+		tempCam[1] = prevCam[1] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[1] * duration / (double)(30*mTransDuration3D);
+		tempCam[2] = prevCam[2] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[2] * duration / (double)(30*mTransDuration3D);
+		tempCam[3] = prevCam[3] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[3] * duration / (double)(30*mTransDuration3D);
+		tempCam[4] = prevCam[4] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[4] * duration / (double)(30*mTransDuration3D);
+		tempCam[5] = prevCam[5] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[5] * duration / (double)(30*mTransDuration3D);
+		mObjects[i]->mGla->setCameraPos(tempCam);
+		screenshotDict = screenshotObj;
+		screenshotDict.append("SurfaceNote" + QString::number(noteid) + "_" + QString::number(duration));
+		mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+		cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+		cv::Mat resized = resize2Video(frame, mysize);
+		if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+		outputVideo.write(resized);
+	}
+	mObjects[i]->mGla->setCameraPos(currCam);
+	screenshotDict = screenshotObj;
+	screenshotDict.append("SurfaceNote" + QString::number(noteid));
+	mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+	cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+	cv::Mat resized = resize2Video(frame, mysize);
+	// put subtitle and associated image
+	QPair<QString, QString> textAndImg = parseTextAndImg(surfaceNote3D[noteid].second);
+	currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+	for (int duration = 0; duration < 30*mFrameDuration3D; duration++)
+	{
+		if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+		outputVideo.write(currFrame);
+	}
+}
+void VideoGenerator::generateFrustumNote3D(int i, int noteid, cv::VideoWriter& outputVideo, double* prevCam, double* currCam, cv::Mat& currFrame, QString& screenshotObj, QString& screenshotDict, QVector<QPair<double*, QString> >& frustumNote3D)
+{
+	prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
+	prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
+	mObjects[i]->mGla->setFrustumNoteView(0, frustumNote3D[noteid].first[0], frustumNote3D[noteid].first[1], frustumNote3D[noteid].first[2], mDolly3D);
+	mObjects[i]->mGla->getCameraPos(currCam);
+	for (int duration = 0; duration < 30*mTransDuration3D; duration++)
+	{
+		double tempCam[6];
+		tempCam[0] = prevCam[0] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[0] * duration / (double)(30*mTransDuration3D);
+		tempCam[1] = prevCam[1] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[1] * duration / (double)(30*mTransDuration3D);
+		tempCam[2] = prevCam[2] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[2] * duration / (double)(30*mTransDuration3D);
+		tempCam[3] = prevCam[3] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[3] * duration / (double)(30*mTransDuration3D);
+		tempCam[4] = prevCam[4] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[4] * duration / (double)(30*mTransDuration3D);
+		tempCam[5] = prevCam[5] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[5] * duration / (double)(30*mTransDuration3D);
+		mObjects[i]->mGla->setCameraPos(tempCam);
+		screenshotDict = screenshotObj;
+		screenshotDict.append("FrustumNote" + QString::number(noteid) + "_" + QString::number(duration));
+		mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+		cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+		cv::Mat resized = resize2Video(frame, mysize);
+		if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+		outputVideo.write(resized);
+	}
+	for (int angle = 0; angle < 360; angle++)
+	{
+		mObjects[i]->mGla->setFrustumNoteView((double)angle,
+			frustumNote3D[noteid].first[0], frustumNote3D[noteid].first[1], frustumNote3D[noteid].first[2], mDolly3D);
+		screenshotDict = screenshotObj;
+		screenshotDict.append("FrustumNote" + QString::number(noteid) + "_" + QString::number(angle));
+		mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+		cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+		cv::Mat resized = resize2Video(frame, mysize);
+		// put subtitle and associated image
+		QPair<QString, QString> textAndImg = parseTextAndImg(frustumNote3D[noteid].second);
+		currFrame = putSubtitle(resized, textAndImg.first.toStdString(), mysize, textAndImg.second.toStdString());
+		if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+		outputVideo.write(currFrame);
+	}
+	mObjects[i]->mGla->getCameraPos(currCam);
 }

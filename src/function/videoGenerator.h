@@ -95,6 +95,7 @@ public:
 	QString mName;
 	QString mNotesPath;
 	QVector<QPair<QString, NoteType> > mNotes;	// note content and type (2D/3D)
+	QVector<int> mNoteReorder; // mNoteReorder.size() == mNotes.size() - 1
 	QVector<QString> mPictures;	// image notes
 	QVector<int> mCategories;	// selected categories for notes
 	QString mCHEName;
@@ -294,6 +295,13 @@ private:
 	 */
 	void blend2Video(cv::Mat& img1, cv::Mat& img2, cv::VideoWriter& outputVideo);
 
+	void generatePointNote2D(int noteid, cv::VideoWriter& outputVideo, cv::Mat& frame, cv::Mat& prevFrame, cv::Mat& currFrame, QVector<QPair<QPair<int, int>, QString> >& pointNote2D);
+	void generateSurfaceNote2D(int noteid, cv::VideoWriter& outputVideo, cv::Mat& frame, cv::Mat& prevFrame, cv::Mat& currFrame, QVector<QPair<int*, QString> >& surfaceNote2D);
+	void generatePolygonNote2D(int noteid, cv::VideoWriter& outputVideo, cv::Mat& frame, cv::Mat& prevFrame, cv::Mat& currFrame, QVector<QPair<QVector<QPair<int, int> >, QString> >& polygonNote2D);
+	void generatePointNote3D(int i, int noteid, cv::VideoWriter& outputVideo, double* prevCam, double* currCam, cv::Mat& currFrame, QString& screenshotObj, QString& screenshotDict, QVector<QPair<QPair<int, double*>, QString> >& pointNote3D);
+	void generateSurfaceNote3D(int i, int noteid, cv::VideoWriter& outputVideo, double* prevCam, double* currCam, cv::Mat& currFrame, QString& screenshotObj, QString& screenshotDict, QVector<QPair<QPair<int, double*>, QString> >& surfaceNote3D);
+	void generateFrustumNote3D(int i, int noteid, cv::VideoWriter& outputVideo, double* prevCam, double* currCam, cv::Mat& currFrame, QString& screenshotObj, QString& screenshotDict, QVector<QPair<double*, QString> >& frustumNote3D);
+
 private:
 	bool isProject;
 	bool isWmv;
@@ -309,6 +317,7 @@ private:
 	// user preferences from videoSetup
 	int mVideoFormat;
 	int mResolutionOption;
+	cv::Size mysize;
 	int mFrameDuration2D;
 	int mTransDuration2D;
 	int mFrameDuration3D;

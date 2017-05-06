@@ -4935,12 +4935,23 @@ void MainWindow::generateVideo()
 		QString name = nameElement[nameElement.size() - 1];
 		if (filterList.indexOf(name) != -1)	// object is filtered
 			continue;
+
+
 		VideoObject* object = new VideoObject();
 		
 		object->mName = name;
 		object->mNotesPath = path;
 		object->mNotesPath.append(QDir::separator() + QString("Note"));
 		object->mNotes = mInformation->getAllNotes(path);
+
+		//// TODO: get reorder information from dialogNote
+		/*VideoNoteFilter *dialogNote = new VideoNoteFilter(name);
+		dialogNote->exec();*/
+		QVector<int> tmpNoteReorder;
+		tmpNoteReorder.push_back(1);
+		tmpNoteReorder.push_back(0);
+		object->mNoteReorder = tmpNoteReorder;
+		
 		object->mCategories = dialog->getCategories(name);
 		object->mGla = gla;
 		video->addObject(object);
