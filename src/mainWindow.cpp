@@ -56,6 +56,7 @@
 #include "function/reportFilter.h"
 #include "function/videoSetup.h"
 #include "function/videoFilter.h"
+#include "function/videoNoteFilter.h"
 #include "function/mapKit/mapCoordinate.h"
 
 QProgressBar *MainWindow::qb;
@@ -4936,7 +4937,6 @@ void MainWindow::generateVideo()
 		if (filterList.indexOf(name) != -1)	// object is filtered
 			continue;
 
-
 		VideoObject* object = new VideoObject();
 		
 		object->mName = name;
@@ -4944,14 +4944,16 @@ void MainWindow::generateVideo()
 		object->mNotesPath.append(QDir::separator() + QString("Note"));
 		object->mNotes = mInformation->getAllNotes(path);
 
-		//// TODO: get reorder information from dialogNote
-		/*VideoNoteFilter *dialogNote = new VideoNoteFilter(name);
-		dialogNote->exec();*/
-		QVector<int> tmpNoteReorder;
-		tmpNoteReorder.push_back(1);
-		tmpNoteReorder.push_back(0);
-		object->mNoteReorder = tmpNoteReorder;
-		
+		// get reorder information from dialogNote
+		VideoNoteFilter *dialogNote = new VideoNoteFilter(object);
+		dialogNote->exec();
+		if (!dialogNote->checkGenerate())
+		{
+			continue;
+		}
+		//// TODO: work on SkipAll, isGeneral, isMap
+
+		object->mNoteReorder = dialogNote->dragPermutation;
 		object->mCategories = dialog->getCategories(name);
 		object->mGla = gla;
 		video->addObject(object);
@@ -4960,6 +4962,7 @@ void MainWindow::generateVideo()
 		object->mMode = wm;
 	}
 	video->generate();
+	// doesn't work if delete pointers, potential memory leak when generating reports and videos
 }
 
 void MainWindow::writeAnnotation()

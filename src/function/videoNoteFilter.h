@@ -52,18 +52,11 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QDropEvent>
+#include "videoFilter.h"
+#include "videoGenerator.h"
 
-
-class dragTreeWidget : public QTreeWidget
-{
-private:
-	virtual void dropEvent(QDropEvent* event)
-	{
-		QModelIndex droppedIndex = indexAt( event->pos() );
-		if (!droppedIndex.isValid()) return;
-		QTreeWidget::dropEvent(event);
-	}
-};
+class VideoObject;
+class dragTreeWidget;
 
 /**
  * This class is the dialog help user to select contents that would appear
@@ -76,22 +69,9 @@ class VideoNoteFilter : public QWidget
 public:
 	/**
 	 * @brief  Constructor.
-	 * @param  The vector of all the objcts' absolute path.
+	 * @param  The video object that contains note information.
 	 */
-	VideoNoteFilter(QVector<QString> objects);
-
-	/**
-	 * @brief  Get the objects that should appear in the video.
-	 * @return The vector of the selected object full path.
-	 */
-	QVector<QString> getFilterList();
-
-	/**
-	 * @brief  Get the CHE categories of the given object.
-	 * @param  object  The object absolute path.
-	 * @return The vector of categories encoded as int id.
-	 */
-	QVector<int> getCategories(const QString object);
+	VideoNoteFilter(VideoObject* mainVideoObject);
 
 	/**
 	 * @brief  Show the dialog. Overload from QWidget.
@@ -103,6 +83,8 @@ public:
 	 * @return If Generate button is pressed then return true, otherwise return false.
 	 */
 	bool checkGenerate() {return isGenerate;}
+
+	bool checkSkipAll() {return isSkipAll;}
 	
 	QVector<int> dragPermutation;
 
@@ -119,18 +101,9 @@ private slots:
 	void cancel();
 
 	/**
-	 * @brief  Handle SelectAll button.
+	 * @brief  Handle SkipAll button.
 	 */
-	void selectAll();
-
-	/**
-	 * @brief  Handle the change of check state of items in tree widget.
-	 *         If the object item is checked, then all its child (category items) should all be checked.
-	 *         If the object item is unchecked, then all its child (category items) should all be unchecked.
-	 * @param  item    item that is checked.
-	 * @param  column  checked column number to match the signal, useless here.
-	 */
-	void itemChanged(QTreeWidgetItem* item, int column);
+	void skipAll();
 
 private:
 	QDialog* mDialog;
@@ -140,16 +113,15 @@ private:
 
 	QPushButton* mGenerateButton;
 	QPushButton* mCancelButton;
-	QPushButton* mSelectAllButton;
+	QPushButton* mSkipAllButton;
 
 	QLabel* mLabel;
 
 	dragTreeWidget* mTreeWidget;
 	QList<QTreeWidgetItem*> mItems;
-	QVector<QString> mObject;
-	QMap<QString, QVector<int> > mSelected;
-	bool isGenerate;
+	bool isGenerate, isSkipAll;
 
+	VideoObject* thisVideoObject;
 };
 
 #endif // VIDEO_NOTE_FILTER

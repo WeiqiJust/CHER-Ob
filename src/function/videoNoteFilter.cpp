@@ -28,14 +28,16 @@
 #include "../CHE/exportToProjectDialog.h"
 #include <QDebug>
 
-VideoNoteFilter::VideoNoteFilter(QVector<QString> objects)
+VideoNoteFilter::VideoNoteFilter(VideoObject* mainVideoObject)
 {
+	thisVideoObject = mainVideoObject;
+
 	mDialog = new QDialog();
 	mVbox = new QVBoxLayout();
 
 	mDialog->setWindowTitle(tr("Video Note Filter"));
 
-	mLabel = new QLabel("Please select the objects and categories to be presented in video");
+	mLabel = new QLabel("Please select the notes to be presented in video");
 
 	mTreeWidget = new dragTreeWidget();
 	//// Zeyu playing with drag-and-drop
@@ -45,71 +47,48 @@ VideoNoteFilter::VideoNoteFilter(QVector<QString> objects)
 	mTreeWidget->setDragDropMode(QAbstractItemView::InternalMove);
 
 	QStringList ColumnNames;
-	ColumnNames << "Object";
+	ColumnNames << "Note";
 	mTreeWidget->setHeaderLabels(ColumnNames);
-	mObject = objects;
-	for (int i = 0; i < objects.size(); i++)
+	for (int i = 1; i < thisVideoObject->mNotes.size(); i++)
 	{
+		QString text = thisVideoObject->mNotes[i].first.split("\nLinked Images:\n")[0].split("Note Start:\n")[1];
 		QTreeWidgetItem *item = new QTreeWidgetItem();
-		item->setText(0, QString(objects[i]));
+		item->setText(0, text);
 		item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-		item->setCheckState(0, Qt::Unchecked);
-		for (int j = 0; j < 11; j++)
-		{
-			QTreeWidgetItem *child = new QTreeWidgetItem();
-			child->setText(0, QString(num2category(j).c_str()));
-			child->setFlags(child->flags() | Qt::ItemIsUserCheckable);
-			child->setCheckState(0, Qt::Unchecked);
-			item->addChild(child);
-		}
+		item->setCheckState(0, Qt::Checked);
 		mItems.push_back(item);
 	}
 	mTreeWidget->insertTopLevelItems(0, mItems);
-	connect(mTreeWidget, SIGNAL(itemChanged(QTreeWidgetItem* , int)), this, SLOT(itemChanged(QTreeWidgetItem* , int)));
 
 	mButtonGridBox = new QGridLayout();
 	mGenerateButton = new QPushButton("Generate");
 	connect(mGenerateButton, SIGNAL(clicked()), this, SLOT(generate()));
 	mCancelButton = new QPushButton("Cancel");
 	connect(mCancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
-	mSelectAllButton = new QPushButton("Select All");
-	connect(mSelectAllButton, SIGNAL(clicked()), this, SLOT(selectAll()));
-	mButtonGridBox->addWidget(mSelectAllButton, 0, 4, 1, 1,  Qt::AlignVCenter | Qt::AlignLeft);
+	mSkipAllButton = new QPushButton("Skip All");
+	connect(mSkipAllButton, SIGNAL(clicked()), this, SLOT(skipAll()));
+	mButtonGridBox->addWidget(mSkipAllButton, 0, 4, 1, 1,  Qt::AlignVCenter | Qt::AlignLeft);
 	mButtonGridBox->addWidget(mGenerateButton, 0, 4, 1, 3,  Qt::AlignVCenter | Qt::AlignRight);
 	mButtonGridBox->addWidget(mCancelButton, 0, 4, 1, 4, Qt::AlignVCenter | Qt::AlignRight);
 	
 	mVbox->addWidget(mLabel);
 	mVbox->addWidget(mTreeWidget);
 	mVbox->addLayout(mButtonGridBox);
-	mDialog->setMinimumWidth(250);
+	mDialog->setMinimumWidth(350);
 	mDialog->setLayout(mVbox);
 	isGenerate = false;
-}
-
-QVector<QString> VideoNoteFilter::getFilterList()
-{
-	QVector<QString> filter;
-	for (int i = 0; i < mObject.size(); i++)
-	{
-		if (mSelected.keys().indexOf(mObject[i]) == -1)
-			filter.push_back(mObject[i]);
-	}
-	return filter;
-}
-
-QVector<int> VideoNoteFilter::getCategories(const QString object)
-{
-	QMap<QString, QVector<int> >::const_iterator it = mSelected.find(object);
-	if (it != mSelected.end())
-		return it.value();
-	QVector<int> empty;
-	return empty;
+	isSkipAll = false;
 }
 
 void VideoNoteFilter::generate()
 {
 	for (int i = 0; i < mItems.size(); i++)
 	{
+		if (mTreeWidget->topLevelItem(i)->checkState(0) != Qt::Checked)
+		{
+			dragPermutation.push_back(-1);
+			continue;
+		}
 		for (int k = 0; k < mItems.size(); k++)
 		{
 			if (mTreeWidget->topLevelItem(i)->text(0) == mItems[k]->text(0))
@@ -118,21 +97,7 @@ void VideoNoteFilter::generate()
 				break;
 			}
 		}
-	}
-	for (int i = 0; i < mItems.size(); i++)
-	{
-		if (mItems[i]->checkState(0) == Qt::Checked)
-		{
-			QVector<int> categories;
-			for (int j = 0; j < mItems[i]->childCount(); j++)
-			{
-				if (mItems[i]->child(j)->checkState(0) == Qt::Checked)
-				{
-					categories.push_back(j);
-				}
-			}
-			mSelected[mItems[i]->text(0)] = categories;
-		}
+		qDebug() << dragPermutation[i] << "\n";
 	}
 	mDialog->hide();
 	isGenerate = true;
@@ -144,35 +109,8 @@ void VideoNoteFilter::cancel()
 	mDialog->hide();
 }
 
-void VideoNoteFilter::selectAll()
+void VideoNoteFilter::skipAll()
 {
-	for (int i = 0; i < mItems.size(); i++)
-	{
-		mItems[i]->setCheckState(0, Qt::Checked);
-		for (int j = 0; j < mItems[i]->childCount(); j++)
-		{
-			mItems[i]->child(j)->setCheckState(0, Qt::Checked);
-		}
-	}
-}
-
-void VideoNoteFilter::itemChanged(QTreeWidgetItem* item, int column)
-{
-	if (mItems.indexOf(item) != -1)
-	{
-		if (item->checkState(column) == Qt::Unchecked)
-		{
-			for (int i = 0; i < item->childCount(); i++)
-			{
-				item->child(i)->setCheckState(column, Qt::Unchecked);
-			}
-		}
-		if (item->checkState(column) == Qt::Checked)
-		{
-			for (int i = 0; i < item->childCount(); i++)
-			{
-				item->child(i)->setCheckState(column, Qt::Checked);
-			}
-		}
-	}
+	mDialog->hide();
+	isSkipAll = true;
 }
