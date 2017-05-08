@@ -97,7 +97,6 @@ void VideoNoteFilter::generate()
 				break;
 			}
 		}
-		qDebug() << dragPermutation[i] << "\n";
 	}
 	mDialog->hide();
 	isGenerate = true;
@@ -111,6 +110,6 @@ void VideoNoteFilter::cancel()
 
 void VideoNoteFilter::skipAll()
 {
-	mDialog->hide();
 	isSkipAll = true;
+	generate();
 }

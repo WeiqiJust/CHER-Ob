@@ -465,25 +465,36 @@ void VideoGenerator::generate()
 
 					mObjects[i]->mPictures.push_back(mObjects[i]->mGla->mFilename);
 					cv::Mat frame = cv::imread(mObjects[i]->mGla->mFilename.toStdString(), CV_LOAD_IMAGE_COLOR);
-					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
+					cv::Mat resized = resize2Video(frame, mysize);
+					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame = resized;
 
 					// put general annotation, effect to be refined
-					cv::Mat resized = resize2Video(frame, mysize);
-					//// TODO: need to set google map JavaScript to relocate current object
-					screenshotDict = screenshotObj;
-					screenshotDict.append("_geo.png");
-					mw()->mGeoInfo->makeScreenshot(screenshotDict); // save google map screenshot
-					currFrame = putSubtitle(resized, annotation.toStdString(), mysize, screenshotDict.toStdString());
-					blend2Video(prevFrame, currFrame, outputVideo);
-					for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
+					if (mObjects[i]->isShowGeneral)
 					{
-						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-						outputVideo.write(currFrame);
+						screenshotDict = screenshotObj;
+						screenshotDict.append("_geo.png");
+						//// TODO: need to set google map JavaScript to relocate current object
+						mw()->mGeoInfo->makeScreenshot(screenshotDict); // save google map screenshot
+						currFrame = putSubtitle(resized, annotation.toStdString(), mysize, screenshotDict.toStdString());
+						blend2Video(prevFrame, currFrame, outputVideo);
+						for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
+						{
+							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							outputVideo.write(currFrame);
+						}
+					}
+					else
+					{
+						blend2Video(prevFrame, currFrame, outputVideo);
 					}
 					for (int new_noteid = 0; new_noteid < mObjects[i]->mNotes.size() - 1; new_noteid++)
 					{
-						int noteid =  mObjects[i]->mNoteReorder[new_noteid];
-						if (noteid < pointNote2D.size())
+						int noteid = mObjects[i]->mNoteReorder[new_noteid];
+						if (noteid < 0)
+						{
+							continue;
+						}
+						else if (noteid < pointNote2D.size())
 						{
 							generatePointNote2D(noteid, outputVideo, frame, prevFrame, currFrame, pointNote2D);
 						}
@@ -496,18 +507,6 @@ void VideoGenerator::generate()
 							generatePolygonNote2D(noteid - pointNote2D.size() - surfaceNote2D.size(), outputVideo, frame, prevFrame, currFrame, polygonNote2D);
 						}
 					}
-					/*for (int noteid = 0; noteid < pointNote2D.size(); noteid++)
-					{
-						generatePointNote2D(noteid, outputVideo, frame, prevFrame, currFrame, pointNote2D);
-					}
-					for (int noteid = 0; noteid < surfaceNote2D.size(); noteid++)
-					{
-						generateSurfaceNote2D(noteid, outputVideo, frame, prevFrame, currFrame, surfaceNote2D);
-					}
-					for (int noteid = 0; noteid < polygonNote2D.size(); noteid++)
-					{
-						generatePolygonNote2D(noteid, outputVideo, frame, prevFrame, currFrame, polygonNote2D);
-					}*/
 					break;
 				}
 			case MODEL3D:
@@ -516,39 +515,63 @@ void VideoGenerator::generate()
 					initWidget(mObjects[i]->mGla, false);
 					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
 					double prevCam[6], currCam[6]; // 0..2 camera position x y z, 3..5 camera focal point x y z
-					//// TODO: need to set google map JavaScript to relocate current object
-					QString geoScreenshot = screenshotObj;
-					geoScreenshot.append("_geo.png");
-					mw()->mGeoInfo->makeScreenshot(geoScreenshot); // save google map screenshot
-					// generate screenshots from different angles
-					for (int angle = 0; angle < 360; angle++)
+					if (mObjects[i]->isShowGeneral)
 					{
-						mObjects[i]->mGla->setArbitraryView((double)angle);
+						//// TODO: need to set google map JavaScript to relocate current object
+						QString geoScreenshot = screenshotObj;
+						geoScreenshot.append("_geo.png");
+						mw()->mGeoInfo->makeScreenshot(geoScreenshot); // save google map screenshot
+						// generate screenshots from different angles
+						for (int angle = 0; angle < 360; angle++)
+						{
+							mObjects[i]->mGla->setArbitraryView((double)angle);
+							screenshotDict = screenshotObj;
+							screenshotDict.append(QString::number(angle));
+							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+							cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
+							cv::Mat resized = resize2Video(frame, mysize);
+							currFrame = putSubtitle(resized, annotation.toStdString(), mysize, geoScreenshot.toStdString());
+							// blending
+							if (angle == 0)
+							{
+								blend2Video(prevFrame, currFrame, outputVideo);
+							}
+							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+							outputVideo.write(currFrame);
+						}
+					}
+					else
+					{
+						mObjects[i]->mGla->setArbitraryView(0);
 						screenshotDict = screenshotObj;
-						screenshotDict.append(QString::number(angle));
+						screenshotDict.append(QString::number(0));
 						mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
 						cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
 						cv::Mat resized = resize2Video(frame, mysize);
-						currFrame = putSubtitle(resized, annotation.toStdString(), mysize, geoScreenshot.toStdString());
-						// blending
-						if (angle == 0)
-							blend2Video(prevFrame, currFrame, outputVideo);
-						if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-						outputVideo.write(currFrame);
+						currFrame = resized;
+						blend2Video(prevFrame, currFrame, outputVideo);
 					}
 					mObjects[i]->mGla->getCameraPos(currCam);
 					mObjects[i]->mGla->computeNormals3D();
-					for (int noteid = 0; noteid < pointNote3D.size(); noteid++)
+					for (int new_noteid = 0; new_noteid < mObjects[i]->mNotes.size() - 1; new_noteid++)
 					{
-						generatePointNote3D(i, noteid, outputVideo, prevCam, currCam, currFrame, screenshotObj, screenshotDict, pointNote3D);
-					}
-					for (int noteid = 0; noteid < surfaceNote3D.size(); noteid++)
-					{
-						generateSurfaceNote3D(i, noteid, outputVideo, prevCam, currCam, currFrame, screenshotObj, screenshotDict, surfaceNote3D);
-					}
-					for (int noteid = 0; noteid < frustumNote3D.size(); noteid++)
-					{
-						generateFrustumNote3D(i, noteid, outputVideo, prevCam, currCam, currFrame, screenshotObj, screenshotDict, frustumNote3D);
+						int noteid = mObjects[i]->mNoteReorder[new_noteid];
+						if (noteid < 0)
+						{
+							continue;
+						}
+						else if (noteid < pointNote3D.size())
+						{
+							generatePointNote3D(i, noteid, outputVideo, prevCam, currCam, currFrame, screenshotObj, screenshotDict, pointNote3D);
+						}
+						else if (noteid < pointNote3D.size() + surfaceNote3D.size())
+						{
+							generateSurfaceNote3D(i, noteid - pointNote3D.size(), outputVideo, prevCam, currCam, currFrame, screenshotObj, screenshotDict, surfaceNote3D);
+						}
+						else
+						{
+							generateFrustumNote3D(i, noteid - pointNote3D.size() - surfaceNote3D.size(), outputVideo, prevCam, currCam, currFrame, screenshotObj, screenshotDict, frustumNote3D);
+						}
 					}
 					recoverWidget(mObjects[i]->mGla, info, false);
 					break;
@@ -569,9 +592,13 @@ void VideoGenerator::generate()
 					// blending
 					int blendingFrames = 30*mTransDuration3D;
 					if (angle < blendingFrames)
+					{
 						cv::addWeighted(resized, angle/(double)blendingFrames, resized, 0, 0, resized);
+					}
 					else if (angle >= 360 - blendingFrames)
+					{
 						cv::addWeighted(resized, (359-angle)/(double)blendingFrames, resized, 0, 0, resized);
+					}
 					if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 					outputVideo.write(resized);
 				}
@@ -585,29 +612,51 @@ void VideoGenerator::generate()
 						screenshotObj.append(".png");
 						RTIScreenShot.save(screenshotObj);
 						mObjects[i]->mPictures.push_back(screenshotObj);
+
 						cv::Mat frame = cv::imread(screenshotObj.toStdString(), CV_LOAD_IMAGE_COLOR);
-						cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
-						// put general annotation, effect to be refined
 						cv::Mat resized = resize2Video(frame, mysize);
-						currFrame = putSubtitle(resized, annotation.toStdString(), mysize);
-						blend2Video(prevFrame, currFrame, outputVideo);
-						//// TODO: play with RTI lighting tricks
-						for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
+						cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame = resized;
+
+						// put general annotation, effect to be refined
+						if (mObjects[i]->isShowGeneral)
 						{
-							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
-							outputVideo.write(currFrame);
+							screenshotDict = screenshotObj;
+							screenshotDict.append("_geo.png");
+							//// TODO: need to set google map JavaScript to relocate current object
+							mw()->mGeoInfo->makeScreenshot(screenshotDict); // save google map screenshot
+							currFrame = putSubtitle(resized, annotation.toStdString(), mysize, screenshotDict.toStdString());
+							blend2Video(prevFrame, currFrame, outputVideo);
+							//// TODO: play with RTI lighting tricks
+							for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
+							{
+								if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+								outputVideo.write(currFrame);
+							}
 						}
-						for (int noteid = 0; noteid < pointNote2D.size(); noteid++)
+						else
 						{
-							generatePointNote2D(noteid, outputVideo, frame, prevFrame, currFrame, pointNote2D);
+							blend2Video(prevFrame, currFrame, outputVideo);
 						}
-						for (int noteid = 0; noteid < surfaceNote2D.size(); noteid++)
+
+						for (int new_noteid = 0; new_noteid < mObjects[i]->mNotes.size() - 1; new_noteid++)
 						{
-							generateSurfaceNote2D(noteid, outputVideo, frame, prevFrame, currFrame, surfaceNote2D);
-						}
-						for (int noteid = 0; noteid < polygonNote2D.size(); noteid++)
-						{
-							generatePolygonNote2D(noteid, outputVideo, frame, prevFrame, currFrame, polygonNote2D);
+							int noteid = mObjects[i]->mNoteReorder[new_noteid];
+							if (noteid < 0)
+							{
+								continue;
+							}
+							else if (noteid < pointNote2D.size())
+							{
+								generatePointNote2D(noteid, outputVideo, frame, prevFrame, currFrame, pointNote2D);
+							}
+							else if (noteid < pointNote2D.size() + surfaceNote2D.size())
+							{
+								generateSurfaceNote2D(noteid - pointNote2D.size(), outputVideo, frame, prevFrame, currFrame, surfaceNote2D);
+							}
+							else
+							{
+								generatePolygonNote2D(noteid - pointNote2D.size() - surfaceNote2D.size(), outputVideo, frame, prevFrame, currFrame, polygonNote2D);
+							}
 						}
 					}
 					break;

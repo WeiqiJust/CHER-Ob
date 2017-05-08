@@ -4924,6 +4924,7 @@ void MainWindow::generateVideo()
 		return;
 
 	QVector<QString> filterList = dialog->getFilterList();
+	bool isSkipAll = false;
 	
 	for (int winit = 0; winit < windows.size(); winit++)
 	{
@@ -4943,17 +4944,29 @@ void MainWindow::generateVideo()
 		object->mNotesPath = path;
 		object->mNotesPath.append(QDir::separator() + QString("Note"));
 		object->mNotes = mInformation->getAllNotes(path);
-
-		// get reorder information from dialogNote
-		VideoNoteFilter *dialogNote = new VideoNoteFilter(object);
-		dialogNote->exec();
-		if (!dialogNote->checkGenerate())
+		object->isShowGeneral = setupShowGeneral;
+		QVector<int> defaultOrder;
+		for (int i = 1; i < object->mNotes.size(); i++)
 		{
-			continue;
+			defaultOrder.push_back(i - 1);
 		}
-		//// TODO: work on SkipAll, isGeneral, isMap
-
-		object->mNoteReorder = dialogNote->dragPermutation;
+		object->mNoteReorder = defaultOrder;
+		// get reorder information from dialogNote
+		if (!isSkipAll)
+		{
+			VideoNoteFilter *dialogNote = new VideoNoteFilter(object);
+			dialogNote->exec();
+			if (!dialogNote->checkGenerate())
+			{
+				continue;
+			}
+			if (dialogNote->checkSkipAll())
+			{
+				isSkipAll = true;
+			}
+			//// TODO: work on isGeneral, isMap
+			object->mNoteReorder = dialogNote->dragPermutation;
+		}
 		object->mCategories = dialog->getCategories(name);
 		object->mGla = gla;
 		video->addObject(object);

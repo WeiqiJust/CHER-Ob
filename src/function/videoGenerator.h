@@ -100,6 +100,7 @@ public:
 	QVector<int> mCategories;	// selected categories for notes
 	QString mCHEName;
 	VtkWidget* mGla;
+	bool isShowGeneral;
 };
 
 /**
