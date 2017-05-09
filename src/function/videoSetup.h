@@ -114,7 +114,7 @@ private:
 	QString mProjectName;
 	QString mUserName;
 	QString mAffiliation;
-	int mVideoFormat; // DIV3, MPEG, H264
+	int mVideoFormat; // DIV3, MP42, WMV2
 	int mResolution; // 800*600, 1600*900, 1600*1200 // QComboBox
 	int mFrameDuration2D;
 	int mTransDuration2D;

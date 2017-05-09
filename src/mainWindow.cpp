@@ -4876,14 +4876,9 @@ void MainWindow::generateReport()
 // WORK IN PROGRESS by Zeyu Wang on Jan 13, 2017
 void MainWindow::generateVideo()
 {
-	QStringList filters;
-	filters.push_back("*.wmv");
-	filters.push_back("*.mov");
-	QString file = QFileDialog::getSaveFileName((QWidget* )0, "Export Video", QString(), filters.join(";;"));
-	if (file.isEmpty())
-		return;
+	QString file = QFileDialog::getSaveFileName((QWidget* )0, "Export Video", QString(), QString("*.*"));
+	if (file.isEmpty()) return;
 	file = QDir::toNativeSeparators(file);
-    if (QFileInfo(file).suffix().isEmpty()) return;
 	VideoGenerator* video;
 
 	if (!isCHE)

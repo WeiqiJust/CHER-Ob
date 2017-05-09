@@ -53,9 +53,9 @@ VideoSetup::VideoSetup(QString title, QString author, QString affiliation)
 
 	mVideoFormatContent = new QComboBox();
 	mVideoFormatContent->setFixedWidth(200);
-	mVideoFormatContent->addItem("DIV3");
-	mVideoFormatContent->addItem("MPEG");
-	mVideoFormatContent->addItem("H264");
+	mVideoFormatContent->addItem(".avi (DIV3)");
+	mVideoFormatContent->addItem(".mp4 (MP42)");
+	mVideoFormatContent->addItem(".wmv (WMV2)");
 	mVideoFormatContent->setCurrentIndex(0);
 	connect(mVideoFormatContent, SIGNAL(currentIndexChanged(int)), this, SLOT(setVideoFormat(int)));
 
@@ -204,6 +204,8 @@ void VideoSetup::next()
 	mProjectName = mProjectNameContent->text();
 	mUserName = mUserNameContent->text();
 	mAffiliation = mAffiliationContent->text();
+	mVideoFormat = mVideoFormatContent->currentIndex();
+	mResolution = mResolutionContent->currentIndex();
 	mFrameDuration2D = mFrameDuration2DContent->text().toInt();
 	mTransDuration2D = mTransDuration2DContent->text().toInt();
 	mFrameDuration3D = mFrameDuration3DContent->text().toInt();

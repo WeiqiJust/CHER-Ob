@@ -82,18 +82,6 @@ VideoGenerator::VideoGenerator(QString path, bool project)
 {
 	isProject = project;
 	mLocation = path;
-	
-    mPrinter = new QPrinter(QPrinter::PrinterResolution);
-    mPrinter->setOutputFormat(QPrinter::PdfFormat);
-    mPrinter->setPaperSize(QPrinter::A4);
-    mPrinter->setOutputFileName(mLocation);
- 
-    mDoc = new QTextDocument();
-	QFile file(path);
-	file.close();
-
-	if (QFileInfo(mLocation).suffix() == QString("wmv")) isWmv = true;
-	else isWmv = false;
 }
 
 void VideoGenerator::setUpdateSetup(const QString project, const QString userName, const QString affiliation, const int videoFormat, const int resolutionOption,
@@ -137,18 +125,55 @@ void VideoGenerator::generate()
 	videoFolder.append(QDir::separator() + QString("video"));
 	QDir().mkdir(videoFolder);
 	QDir videoFolderDir(videoFolder);
-	mysize = cv::Size(800, 600);
-	cv::VideoWriter outputVideo(mLocation.toStdString(), cv::VideoWriter::fourcc('D','I','V','3'), 30, mysize, true); // SIZE ISSUE
+	char myFourCC[4];
+	switch (mVideoFormat)
+	{
+		default:
+		case 0: myFourCC[0] = 'D'; myFourCC[1] = 'I'; myFourCC[2] = 'V'; myFourCC[3] = '3'; mLocation = mLocation + ".avi"; break;
+		case 1: myFourCC[0] = 'M'; myFourCC[1] = 'P'; myFourCC[2] = '4'; myFourCC[3] = '2'; mLocation = mLocation + "_.avi"; break;
+		case 2: myFourCC[0] = 'W'; myFourCC[1] = 'M'; myFourCC[2] = 'V'; myFourCC[3] = '2'; mLocation = mLocation + ".wmv"; break;
+	}
+	cv::Point ptTitle, ptAuthor, ptAffiliation, ptPowered;
+	double fontSize;
+	switch (mResolutionOption)
+	{
+		default:
+		case 0:
+			mysize = cv::Size(800, 600);
+			ptTitle.x = 50; ptTitle.y = 200;
+			ptAuthor.x = 50; ptAuthor.y = 350;
+			ptAffiliation.x = 50; ptAffiliation.y = 400;
+			ptPowered.x = 550; ptPowered.y = 550;
+			fontSize = 0.5;
+			break;
+		case 1:
+			mysize = cv::Size(1600, 900);
+			ptTitle.x = 100; ptTitle.y = 300;
+			ptAuthor.x = 100; ptAuthor.y = 500;
+			ptAffiliation.x = 100; ptAffiliation.y = 600;
+			ptPowered.x = 1100; ptPowered.y = 800;
+			fontSize = 1.0;
+			break;
+		case 2:
+			mysize = cv::Size(1600, 1200);
+			ptTitle.x = 100; ptTitle.y = 400;
+			ptAuthor.x = 100; ptAuthor.y = 700;
+			ptAffiliation.x = 100; ptAffiliation.y = 800;
+			ptPowered.x = 1100; ptPowered.y = 1100;
+			fontSize = 1.0;
+			break;
+	}
+	cv::VideoWriter outputVideo(mLocation.toStdString(), cv::VideoWriter::fourcc(myFourCC[0],myFourCC[1],myFourCC[2],myFourCC[3]), 30, mysize, true); // SIZE ISSUE
 
 	// create title frame
 	cv::Mat titleFrame = cv::Mat::zeros(mysize, CV_8UC3);
-	cv::putText(titleFrame, mProjectName.toStdString(), cv::Point(50, 200), cv::FONT_HERSHEY_DUPLEX, 1.0, cv::Scalar(255, 255, 255), 1, CV_AA);
-	cv::putText(titleFrame, mUserName.toStdString(), cv::Point(50, 350), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+	cv::putText(titleFrame, mProjectName.toStdString(), ptTitle, cv::FONT_HERSHEY_DUPLEX, 2*fontSize, cv::Scalar(255, 255, 255), 1, CV_AA);
+	cv::putText(titleFrame, mUserName.toStdString(), ptAuthor, cv::FONT_HERSHEY_DUPLEX, fontSize, cv::Scalar(255, 255, 255), 1, CV_AA);
 	if (mAffiliation != "")
 	{
-		cv::putText(titleFrame, mAffiliation.toStdString(), cv::Point(50, 400), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+		cv::putText(titleFrame, mAffiliation.toStdString(), ptAffiliation, cv::FONT_HERSHEY_DUPLEX, fontSize, cv::Scalar(255, 255, 255), 1, CV_AA);
 	}
-	cv::putText(titleFrame, "Powered by CHER-Ob", cv::Point(550, 550), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+	cv::putText(titleFrame, "Powered by CHER-Ob", ptPowered, cv::FONT_HERSHEY_DUPLEX, fontSize, cv::Scalar(255, 255, 255), 1, CV_AA);
 	for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
 	{
 		if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
@@ -452,12 +477,13 @@ void VideoGenerator::generate()
 		WidgetInfo3D_ info;
 		QPixmap RTIScreenShot;
 	
-		switch(mObjects[i]->mMode)
+		switch (mObjects[i]->mMode)
 		{
 			case EMPTYWIDGET:
 				break;
 			case IMAGE2D:
 				{
+
 	// std::vector<int> compression_params;
     // compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
     // compression_params.push_back(9);
@@ -691,6 +717,18 @@ void VideoGenerator::generate()
 		videoFolderDir.remove(dirFile);
 	}
 	QDir().rmdir(videoFolder);
+	// change the extension to ".mp4" due to limitations of OpenCV
+	if (mVideoFormat == 1)
+	{
+		QFile videoMP4(mLocation);
+		QString renameMP4 = mLocation.split("_.avi")[0] + ".mp4";
+		qDebug() << renameMP4 << "\n";
+		bool isRename = videoMP4.rename(renameMP4);
+		if (!isRename)
+		{
+			qDebug() << "MP4 rename failed!\n";
+		}
+	}
 }
 
 void VideoGenerator::detectPointVisibility(vtkSmartPointer<vtkRenderer> render, QVector<double*> points, QVector<QPair<double, double> >& visiblePoints)
@@ -757,18 +795,17 @@ void VideoGenerator::detectFrustumVisibility(const VtkWidget* gla, QVector<doubl
 		projection[1] = center[i][1];
 		projection[2] = center[i][2];
 		int sub;
-		switch(view)
+		switch (view)
 		{
-		case FRONT3D:projection[2]+=100;break;
-		case LEFT3D:projection[0]-=100;break;
-		case RIGHT3D:projection[0]+=100;break;
-		case TOP3D:projection[1]+=100;break;
-		case BOTTOM3D:projection[1]-=100;break;
-		case BACK3D:projection[2]-=100;break;
+			case FRONT3D: projection[2] += 100; break;
+			case LEFT3D: projection[0] -= 100; break;
+			case RIGHT3D: projection[0] += 100; break;
+			case TOP3D: projection[1] += 100; break;
+			case BOTTOM3D: projection[1] -= 100; break;
+			case BACK3D: projection[2] -= 100; break;
 		}
 
-		vtkSmartPointer<vtkCellLocator> cellLocator = 
-		vtkSmartPointer<vtkCellLocator>::New();
+		vtkSmartPointer<vtkCellLocator> cellLocator = vtkSmartPointer<vtkCellLocator>::New();
 		cellLocator->SetDataSet(polyData);
 		cellLocator->BuildLocator();
 
@@ -1064,7 +1101,14 @@ cv::Mat VideoGenerator::putSubtitle(cv::Mat& src, std::string mystr, cv::Size my
 {
 	cv::Mat annotated = src.clone();
 	cv::Mat blackImg(mysize, CV_8UC3, cv::Scalar(0, 0, 0));
-	cv::Rect roi(0, 480, 800, 120);
+	cv::Rect roi;
+	switch (mResolutionOption)
+	{
+		default:
+		case 0: roi.x = 0; roi.y = 480; roi.width = 800; roi.height = 120; break;
+		case 1: roi.x = 0; roi.y = 660; roi.width = 1600; roi.height = 240; break;
+		case 2: roi.x = 0; roi.y = 960; roi.width = 1600; roi.height = 240; break;
+	}
 	cv::Mat subtitle1 = annotated(roi);
 	cv::Mat subtitle2 = blackImg(roi);
 	cv::addWeighted(subtitle1, 0.7, subtitle2, 0.3, 0, subtitle1);
@@ -1085,13 +1129,33 @@ cv::Mat VideoGenerator::putSubtitle(cv::Mat& src, std::string mystr, cv::Size my
 				eps -= lineLen - spacePos - 1;
 			}
 		}
-		cv::putText(annotated, line, cv::Point(50, 500 + i * 20), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA);
+		switch (mResolutionOption)
+		{
+			default:
+			case 0: cv::putText(annotated, line, cv::Point(50, 500 + i * 20), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(255, 255, 255), 1, CV_AA); break;
+			case 1: cv::putText(annotated, line, cv::Point(100, 700 + i * 40), cv::FONT_HERSHEY_DUPLEX, 1.0, cv::Scalar(255, 255, 255), 1, CV_AA); break;
+			case 2: cv::putText(annotated, line, cv::Point(100, 1000 + i * 40), cv::FONT_HERSHEY_DUPLEX, 1.0, cv::Scalar(255, 255, 255), 1, CV_AA); break;
+		}
 	}
 	if (img != "")
 	{
 		cv::Mat assoImg = cv::imread(img, CV_LOAD_IMAGE_COLOR);
-		assoImg = resize2Video(assoImg, cv::Size(120, 120));
-		assoImg.copyTo(annotated.colRange(680, 680 + assoImg.size().width).rowRange(480, 480 + assoImg.size().height));
+		switch (mResolutionOption)
+		{
+			default:
+			case 0:
+				assoImg = resize2Video(assoImg, cv::Size(120, 120));
+				assoImg.copyTo(annotated.colRange(680, 680 + assoImg.size().width).rowRange(480, 480 + assoImg.size().height));
+				break;
+			case 1:
+				assoImg = resize2Video(assoImg, cv::Size(240, 240));
+				assoImg.copyTo(annotated.colRange(1360, 1360 + assoImg.size().width).rowRange(660, 660 + assoImg.size().height));
+				break;
+			case 2:
+				assoImg = resize2Video(assoImg, cv::Size(240, 240));
+				assoImg.copyTo(annotated.colRange(1360, 1360 + assoImg.size().width).rowRange(960, 960 + assoImg.size().height));
+				break;
+		}
 	}
 	return annotated;
 }

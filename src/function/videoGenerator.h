@@ -307,8 +307,6 @@ private:
 	bool isProject;
 	bool isWmv;
 	QString mLocation;
-	QPrinter* mPrinter;
-	QTextDocument* mDoc;
 	QString mProjectName;
 	QString mUserName;
 	QString mKeyword, mAffiliation, mDescription;
@@ -316,8 +314,8 @@ private:
 	QVector<VideoObject*> mObjects;
 
 	// user preferences from videoSetup
-	int mVideoFormat;
-	int mResolutionOption;
+	int mVideoFormat; // 0: DIV3, 1: MP42, 2: WMV2
+	int mResolutionOption; // 0: 800*600, 1: 1600*900, 2: 1600*1200
 	cv::Size mysize;
 	int mFrameDuration2D;
 	int mTransDuration2D;
