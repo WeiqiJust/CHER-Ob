@@ -37,7 +37,7 @@ VideoNoteFilter::VideoNoteFilter(VideoObject* mainVideoObject)
 
 	mDialog->setWindowTitle(tr("Video Note Filter"));
 
-	mLabel = new QLabel("Please select the notes to be presented in video");
+	mLabel = new QLabel(thisVideoObject->mName + "\nPlease select the notes to be presented in video");
 
 	mTreeWidget = new dragTreeWidget();
 	//// Zeyu playing with drag-and-drop

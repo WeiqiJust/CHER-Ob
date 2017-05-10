@@ -1,5 +1,5 @@
 var map = null;
-var markers = {};
+var markers = [];
 var markerIndex = 0;
 var markerBounceIndex = 0;
 
@@ -156,6 +156,17 @@ function setMapCenter(lat, lng, animated)
         map.setCenter(latlng);
 }
 
+function clearAllMarkers()
+{
+    for (var i = 0; i < markers.length; i++)
+    {
+        markers[i].setMap(null);
+    }
+    markers = [];
+    markerIndex = 0;
+    markerBounceIndex = 0;
+}
+
 function boundsFromCoordinates(north, south, east, west)
 {
     var ne = new google.maps.LatLng(north, east);
@@ -171,4 +182,16 @@ function panMapToBounds(north, south, east, west)
 function fitMapToBounds(north, south, east, west)
 {
     map.fitBounds(boundsFromCoordinates(north, south, east, west));
+}
+
+function getPositionVideo(name)
+{
+    for (var i = markerIndex - 1; i >= 0; i--)
+    {
+        if (markers[i].title == name)
+        {
+            window.alert(markers[i].position["lat"]);
+            return markers[i].position;
+        }
+    }
 }

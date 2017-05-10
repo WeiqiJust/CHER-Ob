@@ -45,6 +45,8 @@
 #include <qwt_plot.h>
 #include "videoGenerator.h"
 #include "lightControl.h"
+#include "lightControlRTI.h"
+#include "../information/informationWidget.h"
 #include "../information/searchWidget.h"
 #include "../mainWindow.h"
 #include "CTControl.h"
@@ -125,6 +127,25 @@ void VideoGenerator::generate()
 	videoFolder.append(QDir::separator() + QString("video"));
 	QDir().mkdir(videoFolder);
 	QDir videoFolderDir(videoFolder);
+
+	for (int i = 0; i < mObjects.size(); i++)
+	{
+		QString screenshotObj = videoFolder;
+		screenshotObj.append(QDir::separator() + mObjects[i]->mName);
+		QString screenshotDict = screenshotObj;
+		screenshotDict.append("_geo.png");
+		// set google map JavaScript to relocate current object
+		//mapMutex.lock();
+		mw()->mGeoInfo->startGeoMarking();
+		//mapMutex.unlock();
+		//mapMutex.lock();
+		mw()->mGeoInfo->setPos4Video(mw()->mInformation->getGeoInfo(mObjects[i]->mName));
+		//mapMutex.unlock();
+		//mapMutex.lock();
+		mw()->mGeoInfo->makeScreenshot(screenshotDict); // save google map screenshot
+		//mapMutex.unlock();
+	}
+
 	char myFourCC[4];
 	switch (mVideoFormat)
 	{
@@ -499,8 +520,6 @@ void VideoGenerator::generate()
 					{
 						screenshotDict = screenshotObj;
 						screenshotDict.append("_geo.png");
-						//// TODO: need to set google map JavaScript to relocate current object
-						mw()->mGeoInfo->makeScreenshot(screenshotDict); // save google map screenshot
 						currFrame = putSubtitle(resized, annotation.toStdString(), mysize, screenshotDict.toStdString());
 						blend2Video(prevFrame, currFrame, outputVideo);
 						for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
@@ -543,10 +562,8 @@ void VideoGenerator::generate()
 					double prevCam[6], currCam[6]; // 0..2 camera position x y z, 3..5 camera focal point x y z
 					if (mObjects[i]->isShowGeneral)
 					{
-						//// TODO: need to set google map JavaScript to relocate current object
 						QString geoScreenshot = screenshotObj;
 						geoScreenshot.append("_geo.png");
-						mw()->mGeoInfo->makeScreenshot(geoScreenshot); // save google map screenshot
 						// generate screenshots from different angles
 						for (int angle = 0; angle < 360; angle++)
 						{
@@ -632,37 +649,55 @@ void VideoGenerator::generate()
 				break;
 			case RTI2D:
 				{
+					mw()->mLightControlRTI->setLight(vcg::Point3f(0, 0, 1), true);
 					RTIScreenShot = mObjects[i]->mGla->getRTIScreenShot();
 					if (!RTIScreenShot.isNull())
 					{
-						screenshotObj.append(".png");
-						RTIScreenShot.save(screenshotObj);
-						mObjects[i]->mPictures.push_back(screenshotObj);
-
-						cv::Mat frame = cv::imread(screenshotObj.toStdString(), CV_LOAD_IMAGE_COLOR);
-						cv::Mat resized = resize2Video(frame, mysize);
-						cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame = resized;
+						screenshotDict = screenshotObj;
+						screenshotDict.append(".png");
+						RTIScreenShot.save(screenshotDict);
+						mObjects[i]->mPictures.push_back(screenshotDict);
+						cv::Mat frame, prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
 
 						// put general annotation, effect to be refined
 						if (mObjects[i]->isShowGeneral)
 						{
-							screenshotDict = screenshotObj;
-							screenshotDict.append("_geo.png");
-							//// TODO: need to set google map JavaScript to relocate current object
-							mw()->mGeoInfo->makeScreenshot(screenshotDict); // save google map screenshot
-							currFrame = putSubtitle(resized, annotation.toStdString(), mysize, screenshotDict.toStdString());
-							blend2Video(prevFrame, currFrame, outputVideo);
-							//// TODO: play with RTI lighting tricks
+							// play with RTI lighting
 							for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
 							{
+								mw()->mLightControlRTI->setLight(vcg::Point3f(cos(duration*2*M_PI/30/mFrameDuration2D) * sin(70*M_PI/180),
+									sin(duration*2*M_PI/30/mFrameDuration2D) * sin(70*M_PI/180), cos(70*M_PI/180)), true);
+								RTIScreenShot = mObjects[i]->mGla->getRTIScreenShot();
+								screenshotDict = screenshotObj;
+								screenshotDict.append(QString::number(duration) + ".png");
+								RTIScreenShot.save(screenshotDict);
+								mObjects[i]->mPictures.push_back(screenshotDict);
+								frame = cv::imread(screenshotDict.toStdString(), CV_LOAD_IMAGE_COLOR);
+								cv::Mat resized = resize2Video(frame, mysize);
+								screenshotDict = screenshotObj;
+								screenshotDict.append("_geo.png");
+								currFrame = putSubtitle(resized, annotation.toStdString(), mysize, screenshotDict.toStdString());
+								if (duration == 0)
+								{
+									blend2Video(prevFrame, currFrame, outputVideo);
+								}
 								if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 								outputVideo.write(currFrame);
 							}
+							screenshotDict = screenshotObj;
+							screenshotDict.append(".png");
+							frame = cv::imread(screenshotDict.toStdString(), CV_LOAD_IMAGE_COLOR);
 						}
 						else
 						{
+							screenshotDict = screenshotObj;
+							screenshotDict.append(".png");
+							frame = cv::imread(screenshotDict.toStdString(), CV_LOAD_IMAGE_COLOR);
+							cv::Mat resized = resize2Video(frame, mysize);
+							currFrame = resized;
 							blend2Video(prevFrame, currFrame, outputVideo);
 						}
+						prevFrame = currFrame;
 
 						for (int new_noteid = 0; new_noteid < mObjects[i]->mNotes.size() - 1; new_noteid++)
 						{
@@ -1112,7 +1147,7 @@ cv::Mat VideoGenerator::putSubtitle(cv::Mat& src, std::string mystr, cv::Size my
 	cv::Mat subtitle1 = annotated(roi);
 	cv::Mat subtitle2 = blackImg(roi);
 	cv::addWeighted(subtitle1, 0.7, subtitle2, 0.3, 0, subtitle1);
-	int lineLen = (img == "" ? 85 : 60);
+	int lineLen = (img == "" ? 85 : 60); //// TODO: revise the number of characters per line
 	int eps = 0;
 	for (int i = 0; i < 5; i++)
 	{

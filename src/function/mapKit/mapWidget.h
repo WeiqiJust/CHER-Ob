@@ -1,3 +1,29 @@
+/****************************************************************************
+
+ - Codename: CHER-Ob (Yale Computer Graphics Group)
+
+ - Writers:  Zeyu Wang (zeyu.wang@yale.edu)
+
+ - License:  GNU General Public License Usage
+   Alternatively, this file may be used under the terms of the GNU General
+   Public License version 3.0 as published by the Free Software Foundation
+   and appearing in the file LICENSE.GPL included in the packaging of this
+   file. Please review the following information to ensure the GNU General
+   Public License version 3.0 requirements will be met:
+   http://www.gnu.org/copyleft/gpl.html.
+
+ - Warranty: This software is distributed WITHOUT ANY WARRANTY; without even
+   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+   PURPOSE.
+
+ - Acknowledgments: Some portions of this file are based on the example codes
+   of ITK/VTK library from Kitware, QT API from Nokia. I would like to thank
+   anonymous help from various software engineering communities.
+
+   This file defines the different classes of bookmark that the user may work
+   with (corresponding to the different file types that may be displayed).
+
+*****************************************************************************/
 /*****************************************************************************
  * mapWidget.h
  *
@@ -35,9 +61,12 @@ class MapWidget : public QWidget
 public:
     MapWidget(QWidget *parent = 0, Information *mInformation = NULL);
     ~MapWidget();
+	void init(Information *mInformation);
+	void clear();
 	void startGeoMarking();
 	void finishGeoMarking();
 	void loadMark(QString name, mapCoordinate coord);
+	void setPos4Video(mapCoordinate pos);
 	void makeScreenshot(QString path);
 	//// refresh() to be implemented! e.g. close and open another
 

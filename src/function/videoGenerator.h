@@ -36,6 +36,7 @@
 #include <QFont>
 #include <QTextDocument>
 #include <QRectF>
+#include <QMutex>
 
 #include <vtkExtractSelectedFrustum.h>
 #include <vtkDataSet.h>
@@ -323,6 +324,8 @@ private:
 	int mTransDuration3D;
 	int mDolly3D;
 	bool mShowGeneral;
+
+	QMutex mapMutex;
 };
 
 #endif // VIDEO_GENERATOR

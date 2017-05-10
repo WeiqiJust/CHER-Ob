@@ -455,6 +455,7 @@ bool MainWindow::closeProject()
     QDomElement root = currentProjectMetadata.createElement("CHEROb.metadata");
     currentProjectMetadata.appendChild(root);
 	mNavigation->clear();
+	mGeoInfo->clear();
 	mObjectList.clear();
 	this->mInformation->closeAllNotes();
 	this->mInformation->refresh();
@@ -1013,8 +1014,8 @@ bool MainWindow::readXML(QString fileName, QVector<QPair<QString, QString> > &ob
 			latlong[0] = geoInfoList.at(0).toElement().elementsByTagName("latitude").at(0).toElement().text().toDouble();
 			latlong[1] = geoInfoList.at(0).toElement().elementsByTagName("longitude").at(0).toElement().text().toDouble();
 		}
-		mInformation->setGeoInfo(cheObject, mapCoordinate(latlong[0], latlong[1]));
-		mGeoInfo->loadMark(cheObject, mapCoordinate(latlong[0], latlong[1]));
+		mInformation->setGeoInfo(fileNameElement, mapCoordinate(latlong[0], latlong[1]));
+		mGeoInfo->loadMark(fileNameElement, mapCoordinate(latlong[0], latlong[1]));
 
 		OPENRESULT result;
 		if (fn != QString())
@@ -2194,7 +2195,7 @@ bool MainWindow::openProject(QString fileName)
 	  mNavigation->clear();
 	  return false;
   }
-
+  mGeoInfo->init(mInformation);
   isSaved = true;
   setWindowTitle(appName()+appBits()+(isCHE ? QString(" CHE ") : QString(" Project "))+currentProjectName);
   updateMenus();
@@ -2293,6 +2294,7 @@ void MainWindow::createNewVtkProject(const QString fullName, const QString name,
 									 const QString object, const QString ct,  const QString keyword, const QString affiliation, const QString description)
 {
 	this->mInformation->refresh();
+	mGeoInfo->init(mInformation);
 	isCHE = false;
 	currentProjectFullName = fullName.simplified(); // remove leading/trailing whitespace
 	currentProjectFullName = QDir::toNativeSeparators(currentProjectFullName);
@@ -3379,6 +3381,7 @@ void MainWindow::createNewCHE(const QString fullName, const QString name, const 
 {
 	isCHE = true;
 	this->mInformation->refresh();
+	mGeoInfo->init(mInformation);
 	currentProjectFullName = fullName.simplified(); // remove leading/trailing whitespace
 	currentProjectFullName = QDir::toNativeSeparators(currentProjectFullName);
 	qDebug()<<"New CHE path " <<currentProjectFullName;
@@ -3486,7 +3489,7 @@ bool MainWindow::openCHE(QString fileName)
 		mNavigation->clear();
 		return false;
 	}
-
+	mGeoInfo->init(mInformation);
 	isSaved = true;
 	setWindowTitle(appName()+appBits()+(isCHE ? QString(" CHE ") : QString(" Project "))+currentProjectName);
 	updateMenus();
@@ -3630,6 +3633,7 @@ bool MainWindow::closeCHE()
     QDomElement root = currentProjectMetadata.createElement("CHEROb.cultural_heritage_entity");
     currentProjectMetadata.appendChild(root);
 	mNavigation->clear();
+	mGeoInfo->clear();
 	this->mInformation->closeAllNotes();
 	this->mInformation->refresh();
 	mObjectList.clear();
@@ -4876,9 +4880,14 @@ void MainWindow::generateReport()
 // WORK IN PROGRESS by Zeyu Wang on Jan 13, 2017
 void MainWindow::generateVideo()
 {
-	QString file = QFileDialog::getSaveFileName((QWidget* )0, "Export Video", QString(), QString("*.*"));
+	QString file = QFileDialog::getSaveFileName((QWidget* )0, "Export Video", QString());
 	if (file.isEmpty()) return;
 	file = QDir::toNativeSeparators(file);
+	// remove the initial extension
+	if (!QFileInfo(file).suffix().isEmpty())
+	{
+		file = file.split("." + QFileInfo(file).suffix())[0];
+	}
 	VideoGenerator* video;
 
 	if (!isCHE)
