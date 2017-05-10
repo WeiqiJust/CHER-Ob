@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  Ying Yang (ying.yang.yy368@yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -606,7 +607,7 @@ static QDomElement createChild(QDomDocument & xmp, QDomNode & parent, const QStr
  * XML namespace constants
  *===================================================================*/
 
-const QString rtiURI = "http://culturalheritageimaging.org/resources/ns/rti/1.0#";
+const QString rtiURI = "http://culturalheritageimaging.org/Technologies/RTI/index.html";
 
 const QString rdfURI = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
@@ -620,6 +621,6 @@ const QString stDimURI = "http://ns.adobe.com/xap/1.0/sType/Dimensions#";
  * RTIViewer URL constant
  *===================================================================*/
 
-const QString rtiViewerURL = "http://culturalheritageimaging.org/resources/tools/RTIViewer/1.1.0";
+const QString rtiViewerURL = "http://culturalheritageimaging.org/What_We_Offer/Downloads/View/";
 
 #endif  /* UTIL_H */

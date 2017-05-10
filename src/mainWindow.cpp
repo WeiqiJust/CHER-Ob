@@ -2797,7 +2797,7 @@ void MainWindow::about()
                       tr("<h2>CHEROb</h2>"
                          "<p>Yale Computer Graphics Laboratory</p>"
                          "<p>Principal Investigator: Prof. Holly Rushmeier"
-                         "<p>Authors: Min H. Kim, David Tidmarsh"
+                         "<p>Authors: Min H. Kim, David Tidmarsh, Ying Yang, Weiqi Shi, Zeyu Wang"
                          "<p>CHEROb is an application that visualizes various types of image data,"
                          " e.g., hyperspectral images and 3D models, as well as CT medical images in 3D, etc."
                          "<p>This project was funded by a 2011-2012 grant from the Seaver Institute."
@@ -2811,7 +2811,7 @@ void MainWindow::about()
                          " Patricia Harpring, eds. Los Angeles: J. Paul Getty Trust and the College Art Association,"
                          " 2000. Revised 2009."
                          " http://www.getty.edu/research/publications/electronic_publications/cdwa/index.html"
-                         "<p>http://www.pro.rcip-chin.gc.ca/bd-dl/ddrcip_sn-chindd_ns/description-about-eng.jsp"));
+                         " http://www.pro.rcip-chin.gc.ca/bd-dl/ddrcip_sn-chindd_ns/description-about-eng.jsp"));
 }
 
 void MainWindow::viewOptions()
