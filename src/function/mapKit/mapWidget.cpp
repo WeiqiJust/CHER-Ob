@@ -124,7 +124,7 @@ void MapWidget::createMark()
 
 	QString arg = "'";
 	arg.append(markName).append("'");
-	_mapView->markCenter(arg, _mapView->center());
+	_mapView->markCenter(arg, _mapView->center(), false, refInformation->getNotePath());
 	refInformation->mw()->updateXML4Map();
 }
 
@@ -195,16 +195,16 @@ void MapWidget::loadMark(QString name, mapCoordinate coord)
 {
 	QString arg = "'";
 	arg.append(name).append("'");
-	_mapView->markCenter(arg, coord);
+	_mapView->markCenter(arg, coord, true);
 }
 
-void MapWidget::setPos4Video(mapCoordinate pos)
+void MapWidget::setPos4Video(QString path, mapCoordinate pos)
 {
-	_mapView->setCenter(pos);
-	_mapView->setZoomLevel(5);
+	_mapView->setPos4VideoView(path, pos);
 }
 
-void MapWidget::makeScreenshot(QString path)
+void MapWidget::makeScreenshot(QString path, mapCoordinate pos)
 {
+	qDebug() << "34444\n";
 	_mapView->makeScreenshotView(path);
 }

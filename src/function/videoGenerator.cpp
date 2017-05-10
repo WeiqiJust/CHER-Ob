@@ -128,23 +128,17 @@ void VideoGenerator::generate()
 	QDir().mkdir(videoFolder);
 	QDir videoFolderDir(videoFolder);
 
-	for (int i = 0; i < mObjects.size(); i++)
-	{
-		QString screenshotObj = videoFolder;
-		screenshotObj.append(QDir::separator() + mObjects[i]->mName);
-		QString screenshotDict = screenshotObj;
-		screenshotDict.append("_geo.png");
-		// set google map JavaScript to relocate current object
-		//mapMutex.lock();
-		mw()->mGeoInfo->startGeoMarking();
-		//mapMutex.unlock();
-		//mapMutex.lock();
-		mw()->mGeoInfo->setPos4Video(mw()->mInformation->getGeoInfo(mObjects[i]->mName));
-		//mapMutex.unlock();
-		//mapMutex.lock();
-		mw()->mGeoInfo->makeScreenshot(screenshotDict); // save google map screenshot
-		//mapMutex.unlock();
-	}
+	//for (int i = 0; i < mObjects.size(); i++)
+	//{
+	//	QString screenshotObj = videoFolder;
+	//	screenshotObj.append(QDir::separator() + mObjects[i]->mName);
+	//	QString screenshotDict = screenshotObj;
+	//	screenshotDict.append("_geo.png");
+	//	// set google map JavaScript to relocate current object
+	//	mw()->mGeoInfo->startGeoMarking();
+	//	mw()->mGeoInfo->setPos4Video(screenshotDict, mw()->mInformation->getGeoInfo(mObjects[i]->mName));
+	//	// save google map screenshot
+	//}
 
 	char myFourCC[4];
 	switch (mVideoFormat)
@@ -518,7 +512,7 @@ void VideoGenerator::generate()
 					// put general annotation, effect to be refined
 					if (mObjects[i]->isShowGeneral)
 					{
-						screenshotDict = screenshotObj;
+						screenshotDict = mObjects[i]->mNotesPath;
 						screenshotDict.append("_geo.png");
 						currFrame = putSubtitle(resized, annotation.toStdString(), mysize, screenshotDict.toStdString());
 						blend2Video(prevFrame, currFrame, outputVideo);
@@ -562,7 +556,7 @@ void VideoGenerator::generate()
 					double prevCam[6], currCam[6]; // 0..2 camera position x y z, 3..5 camera focal point x y z
 					if (mObjects[i]->isShowGeneral)
 					{
-						QString geoScreenshot = screenshotObj;
+						QString geoScreenshot = mObjects[i]->mNotesPath;
 						geoScreenshot.append("_geo.png");
 						// generate screenshots from different angles
 						for (int angle = 0; angle < 360; angle++)
@@ -674,7 +668,7 @@ void VideoGenerator::generate()
 								mObjects[i]->mPictures.push_back(screenshotDict);
 								frame = cv::imread(screenshotDict.toStdString(), CV_LOAD_IMAGE_COLOR);
 								cv::Mat resized = resize2Video(frame, mysize);
-								screenshotDict = screenshotObj;
+								screenshotDict = mObjects[i]->mNotesPath;
 								screenshotDict.append("_geo.png");
 								currFrame = putSubtitle(resized, annotation.toStdString(), mysize, screenshotDict.toStdString());
 								if (duration == 0)

@@ -82,10 +82,10 @@ public:
 
     void makeRegionVisible(mapCoordinateRegion &region);
     void fitRegion(mapCoordinateRegion &region);
-	void markCenter(QString name, mapCoordinate center);
+	void markCenter(QString name, mapCoordinate center, bool init = false, QString notePath = "");
 	void bounceMarker(QString name);
 
-	QVariant getPos4VideoView(QString name);
+	void setPos4VideoView(QString path, mapCoordinate center);
 	void makeScreenshotView(QString path);
 //    void pan(int x, int y);
 //    void setHeading(qreal heading);

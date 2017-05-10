@@ -190,7 +190,7 @@ function getPositionVideo(name)
     {
         if (markers[i].title == name)
         {
-            window.alert(markers[i].position["lat"]);
+            window.alert(markers[i].position.lat());
             return markers[i].position;
         }
     }

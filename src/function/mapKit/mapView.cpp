@@ -49,6 +49,7 @@
 #include <QWebFrame>
 #include <QWebView>
 #include <QtDebug>
+#include <QMessageBox>
 
 class CustomWebPage : public QWebPage
 {
@@ -153,23 +154,6 @@ mapView::mapView(MapType mapType, mapCoordinate center, uint zoomLevel,
             this, SLOT(initializeMap()));
 }
 
-QVariant mapView::getPos4VideoView(QString name)
-{
-	Q_D(mapView);
-	return d->evaluateJavaScript(QString("getPositionVideo(%1);").arg(name));
-}
-
-// make a screenshot of QWebView
-void mapView::makeScreenshotView(QString path)
-{
-	// QImage image(d_ptr->frame()->contentsSize(), QImage::Format_ARGB32);
-	QImage image(QSize(480, 480), QImage::Format_ARGB32);
-	QPainter painter(&image);
-	d_ptr->frame()->render(&painter);
-	painter.end();
-	image.save(path);
-}
-
 void mapView::insertNativeObject()
 {
     Q_D(mapView);
@@ -260,6 +244,26 @@ void mapView::setCenter(mapCoordinate center, bool animated)
     d->evaluateJavaScript(js);
 }
 
+void mapView::setPos4VideoView(QString path, mapCoordinate center)
+{
+	Q_D(mapView);
+    QString format = QString("setMapCenter(%1, %2, %3);");
+    QString js = format.arg(QString::number(center.latitude()), QString::number(center.longitude()), "false");
+    d->evaluateJavaScript(js);
+	emit centerChanged(center);
+}
+
+// make a screenshot of QWebView
+void mapView::makeScreenshotView(QString path)
+{
+	QImage image(d_ptr->frame()->contentsSize(), QImage::Format_ARGB32);
+	// QImage image(QSize(480, 480), QImage::Format_ARGB32);
+	QPainter painter(&image);
+	d_ptr->frame()->render(&painter);
+	painter.end();
+	image.save(path);
+}
+
 void mapView::setZoomLevel(uint zoom)
 {
     Q_D(mapView);
@@ -296,7 +300,7 @@ void mapView::fitRegion(mapCoordinateRegion &region)
     d->evaluateJavaScript(js);
 }
 
-void mapView::markCenter(QString name, mapCoordinate center) 
+void mapView::markCenter(QString name, mapCoordinate center, bool init, QString notePath) 
 {
 	Q_D(mapView);
     QString format = QString("appendMarker(%1, %2, %3);");
@@ -305,6 +309,12 @@ void mapView::markCenter(QString name, mapCoordinate center)
             .arg(center.latitude())
             .arg(center.longitude());
     d->evaluateJavaScript(js);
+	if (!init)
+	{
+		QMessageBox::information(this, tr("Marked"), "Geographical screenshot saved.");
+		notePath.append("_geo.png");
+		makeScreenshotView(notePath);
+	}
 }
 
 

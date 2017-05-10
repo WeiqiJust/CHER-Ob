@@ -66,8 +66,7 @@ public:
 	void startGeoMarking();
 	void finishGeoMarking();
 	void loadMark(QString name, mapCoordinate coord);
-	void setPos4Video(mapCoordinate pos);
-	void makeScreenshot(QString path);
+	void setPos4Video(QString path, mapCoordinate pos);
 	//// refresh() to be implemented! e.g. close and open another
 
 public slots:
@@ -80,6 +79,7 @@ private slots:
 	void onMouseClicked(mapCoordinate latlong);
     void onMapBecameIdle();
     void onRegionChanged(mapCoordinateRegion region);
+	void makeScreenshot(QString path, mapCoordinate pos);
 
 private:
 	Information *refInformation;
