@@ -1307,7 +1307,7 @@ void VideoGenerator::blend2Video(cv::Mat& img1, cv::Mat& img2, cv::VideoWriter& 
 void VideoGenerator::generatePointNote2D(int noteid, cv::VideoWriter& outputVideo, cv::Mat& frame, cv::Mat& prevFrame, cv::Mat& currFrame, QVector<QPair<QPair<int, int>, QString> >& pointNote2D)
 {
 	cv::Point notePos(pointNote2D[noteid].first.first, frame.size().height - pointNote2D[noteid].first.second);
-	cv::Mat currNote = emphasizeNote(frame, notePos, 20);
+	cv::Mat currNote = emphasizeNote(frame, notePos, frame.size().height / 20);
 	// put subtitle and associated image
 	QPair<QString, QString> textAndImg = parseTextAndImg(pointNote2D[noteid].second);
 	prevFrame = currFrame;
@@ -1350,7 +1350,7 @@ void VideoGenerator::generatePolygonNote2D(int noteid, cv::VideoWriter& outputVi
 	}
 	center.x = center.x / (polygonNote2D[noteid].first.size() - 1);
 	center.y = center.y / (polygonNote2D[noteid].first.size() - 1);
-	int radius = 20;
+	int radius = frame.size().height / 20;
 	for (int vid = 0; vid < polygonNote2D[noteid].first.size() - 1; vid++)
 	{
 		int dx2 = (center.x - polygonNote2D[noteid].first[vid].first) * (center.x - polygonNote2D[noteid].first[vid].first);
