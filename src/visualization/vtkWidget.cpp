@@ -830,7 +830,7 @@ void VtkWidget::setFrustumNoteView(double angle, double x, double y, double z, i
 	mRenderer->ResetCamera();
 	camera->Azimuth(angle);
 	camera->SetFocalPoint(x, y, z);
-	camera->Dolly(dolly);
+	camera->Dolly(dolly/2);
 	mRenderer->ResetCameraClippingRange();
 	mRenderer->Modified();
 
