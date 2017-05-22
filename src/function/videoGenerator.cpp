@@ -561,12 +561,17 @@ void VideoGenerator::generate()
 						// generate screenshots from different angles
 						for (int angle = 0; angle < 360; angle++)
 						{
+							qDebug() << "12222\n\n";
 							mObjects[i]->mGla->setArbitraryView((double)angle);
+							qDebug() << "23333\n\n";
 							screenshotDict = screenshotObj;
 							screenshotDict.append(QString::number(angle));
+							qDebug() << "34444\n\n";
 							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
+							qDebug() << "45555\n\n";
 							cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
 							cv::Mat resized = resize2Video(frame, mysize);
+							qDebug() << "56666\n\n";
 							currFrame = putSubtitle(resized, annotation.toStdString(), mysize, geoScreenshot.toStdString());
 							// blending
 							if (angle == 0)
@@ -575,6 +580,7 @@ void VideoGenerator::generate()
 							}
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 							outputVideo.write(currFrame);
+							qDebug() << "67777\n\n";
 						}
 					}
 					else
@@ -1169,6 +1175,10 @@ cv::Mat VideoGenerator::putSubtitle(cv::Mat& src, std::string mystr, cv::Size my
 	if (img != "")
 	{
 		cv::Mat assoImg = cv::imread(img, CV_LOAD_IMAGE_COLOR);
+		if (!assoImg.data) // check for invalid input
+		{
+			return putSubtitle(src, mystr, mysize);
+		}
 		switch (mResolutionOption)
 		{
 			default:
