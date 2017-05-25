@@ -248,6 +248,15 @@ private:
 	void computeCenter(CTSurfaceCornerPoint_ cornerPoints, double* center);
 
 	/**
+	 * @brief  Compute temporary camera position and focal point using slerp for smooth transition
+	 * @param  tempCam		The vector of temporary camera position and focal point (to be returned).
+	 * @param  prevCam      The vector of previous camera position and focal point.
+	 * @param  prevCam      The vector of current camera position and focal point.
+	 * @param  t		    The parameter in slerp from 0 to 1.
+	 */
+	void computeCamSlerp(double* tempCam, double* centerOfMass, double* prevCam, double* currCam, double t);
+
+	/**
 	 * @brief  Resize screenshots to the size of video without changing aspect ratio.
 	 * @param  src		Source image.
 	 * @param  mysize	The size of video.

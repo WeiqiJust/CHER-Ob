@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -243,8 +244,6 @@ bool ReadCHEROb::readOBJ(QString objfilename, std::vector<std::string> &channeln
     int i=0;
     if (mtlfn.exists())
     {
-	  qDebug() << "23333: " << texturefilename << "\n";
-
       // read mtl file.
       if (parseMTL(mtlfilename, materials))
       {
@@ -254,14 +253,9 @@ bool ReadCHEROb::readOBJ(QString objfilename, std::vector<std::string> &channeln
 		//qDebug() << "texturefilename A = " << texturefilename;
         readATexture(texturefilename, channelnames, wavelengths, rgbTexture, hyperImageData, isTextureOn);
 
-		
-		qDebug() << "66666\n";
-
         // DT: fixing texture bug
         if(isTextureOn)
             texturefilenameout = texturefilename;
-
-		qDebug() << "88888\n";
 
         materials[i].fileType = OBJFILE;
       } else {

@@ -38,6 +38,7 @@
 #include <vtkSelectPolyData.h>
 #include <vtkClipPolyData.h>
 #include <vtkCellArray.h>
+#include <vtkCenterOfMass.h>
 #include <vtkMath.h>
 #include <vtkStructuredPoints.h>
 
@@ -561,17 +562,12 @@ void VideoGenerator::generate()
 						// generate screenshots from different angles
 						for (int angle = 0; angle < 360; angle++)
 						{
-							qDebug() << "12222\n\n";
 							mObjects[i]->mGla->setArbitraryView((double)angle);
-							qDebug() << "23333\n\n";
 							screenshotDict = screenshotObj;
 							screenshotDict.append(QString::number(angle));
-							qDebug() << "34444\n\n";
 							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
-							qDebug() << "45555\n\n";
 							cv::Mat frame = cv::imread(screenshotDict.toStdString() + ".png", CV_LOAD_IMAGE_COLOR);
 							cv::Mat resized = resize2Video(frame, mysize);
-							qDebug() << "56666\n\n";
 							currFrame = putSubtitle(resized, annotation.toStdString(), mysize, geoScreenshot.toStdString());
 							// blending
 							if (angle == 0)
@@ -580,7 +576,6 @@ void VideoGenerator::generate()
 							}
 							if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
 							outputVideo.write(currFrame);
-							qDebug() << "67777\n\n";
 						}
 					}
 					else
@@ -1383,6 +1378,32 @@ void VideoGenerator::generatePolygonNote2D(int noteid, cv::VideoWriter& outputVi
 	}
 }
 
+void VideoGenerator::computeCamSlerp(double* tempCam, double* centerOfMass, double* prevCam, double* currCam, double t)
+{
+	// camera position
+	double prevCam_c[3] = {prevCam[0], prevCam[1], prevCam[2]};
+	double currCam_c[3] = {currCam[0], currCam[1], currCam[2]};
+	double prevFromCenter_c[3], currFromCenter_c[3];
+	vtkMath::Subtract(prevCam_c, centerOfMass, prevFromCenter_c);
+	vtkMath::Subtract(currCam_c, centerOfMass, currFromCenter_c);
+	double omega_c = acos(vtkMath::Dot(prevFromCenter_c, currFromCenter_c) / (vtkMath::Norm(prevFromCenter_c) * vtkMath::Norm(currFromCenter_c)));
+
+	// focal point
+	double prevCam_p[3] = {prevCam[3], prevCam[4], prevCam[5]};
+	double currCam_p[3] = {currCam[3], currCam[4], currCam[5]};
+	double prevFromCenter_p[3], currFromCenter_p[3];
+	vtkMath::Subtract(prevCam_p, centerOfMass, prevFromCenter_p);
+	vtkMath::Subtract(currCam_p, centerOfMass, currFromCenter_p);
+	double omega_p = acos(vtkMath::Dot(prevFromCenter_p, currFromCenter_p) / (vtkMath::Norm(prevFromCenter_p) * vtkMath::Norm(currFromCenter_p)));
+	
+	tempCam[0] = prevFromCenter_c[0] * sin((1-t)*omega_c) / sin(omega_c) + currFromCenter_c[0] * sin(t*omega_c) / sin(omega_c) + centerOfMass[0];
+	tempCam[1] = prevFromCenter_c[1] * sin((1-t)*omega_c) / sin(omega_c) + currFromCenter_c[1] * sin(t*omega_c) / sin(omega_c) + centerOfMass[1];
+	tempCam[2] = prevFromCenter_c[2] * sin((1-t)*omega_c) / sin(omega_c) + currFromCenter_c[2] * sin(t*omega_c) / sin(omega_c) + centerOfMass[2];
+	tempCam[3] = prevFromCenter_p[0] * sin((1-t)*omega_p) / sin(omega_p) + currFromCenter_p[0] * sin(t*omega_p) / sin(omega_p) + centerOfMass[0];
+	tempCam[4] = prevFromCenter_p[1] * sin((1-t)*omega_p) / sin(omega_p) + currFromCenter_p[1] * sin(t*omega_p) / sin(omega_p) + centerOfMass[1];
+	tempCam[5] = prevFromCenter_p[2] * sin((1-t)*omega_p) / sin(omega_p) + currFromCenter_p[2] * sin(t*omega_p) / sin(omega_p) + centerOfMass[2];
+}
+
 void VideoGenerator::generatePointNote3D(int i, int noteid, cv::VideoWriter& outputVideo, double* prevCam, double* currCam, cv::Mat& currFrame, QString& screenshotObj, QString& screenshotDict, QVector<QPair<QPair<int, double*>, QString> >& pointNote3D)
 {
 	prevCam[0] = currCam[0]; prevCam[1] = currCam[1]; prevCam[2] = currCam[2];
@@ -1390,15 +1411,24 @@ void VideoGenerator::generatePointNote3D(int i, int noteid, cv::VideoWriter& out
 	mObjects[i]->mGla->setPointNoteView(pointNote3D[noteid].first.first,
 		pointNote3D[noteid].first.second[0], pointNote3D[noteid].first.second[1], pointNote3D[noteid].first.second[2], mDolly3D);
 	mObjects[i]->mGla->getCameraPos(currCam);
+	// compute center of mass for slerp
+	vtkSmartPointer<vtkCenterOfMass> centerOfMassFilter = vtkSmartPointer<vtkCenterOfMass>::New();
+#if VTK_MAJOR_VERSION <= 5
+	centerOfMassFilter->SetInput(mObjects[i]->mGla->get3DPolyData());
+#else
+	centerOfMassFilter->SetInputData(mObjects[i]->mGla->get3DPolyData());
+#endif
+	centerOfMassFilter->SetUseScalarsAsWeights(false);
+	centerOfMassFilter->Update();
+	double centerOfMass[3];
+	centerOfMassFilter->GetCenter(centerOfMass);
+	
 	for (int duration = 0; duration < 30*mTransDuration3D; duration++)
 	{
 		double tempCam[6];
-		tempCam[0] = prevCam[0] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[0] * duration / (double)(30*mTransDuration3D);
-		tempCam[1] = prevCam[1] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[1] * duration / (double)(30*mTransDuration3D);
-		tempCam[2] = prevCam[2] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[2] * duration / (double)(30*mTransDuration3D);
-		tempCam[3] = prevCam[3] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[3] * duration / (double)(30*mTransDuration3D);
-		tempCam[4] = prevCam[4] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[4] * duration / (double)(30*mTransDuration3D);
-		tempCam[5] = prevCam[5] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[5] * duration / (double)(30*mTransDuration3D);
+		// slerp
+		double t = duration / (double)(30*mTransDuration3D);
+		computeCamSlerp(tempCam, centerOfMass, prevCam, currCam, t);
 		mObjects[i]->mGla->setCameraPos(tempCam);
 		screenshotDict = screenshotObj;
 		screenshotDict.append("PointNote" + QString::number(noteid) + "_" + QString::number(duration));
@@ -1430,15 +1460,24 @@ void VideoGenerator::generateSurfaceNote3D(int i, int noteid, cv::VideoWriter& o
 	mObjects[i]->mGla->setSurfaceNoteView(surfaceNote3D[noteid].first.first,
 		surfaceNote3D[noteid].first.second[0], surfaceNote3D[noteid].first.second[1], surfaceNote3D[noteid].first.second[2], mDolly3D);
 	mObjects[i]->mGla->getCameraPos(currCam);
+	// compute center of mass for slerp
+	vtkSmartPointer<vtkCenterOfMass> centerOfMassFilter = vtkSmartPointer<vtkCenterOfMass>::New();
+#if VTK_MAJOR_VERSION <= 5
+	centerOfMassFilter->SetInput(mObjects[i]->mGla->get3DPolyData());
+#else
+	centerOfMassFilter->SetInputData(mObjects[i]->mGla->get3DPolyData());
+#endif
+	centerOfMassFilter->SetUseScalarsAsWeights(false);
+	centerOfMassFilter->Update();
+	double centerOfMass[3];
+	centerOfMassFilter->GetCenter(centerOfMass);
+
 	for (int duration = 0; duration < 30*mTransDuration3D; duration++)
 	{
 		double tempCam[6];
-		tempCam[0] = prevCam[0] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[0] * duration / (double)(30*mTransDuration3D);
-		tempCam[1] = prevCam[1] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[1] * duration / (double)(30*mTransDuration3D);
-		tempCam[2] = prevCam[2] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[2] * duration / (double)(30*mTransDuration3D);
-		tempCam[3] = prevCam[3] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[3] * duration / (double)(30*mTransDuration3D);
-		tempCam[4] = prevCam[4] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[4] * duration / (double)(30*mTransDuration3D);
-		tempCam[5] = prevCam[5] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[5] * duration / (double)(30*mTransDuration3D);
+		// slerp
+		double t = duration / (double)(30*mTransDuration3D);
+		computeCamSlerp(tempCam, centerOfMass, prevCam, currCam, t);
 		mObjects[i]->mGla->setCameraPos(tempCam);
 		screenshotDict = screenshotObj;
 		screenshotDict.append("SurfaceNote" + QString::number(noteid) + "_" + QString::number(duration));
@@ -1469,15 +1508,24 @@ void VideoGenerator::generateFrustumNote3D(int i, int noteid, cv::VideoWriter& o
 	prevCam[3] = currCam[3]; prevCam[4] = currCam[4]; prevCam[5] = currCam[5];
 	mObjects[i]->mGla->setFrustumNoteView(0, frustumNote3D[noteid].first[0], frustumNote3D[noteid].first[1], frustumNote3D[noteid].first[2], mDolly3D);
 	mObjects[i]->mGla->getCameraPos(currCam);
+	// compute center of mass for slerp
+	vtkSmartPointer<vtkCenterOfMass> centerOfMassFilter = vtkSmartPointer<vtkCenterOfMass>::New();
+#if VTK_MAJOR_VERSION <= 5
+	centerOfMassFilter->SetInput(mObjects[i]->mGla->get3DPolyData());
+#else
+	centerOfMassFilter->SetInputData(mObjects[i]->mGla->get3DPolyData());
+#endif
+	centerOfMassFilter->SetUseScalarsAsWeights(false);
+	centerOfMassFilter->Update();
+	double centerOfMass[3];
+	centerOfMassFilter->GetCenter(centerOfMass);
+
 	for (int duration = 0; duration < 30*mTransDuration3D; duration++)
 	{
 		double tempCam[6];
-		tempCam[0] = prevCam[0] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[0] * duration / (double)(30*mTransDuration3D);
-		tempCam[1] = prevCam[1] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[1] * duration / (double)(30*mTransDuration3D);
-		tempCam[2] = prevCam[2] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[2] * duration / (double)(30*mTransDuration3D);
-		tempCam[3] = prevCam[3] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[3] * duration / (double)(30*mTransDuration3D);
-		tempCam[4] = prevCam[4] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[4] * duration / (double)(30*mTransDuration3D);
-		tempCam[5] = prevCam[5] * (1 - duration / (double)(30*mTransDuration3D)) + currCam[5] * duration / (double)(30*mTransDuration3D);
+		// slerp
+		double t = duration / (double)(30*mTransDuration3D);
+		computeCamSlerp(tempCam, centerOfMass, prevCam, currCam, t);
 		mObjects[i]->mGla->setCameraPos(tempCam);
 		screenshotDict = screenshotObj;
 		screenshotDict.append("FrustumNote" + QString::number(noteid) + "_" + QString::number(duration));
