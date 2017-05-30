@@ -84,7 +84,7 @@ VideoSetup::VideoSetup(QString title, QString author, QString affiliation)
 	mTransDuration3DContent->setFixedWidth(200);
 	mTransDuration3DContent->setText("2");
 	mDolly3DContent = new QLineEdit();
-	mDolly3DContent->setValidator(new QIntValidator(1, 50, this));
+	mDolly3DContent->setValidator(new QIntValidator(1, 999, this));
 	mDolly3DContent->setFixedWidth(200);
 	mDolly3DContent->setText("10");
 
