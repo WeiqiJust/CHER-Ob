@@ -51,12 +51,15 @@ int main(int argc, char *argv[])
 
   //------------------------------------------------------------------------------
   // for new library places (This will solve misbehavior in the deploy mode)
+  // Commented by Zeyu on Sept 1, 2017. Otherwise, notes with associated .jpg images will crash!
+/*
 #ifdef __APPLE__
   QDir dir(QApplication::applicationDirPath());
   dir.cdUp();
   dir.cd("Frameworks");
   QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
 #endif
+*/
   //------------------------------------------------------------------------------
 
   if (!QGLFormat::hasOpenGL()) {
