@@ -511,7 +511,7 @@ void VideoGenerator::generate()
 					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame = resized;
 
 					// put general annotation, effect to be refined
-					if (mObjects[i]->isShowGeneral)
+					if (mObjects[i]->isShowGeneral)  // change to mShowGeneral for MacOS version
 					{
 						screenshotDict = mObjects[i]->mNotesPath;
 						screenshotDict.append("_geo.png");
@@ -555,7 +555,7 @@ void VideoGenerator::generate()
 					initWidget(mObjects[i]->mGla, false);
 					cv::Mat prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
 					double prevCam[6], currCam[6]; // 0..2 camera position x y z, 3..5 camera focal point x y z
-					if (mObjects[i]->isShowGeneral)
+					if (mObjects[i]->isShowGeneral)  // change to mShowGeneral for MacOS version
 					{
 						QString geoScreenshot = mObjects[i]->mNotesPath;
 						geoScreenshot.append("_geo.png");
@@ -655,7 +655,7 @@ void VideoGenerator::generate()
 						cv::Mat frame, prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
 
 						// put general annotation, effect to be refined
-						if (mObjects[i]->isShowGeneral)
+						if (mObjects[i]->isShowGeneral)  // change to mShowGeneral for MacOS version
 						{
 							// play with RTI lighting
 							for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
