@@ -426,7 +426,7 @@ void Information::createFrustumNote(vtkSmartPointer<vtkPoints> points, vtkSmartP
 	emit addNavigationItem(notePath, FRUSTUMNOTE, NOTE3D);
 }
 
-void Information::createPointNote2D(double* point,  int* pointImage, ColorType color)
+void Information::createPointNote2D(double* point, int* pointImage, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;
 	//qDebug() << "createPointNote2D() calls updateCurrentPath()\n";

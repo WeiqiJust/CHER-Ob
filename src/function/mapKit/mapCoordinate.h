@@ -47,8 +47,8 @@
 
 #include <QtCore/QtGlobal>
 
-// TODO: Add documentation to specify lat/lng ranges.
-//       Latitude is in [-90, 90], and longitude is in [-180, 180]
+// Add documentation to specify lat/lng ranges.
+// Latitude is in [-90, 90], and longitude is in [-180, 180]
 
 class mapCoordinate
 {

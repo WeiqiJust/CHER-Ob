@@ -3,6 +3,7 @@
  - Codename: CHER-Ob (Yale Computer Graphics Group)
 
  - Writers:  Min H. Kim (minhkim@cs.yale.edu)
+			 Zeyu Wang (zeyu.wang@yale.edu)
 
  - License:  GNU General Public License Usage
    Alternatively, this file may be used under the terms of the GNU General
@@ -28,10 +29,12 @@
 #include <qwt_plot.h>
 //#include <qwt_plot_curve.h>
 #include <qwt_plot_barchart.h>
+#include "../information/informationWidget.h"
 
 class QwtPlot;
 class QwtInterval;
 class RectItem;
+class Information;
 
 //class QwtPlotCurve;
 class QwtPlotMarker;
@@ -69,7 +72,7 @@ public:
 
 public slots:
   void updateSpectralPlot( std::vector<float> wavelengths,  std::vector<float> hyperPixels, const int* icoords, const std::string* fname);
-  void exportPlot();
+  void exportPlot(Information *mInformation);
   void set_normalized_plot(int state);
   void showCurve( QwtPlotItem *item, bool on );
 

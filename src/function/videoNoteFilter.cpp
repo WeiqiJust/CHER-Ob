@@ -58,6 +58,7 @@ VideoNoteFilter::VideoNoteFilter(VideoObject* mainVideoObject)
 		item->setCheckState(0, Qt::Checked);
 		mItems.push_back(item);
 	}
+
 	mTreeWidget->insertTopLevelItems(0, mItems);
 
 	mButtonGridBox = new QGridLayout();

@@ -90,7 +90,7 @@ void SpectralPlot::updateSpectralPlot( std::vector<float> wavelengths,  std::vec
   }
 }
 
-void SpectralPlot::exportPlot() {
+void SpectralPlot::exportPlot(Information *mInformation) {
   if (!isValidExport) { return; }
   QString annotation_label = QInputDialog::getText(this, tr("Annotation Text Label"),
 						   tr("Comment:"), QLineEdit::Normal);
@@ -136,6 +136,9 @@ void SpectralPlot::exportPlot() {
   of << "}" << std::endl;
   
   of.close();
+
+  //// TODO: Zeyu considering creating a new 2D point note
+  qDebug() << "23333:\t" << mInformation->getAllUsers().size() << "\n";
 }
 
 void SpectralPlot::set_normalized_plot(int state) {
