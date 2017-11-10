@@ -157,7 +157,7 @@ public slots:
 	/**
 	 * @brief  Handle Save button.
 	 */
-	void save();	//Public Slot in order to be connected from the signal emitted by informationWidget
+	void save(QString spectrum = QString());	//Public Slot in order to be connected from the signal emitted by informationWidget
 
 	/**
 	 * @brief  Handle Close button.

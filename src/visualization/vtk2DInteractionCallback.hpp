@@ -199,6 +199,10 @@ public:
     this->CurrPicker->GetPointIJK(icoord);
   }
 
+  void GetPosDouble(double dcoord[3]) {
+	this->CurrPicker->GetPickPosition(dcoord);
+  }
+
   void SetPicker(vtkCellPicker *picker)
     {
     this->CurrPicker = picker;

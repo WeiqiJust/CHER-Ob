@@ -199,7 +199,7 @@ VtkWidget::~VtkWidget(){
   mWavelengths.clear();
   mHyperPixels.clear();
   mw()->mBookmark->refreshBookmarkList(); // DT: refresh list of bookmarks
-  emit currentHyperPixelsChanged(mWavelengths, mHyperPixels, NULL, NULL);
+  emit currentHyperPixelsChanged(mWavelengths, mHyperPixels, NULL, NULL, NULL);
   if(!mw()->VTKA()) emit resetLightControl();
 
   resetStackControlOnDocks(); // update control CT panels
@@ -462,7 +462,7 @@ void VtkWidget::connectSignals()
   connect(this, SIGNAL(currentImageChanged()), mw()->mLightControl, SLOT( updateLightingVector() ) ); // update light of the current object by taking the light coordinate
   connect(this, SIGNAL(currentWidgetModeChanged(WidgetMode, bool)), mw()->mLightControl, SLOT( updateLightControl(WidgetMode, bool) ) );
   connect(this, SIGNAL(resetLightControl()), mw()->mLightControl, SLOT( reset() ) );
-  connect(this, SIGNAL(currentHyperPixelsChanged(std::vector<float>, std::vector<float>, const int*, const std::string*)), mw()->mPlotView, SLOT(updateSpectralPlot(std::vector<float>, std::vector<float>, const int*, const std::string*)) );
+  connect(this, SIGNAL(currentHyperPixelsChanged(std::vector<float>, std::vector<float>, const int*, const double*, const std::string*)), mw()->mPlotView, SLOT(updateSpectralPlot(std::vector<float>, std::vector<float>, const int*, const double*, const std::string*)) );
 
   }
 }
@@ -3747,16 +3747,18 @@ void VtkWidget::focusInEvent ( QFocusEvent * e )
 
 void VtkWidget::getHyperPixelsSignals(vtkObject*, unsigned long, void*, void*)
 {
-  int icoords[3] = {0,0,0};
+  int icoords[3] = {0, 0, 0};
+  double dcoords[3] = {0, 0, 0};
   if (mCallback2D) {
     mHyperPixels = mCallback2D->GetHyperPixels();
     mCallback2D->GetPoint(icoords);
+    mCallback2D->GetPosDouble(dcoords);
   }
   if (mCallback3D) {
     mHyperPixels = mCallback3D->GetHyperPixels();
   }
   std::string fname = this->mFilename.toStdString();
-  emit currentHyperPixelsChanged(mWavelengths, mHyperPixels, &icoords[0], &fname);
+  emit currentHyperPixelsChanged(mWavelengths, mHyperPixels, icoords, dcoords, &fname);
 }
 
 void VtkWidget::flattenMesh()

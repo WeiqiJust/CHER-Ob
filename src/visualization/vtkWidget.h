@@ -257,7 +257,7 @@ signals:
   void updateMainWindowMenus(); //updates the menus of the MainWindow
 
   void currentImageChanged();
-  void currentHyperPixelsChanged(std::vector<float> wavelengths, std::vector<float> hyperPixels, const int* icoords, const std::string* fname);
+  void currentHyperPixelsChanged(std::vector<float> wavelengths, std::vector<float> hyperPixels, const int* icoords, const double* dcoords, const std::string* fname);
 
 public slots:
   void updateDisplayPanel();

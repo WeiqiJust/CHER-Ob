@@ -27,9 +27,11 @@
 #include <QtGui>
 #include <QWidget>
 #include <QPushButton>
+#include "../information/informationWidget.h"
 
 class SpectralPlot;
 class MainWindow;
+class Information;
 
 // main doc
 class PlotView: public QWidget
@@ -41,10 +43,10 @@ public:
   ~PlotView();
 
 signals:
-  void currentHyperPixelsChanged(std::vector<float> wavelengths, std::vector<float> hyperPixels, const int* icoords, const std::string* fname);
+  void currentHyperPixelsChanged(std::vector<float> wavelengths, std::vector<float> hyperPixels, const int* icoords, const double* dcoords, const std::string* fname, Information* mwInfo);
 
 public slots:
-  void updateSpectralPlot( std::vector<float> wavelengths,  std::vector<float> hyperPixels, const int* icoords, const std::string* fname);
+  void updateSpectralPlot(std::vector<float> wavelengths, std::vector<float> hyperPixels, const int* icoords, const double* dcoords, const std::string* fname);
 
 private:
   MainWindow* mw();

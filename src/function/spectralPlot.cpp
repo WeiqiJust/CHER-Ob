@@ -61,7 +61,7 @@ SpectralPlot::~SpectralPlot()
 }
 
 
-void SpectralPlot::updateSpectralPlot( std::vector<float> wavelengths,  std::vector<float> hyperPixels, const int* icoords, const std::string* fname)
+void SpectralPlot::updateSpectralPlot(std::vector<float> wavelengths, std::vector<float> hyperPixels, const int* icoords, const double* dcoords, const std::string* fname, Information* mwInfo)
 {
 #ifdef _DEBUG
   // normalizing
@@ -86,12 +86,17 @@ void SpectralPlot::updateSpectralPlot( std::vector<float> wavelengths,  std::vec
     mSpectralCoords[0] = icoords[0];
     mSpectralCoords[1] = icoords[1];
     mSpectralCoords[2] = icoords[2];
+    mSpectralCoordsDouble[0] = dcoords[0];
+    mSpectralCoordsDouble[1] = dcoords[1];
+    mSpectralCoordsDouble[2] = dcoords[2];
     mSpectralFname = *fname;
   }
+
+  mInformation = mwInfo;
 }
 
-void SpectralPlot::exportPlot(Information *mInformation) {
-  if (!isValidExport) { return; }
+void SpectralPlot::exportPlot() {
+  if (!isValidExport || !mInformation) { return; }
   QString annotation_label = QInputDialog::getText(this, tr("Annotation Text Label"),
 						   tr("Comment:"), QLineEdit::Normal);
   QFileInfo fi(QString(mSpectralFname.c_str()));
@@ -138,7 +143,8 @@ void SpectralPlot::exportPlot(Information *mInformation) {
   of.close();
 
   //// TODO: Zeyu considering creating a new 2D point note
-  qDebug() << "23333:\t" << mInformation->getAllUsers().size() << "\n";
+  mInformation->createPointNote2DSpectrum(mSpectralCoordsDouble, mSpectralCoords, fi.fileName());
+  // qDebug() << "23333:\t" << mInformation->getAllNotes... << "\n";
 }
 
 void SpectralPlot::set_normalized_plot(int state) {
@@ -299,6 +305,9 @@ SpectralPlot::SpectralPlot( QWidget *parent ):
   mSpectralCoords[0] = 0;
   mSpectralCoords[1] = 0;
   mSpectralCoords[2] = 0;
+  mSpectralCoordsDouble[0] = 0;
+  mSpectralCoordsDouble[1] = 0;
+  mSpectralCoordsDouble[2] = 0;
 
   mSpectralFname = "";
   isValidExport = false;

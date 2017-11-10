@@ -443,6 +443,19 @@ void Information::createPointNote2D(double* point, int* pointImage, ColorType co
 	emit addNavigationItem(notePath, POINTNOTE, NOTE2D);
 }
 
+void Information::createPointNote2DSpectrum(double* point, int* pointImage, QString spectrum)
+{
+	updateCurrentPath();
+	qDebug() << "23333:\t" << notePath << "\n\n";
+	int size = mPointNotes2D[notePath].size();
+	qDebug() << "Create Point Note 2D, current size = " << size;
+	PointNote2D* newNote = new PointNote2D(notePath, point, pointImage, size, ColorType::WHITE, mw()->mUserName);
+	// newNote->showNote();
+	mPointNotes2D[notePath].push_back(newNote);
+	mPointNotes2D[notePath][size]->save(spectrum);
+	emit addNavigationItem(notePath, POINTNOTE, NOTE2D);
+}
+
 void Information::createSurfaceNote2D(double* point, int* pointImage, ColorType color)
 {
 	//qDebug() <<mw()->VTKA()->mFilename;

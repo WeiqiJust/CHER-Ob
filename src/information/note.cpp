@@ -96,7 +96,7 @@ void Note::textChanged()
 	isSaved = false;
 }
 
-void Note::save()
+void Note::save(QString spectrum)
 {
 	if (isRemoved || isSaved)
 		return;
@@ -118,7 +118,10 @@ void Note::save()
 	}
 
 	out << *mInfo << "\n";
-    out << mTextEdit->toPlainText();
+	if (!spectrum.isEmpty()) {
+		mTextEdit->setPlainText(spectrum);
+	}
+	out << mTextEdit->toPlainText();
 	out << "\nLinked Images:\n";
 	QDir dir(*mPath);
 	for (int i = 0; i < mImageNotes.size(); i++)

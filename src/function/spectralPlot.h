@@ -67,18 +67,19 @@ class SpectralPlot: public QwtPlot
 public:
   SpectralPlot( QWidget *parent );
   ~SpectralPlot();
-
+  Information *mInformation;
   void setRectOfInterest( const QRectF & );
 
 public slots:
-  void updateSpectralPlot( std::vector<float> wavelengths,  std::vector<float> hyperPixels, const int* icoords, const std::string* fname);
-  void exportPlot(Information *mInformation);
+  void updateSpectralPlot(std::vector<float> wavelengths, std::vector<float> hyperPixels, const int* icoords, const double* dcoords, const std::string* fname, Information* mwInfo);
+  void exportPlot();
   void set_normalized_plot(int state);
   void showCurve( QwtPlotItem *item, bool on );
 
 private:
   QwtPlotBarChart *mCurve1;
   int mSpectralCoords[3];
+  double mSpectralCoordsDouble[3];
   std::string mSpectralFname;
   bool isValidExport;
   bool isNormalizedPlot;

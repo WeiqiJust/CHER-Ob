@@ -33,16 +33,16 @@ PlotView::PlotView( QWidget *parent )
   : QWidget( parent )
 {
   mSpectralPlot = new SpectralPlot(this);
-  connect(this, SIGNAL(currentHyperPixelsChanged(std::vector<float>, std::vector<float>, const int*, const std::string*)), mSpectralPlot, SLOT(updateSpectralPlot(std::vector<float>, std::vector<float>, const int*, const std::string*)) );
+  connect(this, SIGNAL(currentHyperPixelsChanged(std::vector<float>, std::vector<float>, const int*, const double*, const std::string*, Information*)), mSpectralPlot, SLOT(updateSpectralPlot(std::vector<float>, std::vector<float>, const int*, const double*, const std::string*, Information*)) );
 
   exportButton = new QPushButton(this);
   exportButton->setText(QString("Export"));
-  connect(exportButton, SIGNAL(clicked(bool)), mSpectralPlot, SLOT(exportPlot(mw()->mInformation)));
+  connect(exportButton, SIGNAL(clicked(bool)), mSpectralPlot, SLOT(exportPlot()));
 
   normalizeCheckBox = new QCheckBox(this);
   normalizeCheckBox->setText(QString("Normalized"));
   normalizeCheckBox->setCheckState(Qt::Unchecked);
-  connect(normalizeCheckBox,SIGNAL(stateChanged(int)),mSpectralPlot,SLOT(set_normalized_plot(int)));
+  connect(normalizeCheckBox, SIGNAL(stateChanged(int)), mSpectralPlot, SLOT(set_normalized_plot(int)));
   //  int width = this->frameGeometry().width();
   //  int height = this->frameGeometry().height();
   //  mSpectralPlot->resize(QSize(width, height));
@@ -60,12 +60,12 @@ PlotView::PlotView( QWidget *parent )
   this->setLayout(layout);
 }
 
-void PlotView::updateSpectralPlot( std::vector<float> wavelengths,  std::vector<float> hyperPixels, const int* icoords, const std::string* fname)
+void PlotView::updateSpectralPlot(std::vector<float> wavelengths, std::vector<float> hyperPixels, const int* icoords, const double* dcoords, const std::string* fname)
 {
   mWavelengths = wavelengths;
   mHyperPixels = hyperPixels;
 
-  emit currentHyperPixelsChanged(wavelengths, hyperPixels, icoords, fname);
+  emit currentHyperPixelsChanged(wavelengths, hyperPixels, icoords, dcoords, fname, mw()->mInformation);
 }
 
 MainWindow * PlotView::mw()
