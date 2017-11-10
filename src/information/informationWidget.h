@@ -222,7 +222,7 @@ public:
 	 * @param  color       The color of the note.
 	 */
 	void createPointNote2D(double* point, int* pointImage, ColorType color);
-	void createPointNote2DSpectrum(double* point, int* pointImage, QString spectrum);
+	void createPointNote2DSpectrum(double* point, int* pointImage, QString spectrumCaption, QString spectrumImage);
 
 	/**
 	 * @brief  Create 2D notes with location info.

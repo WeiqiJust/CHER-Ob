@@ -443,16 +443,20 @@ void Information::createPointNote2D(double* point, int* pointImage, ColorType co
 	emit addNavigationItem(notePath, POINTNOTE, NOTE2D);
 }
 
-void Information::createPointNote2DSpectrum(double* point, int* pointImage, QString spectrum)
+void Information::createPointNote2DSpectrum(double* point, int* pointImage, QString spectrumCaption, QString spectrumImage)
 {
 	updateCurrentPath();
-	qDebug() << "23333:\t" << notePath << "\n\n";
 	int size = mPointNotes2D[notePath].size();
 	qDebug() << "Create Point Note 2D, current size = " << size;
 	PointNote2D* newNote = new PointNote2D(notePath, point, pointImage, size, ColorType::WHITE, mw()->mUserName);
-	// newNote->showNote();
 	mPointNotes2D[notePath].push_back(newNote);
-	mPointNotes2D[notePath][size]->save(spectrum);
+	mPointNotes2D[notePath][size]->save(spectrumCaption, spectrumImage);
+	// Load the new spectrum note
+	QString suffix = "Note";
+	suffix.prepend(QDir::separator());
+	QString path = notePath.split(suffix)[0];
+	if (mw()->VTKA(path))
+		mw()->VTKA(path)->loadPointNote2DMark(newNote->getPoint(), newNote->getColorType());
 	emit addNavigationItem(notePath, POINTNOTE, NOTE2D);
 }
 
@@ -733,8 +737,9 @@ bool Information::loadPointNote2D(const QString path, bool isLoadNoteMark, bool 
 		connect(this, SIGNAL(replaceUserName(const QString, const QString)), mPointNotes2D[notePath][i], SLOT(replaceUserName(const QString, const QString)));
 		mPointNotes2D[notePath][i]->setSaved(true);
 
-		if (mw()->VTKA(path) && isLoadNoteMark)
+		if (mw()->VTKA(path) && isLoadNoteMark) {
 			mw()->VTKA(path)->loadPointNote2DMark(newNote->getPoint(), newNote->getColorType(), isDisplayNoteMark);
+		}
 		//else
 		//	qDebug()<<"Cannot find the window!!!!";
 	}

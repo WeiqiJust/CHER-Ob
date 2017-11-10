@@ -155,9 +155,11 @@ protected:
 public slots:
 
 	/**
-	 * @brief  Handle Save button.
+	 * @brief  Handle Save button
+	 * @param  spectrumCaption  The content of an automatically exported 2D point note from spectrum.
+	 * @param  spectrumImage    The image path of an automatically exported 2D point note from spectrum.
 	 */
-	void save(QString spectrum = QString());	//Public Slot in order to be connected from the signal emitted by informationWidget
+	void save(QString spectrumCaption = QString(), QString spectrumImage = QString());	//Public Slot in order to be connected from the signal emitted by informationWidget
 
 	/**
 	 * @brief  Handle Close button.

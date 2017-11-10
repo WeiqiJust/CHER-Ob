@@ -97,6 +97,7 @@ void SpectralPlot::updateSpectralPlot(std::vector<float> wavelengths, std::vecto
 
 void SpectralPlot::exportPlot() {
   if (!isValidExport || !mInformation) { return; }
+  QString spectrumCaption = "Spectrum ";
   QString annotation_label = QInputDialog::getText(this, tr("Annotation Text Label"),
 						   tr("Comment:"), QLineEdit::Normal);
   QFileInfo fi(QString(mSpectralFname.c_str()));
@@ -129,6 +130,7 @@ void SpectralPlot::exportPlot() {
   int spectralData_size = mWavelengths.size();
   for (int i = 0; i < spectralData_size-1; ++i) {
     of << "          \"" << mWavelengths[i] << "\" : " << mHyperPixels[i] << "," << std::endl;
+	spectrumCaption += QString::number(mWavelengths[i]) + "nm: " + QString::number(mHyperPixels[i]) + ", ";
   }
   of << "          \"" << mWavelengths[spectralData_size-1] << "\" : " << mHyperPixels[spectralData_size-1] << std::endl;
   of << "     }" << std::endl;
@@ -138,13 +140,15 @@ void SpectralPlot::exportPlot() {
   of << "     \"version\" :  \".....\"." << std::endl;
   of << "}," << std::endl;
   of << "\"comment\" :  \"" << annotation_label.toStdString() << "\"." << std::endl;
+  spectrumCaption += "comment: " + annotation_label;
   of << "}" << std::endl;
   
   of.close();
 
-  //// TODO: Zeyu considering creating a new 2D point note
-  mInformation->createPointNote2DSpectrum(mSpectralCoordsDouble, mSpectralCoords, fi.fileName());
-  // qDebug() << "23333:\t" << mInformation->getAllNotes... << "\n";
+  // Create a new 2D point note
+  if (!(mSpectralCoords[0] == 0 && mSpectralCoords[1] == 0 && mSpectralCoords[2] == 0 && mSpectralCoordsDouble[0] == 0 && mSpectralCoordsDouble[1] == 0 && mSpectralCoordsDouble[2] == 0)) {
+	  mInformation->createPointNote2DSpectrum(mSpectralCoordsDouble, mSpectralCoords, spectrumCaption, image_fname);
+  }
 }
 
 void SpectralPlot::set_normalized_plot(int state) {

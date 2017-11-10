@@ -215,8 +215,6 @@ void VideoGenerator::generate()
 			isCTModeSwitched = true;
 		}
 
-		//// TODO: Zeyu adding spectrum as 2D point notes...
-
 		//Parsing Notes
 		for (int j = 0; j < mObjects[i]->mNotes.size(); j++)
 		{

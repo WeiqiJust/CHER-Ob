@@ -96,7 +96,7 @@ void Note::textChanged()
 	isSaved = false;
 }
 
-void Note::save(QString spectrum)
+void Note::save(QString spectrumCaption, QString spectrumImage)
 {
 	if (isRemoved || isSaved)
 		return;
@@ -118,11 +118,21 @@ void Note::save(QString spectrum)
 	}
 
 	out << *mInfo << "\n";
-	if (!spectrum.isEmpty()) {
-		mTextEdit->setPlainText(spectrum);
+	if (!spectrumCaption.isEmpty()) {
+		mTextEdit->setPlainText(spectrumCaption);
 	}
 	out << mTextEdit->toPlainText();
 	out << "\nLinked Images:\n";
+	if (!spectrumCaption.isEmpty()) {
+		QString objectPath(*mPath);
+		objectPath.truncate(objectPath.lastIndexOf(QDir::separator()));
+		ImageNote* imageNote = new ImageNote(objectPath, spectrumImage, mImageNotes.size());
+		if (imageNote->getPath() == QString())
+		{
+			delete imageNote;
+		}
+		mImageNotes.push_back(imageNote);
+	}
 	QDir dir(*mPath);
 	for (int i = 0; i < mImageNotes.size(); i++)
 	{

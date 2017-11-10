@@ -3011,7 +3011,7 @@ void MainWindow::updateNoteMode()
 			break;
 		}
 	}
-	//// Modified by Zeyu Wang on Nov 4, 2016 to make note mode consistent when change windows
+	// Modified by Zeyu Wang on Nov 4, 2016 to make note mode consistent when change windows
 }
 
 void MainWindow::updateMenus()
