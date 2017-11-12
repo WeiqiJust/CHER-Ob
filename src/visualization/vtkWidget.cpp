@@ -716,7 +716,11 @@ void VtkWidget::setArbitraryView(double angle)
 	mRenderer->ResetCamera();
 
 	// set azimuth to circle around the vertical axis of the object
-	camera->Azimuth(angle);
+	if (angle > 0) {
+		camera->Azimuth(angle);
+	} else {
+		camera->Elevation(-angle);
+	}
 
 	mRenderer->ResetCamera();
 	mRenderer->ResetCameraClippingRange();

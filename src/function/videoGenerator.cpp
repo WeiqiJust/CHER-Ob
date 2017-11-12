@@ -561,9 +561,13 @@ void VideoGenerator::generate()
 						QString geoScreenshot = mObjects[i]->mNotesPath;
 						geoScreenshot.append("_geo.png");
 						// generate screenshots from different angles
-						for (int angle = 0; angle < 360; angle++)
+						for (int angle = 0; angle < 450; angle++)
 						{
-							mObjects[i]->mGla->setArbitraryView((double)angle);
+							if (angle > 360) {
+								mObjects[i]->mGla->setArbitraryView((double)(360 - angle));
+							} else {
+								mObjects[i]->mGla->setArbitraryView((double)angle);
+							}
 							screenshotDict = screenshotObj;
 							screenshotDict.append(QString::number(angle));
 							mObjects[i]->mPictures.push_back(mObjects[i]->mGla->screenshot(screenshotDict));
