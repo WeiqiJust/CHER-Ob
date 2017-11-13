@@ -561,9 +561,11 @@ void VideoGenerator::generate()
 						QString geoScreenshot = mObjects[i]->mNotesPath;
 						geoScreenshot.append("_geo.png");
 						// generate screenshots from different angles
-						for (int angle = 0; angle < 450; angle++)
+						for (int angle = 0; angle < 477; angle++)
 						{
-							if (angle > 360) {
+							if (angle > 447) {
+								mObjects[i]->mGla->setArbitraryView((double)(360 - 447));
+							} else if (angle > 360) {
 								mObjects[i]->mGla->setArbitraryView((double)(360 - angle));
 							} else {
 								mObjects[i]->mGla->setArbitraryView((double)angle);
@@ -993,28 +995,28 @@ void VideoGenerator::recoverWidget(VtkWidget* gla, WidgetInfo3D_ info, bool isCT
 	camera->SetViewUp(info.view);
 	camera->SetClippingRange(info.clip);
 	camera->SetParallelScale(info.scale);
-	if(info.isDirectionalLight) 
+	if (info.isDirectionalLight)
 		mw()->mLightControl->setDirectionalLight(true); 
-	else 
+	else
 		mw()->mLightControl->setDirectionalLight(false);
 
-	if(info.textureOn == 1) 
+	if (info.textureOn == 1)
 		gla->setTextureOn(true);
 	else if (info.textureOn == 0)
         gla->setTextureOn(false);
 
-	if(info.interpolation == 1) 
+	if (info.interpolation == 1)
 		gla->setInterpolateOn(true);
 	else if (info.interpolation == 0)
         gla->setInterpolateOn(false);
 
 	mw()->mLightControl->restoreBookmarkLight(info.orientation, info.brightness, info.contrast, MODEL3D);
-   
-	if (!isCTVolume)	
+
+	if (!isCTVolume)
 		gla->setRenderMode3D(info.renderMode);
 	gla->setMeasureDistance(info.isMeasuring);
 	gla->annotate(info.isAnnotation);
-	if(gla->mQVTKWidget) gla->mQVTKWidget->update();
+	if (gla->mQVTKWidget) gla->mQVTKWidget->update();
 }
 
 void VideoGenerator::computeCenter(const VtkWidget* gla, QVector<int> cellIds, double* center, vtkIdType* centerCellId)

@@ -729,6 +729,8 @@ void VtkWidget::setArbitraryView(double angle)
 	// move light according to light
 	mCallback3D->updateLightingPosition();
 
+	mCallback3D->displayRubberbandVideo();
+
 	mLight1->Modified();
 	mLight2->Modified();
 

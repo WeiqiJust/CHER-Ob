@@ -174,6 +174,7 @@ public:
     mUseRubberband = false;
 	mUserIsAnnotating = false;
     mWasReadyRubberband = false; // this is one start point clicked.
+	mFinishedRubberband = false;
 	isCTVolume = false;
     mRubberband = vtkSmartPointer<vtkLineSource>::New();
 
@@ -527,9 +528,9 @@ public:
 
   void SetVisibilityRubberband(bool status)
   {
-    mWasReadyRubberband = false;
-    //qDebug() << "swithing use rubberband: " << status;
-    this->mIsRubberbandVisible = status;
+	  mWasReadyRubberband = false;
+	  //qDebug() << "swithing use rubberband: " << status;
+	  this->mIsRubberbandVisible = status;
       if (status == true) {
           mFollower->VisibilityOn();
           mSelectedActor2->VisibilityOn();
@@ -2007,13 +2008,13 @@ public:
     if (currpicker->GetCellId() != -1)
     {
       currpicker->GetPickPosition(mRubberStart);
-//      qDebug() << "rubberband start: " << mRubberStart[0] << " " << mRubberStart[1] << " " << mRubberStart[2];
     }
   }
 
   void drawRubberbandLine()
   {
-    if (mWasReadyRubberband && mUseRubberband ) {
+    if (mWasReadyRubberband && mUseRubberband )
+	{
       vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
       vtkSmartPointer<vtkRenderer> renderer = interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
 
@@ -2075,9 +2076,7 @@ public:
     {
       currpicker->GetPickPosition(mRubberEnd);
 
-//      qDebug() << "rubberband end (point): " << mRubberEnd[0] << " " << mRubberEnd[1] << " " << mRubberEnd[2];
-
-      mRubberDist = sqrt(vtkMath::Distance2BetweenPoints(mRubberStart,mRubberEnd));
+      mRubberDist = sqrt(vtkMath::Distance2BetweenPoints(mRubberStart, mRubberEnd));
 
       char text1[512]; memset( text1, 0, sizeof(text1) );
       sprintf( text1, "   (%.2fcm)", mRubberDist/10. );
@@ -2102,8 +2101,9 @@ public:
       mFollower->VisibilityOn();
 
       renderer->AddActor( mFollower );
-      }
-    else {
+    }
+    else
+	{
         mFollower->VisibilityOff();
         mSelectedActor2->VisibilityOff();
     }
@@ -2111,19 +2111,63 @@ public:
     //interactor->Render();
   }
 
-  void zoomIn(){
+  void displayRubberbandVideo()
+  {
+	  if (!mFinishedRubberband) return;
+	  
+	  vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
+	  vtkSmartPointer<vtkRenderer> renderer = interactor->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
+	  vtkSmartPointer<vtkCamera> camera = renderer->GetActiveCamera();
+
+	  // draw line
+	  mRubberband->SetPoint1(mRubberStart);
+      mRubberband->SetPoint2(mRubberEnd);
+      mRubberband->Update();
+      mSelectedMapper2->SetInputConnection( mRubberband->GetOutputPort() ); // for selected line drawing
+      mSelectedMapper2->Update();
+      mSelectedActor2->SetMapper(mSelectedMapper2);
+      mSelectedActor2->GetProperty()->SetColor(1,0.75,0);
+      mSelectedActor2->GetProperty()->SetLineWidth(6);
+      mSelectedActor2->VisibilityOn();
+	  renderer->AddActor( mSelectedActor2 );
+
+	  // draw distance
+	  mRubberDist = sqrt(vtkMath::Distance2BetweenPoints(mRubberStart, mRubberEnd));
+      char text1[512]; memset( text1, 0, sizeof(text1) );
+      sprintf( text1, "   (%.2fcm)", mRubberDist/10. );
+      vtkSmartPointer<vtkVectorText> vtext = vtkSmartPointer<vtkVectorText>::New();
+      vtext->SetText(text1);
+      mTextMapper->SetInputConnection( vtext->GetOutputPort() );
+      mFollower->SetMapper( mTextMapper );
+      mFollower->SetScale( camera->GetDistance()/100 ); // change the scale dynamically, according to camera distance
+      vtkSmartPointer<vtkProperty> property = mFollower->GetProperty();
+      property->SetColor(1,0.75,0); // sphere color orange
+      property->LightingOff(); // turn off shading
+      mFollower->SetCamera(renderer->GetActiveCamera());
+      mFollower->SetPosition( mRubberEnd ); //((vtkProp3D*)collection->GetItemAsObject( 3 ))->GetCenter());
+      mFollower->PickableOff();
+      mFollower->VisibilityOn();
+	  renderer->AddActor( mFollower );
+	  
+	  displayInfoAnnotation(true);
+  }
+
+  void zoomIn()
+  {
     vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
     vtkInteractorStyle *style = vtkInteractorStyle::SafeDownCast( interactor->GetInteractorStyle() );
     if (style)  { style->OnMouseWheelForward(); }
   }
 
-  void zoomOut(){
+  void zoomOut()
+  {
     vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
     vtkInteractorStyle *style = vtkInteractorStyle::SafeDownCast( interactor->GetInteractorStyle() );
     if (style)  { style->OnMouseWheelBackward(); }
   }
 
-  virtual void Execute(vtkObject *, unsigned long event, void *) {
+  virtual void Execute(vtkObject *, unsigned long event, void *)
+  {
 	//qDebug () << "Call of Execute" << count;
     // get the camera transform matrix
     vtkSmartPointer<QVTKInteractor> interactor = this->GetInteractor();
@@ -2144,7 +2188,7 @@ public:
 
       if (event == vtkCommand::LeftButtonPressEvent)
       {
-		//Annotation and Rubberband should be preemptive, and the tool menu should be updated, I will fix this later.
+		// TODO: Annotation and Rubberband should be preemptive, and the tool menu should be updated, I will fix this later.
 		if (mUserIsAnnotating)
         {
 			/*switch(mNoteMode)
@@ -2169,15 +2213,17 @@ public:
 				//turnoffHighlight();
 			}
         }
-        else if (mUseRubberband  && mWasReadyRubberband)
+        else if (mUseRubberband && mWasReadyRubberband)
         {
            displayRubberbandDist();
            mWasReadyRubberband = false;
+		   mFinishedRubberband = true;
         }
         else if (mUseRubberband && !mWasReadyRubberband)
         {
-          mWasReadyRubberband = true; // toggle bool
-          getRubberbandStart();
+			mWasReadyRubberband = true; // toggle bool
+			mFinishedRubberband = false;
+			getRubberbandStart();
         }
         if (style)  {style->OnLeftButtonDown();}
       }
@@ -2218,7 +2264,7 @@ public:
     else if (event == vtkCommand::MouseMoveEvent)
       {
         if (mUseRubberband) {
-          drawRubberbandLine();
+			drawRubberbandLine();
         } else {
           if (mDisplayInfoOn && mDisplayPolyIndicateOn)
             displaySelectPoly();
@@ -2350,6 +2396,7 @@ private:
   double mRubberEnd[3];
   double mRubberDist;
   bool mWasReadyRubberband;
+  bool mFinishedRubberband;
 
   bool mIsDirectionalLight;
 

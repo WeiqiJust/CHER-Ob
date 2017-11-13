@@ -5198,7 +5198,7 @@ void MainWindow::measureDistance()
 
 	if (VTKA())
 	{
-	VTKA()->setMeasureDistance( answer );
+		VTKA()->setMeasureDistance( answer );
 	}
 
 	updateMenus();
@@ -5210,7 +5210,9 @@ void MainWindow::removeMeasureDistance()
 	bool answer = a->isChecked() ? true : false;
 
 	if (VTKA())
-	VTKA()->setVisibilityDistance( answer );
+	{
+		VTKA()->setVisibilityDistance( answer );
+	}
 
 	updateMenus();
 }

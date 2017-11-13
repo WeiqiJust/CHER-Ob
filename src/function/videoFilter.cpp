@@ -38,7 +38,7 @@ VideoFilter::VideoFilter(QVector<QString> objects)
 	mLabel = new QLabel("Please select the objects and categories to be presented in video");
 
 	mTreeWidget = new dragTreeWidget();
-	//// Zeyu playing with drag-and-drop
+	// Experimental drag-and-drop by Zeyu
 	mTreeWidget->setDragEnabled(true);
 	mTreeWidget->viewport()->setAcceptDrops(true);
 	mTreeWidget->setDropIndicatorShown(true);
