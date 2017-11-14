@@ -88,7 +88,7 @@ VideoGenerator::VideoGenerator(QString path, bool project)
 }
 
 void VideoGenerator::setUpdateSetup(const QString project, const QString userName, const QString affiliation, const int videoFormat, const int resolutionOption,
-		const int frameDuration2D, const int transDuration2D, const int frameDuration3D, const int transDuration3D, const int dolly3D, const bool isShowGeneral)
+		const int frameDuration2D, const int transDuration2D, const int frameDuration3D, const int transDuration3D, const int dolly3D, const bool isShowGeneral, const bool isShow2RTIs)
 {
 	mProjectName = project;
 	mUserName = userName;
@@ -101,6 +101,7 @@ void VideoGenerator::setUpdateSetup(const QString project, const QString userNam
 	mTransDuration3D = transDuration3D;
 	mDolly3D = dolly3D;
 	mShowGeneral = isShowGeneral;
+	mShow2RTIs = isShow2RTIs;
 }
 
 void VideoGenerator::setCHEInfo(const CHEInfoBasic* info)
@@ -656,13 +657,14 @@ void VideoGenerator::generate()
 					if (!RTIScreenShot.isNull())
 					{
 						screenshotDict = screenshotObj;
+						mPathRTIs.push_back(screenshotDict);
 						screenshotDict.append(".png");
 						RTIScreenShot.save(screenshotDict);
 						mObjects[i]->mPictures.push_back(screenshotDict);
 						cv::Mat frame, prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame;
 
 						// put general annotation, effect to be refined
-						if (mObjects[i]->isShowGeneral)  // change to mShowGeneral for MacOS version
+						if (mObjects[i]->isShowGeneral || mShow2RTIs)  // change to mShowGeneral for MacOS version
 						{
 							// play with RTI lighting
 							for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
@@ -745,8 +747,38 @@ void VideoGenerator::generate()
 			delete frustumNote3D[j].first;
 		}
 	}
-	outputVideo.release();
 
+	// Show comparing 2 RTIs in video
+	if (mShow2RTIs && mPathRTIs.size() == 2)
+	{
+		cv::Mat frame0, frame1, prevFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0)), currFrame(mysize, CV_8UC3, cv::Scalar(0, 0, 0));
+		for (int duration = 0; duration < 30*mFrameDuration2D; duration++)
+		{
+			QString PathRTI0 = mPathRTIs[0] + QString::number(duration) + ".png";
+			QString PathRTI1 = mPathRTIs[1] + QString::number(duration) + ".png";
+
+			frame0 = cv::imread(PathRTI0.toStdString(), CV_LOAD_IMAGE_COLOR);
+			frame1 = cv::imread(PathRTI1.toStdString(), CV_LOAD_IMAGE_COLOR);
+
+			cv::Mat resized0 = resize2Video(frame0, cv::Size(mysize.width / 2, mysize.height / 2));
+			cv::Mat resized1 = resize2Video(frame1, cv::Size(mysize.width / 2, mysize.height / 2));
+
+			cv::Mat ROI0 = currFrame(cv::Rect(0, mysize.height / 4, mysize.width / 2, mysize.height / 2));
+			cv::Mat ROI1 = currFrame(cv::Rect(mysize.width / 2, mysize.height / 4, mysize.width / 2, mysize.height / 2));
+			resized0.copyTo(ROI0);
+			resized1.copyTo(ROI1);
+
+			if (duration == 0)
+			{
+				blend2Video(prevFrame, currFrame, outputVideo);
+			}
+			if (!outputVideo.isOpened()) qDebug() << "ERROR: outputVideo not opened!\n\n";
+			outputVideo.write(currFrame);
+		}
+	}
+
+	// Release the video generator
+	outputVideo.release();
 	videoFolderDir.setNameFilters(QStringList() << "*.*");
 	videoFolderDir.setFilter(QDir::Files);
 	foreach(QString dirFile, videoFolderDir.entryList())

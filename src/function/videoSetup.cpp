@@ -169,6 +169,10 @@ VideoSetup::VideoSetup(QString title, QString author, QString affiliation)
 	mShowGeneralContent->setChecked(true);
 	connect(mShowGeneralContent, SIGNAL(stateChanged(int)), this, SLOT(setShowGeneral(int)));
 
+	mShow2RTIsContent = new QCheckBox("Check this if you want to compare two RTIs in the project");
+	mShow2RTIsContent->setChecked(false);
+	connect(mShow2RTIsContent, SIGNAL(stateChanged(int)), this, SLOT(setShow2RTIs(int)));
+
 	mButtonGridBox = new QGridLayout();
 	mNextButton = new QPushButton("Next");
 	connect(mNextButton, SIGNAL(clicked()), this, SLOT(next()));
@@ -179,13 +183,14 @@ VideoSetup::VideoSetup(QString title, QString author, QString affiliation)
 	
 	mVbox->addLayout(mGrid);
 	mVbox->addWidget(mShowGeneralContent);
+	mVbox->addWidget(mShow2RTIsContent);
 	mVbox->addLayout(mButtonGridBox);
 	mDialog->setMinimumWidth(250);
 	mDialog->setLayout(mVbox);
 	isNext = false;
 }
 void VideoSetup::updateSetup(QString* newProjectName, QString* newUserName, QString* newAffiliation, int* setupVideoFormat, int* setupResolution,
-							 int* setupFrameDuration2D, int* setupTransDuration2D, int* setupFrameDuration3D, int* setupTransDuration3D, int* setupDolly3D, bool* setupShowGeneral)
+							 int* setupFrameDuration2D, int* setupTransDuration2D, int* setupFrameDuration3D, int* setupTransDuration3D, int* setupDolly3D, bool* setupShowGeneral, bool* setupShow2RTIs)
 {
 	*newProjectName = mProjectName;
 	*newUserName = mUserName;
@@ -198,6 +203,7 @@ void VideoSetup::updateSetup(QString* newProjectName, QString* newUserName, QStr
 	*setupTransDuration3D = mTransDuration3D;
 	*setupDolly3D = mDolly3D;
 	*setupShowGeneral = isShowGeneral;
+	*setupShow2RTIs = isShow2RTIs;
 }
 void VideoSetup::next()
 {
@@ -233,4 +239,9 @@ void VideoSetup::setResolution(int index)
 void VideoSetup::setShowGeneral(int state)
 {
 	isShowGeneral = (state > 0);
+}
+
+void VideoSetup::setShow2RTIs(int state)
+{
+	isShow2RTIs = (state > 0);
 }

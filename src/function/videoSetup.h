@@ -75,7 +75,7 @@ public:
 	bool checkNext() {return isNext;}
 
 	void updateSetup(QString* newProjectName, QString* newUserName, QString* newAffiliation, int* setupVideoFormat, int* setupResolution,
-		int* setupFrameDuration2D, int* setupTransDuration2D, int* setupFrameDuration3D, int* setupTransDuration3D, int* setupDolly3D, bool* setupShowGeneral);
+		int* setupFrameDuration2D, int* setupTransDuration2D, int* setupFrameDuration3D, int* setupTransDuration3D, int* setupDolly3D, bool* setupShowGeneral, bool* setupShow2RTIs);
 
 private slots:
 	/**
@@ -94,6 +94,8 @@ private slots:
 
 	void setShowGeneral(int state);
 
+	void setShow2RTIs(int state);
+
 private:
 	QDialog* mDialog;
 	QVBoxLayout* mVbox;
@@ -109,7 +111,7 @@ private:
 	QLineEdit *mProjectNameContent, *mUserNameContent, *mAffiliationContent,
 		*mFrameDuration2DContent, *mFrameDuration3DContent, *mTransDuration2DContent, *mTransDuration3DContent, *mDolly3DContent;
 	QComboBox *mVideoFormatContent, *mResolutionContent;
-	QCheckBox *mShowGeneralContent;
+	QCheckBox *mShowGeneralContent, *mShow2RTIsContent;
 
 	QString mProjectName;
 	QString mUserName;
@@ -122,6 +124,7 @@ private:
 	int mTransDuration3D;
 	int mDolly3D;
 	bool isShowGeneral; // QCheckBox
+	bool isShow2RTIs; // QCheckBox
 	bool isNext;
 
 };

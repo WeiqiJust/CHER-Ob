@@ -127,7 +127,7 @@ public:
 	void setAffiliation(const QString affiliation)	{mAffiliation = affiliation;}
 	void setDescription(const QString description)	{mDescription = description;}
 	void setUpdateSetup(const QString project, const QString userName, const QString affiliation, const int videoFormat, const int resolutionOption,
-		const int frameDuration2D, const int transDuration2D, const int frameDuration3D, const int transDuration3D, const int dolly3D, const bool isShowGeneral);
+		const int frameDuration2D, const int transDuration2D, const int frameDuration3D, const int transDuration3D, const int dolly3D, const bool isShowGeneral, const bool isShow2RTIs);
 
 	/**
 	 * @brief  Set CHE text information for the video if it is a CHE.
@@ -333,6 +333,8 @@ private:
 	int mTransDuration3D;
 	int mDolly3D;
 	bool mShowGeneral;
+	bool mShow2RTIs;
+	QVector<QString> mPathRTIs;
 
 	QMutex mapMutex;
 };

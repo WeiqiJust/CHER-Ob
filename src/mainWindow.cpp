@@ -4916,11 +4916,11 @@ void MainWindow::generateVideo()
 	// update setup information to video generator
 	QString newProjectName, newUserName, newAffiliation;
 	int setupVideoFormat, setupResolution, setupFrameDuration2D, setupTransDuration2D, setupFrameDuration3D, setupTransDuration3D, setupDolly3D;
-	bool setupShowGeneral;
+	bool setupShowGeneral, setupShow2RTIs;
 	dialogSetup->updateSetup(&newProjectName, &newUserName, &newAffiliation, &setupVideoFormat, &setupResolution,
-		&setupFrameDuration2D, &setupTransDuration2D, &setupFrameDuration3D, &setupTransDuration3D, &setupDolly3D, &setupShowGeneral);
+		&setupFrameDuration2D, &setupTransDuration2D, &setupFrameDuration3D, &setupTransDuration3D, &setupDolly3D, &setupShowGeneral, &setupShow2RTIs);
 	video->setUpdateSetup(newProjectName, newUserName, newAffiliation, setupVideoFormat, setupResolution,
-		setupFrameDuration2D, setupTransDuration2D, setupFrameDuration3D, setupTransDuration3D, setupDolly3D, setupShowGeneral);
+		setupFrameDuration2D, setupTransDuration2D, setupFrameDuration3D, setupTransDuration3D, setupDolly3D, setupShowGeneral, setupShow2RTIs);
 
 	VideoFilter *dialog = new VideoFilter(mObjectList);
 	dialog->exec();
@@ -4948,6 +4948,7 @@ void MainWindow::generateVideo()
 		object->mNotesPath = path;
 		object->mNotesPath.append(QDir::separator() + QString("Note"));
 		object->mNotes = mInformation->getAllNotes(path);
+		// The reason why each object has isShowGeneral is to make it possible if some objects show general annotation frame while others don't. 
 		object->isShowGeneral = setupShowGeneral;
 		QVector<int> defaultOrder;
 		for (int i = 1; i < object->mNotes.size(); i++)
@@ -4968,7 +4969,7 @@ void MainWindow::generateVideo()
 			{
 				isSkipAll = true;
 			}
-			//// TODO: work on isGeneral, isMap
+			//// TODO: work on isGeneral and isMap for each object
 			object->mNoteReorder = dialogNote->dragPermutation;
 		}
 		object->mCategories = dialog->getCategories(name);
