@@ -2788,17 +2788,17 @@ void MainWindow::openRecentFile()
 
 void MainWindow::help()
 {
-  // add help dialog later
+  QDesktopServices::openUrl(QUrl("http://graphics.cs.yale.edu/site/cher-ob-open-source-platform-shared-analysis-cultural-heritage-research"));
 }
 
 void MainWindow::about()
 {
    QMessageBox::about(this, tr("About CHEROb") + appVer(),
-                      tr("<h2>CHEROb</h2>"
+                      tr("<h2>CHER-Ob</h2>"
                          "<p>Yale Computer Graphics Laboratory</p>"
                          "<p>Principal Investigator: Prof. Holly Rushmeier"
                          "<p>Authors: Min H. Kim, David Tidmarsh, Ying Yang, Weiqi Shi, Zeyu Wang"
-                         "<p>CHEROb is an application that visualizes various types of image data,"
+                         "<p>CHER-Ob is an application that visualizes various types of image data,"
                          " e.g., hyperspectral images and 3D models, as well as CT medical images in 3D, etc."
                          "<p>This project was funded by a 2011-2012 grant from the Seaver Institute."
                          "<p>We are grateful to John ffrench and Irma Passeri of the Yale University Art Gallery"
@@ -2807,7 +2807,7 @@ void MainWindow::about()
                          " for allowing us to adapt the Categories for the Description of Works of Art and the"
                          " CHIN Natural Sciences Data Dictionary, respectively, for use in this software's"
                          " metadata system:"
-                         "<p>Categories for the Description of Works of Art (CDWA). [online]. Murtha Baca and"
+                         "<p>Categories for the Description of Works of Art (CDWA). Murtha Baca and"
                          " Patricia Harpring, eds. Los Angeles: J. Paul Getty Trust and the College Art Association,"
                          " 2000. Revised 2009."
                          " http://www.getty.edu/research/publications/electronic_publications/cdwa/index.html"
