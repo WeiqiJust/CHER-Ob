@@ -14,6 +14,7 @@ CHER-Ob supports the platform of windows and Mac OS X, and user can run the exec
 CHER-Ob is currently supplied as pre-built binaries for windows and Mac OS X.
 
 ### Prerequisites
+
 - Qt (4.8.5)
 - OpenCV (3.0.0)
 - VTK (5.10)
@@ -47,6 +48,7 @@ $(QTDir)\bin
 `$(QTDir)` is where your Qt is installed.
 
 #### Optional:
+
 The .sln file under Windows folder has already loaded all the include files and .lib files under lib folder.<br>
 If you want to recompile the libraries, please follow the instructions below to link the libraries to the solution:<br>
 - Put all the compiled libraries in different separte folders with the library's name. Each library should include an include/src, lib and bin(optional) folder.<br>
@@ -66,14 +68,18 @@ In order to compile the source code on Mac, you first need to install the third-
 To facilitate compilation, an example Qt project file (CHER-Ob.pro) is also provided, but you may have to modify some lines to include the correct paths to the required libraries.
 
 ## License
+
 GNU General Public License Usage
+
 Alternatively, this file may be used under the terms of the GNU General Public License version 3.0 as published by the Free Software Foundation and appearing in the file LICENSE.
 GPL included in the packaging of this file. Please review the following information to ensure the GNU General Public License version 3.0 requirements will be met:
 * http://www.gnu.org/copyleft/gpl.html.
 
 
 ## Contributor
-**Yale Computer Graphics Group**<br>
+
+**Yale Computer Graphics Group**
+
 - Weiqi Shi (weiqi.shi@yale.edu)
 - Zeyu Wang (zeyu.wang@yale.edu)
 - Ying Yang (ying.yang.yy368@yale.edu)
@@ -84,13 +90,16 @@ GPL included in the packaging of this file. Please review the following informat
 - Holly Rushmeier (holly.rushmeier@yale.edu)
 
 ## Contact
+
 If you have any problem or suggestion related to the software, please send an email to cher_ob@cs.yale.edu.
 
 ## Acknowledgments
+
 Some portions of this file are based on the example codes of ITK/VTK library from Kitware, Qt API from Nokia, RTIViewer from Visual Computing Lab, Meshlab VCG library from ISTI CNR, OpenCV library and Google Maps API.<br>
 We would like to thank anonymous help by various software engineering communities.
 
 ## References
+
 Wang, Zeyu et al. 2018. “[CHER-Ob: A Tool for Shared Analysis and Video Dissemination.](http://graphics.cs.yale.edu/site/publications/cher-ob-tool-shared-analysis-and-video-dissemination)” ACM Journal on Computing and Cultural Heritage (2018).<br>
 Wang, Zeyu et al. 2017. “[An Introductory Video Generator for Disseminating Cultural Heritage Projects.](http://graphics.cs.yale.edu/site/publications/introductory-video-generator-disseminating-cultural-heritage-projects)” Proceedings of EUROGRAPHICS Workshop on Graphics and Cultural Heritage (2017).<br>
 Shi, Weiqi et al. 2016. “[CHER-Ob: A Tool for Shared Analysis in Cultural Heritage.](http://graphics.cs.yale.edu/site/publications/cher-ob-tool-shared-analysis-cultural-heritage)” Proceedings of EUROGRAPHICS Workshop on Graphics and Cultural Heritage (2016).<br>
