@@ -1,4 +1,6 @@
-# CHER-Ob  
+# CHER-Ob
+
+[[Project Page]](https://graphics.cs.yale.edu/software-packages/cher-ob-open-source-platform-shared-analysis-and-video-dissemination-cultural)
 
 CHER-Ob (CULTURAL HERITAGE-Object) is an open source platform developed in an attempt to enhance analysis, evaluation, documentation, sharing and management of 3D and 2D visualizations as well as textual and conservation science data.
 
@@ -100,9 +102,14 @@ We would like to thank anonymous help by various software engineering communitie
 
 ## References
 
-Wang, Zeyu et al. 2018. “[CHER-Ob: A Tool for Shared Analysis and Video Dissemination.](http://graphics.cs.yale.edu/site/publications/cher-ob-tool-shared-analysis-and-video-dissemination)” ACM Journal on Computing and Cultural Heritage (2018).<br>
-Wang, Zeyu et al. 2017. “[An Introductory Video Generator for Disseminating Cultural Heritage Projects.](http://graphics.cs.yale.edu/site/publications/introductory-video-generator-disseminating-cultural-heritage-projects)” Proceedings of EUROGRAPHICS Workshop on Graphics and Cultural Heritage (2017).<br>
-Shi, Weiqi et al. 2016. “[CHER-Ob: A Tool for Shared Analysis in Cultural Heritage.](http://graphics.cs.yale.edu/site/publications/cher-ob-tool-shared-analysis-cultural-heritage)” Proceedings of EUROGRAPHICS Workshop on Graphics and Cultural Heritage (2016).<br>
-Kim, Min H. et al. 2014. “[Hyper3D: 3D Graphics Software for Examining Cultural Artifacts.](http://graphics.cs.yale.edu/site/publications/hyper3d-3d-graphics-software-examining-cultural-artifacts)” Journal Article: ACM Journal of Computing and Cultural Heritage, vol. 7, issue 3 (2014).<br>
-Kim, Min H. et al. 2012. “[3D Imaging Spectroscopy for Measuring Hyperspectral Patterns on Solid Objects.](http://graphics.cs.yale.edu/site/publications/3d-imaging-spectroscopy-measuring-hyperspectral-patterns-solid-objects)” ACM Transactions on Graphics 31.4 (July 2012). Article 38.<br>
-Palma, Gianpaolo et al. 2010. "[Dynamic shading enhancement for reflectance transformation imaging.](https://dl.acm.org/citation.cfm?id=1841321)" Journal Article: ACM Journal of Computing and Cultural Heritage, vol 3, issue 2 (2010).
+1. Wang, Zeyu et al. 2018. “[CHER-Ob: A Tool for Shared Analysis and Video Dissemination.](http://graphics.cs.yale.edu/publications/cher-ob-tool-shared-analysis-and-video-dissemination)” ACM Journal on Computing and Cultural Heritage (2018).
+
+2. Wang, Zeyu et al. 2017. “[An Introductory Video Generator for Disseminating Cultural Heritage Projects.](http://graphics.cs.yale.edu/publications/introductory-video-generator-disseminating-cultural-heritage-projects)” Proceedings of EUROGRAPHICS Workshop on Graphics and Cultural Heritage (2017).
+
+3. Shi, Weiqi et al. 2016. “[CHER-Ob: A Tool for Shared Analysis in Cultural Heritage.](http://graphics.cs.yale.edu/publications/cher-ob-tool-shared-analysis-cultural-heritage)” Proceedings of EUROGRAPHICS Workshop on Graphics and Cultural Heritage (2016).
+
+4. Kim, Min H. et al. 2014. “[Hyper3D: 3D Graphics Software for Examining Cultural Artifacts.](http://graphics.cs.yale.edu/publications/hyper3d-3d-graphics-software-examining-cultural-artifacts)” Journal Article: ACM Journal of Computing and Cultural Heritage, vol. 7, issue 3 (2014).
+
+5. Kim, Min H. et al. 2012. “[3D Imaging Spectroscopy for Measuring Hyperspectral Patterns on Solid Objects.](http://graphics.cs.yale.edu/publications/3d-imaging-spectroscopy-measuring-hyperspectral-patterns-solid-objects)” ACM Transactions on Graphics 31.4 (July 2012). Article 38.
+
+6. Palma, Gianpaolo et al. 2010. "[Dynamic shading enhancement for reflectance transformation imaging.](https://dl.acm.org/citation.cfm?id=1841321)" Journal Article: ACM Journal of Computing and Cultural Heritage, vol 3, issue 2 (2010).
